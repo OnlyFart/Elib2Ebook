@@ -10,7 +10,7 @@ Author.Today.Epub.Converter.exe --id 123498
 
 ## Где 
 ```
---id - идентификатор книги на сайта https://author.today/ ;
+--id - идентификатор книги на сайта https://author.today/
 ```
 
 ## Полный список опций 
