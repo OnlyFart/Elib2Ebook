@@ -1,9 +1,8 @@
+using System.Collections;
 using EpubSharp;
 
 namespace Author.Today.Epub.Converter.Types.Book {
-    public class Image {
-        public string Path;
-        public byte[] Content;
+    public record Image(string Path, byte[] Content) {
         public ImageFormat Format => GetImageFormat(Path);
         
         private static ImageFormat GetImageFormat(string path) {

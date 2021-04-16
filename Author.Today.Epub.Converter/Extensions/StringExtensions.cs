@@ -1,7 +1,6 @@
 ﻿using HtmlAgilityPack;
 
-namespace Author.Today.Epub.Converter.Extensions
-{
+namespace Author.Today.Epub.Converter.Extensions {
     public static class StringExtensions  {
         public static HtmlDocument AsHtmlDoc(this string self) {
             var doc = new HtmlDocument();

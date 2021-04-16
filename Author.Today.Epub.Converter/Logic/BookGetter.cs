@@ -191,10 +191,7 @@ namespace Author.Today.Epub.Converter.Logic {
         /// <param name="uri"></param>
         /// <returns></returns>
         private async Task<Image> GetImage(Uri uri) {
-            return new() {
-                Path = uri.GetFileName(), 
-                Content = await _client.GetByteArrayAsync(uri)
-            };
+            return new(uri.GetFileName(), await _client.GetByteArrayAsync(uri));
         }
 
         public void Dispose() {
