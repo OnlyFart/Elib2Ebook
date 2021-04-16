@@ -9,10 +9,13 @@ namespace Author.Today.Epub.Converter.Extensions {
         }
         
         public static HtmlDocument AsXHtmlDoc(this string self) {
+            HtmlNode.ElementsFlags.Remove("style");
+            HtmlNode.ElementsFlags.Remove("title");
+
             var doc = new HtmlDocument {
-                OptionCheckSyntax = true, 
                 OptionFixNestedTags = true,
-                OptionOutputAsXml = true
+                OptionAutoCloseOnEnd = true,
+                OptionOutputAsXml = true,
             };
 
             doc.LoadHtml(self);
