@@ -1,5 +1,5 @@
 # Author.Today.Epub.Converter
-Инструмент для сохрания любой доступной книги с сайта https://author.today/ в формате epub
+Инструмент для сохранения любой доступной книги с сайта https://author.today/ в формате epub
 
 * [.net 5](https://dotnet.microsoft.com/download/dotnet/5.0) 
 
