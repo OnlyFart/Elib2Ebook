@@ -6,8 +6,10 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
+using Author.Today.Epub.Converter.Configs;
 using Author.Today.Epub.Converter.Extensions;
 using Author.Today.Epub.Converter.Types.Book;
 using Author.Today.Epub.Converter.Types.Response;
@@ -15,23 +17,25 @@ using HtmlAgilityPack;
 
 namespace Author.Today.Epub.Converter.Logic {
     public class BookGetter : IDisposable {
-        private readonly HttpClient _client;
-        private readonly string _pattern;
-
-        public BookGetter(HttpClient client, string pattern) {
-            _client = client;
-            _pattern = pattern;
-        }
+        private readonly Regex _userIdRgx = new("userId: (?<userId>\\d+),");
         
+        private readonly BookGetterConfig _config;
+
+        public BookGetter(BookGetterConfig config) {
+            _config = config;
+        }
+
         /// <summary>
         /// Получение книги
         /// </summary>
         /// <param name="bookId">Идентификатор книги</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public async Task<BookMeta> Get(long bookId) {
+        public async Task<BookMeta> Get(long bookId){
+            await Authorize();
+            
             var bookUri = new Uri($"https://author.today/reader/{bookId}");
-            var response = await _client.GetAsync(bookUri);
+            var response = await _config.Client.GetAsync(bookUri);
 
             if (response.StatusCode == HttpStatusCode.NotFound) {
                 throw new Exception($"Книга {bookId} не существует.");
@@ -43,11 +47,39 @@ namespace Author.Today.Epub.Converter.Logic {
             var book = new BookMeta(bookId) {
                 Cover = await GetCover(doc, bookUri),
                 Chapters = GetChapters(content),
-                Title = doc.GetFirstOrDefault("div", "book-title"),
-                Author = doc.GetFirstOrDefault("div", "book-author")
+                Title = doc.GetTextByFilter("div", "book-title"),
+                Author = doc.GetTextByFilter("div", "book-author")
             };
 
-            return await FillChapters(book);
+            return await FillChapters(book, GetUserId(content));
+        }
+
+        private string GetUserId(string content) {
+            var match = _userIdRgx.Match(content);
+            return match.Success ? match.Groups["userId"].Value : string.Empty;
+        }
+
+        private async Task Authorize() {
+            if (!string.IsNullOrWhiteSpace(_config.Login) && !string.IsNullOrWhiteSpace(_config.Password)) {
+                var mainPage = await _config.Client.GetStringAsync("https://author.today/");
+                var doc = mainPage.AsHtmlDoc();
+
+                var token = doc.GetAttributeByNameAttribute("__RequestVerificationToken", "value");
+
+                var form = new MultipartFormDataContent {
+                    {new StringContent(token), "__RequestVerificationToken"},
+                    {new StringContent(_config.Login), "Login"},
+                    {new StringContent(_config.Password), "Password"}
+                };
+
+                var post = await _config.Client.PostAsync("https://author.today/account/login", form);
+                var response = await post.Content.ReadFromJsonAsync<ApiResponse<LoginData>>();
+                if (response?.IsSuccessful == true) {
+                    Console.WriteLine("Успешно авторизовались");
+                } else {
+                    throw new Exception($"Не удалось авторизоваться. {response?.Messages?.FirstOrDefault()}");
+                }
+            }
         }
 
         /// <summary>
@@ -79,17 +111,18 @@ namespace Author.Today.Epub.Converter.Logic {
         }
 
         /// <summary>
-        /// Дозагрузка различных паретров частей
+        /// Дозагрузка различных пареметров частей
         /// </summary>
-        /// <param name="book"></param>
-        private async Task<BookMeta> FillChapters(BookMeta book) {
+        /// <param name="book">Книга</param>
+        /// <param name="userId">Идентификатор пользователя</param>
+        private async Task<BookMeta> FillChapters(BookMeta book, string userId) {
             foreach (var chapter in book.Chapters) {
                 chapter.Path = new Uri($"https://author.today/reader/{book.Id}/chapter?id={chapter.Id}");
-                var response = await _client.GetAsync(chapter.Path);
+                var response = await _config.Client.GetAsync(chapter.Path);
                 
                 Console.WriteLine($"Получаем главу {chapter.Path}");
                 
-                var secret = GetSecret(response);
+                var secret = GetSecret(response, userId);
                 if (string.IsNullOrWhiteSpace(secret)) {
                     Console.WriteLine($"Невозможно расшифровать главу {chapter.Path}. Возможно платный доступ.");
                     continue;
@@ -136,19 +169,20 @@ namespace Author.Today.Epub.Converter.Logic {
         /// <param name="secret">Секрет для расшифровки</param>
         /// <returns></returns>
         private string GenerateXhtml(Chapter chapter, string encodedText, string secret) {
-            return _pattern.Replace("{title}", chapter.Title).Replace("{body}", Decode(secret, encodedText));
+            return _config.Pattern.Replace("{title}", chapter.Title).Replace("{body}", Decode(secret, encodedText));
         }
 
         /// <summary>
         /// Получение секрета для расшифровки контента книги
         /// </summary>
         /// <param name="response">Ответ сервера</param>
+        /// <param name="userId">Идентификатор пользователя</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        private static string GetSecret(HttpResponseMessage response) {
+        private static string GetSecret(HttpResponseMessage response, string userId) {
             if (response.Headers.Contains("Reader-Secret")) {
                 foreach (var header in response.Headers.GetValues("Reader-Secret")) {
-                    return string.Join("", header.Reverse()) + "@_@";
+                    return string.Join("", header.Reverse()) + "@_@" + userId;
                 }
             }
 
@@ -162,7 +196,7 @@ namespace Author.Today.Epub.Converter.Logic {
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
         private static async Task<string> GetText(HttpResponseMessage response) {
-            var data = await response.Content.ReadFromJsonAsync<Response>();
+            var data = await response.Content.ReadFromJsonAsync<ApiResponse<ChapterData>>();
             if (string.IsNullOrWhiteSpace(data?.Data?.Text)) {
                 throw new Exception("Не удалось десериализовать ответ, возможно поменялся формат, расшифровка книги невозможна");
             }
@@ -191,11 +225,11 @@ namespace Author.Today.Epub.Converter.Logic {
         /// <param name="uri"></param>
         /// <returns></returns>
         private async Task<Image> GetImage(Uri uri) {
-            return new(uri.GetFileName(), await _client.GetByteArrayAsync(uri));
+            return new(uri.GetFileName(), await _config.Client.GetByteArrayAsync(uri));
         }
 
         public void Dispose() {
-            _client?.Dispose();
+            _config.Client?.Dispose();
         }
     }
 }

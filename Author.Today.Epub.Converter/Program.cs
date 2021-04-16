@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Author.Today.Epub.Converter.Configs;
 using Author.Today.Epub.Converter.Logic;
 using Author.Today.Epub.Converter.Types;
 using CommandLine;
@@ -22,8 +23,9 @@ namespace Author.Today.Epub.Converter {
 
                     var client = new HttpClient(handler);
                     var pattern = await File.ReadAllTextAsync("ChapterPattern.xhtml");
-                    
-                    using var getter = new BookGetter(client, pattern);
+
+                    var getterConfig = new BookGetterConfig(options, client, pattern);
+                    using var getter = new BookGetter(getterConfig);
                     var book = await getter.Get(options.BookId);
 
                     var generator = new EpubGenerator(options.SavePath);
