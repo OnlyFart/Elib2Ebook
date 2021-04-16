@@ -54,11 +54,20 @@ namespace Author.Today.Epub.Converter.Logic {
             return await FillChapters(book, GetUserId(content));
         }
 
+        /// <summary>
+        /// Получение идентификатора пользователя из контента
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns></returns>
         private string GetUserId(string content) {
             var match = _userIdRgx.Match(content);
             return match.Success ? match.Groups["userId"].Value : string.Empty;
         }
 
+        /// <summary>
+        /// Авторизация в системе
+        /// </summary>
+        /// <exception cref="Exception"></exception>
         private async Task Authorize() {
             if (!string.IsNullOrWhiteSpace(_config.Login) && !string.IsNullOrWhiteSpace(_config.Password)) {
                 var mainPage = await _config.Client.GetStringAsync("https://author.today/");
@@ -128,7 +137,7 @@ namespace Author.Today.Epub.Converter.Logic {
                     continue;
                 }
                 
-                Console.WriteLine($"Расшифровывем главу {chapter.Path}. Секрет {secret}");
+                Console.WriteLine($"Расшифровываем главу {chapter.Path}. Секрет {secret}");
 
                 var doc = GenerateXhtml(chapter, await GetText(response), secret).AsXHtmlDoc();
                 await FillImages(doc, chapter);
@@ -198,7 +207,7 @@ namespace Author.Today.Epub.Converter.Logic {
         private static async Task<string> GetText(HttpResponseMessage response) {
             var data = await response.Content.ReadFromJsonAsync<ApiResponse<ChapterData>>();
             if (string.IsNullOrWhiteSpace(data?.Data?.Text)) {
-                throw new Exception("Не удалось десериализовать ответ, возможно поменялся формат, расшифровка книги невозможна");
+                throw new Exception("Не удалось десериализовать ответ, возможно поменялся формат, расшифровка книги невозможна.");
             }
 
             return data.Data.Text;
