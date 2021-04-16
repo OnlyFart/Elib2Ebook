@@ -15,7 +15,7 @@ namespace Author.Today.Epub.Converter.Logic {
         
         public void Generate(BookMeta book) {
             var writer = new EpubWriter();
-            writer.AddAuthor(book.AuthorName);
+            writer.AddAuthor(book.Author);
             writer.SetTitle(book.Title);
 
             if (book.Cover != null) {

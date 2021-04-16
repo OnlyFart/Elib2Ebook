@@ -38,38 +38,51 @@ namespace Author.Today.Epub.Converter.Logic {
             }
             
             var content = await response.Content.ReadAsStringAsync();
+            var doc = content.AsHtmlDoc();
+            
+            var book = new BookMeta(bookId) {
+                Cover = await GetCover(doc, bookUri),
+                Chapters = GetChapters(content),
+                Title = doc.GetFirstOrDefault("div", "book-title"),
+                Author = doc.GetFirstOrDefault("div", "book-author")
+            };
+
+            return await FillChapters(book);
+        }
+
+        /// <summary>
+        /// Получение обложки
+        /// </summary>
+        /// <param name="doc">HtmlDocument</param>
+        /// <param name="bookUri">Адрес страницы с книгой</param>
+        /// <returns></returns>
+        private async Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
+            var imagePath = doc.DocumentNode.Descendants()
+                .FirstOrDefault(t => t.Name == "img" && t?.Attributes["class"]?.Value == "cover-image")
+                ?.Attributes["src"]?.Value;
+
+            return !string.IsNullOrWhiteSpace(imagePath) ? await GetImage(new Uri(bookUri, imagePath)) : null;
+        }
+
+        /// <summary>
+        /// Получение списка частей из кода страницы
+        /// </summary>
+        /// <param name="content">Код страницы</param>
+        /// <returns></returns>
+        private static List<Chapter> GetChapters(string content) {
             const string START_PATTERN = "chapters:";
             var startIndex = content.IndexOf(START_PATTERN, StringComparison.Ordinal) + START_PATTERN.Length;
             var endIndex = content.IndexOf("}],", startIndex, StringComparison.Ordinal) + 2;
             
             var metaContent = content[startIndex..endIndex].Trim().TrimEnd(';', ')');
-
-            var doc = new HtmlDocument();
-            doc.LoadHtml(content);
-
-            var imagePath = doc.DocumentNode.Descendants()
-                .FirstOrDefault(t => t.Name == "img" && t?.Attributes["class"]?.Value == "cover-image")
-                ?.Attributes["src"]?.Value;
-
-            var book = new BookMeta(bookId);
-            if (!string.IsNullOrWhiteSpace(imagePath)) {
-                book.Cover = await GetImage(new Uri(bookUri, imagePath));
-            }
-
-            book.Chapters = JsonSerializer.Deserialize<List<Chapter>>(metaContent);
-            book.Title = doc.DocumentNode.Descendants().FirstOrDefault(t => t.Name == "div" && t.Attributes["class"]?.Value == "book-title")?.InnerText?.Trim();
-            book.AuthorName = doc.DocumentNode.Descendants().FirstOrDefault(t => t.Name == "div" && t.Attributes["class"]?.Value == "book-author")?.InnerText?.Trim();
-            
-            await FillChapters(book);
-
-            return book;
+            return JsonSerializer.Deserialize<List<Chapter>>(metaContent);
         }
 
         /// <summary>
         /// Дозагрузка различных паретров частей
         /// </summary>
         /// <param name="book"></param>
-        private async Task FillChapters(BookMeta book) {
+        private async Task<BookMeta> FillChapters(BookMeta book) {
             foreach (var chapter in book.Chapters) {
                 chapter.Path = new Uri($"https://author.today/reader/{book.Id}/chapter?id={chapter.Id}");
                 var response = await _client.GetAsync(chapter.Path);
@@ -84,10 +97,12 @@ namespace Author.Today.Epub.Converter.Logic {
                 
                 Console.WriteLine($"Расшифровывем главу {chapter.Path}. Секрет {secret}");
 
-                var doc = CreateDoc(chapter, await GetText(response), secret);
+                var doc = GenerateXhtml(chapter, await GetText(response), secret).AsXHtmlDoc();
                 await FillImages(doc, chapter);
                 chapter.Content = doc.AsString();
             }
+            
+            return book;
         }
 
         /// <summary>
@@ -114,21 +129,14 @@ namespace Author.Today.Epub.Converter.Logic {
         }
 
         /// <summary>
-        /// Создание html документа
+        /// Создание Xhtml документа из кода части
         /// </summary>
-        /// <param name="chapter"></param>
-        /// <param name="encodedText"></param>
-        /// <param name="secret"></param>
+        /// <param name="chapter">Часть</param>
+        /// <param name="encodedText">Закодированный текст</param>
+        /// <param name="secret">Секрет для расшифровки</param>
         /// <returns></returns>
-        private HtmlDocument CreateDoc(Chapter chapter, string encodedText, string secret) {
-            var doc = new HtmlDocument {
-                OptionCheckSyntax = true, 
-                OptionFixNestedTags = true,
-                OptionOutputAsXml = true
-            };
-
-            doc.LoadHtml(_pattern.Replace("{title}", chapter.Title).Replace("{body}", Decode(secret, encodedText)));
-            return doc;
+        private string GenerateXhtml(Chapter chapter, string encodedText, string secret) {
+            return _pattern.Replace("{title}", chapter.Title).Replace("{body}", Decode(secret, encodedText));
         }
 
         /// <summary>
