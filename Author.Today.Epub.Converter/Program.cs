@@ -4,7 +4,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Author.Today.Epub.Converter.Configs;
 using Author.Today.Epub.Converter.Logic;
-using Author.Today.Epub.Converter.Types;
 using CommandLine;
 
 namespace Author.Today.Epub.Converter {

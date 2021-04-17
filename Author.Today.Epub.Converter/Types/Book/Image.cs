@@ -1,4 +1,3 @@
-using System.Collections;
 using EpubSharp;
 
 namespace Author.Today.Epub.Converter.Types.Book {
