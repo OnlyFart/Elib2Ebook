@@ -25,7 +25,7 @@ namespace Author.Today.Epub.Converter.Types.Book {
         /// <summary>
         /// Части
         /// </summary>
-        public List<Chapter> Chapters { get; set; }
+        public IEnumerable<Chapter> Chapters { get; set; }
 
         public BookMeta(long id) {
             Id = id;

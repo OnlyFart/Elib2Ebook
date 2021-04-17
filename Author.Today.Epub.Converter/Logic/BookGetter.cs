@@ -68,26 +68,24 @@ namespace Author.Today.Epub.Converter.Logic {
         /// Авторизация в системе
         /// </summary>
         /// <exception cref="Exception"></exception>
-        private async Task Authorize() {
-            if (!string.IsNullOrWhiteSpace(_config.Login) && !string.IsNullOrWhiteSpace(_config.Password)) {
-                var mainPage = await _config.Client.GetStringAsync("https://author.today/");
-                var doc = mainPage.AsHtmlDoc();
+        private async Task Authorize(){
+            if (!_config.HasCredentials) {
+                return;
+            }
 
-                var token = doc.GetAttributeByNameAttribute("__RequestVerificationToken", "value");
+            var doc = await _config.Client
+                .GetStringAsync("https://author.today/")
+                .ContinueWith(t => t.Result.AsHtmlDoc());
 
-                var form = new MultipartFormDataContent {
-                    {new StringContent(token), "__RequestVerificationToken"},
-                    {new StringContent(_config.Login), "Login"},
-                    {new StringContent(_config.Password), "Password"}
-                };
+            var token = doc.GetAttributeByNameAttribute("__RequestVerificationToken", "value");
 
-                var post = await _config.Client.PostAsync("https://author.today/account/login", form);
-                var response = await post.Content.ReadFromJsonAsync<ApiResponse<LoginData>>();
-                if (response?.IsSuccessful == true) {
-                    Console.WriteLine("Успешно авторизовались");
-                } else {
-                    throw new Exception($"Не удалось авторизоваться. {response?.Messages?.FirstOrDefault()}");
-                }
+            var post = await _config.Client.PostAsync("https://author.today/account/login", _config.GenerateAuthData(token));
+            var response = await post.Content.ReadFromJsonAsync<ApiResponse<LoginData>>();
+            
+            if (response?.IsSuccessful == true) {
+                Console.WriteLine("Успешно авторизовались");
+            } else {
+                throw new Exception($"Не удалось авторизоваться. {response?.Messages?.FirstOrDefault()}");
             }
         }
 
@@ -110,7 +108,7 @@ namespace Author.Today.Epub.Converter.Logic {
         /// </summary>
         /// <param name="content">Код страницы</param>
         /// <returns></returns>
-        private static List<Chapter> GetChapters(string content) {
+        private static IEnumerable<Chapter> GetChapters(string content) {
             const string START_PATTERN = "chapters:";
             var startIndex = content.IndexOf(START_PATTERN, StringComparison.Ordinal) + START_PATTERN.Length;
             var endIndex = content.IndexOf("}],", startIndex, StringComparison.Ordinal) + 2;
@@ -126,21 +124,25 @@ namespace Author.Today.Epub.Converter.Logic {
         /// <param name="userId">Идентификатор пользователя</param>
         private async Task<BookMeta> FillChapters(BookMeta book, string userId) {
             foreach (var chapter in book.Chapters) {
-                chapter.Path = new Uri($"https://author.today/reader/{book.Id}/chapter?id={chapter.Id}");
-                var response = await _config.Client.GetAsync(chapter.Path);
+                var chapterUri = new Uri($"https://author.today/reader/{book.Id}/chapter?id={chapter.Id}");
+                var response = await _config.Client.GetAsync(chapterUri);
                 
-                Console.WriteLine($"Получаем главу {chapter.Path}");
+                Console.WriteLine($"Получаем главу {chapterUri}");
                 
                 var secret = GetSecret(response, userId);
                 if (string.IsNullOrWhiteSpace(secret)) {
-                    Console.WriteLine($"Невозможно расшифровать главу {chapter.Path}. Возможно платный доступ.");
+                    Console.WriteLine($"Невозможно расшифровать главу {chapterUri}. Возможно платный доступ.");
                     continue;
                 }
                 
-                Console.WriteLine($"Расшифровываем главу {chapter.Path}. Секрет {secret}");
+                Console.WriteLine($"Расшифровываем главу {chapterUri}. Секрет {secret}");
 
-                var doc = GenerateXhtml(chapter, await GetText(response), secret).AsXHtmlDoc();
-                await FillImages(doc, chapter);
+                var decodeText = Decode(await GetText(response), secret);
+                
+                // Порядок вызова функций важен. В методе GetImages происходит
+                // исправления урлов картинок для их отображения в epub документе
+                var doc = ApplyPattern(chapter.Title, decodeText).AsXHtmlDoc();
+                chapter.Images = await GetImages(doc, chapterUri);
                 chapter.Content = doc.AsString();
             }
             
@@ -151,34 +153,37 @@ namespace Author.Today.Epub.Converter.Logic {
         /// Загрузка изображений отдельной части
         /// </summary>
         /// <param name="doc"></param>
-        /// <param name="chapter"></param>
-        private async Task FillImages(HtmlDocument doc, Chapter chapter) {
+        /// <param name="baseUri"></param>
+        private async Task<IEnumerable<Image>> GetImages(HtmlDocument doc, Uri baseUri) {
             var imgUrls = doc.DocumentNode
                 .Descendants()
                 .Where(t => t.Name == "img");
 
+            var images = new List<Image>();
             foreach (var img in imgUrls) {
                 var path = img.Attributes["src"]?.Value;
                 if (string.IsNullOrWhiteSpace(path)) {
                     continue;
                 }
                 
-                var uri = new Uri(chapter.Path, path);
+                var uri = new Uri(baseUri, path);
                 
-                chapter.Images.Add(await GetImage(uri));
+                // Костыль. Исправление урла картинки, что она отображась в книге
                 img.Attributes["src"].Value = uri.GetFileName();
+                images.Add(await GetImage(uri));
             }
+
+            return images;
         }
 
         /// <summary>
         /// Создание Xhtml документа из кода части
         /// </summary>
-        /// <param name="chapter">Часть</param>
-        /// <param name="encodedText">Закодированный текст</param>
-        /// <param name="secret">Секрет для расшифровки</param>
+        /// <param name="title">Заголовок части</param>
+        /// <param name="decodeText">Раскодированный текст</param>
         /// <returns></returns>
-        private string GenerateXhtml(Chapter chapter, string encodedText, string secret) {
-            return _config.Pattern.Replace("{title}", chapter.Title).Replace("{body}", Decode(secret, encodedText));
+        private string ApplyPattern(string title, string decodeText) {
+            return _config.Pattern.Replace("{title}", title).Replace("{body}", decodeText);
         }
 
         /// <summary>
@@ -219,7 +224,7 @@ namespace Author.Today.Epub.Converter.Logic {
         /// <param name="secret"></param>
         /// <param name="encodedText"></param>
         /// <returns></returns>
-        private static string Decode(string secret, string encodedText) {
+        private static string Decode(string encodedText, string secret) {
             var sb = new StringBuilder();
             for (var i = 0; i < encodedText.Length; i++) {
                 sb.Append((char) (encodedText[i] ^ secret[i % secret.Length]));

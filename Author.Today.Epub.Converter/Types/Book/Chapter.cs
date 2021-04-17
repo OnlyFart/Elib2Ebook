@@ -22,11 +22,6 @@ namespace Author.Today.Epub.Converter.Types.Book {
         public string Content { get; set; }
 
         /// <summary>
-        /// Uri адрес части
-        /// </summary>
-        public Uri Path { get; set; }
-
-        /// <summary>
         /// Валидна ли частьЫ
         /// </summary>
         public bool IsValid => !string.IsNullOrWhiteSpace(Content);
@@ -34,6 +29,6 @@ namespace Author.Today.Epub.Converter.Types.Book {
         /// <summary>
         /// Изображения из части
         /// </summary>
-        public readonly List<Image> Images = new();
+        public IEnumerable<Image> Images { get; set; }
     }
 }
