@@ -1,4 +1,6 @@
-﻿using HtmlAgilityPack;
+﻿using System.IO;
+using System.Text;
+using HtmlAgilityPack;
 
 namespace Author.Today.Epub.Converter.Extensions {
     public static class StringExtensions  {
@@ -20,6 +22,15 @@ namespace Author.Today.Epub.Converter.Extensions {
 
             doc.LoadHtml(self);
             return doc;
+        }
+
+        public static string RemoveInvalidChars(this string self){
+            var sb = new StringBuilder(self);
+            foreach (var invalidFileNameChar in Path.GetInvalidFileNameChars()) {
+                sb.Replace(invalidFileNameChar, ' ');
+            }
+
+            return sb.ToString();
         }
     }
 }

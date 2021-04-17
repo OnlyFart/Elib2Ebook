@@ -43,7 +43,8 @@ namespace Author.Today.Epub.Converter.Logic {
                 writer.AddChapter(chapter.Title, chapter.Content);
             }
 
-            var fileName = $"{book.Title}.epub";
+            var fileName = $"{book.Title}.epub".RemoveInvalidChars();
+
             if (!string.IsNullOrWhiteSpace(_config.SavePath)) {
                 if (!Directory.Exists(_config.SavePath)) {
                     Directory.CreateDirectory(_config.SavePath);
