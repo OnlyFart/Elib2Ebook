@@ -22,13 +22,15 @@ namespace Author.Today.Epub.Converter {
                     }
 
                     var client = new HttpClient(handler);
-                    var pattern = await File.ReadAllTextAsync("ChapterPattern.xhtml");
+                    
+                    var pattern = await File.ReadAllTextAsync("Patterns/ChapterPattern.xhtml");
 
                     var getterConfig = new BookGetterConfig(options, client, pattern);
                     using var getter = new BookGetter(getterConfig);
                     var book = await getter.Get(options.BookId);
 
-                    var generator = new EpubGenerator(options.SavePath);
+                    var generatorConfig = new EpubGeneratorConfig(options.SavePath, "Patterns");
+                    var generator = new EpubGenerator(generatorConfig);
                     generator.Generate(book);
                 });
         }

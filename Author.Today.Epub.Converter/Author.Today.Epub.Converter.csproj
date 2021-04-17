@@ -12,7 +12,16 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="ChapterPattern.xhtml">
+      <None Update="Patterns\ChapterPattern.xhtml">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Patterns\stylesheet.css">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Patterns\Roboto-Regular.ttf">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Patterns\Roboto-Italic.ttf">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>
