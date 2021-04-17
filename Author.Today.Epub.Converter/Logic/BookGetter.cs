@@ -47,8 +47,8 @@ namespace Author.Today.Epub.Converter.Logic {
             var book = new BookMeta(bookId) {
                 Cover = await GetCover(doc, bookUri),
                 Chapters = GetChapters(content),
-                Title = doc.GetTextByFilter("div", "book-title"),
-                Author = doc.GetTextByFilter("div", "book-author")
+                Title = HttpUtility.HtmlDecode(doc.GetTextByFilter("div", "book-title")),
+                Author = HttpUtility.HtmlDecode(doc.GetTextByFilter("div", "book-author"))
             };
 
             return await FillChapters(book, GetUserId(content));
