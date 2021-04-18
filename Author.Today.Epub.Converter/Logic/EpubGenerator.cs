@@ -18,7 +18,7 @@ namespace Author.Today.Epub.Converter.Logic {
                 .WithFiles(_config.PatternsPath, "*.ttf", EpubContentType.FontTruetype)
                 .WithFiles(_config.PatternsPath, "*.css", EpubContentType.Css)
                 .WithChapters(book.Chapters)
-                .Build(_config.SavePath, book.Title);
+                .Build(_config.SavePath, book.FullName);
         }
     }
 }

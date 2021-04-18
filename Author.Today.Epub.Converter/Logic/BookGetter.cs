@@ -35,10 +35,11 @@ namespace Author.Today.Epub.Converter.Logic {
             await Authorize();
             
             var bookUri = new Uri($"https://author.today/reader/{bookId}");
+            Console.WriteLine($"Загружаем книгу {bookUri.ToString().CoverQuotes()}");
             var response = await _config.Client.GetAsync(bookUri);
 
             if (response.StatusCode == HttpStatusCode.NotFound) {
-                throw new Exception($"Книга {bookId} не существует.");
+                throw new Exception($"Книга {bookId.ToString().CoverQuotes()} не существует.");
             }
             
             var content = await response.Content.ReadAsStringAsync();
@@ -127,15 +128,15 @@ namespace Author.Today.Epub.Converter.Logic {
                 var chapterUri = new Uri($"https://author.today/reader/{book.Id}/chapter?id={chapter.Id}");
                 var response = await _config.Client.GetAsync(chapterUri);
                 
-                Console.WriteLine($"Получаем главу {chapterUri}");
+                Console.WriteLine($"Получаем главу {chapter.Title.CoverQuotes()}");
                 
                 var secret = GetSecret(response, userId);
                 if (string.IsNullOrWhiteSpace(secret)) {
-                    Console.WriteLine($"Невозможно расшифровать главу {chapterUri}. Возможно платный доступ.");
+                    Console.WriteLine($"Невозможно расшифровать главу {chapter.Title.CoverQuotes()}. Возможно платный доступ.");
                     continue;
                 }
                 
-                Console.WriteLine($"Расшифровываем главу {chapterUri}. Секрет {secret}");
+                Console.WriteLine($"Расшифровываем главу {chapter.Title.CoverQuotes()}. Секрет {secret.CoverQuotes()}");
 
                 var decodeText = Decode(await GetText(response), secret);
                 
@@ -212,7 +213,7 @@ namespace Author.Today.Epub.Converter.Logic {
         private static async Task<string> GetText(HttpResponseMessage response) {
             var data = await response.Content.ReadFromJsonAsync<ApiResponse<ChapterData>>();
             if (string.IsNullOrWhiteSpace(data?.Data?.Text)) {
-                throw new Exception("Не удалось десериализовать ответ, возможно поменялся формат, расшифровка книги невозможна.");
+                throw new Exception("Не удалось десериализовать ответ. Возможно, поменялся формат, расшифровка книги невозможна.");
             }
 
             return data.Data.Text;
@@ -239,7 +240,8 @@ namespace Author.Today.Epub.Converter.Logic {
         /// <param name="uri"></param>
         /// <returns></returns>
         private async Task<Image> GetImage(Uri uri) {
-            return new(uri.GetFileName(), await _config.Client.GetByteArrayAsync(uri));
+            Console.WriteLine($"Загружаем картинку {uri.ToString().CoverQuotes()}");
+            return new Image(uri.GetFileName(), await _config.Client.GetByteArrayAsync(uri));
         }
 
         public void Dispose() {

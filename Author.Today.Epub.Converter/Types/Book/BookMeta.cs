@@ -21,6 +21,8 @@ namespace Author.Today.Epub.Converter.Types.Book {
         /// Обложка
         /// </summary>
         public Image Cover;
+
+        public string FullName => $"{Id}. {Author} - {Title}";
         
         /// <summary>
         /// Части

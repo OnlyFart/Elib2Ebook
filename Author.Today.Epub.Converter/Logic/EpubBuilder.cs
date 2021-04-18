@@ -38,7 +38,7 @@ namespace Author.Today.Epub.Converter.Logic {
 
         public EpubBuilder WithFiles(string path, string searchPattern, EpubContentType type) {
             foreach (var file in Directory.GetFiles(path, searchPattern)) {
-                Console.WriteLine($"Добавляем файл {file}");
+                Console.WriteLine($"Добавляем файл {file.CoverQuotes()}");
                 _writer.AddFile(Path.GetFileName(file), File.ReadAllBytes(file), EpubContentType.FontTruetype);
             }
 
@@ -51,7 +51,7 @@ namespace Author.Today.Epub.Converter.Logic {
                     _writer.AddFile(image.Path, image.Content, image.Format.ToEpubContentType());
                 }
 
-                Console.WriteLine($"Добавляем часть {chapter.Title}");
+                Console.WriteLine($"Добавляем часть {chapter.Title.CoverQuotes()}");
                 _writer.AddChapter(chapter.Title, chapter.Content);
             }
 
@@ -70,7 +70,7 @@ namespace Author.Today.Epub.Converter.Logic {
             }
             
             _writer.Write(fileName);
-            Console.WriteLine($"Книга {fileName} успешно сохранена");
+            Console.WriteLine($"Книга {fileName.CoverQuotes()} успешно сохранена");
         }
     }
 }
