@@ -15,8 +15,8 @@ namespace Author.Today.Epub.Converter.Extensions {
             HtmlNode.ElementsFlags.Remove("title");
 
             var doc = new HtmlDocument {
-             //   OptionFixNestedTags = true,
-               // OptionAutoCloseOnEnd = true,
+                OptionFixNestedTags = true,
+                OptionAutoCloseOnEnd = true,
                 OptionOutputAsXml = true,
             };
 
