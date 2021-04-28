@@ -32,7 +32,7 @@ namespace Author.Today.Epub.Converter.Logic {
         /// <param name="bookId">Идентификатор книги</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public async Task<BookMeta> Get(long bookId){
+        public async Task<Book> Get(long bookId){
             await Authorize();
             
             var bookUri = new Uri($"https://author.today/reader/{bookId}");
@@ -49,7 +49,7 @@ namespace Author.Today.Epub.Converter.Logic {
             var content = await response.Content.ReadAsStringAsync();
             var doc = content.AsHtmlDoc();
             
-            var book = new BookMeta(bookId) {
+            var book = new Book(bookId) {
                 Cover = await GetCover(doc, bookUri),
                 Chapters = GetChapters(content),
                 Title = HttpUtility.HtmlDecode(doc.GetTextByFilter("div", "book-title")),
@@ -127,7 +127,7 @@ namespace Author.Today.Epub.Converter.Logic {
         /// </summary>
         /// <param name="book">Книга</param>
         /// <param name="userId">Идентификатор пользователя</param>
-        private async Task<BookMeta> FillChapters(BookMeta book, string userId) {
+        private async Task<Book> FillChapters(Book book, string userId) {
             foreach (var chapter in book.Chapters) {
                 var chapterUri = new Uri($"https://author.today/reader/{book.Id}/chapter?id={chapter.Id}");
                 

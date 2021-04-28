@@ -26,12 +26,9 @@ namespace Author.Today.Epub.Converter {
 
                     var getterConfig = new BookGetterConfig(options, client, pattern);
                     using var getter = new BookGetter(getterConfig);
-                    
-                    var generatorConfig = new EpubGeneratorConfig(options.SavePath, "Patterns");
-                    var generator = new EpubGenerator(generatorConfig);
-                    
+
                     var book = await getter.Get(options.BookId);
-                    generator.Generate(book);
+                    book.Save(options.SavePath, "Patterns");
                 });
         }
     }
