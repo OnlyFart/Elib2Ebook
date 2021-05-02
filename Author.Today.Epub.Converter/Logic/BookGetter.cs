@@ -49,14 +49,12 @@ namespace Author.Today.Epub.Converter.Logic {
             var content = await response.Content.ReadAsStringAsync();
             var doc = content.AsHtmlDoc();
             
-            var book = new Book(bookId) {
+            return new Book(bookId) {
                 Cover = await GetCover(doc, bookUri),
-                Chapters = GetChapters(content),
+                Chapters = await FillChapters(content, bookId, GetUserId(content)),
                 Title = HttpUtility.HtmlDecode(doc.GetTextByFilter("div", "book-title")),
                 Author = HttpUtility.HtmlDecode(doc.GetTextByFilter("div", "book-author"))
             };
-
-            return await FillChapters(book, GetUserId(content));
         }
 
         /// <summary>
@@ -113,7 +111,7 @@ namespace Author.Today.Epub.Converter.Logic {
         /// </summary>
         /// <param name="content">Код страницы</param>
         /// <returns></returns>
-        private static IEnumerable<Chapter> GetChapters(string content) {
+        private static List<Chapter> GetChapters(string content) {
             const string START_PATTERN = "chapters:";
             var startIndex = content.IndexOf(START_PATTERN, StringComparison.Ordinal) + START_PATTERN.Length;
             var endIndex = content.IndexOf("}],", startIndex, StringComparison.Ordinal) + 2;
@@ -124,11 +122,14 @@ namespace Author.Today.Epub.Converter.Logic {
         /// <summary>
         /// Дозагрузка различных пареметров частей
         /// </summary>
-        /// <param name="book">Книга</param>
+        /// <param name="content">Контент книги</param>
+        /// <param name="bookId">Идентификатор книги</param>
         /// <param name="userId">Идентификатор пользователя</param>
-        private async Task<Book> FillChapters(Book book, string userId) {
-            foreach (var chapter in book.Chapters) {
-                var chapterUri = new Uri($"https://author.today/reader/{book.Id}/chapter?id={chapter.Id}");
+        private async Task<IEnumerable<Chapter>> FillChapters(string content, long bookId, string userId) {
+            var chapters = GetChapters(content);
+            
+            foreach (var chapter in chapters) {
+                var chapterUri = new Uri($"https://author.today/reader/{bookId}/chapter?id={chapter.Id}");
                 
                 Console.WriteLine($"Получаем главу {chapter.Title.CoverQuotes()}");
                 using var response = await _config.Client.GetAsync(chapterUri);
@@ -153,7 +154,7 @@ namespace Author.Today.Epub.Converter.Logic {
                 chapter.Content = doc.AsString();
             }
             
-            return book;
+            return chapters;
         }
 
         /// <summary>
