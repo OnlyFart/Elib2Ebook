@@ -1,6 +1,7 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Xml;
 using HtmlAgilityPack;
 
 namespace Author.Today.Epub.Converter.Extensions {
@@ -8,7 +9,8 @@ namespace Author.Today.Epub.Converter.Extensions {
         public static string AsString(this HtmlDocument self) {
             var sb = new StringBuilder(); 
             using var stringWriter = new StringWriter(sb);
-            self.Save(stringWriter);
+            using var xmlWriter = new XmlTextWriter(stringWriter);
+            self.Save(xmlWriter);
 
             return sb.ToString();
         }
