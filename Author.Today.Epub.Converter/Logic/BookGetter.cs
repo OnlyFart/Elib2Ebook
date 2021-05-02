@@ -151,7 +151,7 @@ namespace Author.Today.Epub.Converter.Logic {
                 // исправления урлов картинок для их отображения в epub документе
                 var doc = ApplyPattern(chapter.Title, decodeText).AsXHtmlDoc();
                 chapter.Images = await GetImages(doc, chapterUri);
-                chapter.Content = HttpUtility.HtmlDecode(doc.AsString());
+                chapter.Content = doc.AsString();
             }
             
             return book;
