@@ -11,29 +11,27 @@ namespace Author.Today.Epub.Converter.Types.Book {
         /// <summary>
         /// Идентификатор книги
         /// </summary>
-        public long Id;
+        public readonly long Id;
         
         /// <summary>
         /// Название книги
         /// </summary>
-        public string Title { get; set; }
+        public string Title { get; init; }
         
         /// <summary>
         /// Автор книги
         /// </summary>
-        public string Author { get; set; }
+        public string Author { get; init; }
         
         /// <summary>
         /// Обложка
         /// </summary>
-        public Image Cover;
+        public Image Cover { get; init; }
 
-        public string FullName => $"{Id}. {Author} - {Title}";
-        
         /// <summary>
         /// Части
         /// </summary>
-        public IEnumerable<Chapter> Chapters { get; set; }
+        public IEnumerable<Chapter> Chapters { get; init; }
 
         /// <summary>
         /// Сохранение книги
@@ -48,7 +46,7 @@ namespace Author.Today.Epub.Converter.Types.Book {
                 .WithFiles(resourcesPath, "*.ttf", EpubContentType.FontTruetype)
                 .WithFiles(resourcesPath, "*.css", EpubContentType.Css)
                 .WithChapters(Chapters)
-                .Build(savePath, FullName);
+                .Build(savePath, $"{Id}. {Author} - {Title}");
         }
     }
 }

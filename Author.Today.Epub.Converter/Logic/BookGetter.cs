@@ -83,7 +83,7 @@ namespace Author.Today.Epub.Converter.Logic {
             var token = doc.GetAttributeByNameAttribute("__RequestVerificationToken", "value");
 
             using var post = await _config.Client.PostAsync("https://author.today/account/login", _config.GenerateAuthData(token));
-            var response = await post.Content.ReadFromJsonAsync<ApiResponse<LoginData>>();
+            var response = await post.Content.ReadFromJsonAsync<ApiResponse<object>>();
             
             if (response?.IsSuccessful == true) {
                 Console.WriteLine("Успешно авторизовались");

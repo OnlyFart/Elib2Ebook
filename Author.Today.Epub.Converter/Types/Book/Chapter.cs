@@ -19,15 +19,15 @@ namespace Author.Today.Epub.Converter.Types.Book {
         /// Контент части
         /// </summary>
         public string Content { get; set; }
+        
+        /// <summary>
+        /// Изображения из части
+        /// </summary>
+        public IEnumerable<Image> Images { get; set; }
 
         /// <summary>
         /// Валидна ли частьЫ
         /// </summary>
         public bool IsValid => !string.IsNullOrWhiteSpace(Content);
-
-        /// <summary>
-        /// Изображения из части
-        /// </summary>
-        public IEnumerable<Image> Images { get; set; }
     }
 }
