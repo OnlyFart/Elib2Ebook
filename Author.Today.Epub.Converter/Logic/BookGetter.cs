@@ -117,7 +117,6 @@ namespace Author.Today.Epub.Converter.Logic {
             const string START_PATTERN = "chapters:";
             var startIndex = content.IndexOf(START_PATTERN, StringComparison.Ordinal) + START_PATTERN.Length;
             var endIndex = content.IndexOf("}],", startIndex, StringComparison.Ordinal) + 2;
-            
             var metaContent = content[startIndex..endIndex].Trim().TrimEnd(';', ')');
             return JsonSerializer.Deserialize<List<Chapter>>(metaContent);
         }
@@ -174,14 +173,18 @@ namespace Author.Today.Epub.Converter.Logic {
                     continue;
                 }
 
-                if (Uri.TryCreate(baseUri, path, out var uri)) {
-                    var image = await GetImage(uri);
-                    if (image != null) {
-                        // Костыль. Исправление урла картинки, что она отображась в книге
-                        img.Attributes["src"].Value = uri.GetFileName();
-                        images.Add(image);
-                    }
+                if (!Uri.TryCreate(baseUri, path, out var uri)) {
+                    continue;
                 }
+                
+                var image = await GetImage(uri);
+                if (image == null) {
+                    continue;
+                }
+                
+                // Костыль. Исправление урла картинки, что она отображась в книге
+                img.Attributes["src"].Value = uri.GetFileName();
+                images.Add(image);
             }
 
             return images;
@@ -205,10 +208,12 @@ namespace Author.Today.Epub.Converter.Logic {
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
         private static string GetSecret(HttpResponseMessage response, string userId) {
-            if (response.Headers.Contains("Reader-Secret")) {
-                foreach (var header in response.Headers.GetValues("Reader-Secret")) {
-                    return string.Join("", header.Reverse()) + "@_@" + userId;
-                }
+            if (!response.Headers.Contains("Reader-Secret")) {
+                return string.Empty;
+            }
+            
+            foreach (var header in response.Headers.GetValues("Reader-Secret")) {
+                return string.Join("", header.Reverse()) + "@_@" + userId;
             }
 
             return string.Empty;
