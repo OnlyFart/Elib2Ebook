@@ -39,7 +39,7 @@ namespace Author.Today.Epub.Converter.Logic {
         public EpubBuilder WithFiles(string path, string searchPattern, EpubContentType type) {
             foreach (var file in Directory.GetFiles(path, searchPattern)) {
                 Console.WriteLine($"Добавляем файл {file.CoverQuotes()}");
-                _writer.AddFile(Path.GetFileName(file), File.ReadAllBytes(file), EpubContentType.FontTruetype);
+                _writer.AddFile(Path.GetFileName(file), File.ReadAllBytes(file), type);
             }
 
             return this;
