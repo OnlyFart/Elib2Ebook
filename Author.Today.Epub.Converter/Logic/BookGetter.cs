@@ -241,7 +241,7 @@ namespace Author.Today.Epub.Converter.Logic {
                 sb.Append((char) (encodedText[i] ^ secret[i % secret.Length]));
             }
 
-            return sb.ToString();
+            return  HttpUtility.HtmlDecode(sb.ToString());
         }
 
         /// <summary>
