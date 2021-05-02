@@ -7,12 +7,11 @@ using HtmlAgilityPack;
 namespace Author.Today.Epub.Converter.Extensions {
     public static class HtmlDocumentExtensions {
         public static string AsString(this HtmlDocument self) {
-            var sb = new StringBuilder(); 
-            using var stringWriter = new StringWriter(sb);
-            using var xmlWriter = new XmlTextWriter(stringWriter);
-            self.Save(xmlWriter);
+            using var sw = new StringWriter();
+            using var xw = new XmlTextWriter(sw);
+            self.Save(xw);
 
-            return sb.ToString();
+            return sw.ToString();
         }
 
         public static HtmlNode GetByFilter(this HtmlDocument doc, string name, string @class){
