@@ -10,25 +10,45 @@ using EpubSharp.Format;
 namespace Author.Today.Epub.Converter.Logic {
     public class EpubBuilder {
         private readonly EpubWriter _writer;
-        private EpubBuilder(){
+
+        private EpubBuilder() {
             _writer = new EpubWriter();
         }
 
-        public static EpubBuilder Create(){
+        /// <summary>
+        /// Создание нового объекта Builder'a
+        /// </summary>
+        /// <returns></returns>
+        public static EpubBuilder Create() {
             return new();
         }
 
-        public EpubBuilder AddAuthor(string author){
+        /// <summary>
+        /// Добавление автора книги
+        /// </summary>
+        /// <param name="author">Автор</param>
+        /// <returns></returns>
+        public EpubBuilder AddAuthor(string author) {
             _writer.AddAuthor(author);
             return this;
         }
 
-        public EpubBuilder WithTitle(string title){
+        /// <summary>
+        /// Указание названия книги
+        /// </summary>
+        /// <param name="title">Название книги</param>
+        /// <returns></returns>
+        public EpubBuilder WithTitle(string title) {
             _writer.SetTitle(title);
             return this;
         }
 
-        public EpubBuilder WithCover(Image cover){
+        /// <summary>
+        /// Добавление обложки книги
+        /// </summary>
+        /// <param name="cover">Обложка</param>
+        /// <returns></returns>
+        public EpubBuilder WithCover(Image cover) {
             if (cover != null) {
                 _writer.SetCover(cover.Content, cover.Format);
             }
@@ -36,8 +56,15 @@ namespace Author.Today.Epub.Converter.Logic {
             return this;
         }
 
-        public EpubBuilder WithFiles(string path, string searchPattern, EpubContentType type) {
-            foreach (var file in Directory.GetFiles(path, searchPattern)) {
+        /// <summary>
+        /// Добавление внешних файлов
+        /// </summary>
+        /// <param name="directory">Путь к директории с файлами</param>
+        /// <param name="searchPattern">Шаблон поиска файлов</param>
+        /// <param name="type">Тип файла</param>
+        /// <returns></returns>
+        public EpubBuilder WithFiles(string directory, string searchPattern, EpubContentType type) {
+            foreach (var file in Directory.GetFiles(directory, searchPattern)) {
                 Console.WriteLine($"Добавляем файл {file.CoverQuotes()}");
                 _writer.AddFile(Path.GetFileName(file), File.ReadAllBytes(file), type);
             }
@@ -45,7 +72,12 @@ namespace Author.Today.Epub.Converter.Logic {
             return this;
         }
 
-        public EpubBuilder WithChapters(IEnumerable<Chapter> chapters){
+        /// <summary>
+        /// Добавление списка частей книги
+        /// </summary>
+        /// <param name="chapters">Список частей</param>
+        /// <returns></returns>
+        public EpubBuilder WithChapters(IEnumerable<Chapter> chapters) {
             foreach (var chapter in chapters.Where(c => c.IsValid)) {
                 foreach (var image in chapter.Images) {
                     _writer.AddFile(image.Path, image.Content, image.Format.ToEpubContentType());
@@ -58,17 +90,22 @@ namespace Author.Today.Epub.Converter.Logic {
             return this;
         }
 
-        public void Build(string path, string name){
+        /// <summary>
+        ///  Создание epub файла
+        /// </summary>
+        /// <param name="directory">Директоия для сохранения</param>
+        /// <param name="name">Имя файла</param>
+        public void Build(string directory, string name) {
             var fileName = $"{name}.epub".RemoveInvalidChars();
 
-            if (!string.IsNullOrWhiteSpace(path)) {
-                if (!Directory.Exists(path)) {
-                    Directory.CreateDirectory(path);
+            if (!string.IsNullOrWhiteSpace(directory)) {
+                if (!Directory.Exists(directory)) {
+                    Directory.CreateDirectory(directory);
                 }
-                
-                fileName = Path.Combine(path, fileName);
+
+                fileName = Path.Combine(directory, fileName);
             }
-            
+
             _writer.Write(fileName);
             Console.WriteLine($"Книга {fileName.CoverQuotes()} успешно сохранена");
         }
