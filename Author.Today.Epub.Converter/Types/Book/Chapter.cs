@@ -26,7 +26,7 @@ namespace Author.Today.Epub.Converter.Types.Book {
         public IEnumerable<Image> Images { get; set; }
 
         /// <summary>
-        /// Валидна ли частьЫ
+        /// Валидна ли часть
         /// </summary>
         public bool IsValid => !string.IsNullOrWhiteSpace(Content);
     }
