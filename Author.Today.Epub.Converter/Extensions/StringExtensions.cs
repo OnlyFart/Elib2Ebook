@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using System.Text;
 using HtmlAgilityPack;
 
@@ -41,7 +42,7 @@ namespace Author.Today.Epub.Converter.Extensions {
         /// <returns></returns>
         public static string RemoveInvalidChars(this string self) {
             var sb = new StringBuilder(self);
-            foreach (var invalidFileNameChar in Path.GetInvalidFileNameChars()) {
+            foreach (var invalidFileNameChar in Path.GetInvalidFileNameChars().Union(new[]{'"'})) {
                 sb.Replace(invalidFileNameChar, ' ');
             }
 

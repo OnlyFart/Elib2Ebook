@@ -37,7 +37,7 @@ namespace Author.Today.Epub.Converter.Logic {
             
             var bookUri = new Uri($"https://author.today/reader/{bookId}");
             Console.WriteLine($"Загружаем книгу {bookUri.ToString().CoverQuotes()}");
-            using var response = await _config.Client.GetAsync(bookUri);
+            using var response = await _config.Client.GetStringWithTriesAsync(bookUri);
 
             switch (response.StatusCode) {
                 case HttpStatusCode.NotFound:
@@ -75,7 +75,7 @@ namespace Author.Today.Epub.Converter.Logic {
             if (!_config.HasCredentials) {
                 return;
             }
-
+            
             var doc = await _config.Client
                 .GetStringAsync("https://author.today/")
                 .ContinueWith(t => t.Result.AsHtmlDoc());
@@ -98,12 +98,12 @@ namespace Author.Today.Epub.Converter.Logic {
         /// <param name="doc">HtmlDocument</param>
         /// <param name="bookUri">Адрес страницы с книгой</param>
         /// <returns></returns>
-        private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
+        private async Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
             var imagePath = doc.DocumentNode.Descendants()
                 .FirstOrDefault(t => t.Name == "img" && t.Attributes["class"]?.Value == "cover-image")
                 ?.Attributes["src"]?.Value;
 
-            return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : null;
+            return !string.IsNullOrWhiteSpace(imagePath) ? await GetImage(new Uri(bookUri, imagePath)) : null;
         }
 
         /// <summary>
@@ -132,9 +132,9 @@ namespace Author.Today.Epub.Converter.Logic {
                 var chapterUri = new Uri($"https://author.today/reader/{bookId}/chapter?id={chapter.Id}");
                 
                 Console.WriteLine($"Получаем главу {chapter.Title.CoverQuotes()}");
-                using var response = await _config.Client.GetAsync(chapterUri);
+                using var response = await _config.Client.GetStringWithTriesAsync(chapterUri);
 
-                if (response.StatusCode != HttpStatusCode.OK) {
+                if (response is not { StatusCode: HttpStatusCode.OK }) {
                     throw new Exception($"Не удалось получить главу {chapter.Title.CoverQuotes()}");
                 }
 
@@ -258,8 +258,8 @@ namespace Author.Today.Epub.Converter.Logic {
         private async Task<Image> GetImage(Uri uri) {
             Console.WriteLine($"Загружаем картинку {uri.ToString().CoverQuotes()}");
             try {
-                using var response = await _config.Client.GetAsync(uri);
-                return response.StatusCode == HttpStatusCode.OK ? 
+                using var response = await _config.Client.GetStringWithTriesAsync(uri);
+                return response is { StatusCode: HttpStatusCode.OK } ? 
                     new Image(uri.GetFileName(), await response.Content.ReadAsByteArrayAsync()) : 
                     null;
             } catch (Exception) {
