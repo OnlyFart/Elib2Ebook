@@ -98,12 +98,12 @@ namespace Author.Today.Epub.Converter.Logic {
         /// <param name="doc">HtmlDocument</param>
         /// <param name="bookUri">Адрес страницы с книгой</param>
         /// <returns></returns>
-        private async Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
+        private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
             var imagePath = doc.DocumentNode.Descendants()
                 .FirstOrDefault(t => t.Name == "img" && t.Attributes["class"]?.Value == "cover-image")
                 ?.Attributes["src"]?.Value;
 
-            return !string.IsNullOrWhiteSpace(imagePath) ? await GetImage(new Uri(bookUri, imagePath)) : null;
+            return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult((Image)null);
         }
 
         /// <summary>
