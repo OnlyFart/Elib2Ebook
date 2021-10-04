@@ -21,5 +21,17 @@ namespace Author.Today.Epub.Converter.Types.Book {
 
             return path.EndsWith(".svg", StringComparison.InvariantCultureIgnoreCase) ? ImageFormat.Svg : ImageFormat.Jpeg;
         }
+
+        public string Extension {
+            get {
+                return GetImageFormat(Path) switch {
+                    ImageFormat.Gif => "jpg",
+                    ImageFormat.Png => "png",
+                    ImageFormat.Jpeg => "jpg",
+                    ImageFormat.Svg => "jpg",
+                    _ => "jpg"
+                };
+            }
+        }
     }
 }

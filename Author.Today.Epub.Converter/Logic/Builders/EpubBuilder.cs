@@ -7,20 +7,32 @@ using Author.Today.Epub.Converter.Types.Book;
 using EpubSharp;
 using EpubSharp.Format;
 
-namespace Author.Today.Epub.Converter.Logic {
-    public class EpubBuilder {
+namespace Author.Today.Epub.Converter.Logic.Builders {
+    public class EpubBuilder : BuilderBase {
         private readonly EpubWriter _writer;
+        private readonly string _pattern;
 
-        private EpubBuilder() {
+        private EpubBuilder(string pattern) {
             _writer = new EpubWriter();
+            _pattern = pattern;
         }
 
         /// <summary>
         /// Создание нового объекта Builder'a
         /// </summary>
         /// <returns></returns>
-        public static EpubBuilder Create() {
-            return new();
+        public static EpubBuilder Create(string pattern) {
+            return new(pattern);
+        }
+
+        /// <summary>
+        /// Создание Xhtml документа из кода части
+        /// </summary>
+        /// <param name="title">Заголовок части</param>
+        /// <param name="decodeText">Раскодированный текст</param>
+        /// <returns></returns>
+        private string ApplyPattern(string title, string decodeText) {
+            return _pattern.Replace("{title}", title).Replace("{body}", decodeText).AsXHtmlDoc().AsString();
         }
 
         /// <summary>
@@ -28,7 +40,7 @@ namespace Author.Today.Epub.Converter.Logic {
         /// </summary>
         /// <param name="author">Автор</param>
         /// <returns></returns>
-        public EpubBuilder AddAuthor(string author) {
+        public override BuilderBase AddAuthor(string author) {
             _writer.AddAuthor(author);
             return this;
         }
@@ -38,7 +50,7 @@ namespace Author.Today.Epub.Converter.Logic {
         /// </summary>
         /// <param name="title">Название книги</param>
         /// <returns></returns>
-        public EpubBuilder WithTitle(string title) {
+        public override BuilderBase WithTitle(string title) {
             _writer.SetTitle(title);
             return this;
         }
@@ -48,7 +60,7 @@ namespace Author.Today.Epub.Converter.Logic {
         /// </summary>
         /// <param name="cover">Обложка</param>
         /// <returns></returns>
-        public EpubBuilder WithCover(Image cover) {
+        public override BuilderBase WithCover(Image cover) {
             if (cover != null) {
                 _writer.SetCover(cover.Content, cover.Format);
             }
@@ -63,7 +75,7 @@ namespace Author.Today.Epub.Converter.Logic {
         /// <param name="searchPattern">Шаблон поиска файлов</param>
         /// <param name="type">Тип файла</param>
         /// <returns></returns>
-        public EpubBuilder WithFiles(string directory, string searchPattern, EpubContentType type) {
+        public override BuilderBase WithFiles(string directory, string searchPattern, EpubContentType type) {
             foreach (var file in Directory.GetFiles(directory, searchPattern)) {
                 Console.WriteLine($"Добавляем файл {file.CoverQuotes()}");
                 _writer.AddFile(Path.GetFileName(file), File.ReadAllBytes(file), type);
@@ -77,37 +89,25 @@ namespace Author.Today.Epub.Converter.Logic {
         /// </summary>
         /// <param name="chapters">Список частей</param>
         /// <returns></returns>
-        public EpubBuilder WithChapters(IEnumerable<Chapter> chapters) {
+        public override BuilderBase WithChapters(IEnumerable<Chapter> chapters) {
             foreach (var chapter in chapters.Where(c => c.IsValid)) {
                 foreach (var image in chapter.Images) {
                     _writer.AddFile(image.Path, image.Content, image.Format.ToEpubContentType());
                 }
 
                 Console.WriteLine($"Добавляем часть {chapter.Title.CoverQuotes()}");
-                _writer.AddChapter(chapter.Title, chapter.Content);
+                _writer.AddChapter(chapter.Title, ApplyPattern(chapter.Title, chapter.Content));
             }
 
             return this;
         }
 
-        /// <summary>
-        ///  Создание epub файла
-        /// </summary>
-        /// <param name="directory">Директоия для сохранения</param>
-        /// <param name="name">Имя файла</param>
-        public void Build(string directory, string name) {
-            var fileName = $"{name}.epub".RemoveInvalidChars();
+        protected override void BuildInternal(string name) {
+            _writer.Write(name);
+        }
 
-            if (!string.IsNullOrWhiteSpace(directory)) {
-                if (!Directory.Exists(directory)) {
-                    Directory.CreateDirectory(directory);
-                }
-
-                fileName = Path.Combine(directory, fileName);
-            }
-
-            _writer.Write(fileName);
-            Console.WriteLine($"Книга {fileName.CoverQuotes()} успешно сохранена");
+        protected override string GetFileName(string name) {
+            return $"{name}.epub".RemoveInvalidChars();
         }
     }
 }

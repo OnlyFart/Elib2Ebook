@@ -12,27 +12,28 @@ using System.Web;
 using Author.Today.Epub.Converter.Configs;
 using Author.Today.Epub.Converter.Exceptions;
 using Author.Today.Epub.Converter.Extensions;
+using Author.Today.Epub.Converter.Types.AuthorToday.Response;
 using Author.Today.Epub.Converter.Types.Book;
-using Author.Today.Epub.Converter.Types.Response;
 using HtmlAgilityPack;
 
-namespace Author.Today.Epub.Converter.Logic {
-    public class BookGetter : IDisposable {
+namespace Author.Today.Epub.Converter.Logic.BookGetters {
+    public class AuthorTodayGetter : GetterBase {
         private readonly Regex _userIdRgx = new("userId: (?<userId>\\d+),");
-        
-        private readonly BookGetterConfig _config;
 
-        public BookGetter(BookGetterConfig config) {
-            _config = config;
+        public AuthorTodayGetter(BookGetterConfig config) : base(config) {
+
         }
+
+        public override Uri SystemUrl => new("https://author.today");
 
         /// <summary>
         /// Получение книги
         /// </summary>
-        /// <param name="bookId">Идентификатор книги</param>
+        /// <param name="url">Ссылка на книгу</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public async Task<Book> Get(long bookId){
+        public override async Task<Book> Get(Uri url) {
+            var bookId = GetId(url);
             await Authorize();
             
             var bookUri = new Uri($"https://author.today/reader/{bookId}");
@@ -51,7 +52,7 @@ namespace Author.Today.Epub.Converter.Logic {
             
             return new Book(bookId) {
                 Cover = await GetCover(doc, bookUri),
-                Chapters = await FillChapters(content, bookId, GetUserId(content)),
+                Chapters = await FillChapters(content, long.Parse(bookId), GetUserId(content)),
                 Title = HttpUtility.HtmlDecode(doc.GetTextByFilter("div", "book-title")),
                 Author = HttpUtility.HtmlDecode(doc.GetTextByFilter("div", "book-author"))
             };
@@ -65,6 +66,14 @@ namespace Author.Today.Epub.Converter.Logic {
         private string GetUserId(string content) {
             var match = _userIdRgx.Match(content);
             return match.Success ? match.Groups["userId"].Value : string.Empty;
+        }
+        
+        public MultipartFormDataContent GenerateAuthData(string token) {
+            return new() {
+                {new StringContent(token), "__RequestVerificationToken"},
+                {new StringContent(_config.Login), "Login"},
+                {new StringContent(_config.Password), "Password"}
+            };
         }
 
         /// <summary>
@@ -82,7 +91,7 @@ namespace Author.Today.Epub.Converter.Logic {
 
             var token = doc.GetAttributeByNameAttribute("__RequestVerificationToken", "value");
 
-            using var post = await _config.Client.PostAsync("https://author.today/account/login", _config.GenerateAuthData(token));
+            using var post = await _config.Client.PostAsync("https://author.today/account/login", GenerateAuthData(token));
             var response = await post.Content.ReadFromJsonAsync<ApiResponse<object>>();
             
             if (response?.IsSuccessful == true) {
@@ -103,7 +112,7 @@ namespace Author.Today.Epub.Converter.Logic {
                 .FirstOrDefault(t => t.Name == "img" && t.Attributes["class"]?.Value == "cover-image")
                 ?.Attributes["src"]?.Value;
 
-            return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult((Image)null);
+            return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
         }
 
         /// <summary>
@@ -149,56 +158,12 @@ namespace Author.Today.Epub.Converter.Logic {
                 
                 // Порядок вызова функций важен. В методе GetImages происходит
                 // исправления урлов картинок для их отображения в epub документе
-                var doc = ApplyPattern(chapter.Title, decodeText).AsXHtmlDoc();
+                var doc = decodeText.AsHtmlDoc();
                 chapter.Images = await GetImages(doc, chapterUri);
-                chapter.Content = doc.AsString();
+                chapter.Content = doc.DocumentNode.InnerHtml;
             }
             
             return chapters;
-        }
-
-        /// <summary>
-        /// Загрузка изображений отдельной части
-        /// </summary>
-        /// <param name="doc"></param>
-        /// <param name="baseUri"></param>
-        private async Task<IEnumerable<Image>> GetImages(HtmlDocument doc, Uri baseUri) {
-            var imgUrls = doc.DocumentNode
-                .Descendants()
-                .Where(t => t.Name == "img");
-
-            var images = new List<Image>();
-            foreach (var img in imgUrls) {
-                var path = img.Attributes["src"]?.Value;
-                if (string.IsNullOrWhiteSpace(path)) {
-                    continue;
-                }
-
-                if (!Uri.TryCreate(baseUri, path, out var uri)) {
-                    continue;
-                }
-                
-                var image = await GetImage(uri);
-                if (image == null) {
-                    continue;
-                }
-                
-                // Костыль. Исправление урла картинки, что она отображась в книге
-                img.Attributes["src"].Value = uri.GetFileName();
-                images.Add(image);
-            }
-
-            return images;
-        }
-
-        /// <summary>
-        /// Создание Xhtml документа из кода части
-        /// </summary>
-        /// <param name="title">Заголовок части</param>
-        /// <param name="decodeText">Раскодированный текст</param>
-        /// <returns></returns>
-        private string ApplyPattern(string title, string decodeText) {
-            return _config.Pattern.Replace("{title}", title).Replace("{body}", decodeText);
         }
 
         /// <summary>
@@ -248,27 +213,6 @@ namespace Author.Today.Epub.Converter.Logic {
             }
 
             return HttpUtility.HtmlDecode(sb.ToString());
-        }
-
-        /// <summary>
-        /// Получение изображения
-        /// </summary>
-        /// <param name="uri"></param>
-        /// <returns></returns>
-        private async Task<Image> GetImage(Uri uri) {
-            Console.WriteLine($"Загружаем картинку {uri.ToString().CoverQuotes()}");
-            try {
-                using var response = await _config.Client.GetStringWithTriesAsync(uri);
-                return response is { StatusCode: HttpStatusCode.OK } ? 
-                    new Image(uri.GetFileName(), await response.Content.ReadAsByteArrayAsync()) : 
-                    null;
-            } catch (Exception) {
-                return null;
-            }
-        }
-
-        public void Dispose() {
-            _config.Client?.Dispose();
         }
     }
 }

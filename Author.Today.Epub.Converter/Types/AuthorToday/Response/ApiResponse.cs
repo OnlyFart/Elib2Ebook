@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Author.Today.Epub.Converter.Types.Response {
+namespace Author.Today.Epub.Converter.Types.AuthorToday.Response {
     public class ApiResponse<T> {
         /// <summary>
         /// Успешно ли выполнился запрос

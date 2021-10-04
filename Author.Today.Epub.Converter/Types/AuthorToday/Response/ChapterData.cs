@@ -1,4 +1,4 @@
-namespace Author.Today.Epub.Converter.Types.Response {
+namespace Author.Today.Epub.Converter.Types.AuthorToday.Response {
     public class ChapterData {
         /// <summary>
         /// Контент главы

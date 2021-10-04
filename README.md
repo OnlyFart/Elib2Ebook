@@ -1,11 +1,11 @@
 # Author.Today.Epub.Converter
-Инструмент для сохранения любой доступной книги с сайта https://author.today/ в формате epub
+Инструмент для сохранения любой доступной книги с сайтов https://author.today/ или https://litnet.com/ в формате epub или fb2~~~~
 
 * [.net 5](https://dotnet.microsoft.com/download/dotnet/5.0) 
 
 ## Пример вызова сервиса
 ```
-Author.Today.Epub.Converter.exe --id 123498
+Author.Today.Epub.Converter.exe --url https://litnet.com/ru/book/kniga-7-vladyka-magii-b364041 --format epub
 ```
 
 ## Где 

@@ -1,17 +1,17 @@
 using System.Collections.Generic;
-using Author.Today.Epub.Converter.Logic;
+using Author.Today.Epub.Converter.Logic.Builders;
 using EpubSharp.Format;
 
 namespace Author.Today.Epub.Converter.Types.Book {
     public class Book {
-        public Book(long id) {
+        public Book(string id) {
             Id = id;
         }
         
         /// <summary>
         /// Идентификатор книги
         /// </summary>
-        public readonly long Id;
+        public readonly string Id;
         
         /// <summary>
         /// Название книги
@@ -38,9 +38,8 @@ namespace Author.Today.Epub.Converter.Types.Book {
         /// </summary>
         /// <param name="savePath">Путь для сохранения</param>
         /// <param name="resourcesPath">Путь к папке с ресурсами</param>
-        public void Save(string savePath, string resourcesPath) {
-            EpubBuilder.Create()
-                .AddAuthor(Author)
+        public void Save(BuilderBase builder, string savePath, string resourcesPath) {
+            builder.AddAuthor(Author)
                 .WithTitle(Title)
                 .WithCover(Cover)
                 .WithFiles(resourcesPath, "*.ttf", EpubContentType.FontTruetype)
