@@ -1,5 +1,8 @@
 # Author.Today.Epub.Converter
-Инструмент для сохранения любой доступной книги с сайтов https://author.today/ или https://litnet.com/ в формате epub или fb2~~~~
+Инструмент для сохранения любой доступной книги с со следующих сайтов в форматах epub или fb2:
+* https://author.today/
+* https://litnet.com/
+* https://litmarket.ru/
 
 * [.net 5](https://dotnet.microsoft.com/download/dotnet/5.0) 
 
@@ -10,7 +13,8 @@ Author.Today.Epub.Converter.exe --url https://litnet.com/ru/book/kniga-7-vladyka
 
 ## Где 
 ```
---id - идентификатор книги на сайта https://author.today/
+--url - ссылка на книгу https://author.today/
+--format - формат для сохранения
 ```
 
 ## Полный список опций 

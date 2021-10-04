@@ -17,7 +17,7 @@ namespace Author.Today.Epub.Converter.Extensions {
                     }
 
                     return response;
-                } catch (Exception) {
+                } catch (Exception ex) {
                     await Task.Delay(i * 3000);
                 }
             }
