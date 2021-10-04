@@ -3,6 +3,7 @@
 * https://author.today/
 * https://litnet.com/
 * https://litmarket.ru/
+* https://readli.net/
 
 ## Пример вызова сервиса
 ```

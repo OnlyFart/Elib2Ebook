@@ -42,7 +42,7 @@ namespace Author.Today.Epub.Converter {
         }
         
         private static GetterBase GetGetter(BookGetterConfig config, Uri url) {
-            var getters = new GetterBase[] { new LitnetGetter(config), new AuthorTodayGetter(config), new LitmarketGetter(config) };
+            var getters = new GetterBase[] { new LitnetGetter(config), new AuthorTodayGetter(config), new LitmarketGetter(config), new ReadliGetter(config) };
 
             foreach (var getter in getters) {
                 if (getter.IsSameUrl(url)) {
