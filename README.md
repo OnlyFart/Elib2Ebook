@@ -2,7 +2,6 @@
 Инструмент для сохранения любой доступной книги с со следующих сайтов в форматах epub или fb2:
 * https://author.today/
 * https://litnet.com/
-* https://litmarket.ru/ 
 * https://litmarket.ru/
 
 ## Пример вызова сервиса
