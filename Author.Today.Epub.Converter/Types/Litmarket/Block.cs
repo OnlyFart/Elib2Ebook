@@ -7,5 +7,8 @@ namespace Author.Today.Epub.Converter.Types.Litmarket {
 
         [JsonPropertyName("chunk")] 
         public Chunk Chunk { get; set; }
+        
+        [JsonPropertyName("index")] 
+        public int Index { get; set; }
     }
 }

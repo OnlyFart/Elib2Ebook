@@ -28,7 +28,7 @@ namespace Author.Today.Epub.Converter.Logic.BookGetters {
 
             var book = new Book(bookId) {
                 Cover = await GetCover(doc, url),
-                Chapters = await FillChapters(toc, blocks, url),
+                Chapters = await FillChapters(toc, blocks, url, content.Book.EbookId),
                 Title = Normalize(doc.GetTextByFilter("h1", "card-title")),
                 Author = Normalize(doc.GetTextByFilter("div", "card-author").Replace("Автор:", "")),
             };
@@ -50,34 +50,36 @@ namespace Author.Today.Epub.Converter.Logic.BookGetters {
             return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
         }
 
-        private async Task<List<Chapter>> FillChapters(Block[] toc, Block[] blocks, Uri bookUri) {
+        private async Task<List<Chapter>> FillChapters(Block[] toc, Block[] blocks, Uri bookUri, long eBookId) {
             var result = new List<Chapter>();
-            
-            foreach (var t in toc) {
-                var nextChapter = 0;
+
+            for (var i = 0; i < toc.Length; i++) {
+                Console.WriteLine($"Загружаем главу \"{toc[i].Chunk.Mods[0].Text.Trim()}\"");
                 var text = new StringBuilder();
                 var chapter = new Chapter();
-                
-                foreach (var block in blocks.SkipWhile(b => b.Chunk.Key != t.Chunk.Key)) {
-                    if (block.Chunk.Type == "chapter") {
-                        nextChapter++;
-                    }
 
-                    if (nextChapter > 1) {
-                        break;
-                    }
-
+                foreach (var block in blocks.Where(b => b.Index >= toc[i].Index && (i == toc.Length -1 || b.Index < toc[i + 1].Index))) {
+                    var p = new StringBuilder();
+                    
                     foreach (var mod in block.Chunk.Mods) {
-                        text.AppendLine($"<p>{(mod.Text ?? string.Empty).Trim()}</p>");
+                        if (mod.Type == "IMAGE" && mod.Data != null) {
+                            p.Append($"<img src='https://litmarket.ru/uploads/ebook/{eBookId}/{mod.Data.Src}' />");
+                        } else if (mod.Type == "LINK" && mod.Data != null) {
+                            p.Append($"<a href='{mod.Data.Url}'>{mod.Mods?.FirstOrDefault()?.Text ?? string.Empty}</a>");
+                        } else {
+                            p.Append($"{(mod.Text ?? string.Empty).Trim()} ");
+                        }
                     }
+
+                    text.Append("<p>" + p + "</p>");
                 }
-                
+
                 var chapterDoc = HttpUtility.HtmlDecode(text.ToString()).AsHtmlDoc();
                 chapter.Images = await GetImages(chapterDoc, bookUri);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
-                chapter.Title = t.Chunk.Mods[0].Text.Trim();
+                chapter.Title = toc[i].Chunk.Mods[0].Text.Trim();
 
-                result.Add(chapter); 
+                result.Add(chapter);
             }
 
             return result;
@@ -113,6 +115,7 @@ namespace Author.Today.Epub.Converter.Logic.BookGetters {
 
         private async Task<Block[]> GetBlocks(int eBookId) {
             var resp = await _config.Client.GetStringWithTriesAsync(new Uri($"https://litmarket.ru/reader/blocks/{eBookId}"));
+            var text = await resp.Content.ReadAsStringAsync();
             return await resp.Content.ReadFromJsonAsync<Block[]>();
         }
     }

@@ -7,5 +7,11 @@ namespace Author.Today.Epub.Converter.Types.Litmarket {
 
         [JsonPropertyName("text")] 
         public string Text { get; set; }
+        
+        [JsonPropertyName("data")]
+        public ModData Data { get; set; }
+        
+        [JsonPropertyName("mods")]
+        public Mod[] Mods { get; set; }
     }
 }
