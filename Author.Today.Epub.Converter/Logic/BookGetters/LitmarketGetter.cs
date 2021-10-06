@@ -62,10 +62,10 @@ namespace Author.Today.Epub.Converter.Logic.BookGetters {
                     var p = new StringBuilder();
                     
                     foreach (var mod in block.Chunk.Mods) {
-                        if (mod.Type == "IMAGE" && mod.Data != null) {
-                            p.Append($"<img src='https://litmarket.ru/uploads/ebook/{eBookId}/{mod.Data.Src}' />");
-                        } else if (mod.Type == "LINK" && mod.Data != null) {
-                            p.Append($"<a href='{mod.Data.Url}'>{mod.Mods?.FirstOrDefault()?.Text ?? string.Empty}</a>");
+                        if (mod.Type == "IMAGE") {
+                            p.Append($"<img src='https://litmarket.ru/uploads/ebook/{eBookId}/{mod.Data.GetProperty("src").GetString()}' />");
+                        } else if (mod.Type == "LINK") {
+                            p.Append($"<a href='{mod.Data.GetProperty("url").GetString()}'>{mod.Mods?.FirstOrDefault()?.Text ?? string.Empty}</a>");
                         } else {
                             p.Append($"{(mod.Text ?? string.Empty).Trim()} ");
                         }
@@ -97,7 +97,7 @@ namespace Author.Today.Epub.Converter.Logic.BookGetters {
             var cookies = response.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value;
             var xsrfCookie = cookies.FirstOrDefault(c => c.StartsWith("XSRF-TOKEN="));
             if (xsrfCookie == null) {
-                throw new ArgumentException("Не удалость получить XSRF-TOKEN", nameof(xsrfCookie));
+                throw new ArgumentException("Не удалось получить XSRF-TOKEN", nameof(xsrfCookie));
             }
             
             var xsrf = HttpUtility.UrlDecode(xsrfCookie.Split(";")[0].Replace("XSRF-TOKEN=", ""));
@@ -115,7 +115,7 @@ namespace Author.Today.Epub.Converter.Logic.BookGetters {
 
         private async Task<Block[]> GetBlocks(int eBookId) {
             var resp = await _config.Client.GetStringWithTriesAsync(new Uri($"https://litmarket.ru/reader/blocks/{eBookId}"));
-            var text = await resp.Content.ReadAsStringAsync();
+
             return await resp.Content.ReadFromJsonAsync<Block[]>();
         }
     }

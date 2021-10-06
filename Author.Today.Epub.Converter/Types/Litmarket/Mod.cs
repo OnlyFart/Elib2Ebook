@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Author.Today.Epub.Converter.Types.Litmarket {
@@ -9,7 +10,7 @@ namespace Author.Today.Epub.Converter.Types.Litmarket {
         public string Text { get; set; }
         
         [JsonPropertyName("data")]
-        public ModData Data { get; set; }
+        public JsonElement Data { get; set; }
         
         [JsonPropertyName("mods")]
         public Mod[] Mods { get; set; }
