@@ -16,10 +16,16 @@ namespace Author.Today.Epub.Converter.Logic.BookGetters {
         public override async Task<Book> Get(Uri url) {
             Init();
             var doc = await GetPage(url);
+            var lastSegment = GetLastSegment(url);
+            
+            // Находимся на странице ридера
+            if (lastSegment.StartsWith("chitat-online", StringComparison.InvariantCultureIgnoreCase)) {
+                url = GetMainUrl(url, doc); 
+                doc = await GetPage(url);
+            }
 
             var pages = long.Parse(doc.GetTextByFilter("span", "button-pages__right").Split(' ')[0]);
             var imageDiv = doc.GetByFilter("div", "book-image");
-            
             var href = new Uri(url, imageDiv.Descendants().FirstOrDefault(t => t.Name == "a").Attributes["href"].Value);
             var bookId = GetBookId(href);
             
@@ -38,6 +44,21 @@ namespace Author.Today.Epub.Converter.Logic.BookGetters {
 
         private long GetBookId(Uri uri) {
             return long.Parse(uri.Query.Trim('?').Split("&").FirstOrDefault(p => p.StartsWith("b=")).Replace("b=", ""));
+        }
+
+        private string GetLastSegment(Uri uri) {
+            return uri.Segments.Last();
+        }
+
+        private Uri GetMainUrl(Uri url, HtmlDocument doc) {
+            var href = doc.DocumentNode.Descendants()
+                .FirstOrDefault(t => t.Name == "h1")
+                .Descendants()
+                .FirstOrDefault(t => t.Name == "a")
+                .Attributes["href"]
+                .Value;
+
+            return new Uri(url, href);
         }
 
         private void Init() {
