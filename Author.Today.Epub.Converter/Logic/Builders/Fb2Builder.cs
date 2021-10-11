@@ -102,11 +102,14 @@ namespace Author.Today.Epub.Converter.Logic.Builders {
         /// <param name="cover">Обложка</param>
         /// <returns></returns>
         public override BuilderBase WithCover(Image cover) {
-            var imageElem = CreateXElement("image");
-            imageElem.SetAttributeValue(_xlink + "href", "#" + cover.Path);
+            if (cover != default) {
+                var imageElem = CreateXElement("image");
+                imageElem.SetAttributeValue(_xlink + "href", "#" + cover.Path);
 
-            _titleInfo.Add(imageElem);
-            _images.Add(GetBinary(cover));
+                _titleInfo.Add(imageElem);
+                _images.Add(GetBinary(cover));
+            }
+
             return this;
         }
 
