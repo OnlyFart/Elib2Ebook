@@ -1,4 +1,4 @@
-# Author.Today.Epub.Converter
+# OnlineLib2Ebook
 Инструмент для сохранения любой доступной книги со следующих сайтов в форматах epub или fb2:
 * https://author.today/
 * https://litnet.com/
@@ -7,19 +7,19 @@
 
 ## Пример вызова сервиса
 ```
-Author.Today.Epub.Converter.exe --url https://litnet.com/ru/book/kniga-7-vladyka-magii-b364041 --format epub
+OnlineLib2Ebook.exe --url https://litnet.com/ru/book/kniga-7-vladyka-magii-b364041 --format epub
 ```
 
 ## Где 
 ```
---url - ссылка на книгу https://author.today/
+--url - ссылка на книгу
 --format - формат для сохранения
 ```
 
 ## Полный список опций 
 
 ```
-Author.Today.Epub.Converter.exe --help
+OnlineLib2Ebook.exe --help
 ```
 
 ## Публикация
