@@ -23,9 +23,7 @@ namespace OnlineLib2Ebook.Logic.BookGetters {
             var token = await GetToken();
             var bookId = GetId(url);
             var uri = new Uri($"https://litnet.com/ru/book/{bookId}");
-            using var response = await _config.Client.GetStringWithTriesAsync(uri);
-            var content = await response.Content.ReadAsStringAsync();
-            var doc = content.AsHtmlDoc();
+            var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
 
             var book = new Book(bookId) {
                 Cover = await GetCover(doc, uri),
@@ -106,10 +104,7 @@ namespace OnlineLib2Ebook.Logic.BookGetters {
         }
 
         private async Task<string> GetToken() {
-            var doc = await _config.Client
-                .GetStringAsync("https://litnet.com/auth/login?classic=1&link=https://litnet.com/")
-                .ContinueWith(t => t.Result.AsHtmlDoc());
-
+            var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri("https://litnet.com/auth/login?classic=1&link=https://litnet.com/"));
             return doc.GetAttributeByNameAttribute("_csrf", "value");
         }
     }

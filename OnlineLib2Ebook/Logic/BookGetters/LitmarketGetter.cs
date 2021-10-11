@@ -115,7 +115,6 @@ namespace OnlineLib2Ebook.Logic.BookGetters {
 
         private async Task<Block[]> GetBlocks(int eBookId) {
             var resp = await _config.Client.GetStringWithTriesAsync(new Uri($"https://litmarket.ru/reader/blocks/{eBookId}"));
-
             return await resp.Content.ReadFromJsonAsync<Block[]>();
         }
     }

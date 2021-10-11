@@ -15,13 +15,13 @@ namespace OnlineLib2Ebook.Logic.BookGetters {
         public override Uri SystemUrl => new("https://readli.net");
         public override async Task<Book> Get(Uri url) {
             Init();
-            var doc = await GetPage(url);
+            var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
             var lastSegment = GetLastSegment(url);
             
             // Находимся на странице ридера
             if (lastSegment.StartsWith("chitat-online", StringComparison.InvariantCultureIgnoreCase)) {
                 url = GetMainUrl(url, doc); 
-                doc = await GetPage(url);
+                doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
             }
 
             var pages = long.Parse(doc.GetTextByFilter("span", "button-pages__right").Split(' ')[0]);
@@ -82,7 +82,7 @@ namespace OnlineLib2Ebook.Logic.BookGetters {
             
             for (var i = 1; i <= pages; i++) {
                 Console.WriteLine($"Получаю страницу {i}/{pages}");
-                var page = await GetPage(new Uri($"https://readli.net/chitat-online/?b={bookId}&pg={i}"));
+                var page = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://readli.net/chitat-online/?b={bookId}&pg={i}"));
                 var content = page.GetByFilter("div", "reading__text");
 
                 foreach (var node in content.ChildNodes) {
@@ -98,10 +98,6 @@ namespace OnlineLib2Ebook.Logic.BookGetters {
             chapter.Title = name;
             
             return new List<Chapter>{ chapter };
-        }
-
-        private async Task<HtmlDocument> GetPage(Uri uri) {
-            return await _config.Client.GetStringAsync(uri).ContinueWith(t => t.Result.AsHtmlDoc());
         }
     }
 }
