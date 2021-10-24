@@ -81,7 +81,9 @@ namespace OnlineLib2Ebook.Logic.BookGetters {
         private IEnumerable<ChapterShort> GetChapters(HtmlDocument doc) {
             var chapters = doc.GetElementbyId("Chapters");
             foreach (var chapter in chapters.Descendants().Where(t => t.Name == "tr").Skip(1)) {
-                yield return new ChapterShort(chapter.Attributes["data-id"].Value, HttpUtility.HtmlDecode(chapter.GetTextByFilter("td", "t")).Trim());
+                if (chapter.Attributes.Contains("data-id")) {
+                    yield return new ChapterShort(chapter.Attributes["data-id"].Value, HttpUtility.HtmlDecode(chapter.GetTextByFilter("td", "t")).Trim());
+                }
             }
         }
 
