@@ -80,7 +80,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
 
         private async Task<string> GetChapter(string bookId, string chapterId) {
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://tl.rulate.ru/book/{bookId}/{chapterId}/ready"));
-            return doc.GetTextByFilter("h1") == "Доступ запрещен" ? string.Empty : doc.GetByFilter("div", "content-text").InnerHtml;
+            return doc.GetTextByFilter("h1") == "Доступ запрещен" ? string.Empty : doc.GetByFilter("div", "content-text")?.InnerHtml ?? string.Empty;
         }
 
         private IEnumerable<ChapterShort> GetChapters(HtmlDocument doc) {
