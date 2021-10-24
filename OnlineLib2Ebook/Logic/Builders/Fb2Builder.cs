@@ -136,36 +136,12 @@ namespace OnlineLib2Ebook.Logic.Builders {
                 
                 var doc = CreateDoc(chapter.Content);
                 foreach (var node in doc.DocumentNode.ChildNodes) {
-                    if (node.Name == "p") {
-                        var p = CreateXElement("p");
+                    if (node.Name is "p" or "div") {
                         foreach (var child in node.ChildNodes) {
-                            switch (child.Name) {
-                                case "#text":
-                                case "br":
-                                case "span":
-                                    p.Add(new XText(child.InnerText));
-                                    break;
-                                case "em":
-                                case "strong": {
-                                    var elem = CreateXElement(child.Name);
-                                    elem.Value = child.InnerText;
-                                    p.Add(elem);
-                                    break;
-                                }
-                                case "img": {
-                                    var imageElem = CreateXElement("image");
-                                    imageElem.SetAttributeValue(_xlink + "href", "#" + child.Attributes["src"].Value);
-                                    p.Add(imageElem);
-                                    break;
-                                }
-                                default:
-                                    p.Add(new XText(child.InnerText));
-                                    Console.WriteLine(child.Name);
-                                    break;
-                            }
+                            ProcessSection(section, child);
                         }
-
-                        section.Add(p);
+                    } else {
+                        ProcessSection(section, node);
                     }
                 }
                 
@@ -177,6 +153,42 @@ namespace OnlineLib2Ebook.Logic.Builders {
             }
 
             return this;
+        }
+
+        private void ProcessSection(XElement section, HtmlNode node) {
+            var p = CreateXElement("p");
+            
+            switch (node.Name) {
+                case "#text":
+                case "br":
+                case "span":
+                    p.Add(new XText(node.InnerText));
+                    break;
+                case "em":
+                case "strong": {
+                    var elem = CreateXElement(node.Name);
+                    elem.Value = node.InnerText;
+                    p.Add(elem);
+                    break;
+                }
+                case "blockquote":
+                    var cite = CreateXElement("cite");
+                    cite.Value = node.InnerText;
+                    p.Add(cite);
+                    break;
+                case "img": {
+                    var imageElem = CreateXElement("image");
+                    imageElem.SetAttributeValue(_xlink + "href", "#" + node.Attributes["src"].Value);
+                    p.Add(imageElem);
+                    break;
+                }
+                default:
+                    p.Add(new XText(node.InnerText));
+                    Console.WriteLine(node.Name);
+                    break;
+            }
+            
+            section.Add(p);
         }
 
         protected override void BuildInternal(string name) {

@@ -14,12 +14,31 @@ namespace OnlineLib2Ebook.Extensions {
         }
 
         public static HtmlNode GetByFilter(this HtmlDocument doc, string name, string @class) {
-            return doc.DocumentNode.Descendants()
+            return doc.DocumentNode.GetByFilter(name, @class);
+        }
+        
+        public static HtmlNode GetByFilter(this HtmlDocument node, string name) {
+            return node.DocumentNode.Descendants()
+                .FirstOrDefault(t => t.Name == name);
+        }
+        
+        public static HtmlNode GetByFilter(this HtmlNode node, string name, string @class) {
+            return node.Descendants()
                 .FirstOrDefault(t => t.Name == name && t.Attributes["class"]?.Value == @class);
         }
 
         public static string GetTextByFilter(this HtmlDocument doc, string name, string @class) {
             return doc.GetByFilter(name, @class)
+                ?.InnerText?
+                .Trim();
+        }
+        
+        public static string GetTextByFilter(this HtmlDocument doc, string name) {
+            return doc.GetByFilter(name)?.InnerText?.Trim();
+        }
+        
+        public static string GetTextByFilter(this HtmlNode node, string name, string @class) {
+            return node.GetByFilter(name, @class)
                 ?.InnerText?
                 .Trim();
         }

@@ -11,6 +11,7 @@ using HtmlAgilityPack;
 using OnlineLib2Ebook.Configs;
 using OnlineLib2Ebook.Extensions;
 using OnlineLib2Ebook.Types.Book;
+using OnlineLib2Ebook.Types.Common;
 using OnlineLib2Ebook.Types.Litnet.Response;
 
 namespace OnlineLib2Ebook.Logic.BookGetters {
@@ -76,7 +77,7 @@ namespace OnlineLib2Ebook.Logic.BookGetters {
             return result;
         }
 
-        private async Task<LitnetResponse> GetPage(LitnetChapter chapter, int page, string token) {
+        private async Task<LitnetResponse> GetPage(ChapterShort chapter, int page, string token) {
             var data = new Dictionary<string, string> {
                 ["chapterId"] = chapter.Id,
                 ["page"] = page.ToString(),
@@ -84,23 +85,31 @@ namespace OnlineLib2Ebook.Logic.BookGetters {
             };
             
             Console.WriteLine($"Загружаем страницу {page} главы \"{chapter.Name}\"");
-            var resp = await _config.Client.PostAsync("https://litnet.com/reader/get-page", new FormUrlEncodedContent(data));
-            if (resp.StatusCode == HttpStatusCode.TooManyRequests) {
-                return new LitnetResponse {
-                    Status = 0
-                };
+            for (var i = 0; i < 3; i++) {
+                var resp = await _config.Client.PostAsync("https://litnet.com/reader/get-page", new FormUrlEncodedContent(data));
+                if (resp.StatusCode == HttpStatusCode.TooManyRequests) {
+                    return new LitnetResponse {
+                        Status = 0
+                    };
+                }
+                
+                await Task.Delay(1000);
+                if (resp.StatusCode == HttpStatusCode.ServiceUnavailable) {
+                    continue;
+                }
+                
+                return await resp.Content.ReadFromJsonAsync<LitnetResponse>();
             }
 
-            await Task.Delay(1000);
-            return await resp.Content.ReadFromJsonAsync<LitnetResponse>();
+            return new LitnetResponse();
         }
 
-        private static IEnumerable<LitnetChapter> GetChapters(HtmlDocument doc) {
+        private static IEnumerable<ChapterShort> GetChapters(HtmlDocument doc) {
             return doc
                 .DocumentNode
                 .Descendants()
                 .Where(t => t.Name == "option" && !string.IsNullOrWhiteSpace(t.Attributes["value"].Value))
-                .Select(option => new LitnetChapter(option.Attributes["value"].Value, option.InnerText)).ToList();
+                .Select(option => new ChapterShort(option.Attributes["value"].Value, option.InnerText)).ToList();
         }
 
         private async Task<string> GetToken() {

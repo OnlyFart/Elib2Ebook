@@ -4,6 +4,7 @@
 * https://litnet.com/
 * https://litmarket.ru/
 * https://readli.net/
+* https://tl.rulate.ru/
 
 ## Пример вызова сервиса
 ```

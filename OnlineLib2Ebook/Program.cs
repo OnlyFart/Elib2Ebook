@@ -50,6 +50,7 @@ namespace OnlineLib2Ebook {
                 new AuthorTodayGetter(config), 
                 new LitmarketGetter(config), 
                 new ReadliGetter(config),
+                new RulateGetter(config),
             };
 
             foreach (var getter in getters) {
