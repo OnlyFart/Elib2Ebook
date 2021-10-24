@@ -9,10 +9,10 @@ using OnlineLib2Ebook.Configs;
 using OnlineLib2Ebook.Extensions;
 using OnlineLib2Ebook.Types.Book;
 
-namespace OnlineLib2Ebook.Logic.BookGetters {
+namespace OnlineLib2Ebook.Logic.Getters {
     public class ReadliGetter : GetterBase {
         public ReadliGetter(BookGetterConfig config) : base(config) { }
-        public override Uri SystemUrl => new("https://readli.net");
+        protected override Uri SystemUrl => new("https://readli.net");
         public override async Task<Book> Get(Uri url) {
             Init();
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);

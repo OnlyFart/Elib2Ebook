@@ -8,17 +8,17 @@ using OnlineLib2Ebook.Configs;
 using OnlineLib2Ebook.Extensions;
 using OnlineLib2Ebook.Types.Book;
 
-namespace OnlineLib2Ebook.Logic.BookGetters {
+namespace OnlineLib2Ebook.Logic.Getters {
     public abstract class GetterBase : IDisposable {
         protected readonly BookGetterConfig _config;
 
         protected GetterBase(BookGetterConfig config) {
             _config = config;
         }
-        
-        public abstract Uri SystemUrl { get; }
 
-        public virtual string GetId(Uri url) {
+        protected abstract Uri SystemUrl { get; }
+
+        protected virtual string GetId(Uri url) {
             return url.Segments.Last();
         }
 

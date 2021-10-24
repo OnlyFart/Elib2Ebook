@@ -16,7 +16,7 @@ using OnlineLib2Ebook.Extensions;
 using OnlineLib2Ebook.Types.AuthorToday.Response;
 using OnlineLib2Ebook.Types.Book;
 
-namespace OnlineLib2Ebook.Logic.BookGetters {
+namespace OnlineLib2Ebook.Logic.Getters {
     public class AuthorTodayGetter : GetterBase {
         private readonly Regex _userIdRgx = new("userId: (?<userId>\\d+),");
 
@@ -24,7 +24,7 @@ namespace OnlineLib2Ebook.Logic.BookGetters {
 
         }
 
-        public override Uri SystemUrl => new("https://author.today");
+        protected override Uri SystemUrl => new("https://author.today");
 
         /// <summary>
         /// Получение книги

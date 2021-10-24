@@ -26,6 +26,11 @@ namespace OnlineLib2Ebook.Extensions {
             return node.Descendants()
                 .FirstOrDefault(t => t.Name == name && t.Attributes["class"]?.Value == @class);
         }
+        
+        public static HtmlNode GetByFilter(this HtmlNode node, string name) {
+            return node.Descendants()
+                .FirstOrDefault(t => t.Name == name);
+        }
 
         public static string GetTextByFilter(this HtmlDocument doc, string name, string @class) {
             return doc.GetByFilter(name, @class)
@@ -41,6 +46,10 @@ namespace OnlineLib2Ebook.Extensions {
             return node.GetByFilter(name, @class)
                 ?.InnerText?
                 .Trim();
+        }
+        
+        public static string GetTextByFilter(this HtmlNode node, string name) {
+            return node.GetByFilter(name)?.InnerText?.Trim();
         }
 
         public static string GetAttributeByNameAttribute(this HtmlDocument doc, string name, string attribute) {

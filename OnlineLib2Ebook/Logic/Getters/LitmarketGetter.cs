@@ -13,10 +13,10 @@ using OnlineLib2Ebook.Extensions;
 using OnlineLib2Ebook.Types.Book;
 using OnlineLib2Ebook.Types.Litmarket;
 
-namespace OnlineLib2Ebook.Logic.BookGetters {
+namespace OnlineLib2Ebook.Logic.Getters {
     public class LitmarketGetter : GetterBase {
         public LitmarketGetter(BookGetterConfig config) : base(config) { }
-        public override Uri SystemUrl => new("https://litmarket.ru");
+        protected override Uri SystemUrl => new("https://litmarket.ru");
 
         public override async Task<Book> Get(Uri url) {
             var doc = await Init(url);

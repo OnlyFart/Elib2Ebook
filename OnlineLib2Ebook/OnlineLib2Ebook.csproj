@@ -6,6 +6,7 @@
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <AssemblyName>OnlineLib2Ebook</AssemblyName>
         <RootNamespace>OnlineLib2Ebook</RootNamespace>
+        <LangVersion>latestmajor</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>

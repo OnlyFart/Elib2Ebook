@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using HtmlAgilityPack;
@@ -11,12 +10,12 @@ using OnlineLib2Ebook.Extensions;
 using OnlineLib2Ebook.Types.Book;
 using OnlineLib2Ebook.Types.Common;
 
-namespace OnlineLib2Ebook.Logic.BookGetters {
+namespace OnlineLib2Ebook.Logic.Getters {
     public class RulateGetter : GetterBase {
         public RulateGetter(BookGetterConfig config) : base(config) { }
-        public override Uri SystemUrl => new("https://tl.rulate.ru");
+        protected override Uri SystemUrl => new("https://tl.rulate.ru");
 
-        public override string GetId(Uri url) {
+        protected override string GetId(Uri url) {
             var segments = url.Segments;
             return segments.Length == 3 ? base.GetId(url) : segments[2].Trim('/');
         }
@@ -26,15 +25,28 @@ namespace OnlineLib2Ebook.Logic.BookGetters {
             url = new Uri($"https://tl.rulate.ru/book/{bookId}");
             await Mature(url);
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
-            
-            
+
             var book = new Book(bookId) {
                 Cover = await GetCover(doc, url),
                 Chapters = await FillChapters(doc, url, bookId),
                 Title = HttpUtility.HtmlDecode(doc.GetTextByFilter("h1")),
-                Author = HttpUtility.HtmlDecode("rulate")
+                Author = HttpUtility.HtmlDecode(GetAuthor(doc))
             };
+            
             return book;
+        }
+
+        private string GetAuthor(HtmlDocument doc) {
+            var info = doc.GetElementbyId("Info");
+            const string AUTHOR = "rulate";
+            foreach (var p in info.Descendants().Where(t => t.Name == "p")) {
+                var strong = p.GetByFilter("strong");
+                if (strong != null && strong.InnerText.Contains("Автор")) {
+                    return p.GetTextByFilter("em") ?? AUTHOR;
+                }
+            }
+
+            return AUTHOR;
         }
         
         private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
@@ -68,27 +80,20 @@ namespace OnlineLib2Ebook.Logic.BookGetters {
 
         private async Task<string> GetChapter(string bookId, string chapterId) {
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://tl.rulate.ru/book/{bookId}/{chapterId}/ready"));
-
-            var h1 = doc.GetTextByFilter("h1");
-            if (h1 == "Доступ запрещен") {
-                return string.Empty;
-            }
-
-            return doc.GetByFilter("div", "content-text").InnerHtml;
-
+            return doc.GetTextByFilter("h1") == "Доступ запрещен" ? string.Empty : doc.GetByFilter("div", "content-text").InnerHtml;
         }
 
         private IEnumerable<ChapterShort> GetChapters(HtmlDocument doc) {
-            var chapters = doc.GetElementbyId("Chapters");
-            foreach (var chapter in chapters.Descendants().Where(t => t.Name == "tr").Skip(1)) {
-                if (chapter.Attributes.Contains("data-id")) {
-                    yield return new ChapterShort(chapter.Attributes["data-id"].Value, HttpUtility.HtmlDecode(chapter.GetTextByFilter("td", "t")).Trim());
-                }
-            }
+            return doc.GetElementbyId("Chapters")
+                .Descendants()
+                .Where(t => t.Name == "tr")
+                .Skip(1)
+                .Where(chapter => chapter.Attributes.Contains("data-id"))
+                .Select(chapter => new ChapterShort(chapter.Attributes["data-id"].Value, HttpUtility.HtmlDecode(chapter.GetTextByFilter("td", "t")).Trim()));
         }
 
-        private async Task Mature(Uri url){
-            var data = new Dictionary<string, string>() {
+        private async Task Mature(Uri url) {
+            var data = new Dictionary<string, string> {
                 { "path", url.LocalPath },
                 { "ok", "Да" }
             };

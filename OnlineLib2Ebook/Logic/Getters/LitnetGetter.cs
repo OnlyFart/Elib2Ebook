@@ -14,11 +14,11 @@ using OnlineLib2Ebook.Types.Book;
 using OnlineLib2Ebook.Types.Common;
 using OnlineLib2Ebook.Types.Litnet.Response;
 
-namespace OnlineLib2Ebook.Logic.BookGetters {
+namespace OnlineLib2Ebook.Logic.Getters {
     public class LitnetGetter : GetterBase {
         public LitnetGetter(BookGetterConfig config) : base(config) { }
 
-        public override Uri SystemUrl => new("https://litnet.com/");
+        protected override Uri SystemUrl => new("https://litnet.com/");
 
         public override async Task<Book> Get(Uri url) {
             var token = await GetToken();
