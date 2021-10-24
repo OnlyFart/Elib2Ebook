@@ -85,7 +85,7 @@ namespace OnlineLib2Ebook.Logic.BookGetters {
             };
             
             Console.WriteLine($"Загружаем страницу {page} главы \"{chapter.Name}\"");
-            for (var i = 0; i < 3; i++) {
+            for (var i = 0; i < 5; i++) {
                 var resp = await _config.Client.PostAsync("https://litnet.com/reader/get-page", new FormUrlEncodedContent(data));
                 if (resp.StatusCode == HttpStatusCode.TooManyRequests) {
                     return new LitnetResponse {
@@ -93,11 +93,13 @@ namespace OnlineLib2Ebook.Logic.BookGetters {
                     };
                 }
                 
-                await Task.Delay(1000);
-                if (resp.StatusCode == HttpStatusCode.ServiceUnavailable) {
+                
+                if (resp.StatusCode != HttpStatusCode.OK) {
+                    await Task.Delay(5000);
                     continue;
                 }
-                
+
+                await Task.Delay(1000);
                 return await resp.Content.ReadFromJsonAsync<LitnetResponse>();
             }
 
