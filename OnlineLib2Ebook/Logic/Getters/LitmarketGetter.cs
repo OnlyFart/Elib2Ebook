@@ -19,8 +19,9 @@ namespace OnlineLib2Ebook.Logic.Getters {
         protected override Uri SystemUrl => new("https://litmarket.ru");
 
         public override async Task<Book> Get(Uri url) {
-            var doc = await Init(url);
             var bookId = GetId(url);
+            url = new Uri($"https://litmarket.ru/books/{bookId}");
+            var doc = await Init(url);
 
             var content = await GetMainData(bookId);
             var toc = JsonSerializer.Deserialize<List<Block>>(content.Toc);
