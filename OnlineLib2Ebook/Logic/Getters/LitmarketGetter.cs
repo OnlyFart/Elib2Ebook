@@ -23,13 +23,14 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var bookId = GetId(url);
 
             var content = await GetMainData(bookId);
-            var toc = JsonSerializer.Deserialize<Block[]>(content.Toc);
+            var toc = JsonSerializer.Deserialize<List<Block>>(content.Toc);
             var blocks = await GetBlocks(content.Book.EbookId);
 
+            var title = Normalize(doc.GetTextByFilter("h1", "card-title"));
             var book = new Book(bookId) {
                 Cover = await GetCover(doc, url),
-                Chapters = await FillChapters(toc, blocks, url, content.Book.EbookId),
-                Title = Normalize(doc.GetTextByFilter("h1", "card-title")),
+                Chapters = await FillChapters(toc, blocks, url, content.Book.EbookId, title),
+                Title = title,
                 Author = Normalize(doc.GetTextByFilter("div", "card-author").Replace("Автор:", "")),
             };
             
@@ -50,24 +51,39 @@ namespace OnlineLib2Ebook.Logic.Getters {
             return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
         }
 
-        private async Task<List<Chapter>> FillChapters(Block[] toc, Block[] blocks, Uri bookUri, long eBookId) {
+        private async Task<List<Chapter>> FillChapters(List<Block> toc, Block[] blocks, Uri bookUri, long eBookId, string title) {
             var result = new List<Chapter>();
 
-            for (var i = 0; i < toc.Length; i++) {
+            if (toc.Count == 0) {
+                toc.Add(new Block {
+                    Index = 0,
+                    Chunk = new Chunk {
+                        Mods = new[]{new Mod {
+                            Text = title
+                        }}
+                    }
+                });
+            }
+            
+            for (var i = 0; i < toc.Count; i++) {
                 Console.WriteLine($"Загружаем главу \"{toc[i].Chunk.Mods[0].Text.Trim()}\"");
                 var text = new StringBuilder();
                 var chapter = new Chapter();
 
-                foreach (var block in blocks.Where(b => b.Index >= toc[i].Index && (i == toc.Length -1 || b.Index < toc[i + 1].Index))) {
+                foreach (var block in blocks.Where(b => b.Index >= toc[i].Index && (i == toc.Count -1 || b.Index < toc[i + 1].Index))) {
                     var p = new StringBuilder();
                     
                     foreach (var mod in block.Chunk.Mods) {
-                        if (mod.Type == "IMAGE") {
-                            p.Append($"<img src='https://litmarket.ru/uploads/ebook/{eBookId}/{mod.Data.GetProperty("src").GetString()}' />");
-                        } else if (mod.Type == "LINK") {
-                            p.Append($"<a href='{mod.Data.GetProperty("url").GetString()}'>{mod.Mods?.FirstOrDefault()?.Text ?? string.Empty}</a>");
-                        } else {
-                            p.Append($"{(mod.Text ?? string.Empty).Trim()} ");
+                        switch (mod.Type) {
+                            case "IMAGE":
+                                p.Append($"<img src='https://litmarket.ru/uploads/ebook/{eBookId}/{mod.Data.GetProperty("src").GetString()}' />");
+                                break;
+                            case "LINK":
+                                p.Append($"<a href='{mod.Data.GetProperty("url").GetString()}'>{mod.Mods?.FirstOrDefault()?.Text ?? string.Empty}</a>");
+                                break;
+                            default:
+                                p.Append($"{(mod.Text ?? string.Empty).Trim()} ");
+                                break;
                         }
                     }
 

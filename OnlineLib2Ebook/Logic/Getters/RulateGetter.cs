@@ -61,16 +61,16 @@ namespace OnlineLib2Ebook.Logic.Getters {
         private async Task<List<Chapter>> FillChapters(HtmlDocument doc, Uri bookUri, string bookId) {
             var result = new List<Chapter>();
             
-            foreach (var chapterShort in GetChapters(doc)) {
-                Console.WriteLine($"Загружаем главу \"{chapterShort.Name}\"");
+            foreach (var (id, name) in GetChapters(doc)) {
+                Console.WriteLine($"Загружаем главу \"{name}\"");
                 var chapter = new Chapter();
                 
-                var text = await GetChapter(bookId, chapterShort.Id);
+                var text = await GetChapter(bookId, id);
 
                 var chapterDoc = HttpUtility.HtmlDecode(text).AsHtmlDoc();
                 chapter.Images = await GetImages(chapterDoc, bookUri);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
-                chapter.Title = chapterShort.Name;
+                chapter.Title = name;
 
                 result.Add(chapter);
             }
