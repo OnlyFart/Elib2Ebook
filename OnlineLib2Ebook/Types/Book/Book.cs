@@ -36,16 +36,23 @@ namespace OnlineLib2Ebook.Types.Book {
         /// <summary>
         /// Сохранение книги
         /// </summary>
+        /// <param name="builder"></param>
         /// <param name="savePath">Путь для сохранения</param>
         /// <param name="resourcesPath">Путь к папке с ресурсами</param>
         public void Save(BuilderBase builder, string savePath, string resourcesPath) {
+            var name = $"{Id}. {Author} - {Title}";
+            const int MAX_LENGHT = 100;
+            if (name.Length > MAX_LENGHT) {
+                name = name[..MAX_LENGHT];
+            }
+            
             builder.AddAuthor(Author)
                 .WithTitle(Title)
                 .WithCover(Cover)
                 .WithFiles(resourcesPath, "*.ttf", EpubContentType.FontTruetype)
                 .WithFiles(resourcesPath, "*.css", EpubContentType.Css)
                 .WithChapters(Chapters)
-                .Build(savePath, $"{Id}. {Author} - {Title}");
+                .Build(savePath, name);
         }
     }
 }
