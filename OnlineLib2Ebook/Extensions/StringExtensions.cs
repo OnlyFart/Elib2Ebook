@@ -57,5 +57,15 @@ namespace OnlineLib2Ebook.Extensions {
         public static string CoverQuotes(this string self) {
             return "\"" + self + "\"";
         }
+        
+        /// <summary>
+        /// Обрезка строки
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="lenght"></param>
+        /// <returns></returns>
+        public static string Crop(this string self, int lenght) {
+            return self.Length > lenght ? self[..lenght] : self;
+        }
     }
 }
