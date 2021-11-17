@@ -165,23 +165,21 @@ namespace OnlineLib2Ebook.Logic.Builders {
                     p.Add(new XText(node.InnerText));
                     break;
                 case "em":
-                case "strong": {
+                case "strong": 
                     var elem = CreateXElement(node.Name);
                     elem.Value = node.InnerText;
                     p.Add(elem);
                     break;
-                }
                 case "blockquote":
                     var cite = CreateXElement("cite");
                     cite.Value = node.InnerText;
                     p.Add(cite);
                     break;
-                case "img": {
+                case "img": 
                     var imageElem = CreateXElement("image");
                     imageElem.SetAttributeValue(_xlink + "href", "#" + node.Attributes["src"].Value);
                     p.Add(imageElem);
                     break;
-                }
                 default:
                     p.Add(new XText(node.InnerText));
                     Console.WriteLine(node.Name);

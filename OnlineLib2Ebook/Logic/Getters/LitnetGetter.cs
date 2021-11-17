@@ -26,12 +26,15 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var uri = new Uri($"https://litnet.com/ru/book/{bookId}");
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
 
+            var title = HttpUtility.HtmlDecode(doc.GetTextByFilter("h1", "roboto"));
+            
             var book = new Book(bookId) {
                 Cover = await GetCover(doc, uri),
-                Chapters = await FillChapters(doc, uri, token),
-                Title = HttpUtility.HtmlDecode(doc.GetTextByFilter("h1", "roboto")),
+                Chapters = await FillChapters(doc, uri, title, bookId, token),
+                Title = title,
                 Author = HttpUtility.HtmlDecode(doc.GetTextByFilter("a", "author"))
             };
+            
             return book;
         }
         
@@ -46,10 +49,10 @@ namespace OnlineLib2Ebook.Logic.Getters {
         }
 
 
-        private async Task<List<Chapter>> FillChapters(HtmlDocument doc, Uri bookUri, string token) {
+        private async Task<List<Chapter>> FillChapters(HtmlDocument doc, Uri bookUri, string title, string bookId, string token) {
             var result = new List<Chapter>();
             
-            foreach (var litnetChapter in GetChapters(doc)) {
+            foreach (var litnetChapter in await GetChapters(doc, bookId, title)) {
                 Console.WriteLine($"Загружаем главу \"{litnetChapter.Name}\"");
                 var text = new StringBuilder();
                 var chapter = new Chapter();
@@ -106,12 +109,24 @@ namespace OnlineLib2Ebook.Logic.Getters {
             return new LitnetResponse();
         }
 
-        private static IEnumerable<ChapterShort> GetChapters(HtmlDocument doc) {
-            return doc
+        private async Task<IEnumerable<ChapterShort>> GetChapters(HtmlDocument doc, string bookId, string title) {
+            var result = doc
                 .DocumentNode
                 .Descendants()
                 .Where(t => t.Name == "option" && !string.IsNullOrWhiteSpace(t.Attributes["value"].Value))
                 .Select(option => new ChapterShort(option.Attributes["value"].Value, option.InnerText)).ToList();
+
+            if (result.Count > 0) {
+                return result;
+            }
+
+            var readerPage = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://litnet.com/ru/reader/{bookId}"));
+            var chapter = readerPage.DocumentNode.Descendants().FirstOrDefault(t => t.Name == "div" && t.Attributes["data-chapter"] != null);
+            if (chapter == null) {
+                return result;
+            }
+
+            return new[] { new ChapterShort(chapter.Attributes["data-chapter"].Value, title) };
         }
 
         private async Task<string> GetToken() {
