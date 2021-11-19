@@ -17,7 +17,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
 
         protected override string GetId(Uri url) {
             var segments = url.Segments;
-            return segments.Length == 3 ? base.GetId(url) : segments[2].Trim('/');
+            return (segments.Length == 3 ? base.GetId(url) : segments[2]).Trim('/');
         }
 
         public override async Task<Book> Get(Uri url) {
