@@ -5,6 +5,7 @@
 * https://litmarket.ru/
 * https://readli.net/
 * https://tl.rulate.ru/
+* https://ранобэ.рф/
 
 ## Пример вызова сервиса
 ```

@@ -51,6 +51,7 @@ namespace OnlineLib2Ebook {
                 new LitmarketGetter(config), 
                 new ReadliGetter(config),
                 new RulateGetter(config),
+                new RanobeGetter(config),
             };
 
             foreach (var getter in getters) {

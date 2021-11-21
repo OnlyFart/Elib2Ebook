@@ -26,6 +26,11 @@ namespace OnlineLib2Ebook.Extensions {
             return node.Descendants()
                 .FirstOrDefault(t => t.Name == name && t.Attributes["class"]?.Value == @class);
         }
+
+        public static HtmlNode GetByFilterContains(this HtmlNode node, string name, string @class) {
+            return node.Descendants()
+                .FirstOrDefault(t => t.Name == name && t.Attributes["class"]?.Value?.Contains(@class) == true);
+        }
         
         public static HtmlNode GetByFilter(this HtmlNode node, string name) {
             return node.Descendants()

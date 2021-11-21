@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ using OnlineLib2Ebook.Types.Book;
 
 namespace OnlineLib2Ebook.Logic.Getters {
     public abstract class GetterBase : IDisposable {
+        private IdnMapping _idn = new();
         protected readonly BookGetterConfig _config;
 
         protected GetterBase(BookGetterConfig config) {
@@ -23,7 +25,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
         }
 
         public virtual bool IsSameUrl(Uri url) {
-            return string.Equals(SystemUrl.Host.Replace("www.", ""), url.Host.Replace("www.", ""), StringComparison.InvariantCultureIgnoreCase);
+            return string.Equals(_idn.GetAscii(SystemUrl.Host).Replace("www.", ""), _idn.GetAscii(url.Host).Replace("www.", ""), StringComparison.InvariantCultureIgnoreCase);
         }
         
         /// <summary>
