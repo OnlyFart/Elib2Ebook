@@ -6,6 +6,7 @@
 * https://readli.net/
 * https://tl.rulate.ru/
 * https://ранобэ.рф/
+* https://ranobes.com/
 
 ## Пример вызова сервиса
 ```

@@ -17,7 +17,7 @@ namespace OnlineLib2Ebook {
             await Parser.Default.ParseArguments<Options>(args)
                 .WithParsedAsync(async options => {
                     var handler = new HttpClientHandler {
-                        AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+                        AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli
                     };
             
                     if (!string.IsNullOrEmpty(options.Proxy)) {
@@ -52,6 +52,7 @@ namespace OnlineLib2Ebook {
                 new ReadliGetter(config),
                 new RulateGetter(config),
                 new RanobeGetter(config),
+                new RanobesGetter(config),
             };
 
             foreach (var getter in getters) {
