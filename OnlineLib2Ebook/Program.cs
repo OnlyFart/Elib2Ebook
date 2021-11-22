@@ -53,6 +53,7 @@ namespace OnlineLib2Ebook {
                 new RulateGetter(config),
                 new RanobeGetter(config),
                 new RanobesGetter(config),
+                new JaomixGetter(config),
             };
 
             foreach (var getter in getters) {

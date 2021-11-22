@@ -7,6 +7,7 @@
 * https://tl.rulate.ru/
 * https://ранобэ.рф/
 * https://ranobes.com/
+* https://jaomix.ru/
 
 ## Пример вызова сервиса
 ```

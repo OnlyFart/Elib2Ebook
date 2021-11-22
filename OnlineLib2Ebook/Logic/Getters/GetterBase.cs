@@ -21,7 +21,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
         protected abstract Uri SystemUrl { get; }
 
         protected virtual string GetId(Uri url) {
-            return url.Segments.Last();
+            return url.Segments.Last().Trim('/');
         }
 
         public virtual bool IsSameUrl(Uri url) {
