@@ -12,6 +12,6 @@ namespace OnlineLib2Ebook.Types.Ranobe {
         public RanobeImage[] Images { get; set; }
         
         [JsonPropertyName("chapters")]
-        public RanobeChapter[] Chapters { get; set; }
+        public RanobeChapterShort[] Chapters { get; set; }
     }
 }

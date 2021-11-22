@@ -25,7 +25,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var uri = new Uri($"https://ранобэ.рф/{bookId}");
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
 
-            var ranobeBook = GetRanobeBook(doc);
+            var ranobeBook = GetNextData<RanobeBook>(doc, "book");
 
             var book = new Book(bookId) {
                 Cover = await GetCover(ranobeBook, uri),
@@ -43,7 +43,8 @@ namespace OnlineLib2Ebook.Logic.Getters {
             foreach (var ranobeChapter in ranobeBook.Chapters.Reverse()) {
                 Console.WriteLine($"Загружаем главу \"{ranobeChapter.Title}\"");
                 var chapter = new Chapter();
-                var chapterDoc = HttpUtility.HtmlDecode(await GetChapter(url, ranobeChapter.Url)).AsHtmlDoc();
+                var ranobesChapter = await GetChapter(url, ranobeChapter.Url);
+                var chapterDoc = HttpUtility.HtmlDecode(ranobesChapter.Content.Text).AsHtmlDoc();
                 chapter.Images = await GetImages(chapterDoc, url);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
                 chapter.Title = ranobeChapter.Title;
@@ -54,24 +55,24 @@ namespace OnlineLib2Ebook.Logic.Getters {
             return result;
         }
 
-        private async Task<string> GetChapter(Uri mainUrl, string url) {
+        private async Task<RanobeChapter> GetChapter(Uri mainUrl, string url) {
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(mainUrl, url));
-            return doc.DocumentNode.GetByFilterContains("div", "content").InnerHtml;
+            return GetNextData<RanobeChapter>(doc, "chapter");
         }
 
-        private static RanobeBook GetRanobeBook(HtmlDocument doc) {
+        private static T GetNextData<T>(HtmlDocument doc, string node) {
             var json = doc.GetElementbyId("__NEXT_DATA__").InnerText;
             var bookProperty = JsonDocument.Parse(json)
                 .RootElement.GetProperty("props")
                 .GetProperty("pageProps")
-                .GetProperty("book")
+                .GetProperty(node)
                 .GetRawText();
             
-            return JsonSerializer.Deserialize<RanobeBook>(bookProperty);
+            return JsonSerializer.Deserialize<T>(bookProperty);
         }
         
         private Task<Image> GetCover(RanobeBook book, Uri bookUri) {
-            var imagePath = book.Images?.FirstOrDefault()?.Url;
+            var imagePath = book.Images?.OrderByDescending(t => t.Height).FirstOrDefault()?.Url;
             return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
         }
     }
