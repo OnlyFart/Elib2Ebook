@@ -8,6 +8,7 @@
 * https://ранобэ.рф/
 * https://ranobes.com/
 * https://jaomix.ru/
+* https://dark-novels.ru/
 
 ## Пример вызова сервиса
 ```

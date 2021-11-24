@@ -54,6 +54,7 @@ namespace OnlineLib2Ebook {
                 new RanobeGetter(config),
                 new RanobesGetter(config),
                 new JaomixGetter(config),
+                new DarkNovelsGetter(config),
             };
 
             foreach (var getter in getters) {

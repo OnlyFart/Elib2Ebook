@@ -26,6 +26,29 @@ namespace OnlineLib2Ebook.Extensions {
             return default;
         }
         
+        public static async Task<HttpResponseMessage> PostWithTriesAsync(this HttpClient client, Uri url, HttpContent content) {
+            for (var i = 0; i < MAX_TRY_COUNT; i++) {
+                try { 
+                    var response = await client.PostAsync(url, content);
+
+                    if (response.StatusCode != HttpStatusCode.OK) {
+                        await Task.Delay(100);
+                        if (i == MAX_TRY_COUNT - 1) {
+                            return response;
+                        }
+                        
+                        continue;
+                    }
+                    
+                    return response;
+                } catch (Exception ex) {
+                    await Task.Delay(i * 3000);
+                }
+            }
+
+            return default;
+        }
+        
         public static async Task<HtmlDocument> GetHtmlDocWithTriesAsync(this HttpClient client, Uri url) {
             var response = await client.GetStringWithTriesAsync(url);
             var content = await response.Content.ReadAsStringAsync();
