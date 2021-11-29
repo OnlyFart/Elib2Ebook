@@ -53,6 +53,11 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 Console.WriteLine($"Загружаем главу \"{ranobeChapter.Title}\"");
                 var chapter = new Chapter();
                 var chapterDoc = HttpUtility.HtmlDecode(await GetChapter(url, ranobeChapter.Url)).AsHtmlDoc();
+                var toRemove = chapterDoc.DocumentNode.Descendants().Where(t => t.Name is "script" or "br").ToList();
+                foreach (var node in toRemove) {
+                    node.Remove();
+                }
+                
                 chapter.Images = await GetImages(chapterDoc, url);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
                 chapter.Title = ranobeChapter.Title;
@@ -68,7 +73,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var article = doc.GetElementbyId("arrticle");
             var sb = new StringBuilder();
             foreach (var node in article.ChildNodes) {
-                if (node.Name != "br" && node.Attributes["class"]?.Value?.Contains("splitnewsnavigation") == null) {
+                if (node.Attributes["class"]?.Value?.Contains("splitnewsnavigation") == null) {
                     var tag = node.Name == "#text" ? "p" : node.Name;
                     sb.AppendLine($"<{tag}>{node.InnerHtml.Trim()}</{tag}>");
                 }
