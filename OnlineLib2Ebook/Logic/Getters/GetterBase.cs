@@ -11,7 +11,7 @@ using OnlineLib2Ebook.Types.Book;
 
 namespace OnlineLib2Ebook.Logic.Getters {
     public abstract class GetterBase : IDisposable {
-        private IdnMapping _idn = new();
+        private readonly IdnMapping _idn = new();
         protected readonly BookGetterConfig _config;
 
         protected GetterBase(BookGetterConfig config) {

@@ -175,6 +175,11 @@ namespace OnlineLib2Ebook.Logic.Builders {
                     cite.Value = node.InnerText;
                     p.Add(cite);
                     break;
+                case "i":
+                    var i = CreateXElement("emphasis");
+                    i.Value = node.InnerText;
+                    p.Add(i);
+                    break;
                 case "img":
                     if (node.Attributes["src"] == null) {
                         return;

@@ -52,12 +52,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             foreach (var ranobeChapter in await GetChapters(GetTocLink(doc, url))) {
                 Console.WriteLine($"Загружаем главу \"{ranobeChapter.Title}\"");
                 var chapter = new Chapter();
-                var chapterDoc = HttpUtility.HtmlDecode(await GetChapter(url, ranobeChapter.Url)).AsHtmlDoc();
-                var toRemove = chapterDoc.DocumentNode.Descendants().Where(t => t.Name is "script" or "br").ToList();
-                foreach (var node in toRemove) {
-                    node.Remove();
-                }
-                
+                var chapterDoc = ClearHtml(HttpUtility.HtmlDecode(await GetChapter(url, ranobeChapter.Url)).AsHtmlDoc());
                 chapter.Images = await GetImages(chapterDoc, url);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
                 chapter.Title = ranobeChapter.Title;
@@ -66,6 +61,15 @@ namespace OnlineLib2Ebook.Logic.Getters {
             }
 
             return result;
+        }
+
+        private HtmlDocument ClearHtml(HtmlDocument doc) {
+            var toRemove = doc.DocumentNode.Descendants().Where(t => t.Name is "script" or "br" || t.Id?.Contains("yandex_rtb") == true).ToList();
+            foreach (var node in toRemove) {
+                node.Remove();
+            }
+
+            return doc;
         }
         
         private async Task<string> GetChapter(Uri mainUrl, string url) {
