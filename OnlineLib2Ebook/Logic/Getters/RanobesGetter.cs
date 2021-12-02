@@ -63,7 +63,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             return result;
         }
 
-        private HtmlDocument ClearHtml(HtmlDocument doc) {
+        private static HtmlDocument ClearHtml(HtmlDocument doc) {
             var toRemove = doc.DocumentNode.Descendants().Where(t => t.Name is "script" or "br" || t.Id?.Contains("yandex_rtb") == true).ToList();
             foreach (var node in toRemove) {
                 node.Remove();

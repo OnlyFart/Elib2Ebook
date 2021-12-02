@@ -26,6 +26,10 @@ namespace OnlineLib2Ebook.Logic.Getters {
 
         protected override Uri SystemUrl => new("https://author.today");
 
+        protected override string GetId(Uri url) {
+            return url.Segments[2].Trim('/');
+        }
+
         /// <summary>
         /// Получение книги
         /// </summary>
