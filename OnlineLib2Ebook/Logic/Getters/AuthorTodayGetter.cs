@@ -88,7 +88,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             if (!_config.HasCredentials) {
                 return;
             }
-            
+
             var doc = await _config.Client
                 .GetStringAsync("https://author.today/")
                 .ContinueWith(t => t.Result.AsHtmlDoc());

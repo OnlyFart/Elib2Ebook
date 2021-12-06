@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using CloudFlareUtilities;
 using CommandLine;
 using OnlineLib2Ebook.Configs;
 using OnlineLib2Ebook.Logic.Builders;
@@ -19,13 +20,13 @@ namespace OnlineLib2Ebook {
                     var handler = new HttpClientHandler {
                         AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli
                     };
-            
+
                     if (!string.IsNullOrEmpty(options.Proxy)) {
                         var split = options.Proxy.Split(":");
                         handler.Proxy = new WebProxy(split[0], int.Parse(split[1])); 
                     }
 
-                    var client = new HttpClient(handler);
+                    var client = new HttpClient(new ClearanceHandler(handler) {MaxRetries = 10});
                     var url = new Uri(options.Url);
                     
                     var getterConfig = new BookGetterConfig(options, client);
