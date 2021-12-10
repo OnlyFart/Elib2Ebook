@@ -4,7 +4,6 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using CloudFlareUtilities;
 using CommandLine;
 using OnlineLib2Ebook.Configs;
 using OnlineLib2Ebook.Logic.Builders;
@@ -26,7 +25,7 @@ namespace OnlineLib2Ebook {
                         handler.Proxy = new WebProxy(split[0], int.Parse(split[1])); 
                     }
 
-                    var client = new HttpClient(new ClearanceHandler(handler) {MaxRetries = 10});
+                    var client = new HttpClient(handler);
                     var url = new Uri(options.Url);
                     
                     var getterConfig = new BookGetterConfig(options, client);
