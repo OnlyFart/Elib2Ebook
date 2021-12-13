@@ -80,7 +80,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
 
                 foreach (var node in content.ChildNodes) {
                     if (node.Name is "h3" or "p") {
-                        text.AppendFormat($"<p>{node.InnerText}</p>");
+                        text.AppendFormat($"<p>{HttpUtility.HtmlEncode(node.InnerText)}</p>");
                     }
                 }
             }
