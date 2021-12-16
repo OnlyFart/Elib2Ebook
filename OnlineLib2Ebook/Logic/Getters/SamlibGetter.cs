@@ -11,8 +11,8 @@ using OnlineLib2Ebook.Types.Book;
 
 namespace OnlineLib2Ebook.Logic.Getters {
     public class SamlibGetter : GetterBase {
-        private const string START_PATTERN = "<!----------- Собственно произведение --------------->";
-        public const string END_PATTERN = "<!--------------------------------------------------->";
+        private const string START_PATTERN = "Собственно произведение";
+        private const string END_PATTERN = "-----------------------------------------------";
         
         public SamlibGetter(BookGetterConfig config) : base(config) { }
         protected override Uri SystemUrl => new("http://samlib.ru/");
@@ -33,12 +33,21 @@ namespace OnlineLib2Ebook.Logic.Getters {
         private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url, string title) {
             var chapter = new Chapter();
             
-            var start = doc.Text.IndexOf(START_PATTERN, StringComparison.InvariantCultureIgnoreCase) + START_PATTERN.Length + 1;
-            var stop = doc.Text.IndexOf(END_PATTERN, start, StringComparison.InvariantCultureIgnoreCase) - END_PATTERN.Length - 1;
+            // Мне очень стыдно за этот код. Но по-другому не получилось
+            var start = doc.Text.IndexOf(START_PATTERN, StringComparison.InvariantCultureIgnoreCase);
+            start = doc.Text.IndexOf(">", start, StringComparison.InvariantCultureIgnoreCase) + 1;
+
+            var stop = doc.Text.IndexOf(END_PATTERN, start, StringComparison.InvariantCultureIgnoreCase);
+            for (var i = stop;; i--) {
+                if (doc.Text[i] == '<') {
+                    stop = i - 1;
+                    break;
+                }
+            }
 
             doc.LoadHtml(doc.Text[start..stop]);
             
-            var sr = new StringReader(HttpUtility.HtmlDecode(doc.DocumentNode.InnerText));
+            var sr = new StringReader(HttpUtility.HtmlDecode(doc.DocumentNode.InnerHtml));
             var text = new StringBuilder();
             while (true) {
                 var line = await sr.ReadLineAsync();
@@ -47,7 +56,12 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 }
                 
                 if (!string.IsNullOrWhiteSpace(line)) {
-                    text.AppendLine($"<p>{HttpUtility.HtmlEncode(line.Trim())}</p>");
+                    var htmlDoc = line.AsHtmlDoc();
+                    foreach (var node in htmlDoc.DocumentNode.ChildNodes) {
+                        if (!string.IsNullOrWhiteSpace(node.InnerText) || node.GetByFilter("img") != null) {
+                            text.AppendLine($"<p>{node.InnerHtml}</p>");
+                        }
+                    }
                 }
             }
             
