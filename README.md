@@ -1,14 +1,15 @@
 # OnlineLib2Ebook
 Инструмент для сохранения любой доступной книги со следующих сайтов в форматах epub или fb2:
 * https://author.today/
-* https://litnet.com/
+* https://dark-novels.ru/
+* https://jaomix.ru/
 * https://litmarket.ru/
+* https://litnet.com/
+* https://ranobes.com/
 * https://readli.net/
+* http://samlib.ru/
 * https://tl.rulate.ru/
 * https://ранобэ.рф/
-* https://ranobes.com/
-* https://jaomix.ru/
-* https://dark-novels.ru/
 
 ## Пример вызова сервиса
 ```
