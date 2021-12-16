@@ -5,15 +5,6 @@ using OnlineLib2Ebook.Logic.Builders;
 
 namespace OnlineLib2Ebook.Types.Book {
     public class Book {
-        public Book(string id) {
-            Id = id;
-        }
-        
-        /// <summary>
-        /// Идентификатор книги
-        /// </summary>
-        public readonly string Id;
-        
         /// <summary>
         /// Название книги
         /// </summary>

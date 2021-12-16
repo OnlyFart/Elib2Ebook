@@ -28,7 +28,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
 
             var title = HttpUtility.HtmlDecode(doc.GetTextByFilter("h1", "roboto"));
             
-            var book = new Book(bookId) {
+            var book = new Book {
                 Cover = await GetCover(doc, uri),
                 Chapters = await FillChapters(doc, uri, title, bookId, token),
                 Title = title,

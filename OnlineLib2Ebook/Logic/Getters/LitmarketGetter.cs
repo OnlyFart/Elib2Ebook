@@ -28,7 +28,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var blocks = await GetBlocks(content.Book.EbookId);
 
             var title = Normalize(doc.GetTextByFilter("h1", "card-title"));
-            var book = new Book(bookId) {
+            var book = new Book {
                 Cover = await GetCover(doc, url),
                 Chapters = await FillChapters(toc, blocks, url, content.Book.EbookId, title),
                 Title = title,

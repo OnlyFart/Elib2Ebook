@@ -54,7 +54,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var content = await response.Content.ReadAsStringAsync();
             var doc = content.AsHtmlDoc();
             
-            return new Book(bookId) {
+            return new Book {
                 Cover = await GetCover(doc, bookUri),
                 Chapters = await FillChapters(content, long.Parse(bookId), GetUserId(content)),
                 Title = HttpUtility.HtmlDecode(doc.GetTextByFilter("div", "book-title")),

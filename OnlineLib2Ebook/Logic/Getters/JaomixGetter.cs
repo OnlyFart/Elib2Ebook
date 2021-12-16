@@ -22,7 +22,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var uri = new Uri($"https://jaomix.ru/category/{bookId}/");
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
 
-            var book = new Book(bookId) {
+            var book = new Book {
                 Cover = await GetCover(doc, uri),
                 Chapters = await FillChapters(doc, uri),
                 Title = HttpUtility.HtmlDecode(doc.GetByFilter("h1").InnerText.Trim()),

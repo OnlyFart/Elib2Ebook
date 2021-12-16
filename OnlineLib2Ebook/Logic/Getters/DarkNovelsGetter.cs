@@ -49,7 +49,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var uri = new Uri($"https://dark-novels.ru/{bookFullId}/");
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
 
-            var book = new Book(bookFullId) {
+            var book = new Book {
                 Cover = await GetCover(doc, uri),
                 Chapters = await FillChapters(bookId),
                 Title = HttpUtility.HtmlDecode(doc.GetTextByFilter("h2", "display-1").Trim()),

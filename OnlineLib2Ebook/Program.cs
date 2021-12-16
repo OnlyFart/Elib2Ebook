@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CommandLine;
 using OnlineLib2Ebook.Configs;
+using OnlineLib2Ebook.Extensions;
 using OnlineLib2Ebook.Logic.Builders;
 using OnlineLib2Ebook.Logic.Getters;
 
@@ -55,6 +56,7 @@ namespace OnlineLib2Ebook {
                 new RanobesGetter(config),
                 new JaomixGetter(config),
                 new DarkNovelsGetter(config),
+                new SamlibGetter(config),
             };
 
             foreach (var getter in getters) {

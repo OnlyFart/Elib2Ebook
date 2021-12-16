@@ -27,7 +27,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
 
             var ranobeBook = GetNextData<RanobeBook>(doc, "book");
 
-            var book = new Book(bookId) {
+            var book = new Book {
                 Cover = await GetCover(ranobeBook, uri),
                 Chapters = await FillChapters(ranobeBook, url),
                 Title = ranobeBook.Title,

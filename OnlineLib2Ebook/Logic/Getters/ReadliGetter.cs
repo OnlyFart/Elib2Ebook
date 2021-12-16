@@ -32,7 +32,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var name = doc.GetTextByFilter("h1", "main-info__title");
             var author = doc.GetTextByFilter("a", "main-info__link");
             
-            var book = new Book(bookId.ToString()) {
+            var book = new Book {
                 Cover = await GetCover(imageDiv, url),
                 Chapters = await FillChapters(bookId, pages, name),
                 Title = name,
