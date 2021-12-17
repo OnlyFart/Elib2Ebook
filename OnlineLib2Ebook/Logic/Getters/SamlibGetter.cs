@@ -59,7 +59,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
                     var htmlDoc = line.AsHtmlDoc();
                     foreach (var node in htmlDoc.DocumentNode.ChildNodes) {
                         if (!string.IsNullOrWhiteSpace(node.InnerText) || node.GetByFilter("img") != null) {
-                            text.AppendLine($"<p>{node.InnerHtml}</p>");
+                            text.AppendLine($"<p>{node.InnerHtml.Trim()}</p>");
                         }
                     }
                 }
