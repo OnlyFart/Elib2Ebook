@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Web;
 using EpubSharp;
 using EpubSharp.Format;
 using OnlineLib2Ebook.Extensions;
@@ -96,7 +97,7 @@ namespace OnlineLib2Ebook.Logic.Builders {
                 }
 
                 Console.WriteLine($"Добавляем часть {chapter.Title.CoverQuotes()}");
-                _writer.AddChapter(chapter.Title, ApplyPattern(chapter.Title, chapter.Content));
+                _writer.AddChapter(HttpUtility.HtmlDecode(chapter.Title), ApplyPattern(chapter.Title, chapter.Content));
             }
 
             return this;

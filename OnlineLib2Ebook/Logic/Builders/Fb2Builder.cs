@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using System.Xml.Linq;
 using EpubSharp.Format;
 using HtmlAgilityPack;
@@ -41,7 +42,7 @@ namespace OnlineLib2Ebook.Logic.Builders {
 
         private XElement CreateTitle(string text) {
             var p = CreateXElement("p");
-            p.Value = text;
+            p.Value = HttpUtility.HtmlDecode(text);
             
             var title = CreateXElement("title");
             
