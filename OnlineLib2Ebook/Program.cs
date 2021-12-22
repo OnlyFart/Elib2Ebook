@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using CommandLine;
@@ -14,21 +16,22 @@ namespace OnlineLib2Ebook {
         private static async Task Main(string[] args) {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             Console.OutputEncoding = Encoding.UTF8;
-            
+
             await Parser.Default.ParseArguments<Options>(args)
                 .WithParsedAsync(async options => {
                     var handler = new HttpClientHandler {
-                        AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli
+                        AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate |
+                                                 DecompressionMethods.Brotli
                     };
 
                     if (!string.IsNullOrEmpty(options.Proxy)) {
                         var split = options.Proxy.Split(":");
-                        handler.Proxy = new WebProxy(split[0], int.Parse(split[1])); 
+                        handler.Proxy = new WebProxy(split[0], int.Parse(split[1]));
                     }
 
                     var client = new HttpClient(handler);
                     var url = new Uri(options.Url);
-                    
+
                     var getterConfig = new BookGetterConfig(options, client);
                     using var getter = GetGetter(getterConfig, url);
 
@@ -44,28 +47,13 @@ namespace OnlineLib2Ebook {
                 _ => throw new ArgumentException("Неизвестный формат", nameof(format))
             };
         }
-        
+
         private static GetterBase GetGetter(BookGetterConfig config, Uri url) {
-            var getters = new GetterBase[] {
-                new LitnetGetter(config), 
-                new AuthorTodayGetter(config), 
-                new LitmarketGetter(config), 
-                new ReadliGetter(config),
-                new RulateGetter(config),
-                new RanobeGetter(config),
-                new RanobesGetter(config),
-                new JaomixGetter(config),
-                new DarkNovelsGetter(config),
-                new SamlibGetter(config),
-            };
-
-            foreach (var getter in getters) {
-                if (getter.IsSameUrl(url)) {
-                    return getter;
-                }
-            }
-
-            throw new ArgumentException("Данная система не поддерживается", nameof(url));
+            return Assembly.GetAssembly(typeof(GetterBase))!.GetTypes()
+                       .Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(GetterBase)))
+                       .Select(type => (GetterBase) Activator.CreateInstance(type, config))
+                       .FirstOrDefault(g => g!.IsSameUrl(url)) ??
+                   throw new ArgumentException("Данная система не поддерживается", nameof(url));
         }
     }
 }
