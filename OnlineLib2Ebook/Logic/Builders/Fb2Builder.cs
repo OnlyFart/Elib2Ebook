@@ -18,7 +18,15 @@ namespace OnlineLib2Ebook.Logic.Builders {
         private readonly XElement _titleInfo;
         private readonly XElement _body;
         private readonly List<XElement> _images = new();
-        
+
+        private readonly Dictionary<string, string> _map = new() {
+            {"strong", "strong"},
+            {"b", "strong"},
+            {"i", "emphasis"},
+            {"em", "emphasis"},
+            {"blockquote", "cite"},
+        };
+
         private Fb2Builder() {
             _book = CreateXElement("FictionBook");
             _book.SetAttributeValue(XNamespace.Xmlns + "xlink", _xlink.NamespaceName);
@@ -165,22 +173,6 @@ namespace OnlineLib2Ebook.Logic.Builders {
                 case "span":
                     p.Add(new XText(node.InnerText));
                     break;
-                case "em":
-                case "strong": 
-                    var elem = CreateXElement(node.Name);
-                    elem.Value = node.InnerText;
-                    p.Add(elem);
-                    break;
-                case "blockquote":
-                    var cite = CreateXElement("cite");
-                    cite.Value = node.InnerText;
-                    p.Add(cite);
-                    break;
-                case "i":
-                    var i = CreateXElement("emphasis");
-                    i.Value = node.InnerText;
-                    p.Add(i);
-                    break;
                 case "img":
                     if (node.Attributes["src"] == null) {
                         return;
@@ -191,8 +183,15 @@ namespace OnlineLib2Ebook.Logic.Builders {
                     p.Add(imageElem);
                     break;
                 default:
-                    p.Add(new XText(node.InnerText));
-                    Console.WriteLine(node.Name);
+                    if (_map.TryGetValue(node.Name, out var fb2Tag)) {
+                        var tag = CreateXElement(fb2Tag);
+                        tag.Value = node.InnerText;
+                        p.Add(tag);
+                    } else {
+                        p.Add(new XText(node.InnerText));
+                        Console.WriteLine(node.Name);
+                    }
+
                     break;
             }
             

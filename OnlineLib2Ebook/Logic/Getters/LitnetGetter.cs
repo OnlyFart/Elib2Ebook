@@ -62,8 +62,14 @@ namespace OnlineLib2Ebook.Logic.Getters {
                     if (page.Status == 0) {
                         break;
                     }
+
+                    var pageDoc = page.Data.AsHtmlDoc();
+                    var toRemove = pageDoc.DocumentNode.ChildNodes.Where(t => t.Name != "p" && t.Name != "#text").ToList();
+                    foreach (var node in toRemove) {
+                        node.Remove();
+                    }
                     
-                    text.Append(page.Data);
+                    text.Append(pageDoc.DocumentNode.InnerHtml);
                     if (page.IsLastPage) {
                         break;
                     }
