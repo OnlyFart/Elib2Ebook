@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using CommandLine;
 using OnlineLib2Ebook.Configs;
-using OnlineLib2Ebook.Extensions;
 using OnlineLib2Ebook.Logic.Builders;
 using OnlineLib2Ebook.Logic.Getters;
 
@@ -14,6 +13,7 @@ namespace OnlineLib2Ebook {
     class Program {
         private static async Task Main(string[] args) {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            Console.OutputEncoding = Encoding.UTF8;
             
             await Parser.Default.ParseArguments<Options>(args)
                 .WithParsedAsync(async options => {
