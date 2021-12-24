@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -51,6 +52,15 @@ namespace OnlineLib2Ebook.Extensions {
             return node.GetByFilter(name, @class)
                 ?.InnerText?
                 .Trim();
+        }
+
+        public static HtmlDocument RemoveNodes(this HtmlDocument doc, Func<HtmlNode, bool> predicate) {
+            var toRemove = doc.DocumentNode.ChildNodes.Where(predicate).ToList();
+            foreach (var node in toRemove) {
+                node.Remove();
+            }
+
+            return doc;
         }
         
         public static string GetTextByFilter(this HtmlNode node, string name) {

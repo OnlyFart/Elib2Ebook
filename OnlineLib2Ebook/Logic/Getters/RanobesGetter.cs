@@ -40,7 +40,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             if (url.Segments[1] == "chapters/") {
                 var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
                 var div = doc.DocumentNode.GetByFilterContains("div", "category");
-                return new Uri(url, div.Descendants().FirstOrDefault(t => t.Name == "a").Attributes["href"].Value);
+                return new Uri(url, div.GetByFilter("a").Attributes["href"].Value);
             }
 
             return url;
@@ -52,7 +52,10 @@ namespace OnlineLib2Ebook.Logic.Getters {
             foreach (var ranobeChapter in await GetChapters(GetTocLink(doc, url))) {
                 Console.WriteLine($"Загружаем главу \"{ranobeChapter.Title}\"");
                 var chapter = new Chapter();
-                var chapterDoc = ClearHtml(HttpUtility.HtmlDecode(await GetChapter(url, ranobeChapter.Url)).AsHtmlDoc());
+                var chapterDoc = HttpUtility.HtmlDecode(await GetChapter(url, ranobeChapter.Url))
+                    .AsHtmlDoc()
+                    .RemoveNodes(t => t.Name is "script" or "br" || t.Id?.Contains("yandex_rtb") == true);
+                
                 chapter.Images = await GetImages(chapterDoc, url);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
                 chapter.Title = ranobeChapter.Title;
@@ -63,15 +66,6 @@ namespace OnlineLib2Ebook.Logic.Getters {
             return result;
         }
 
-        private static HtmlDocument ClearHtml(HtmlDocument doc) {
-            var toRemove = doc.DocumentNode.Descendants().Where(t => t.Name is "script" or "br" || t.Id?.Contains("yandex_rtb") == true).ToList();
-            foreach (var node in toRemove) {
-                node.Remove();
-            }
-
-            return doc;
-        }
-        
         private async Task<string> GetChapter(Uri mainUrl, string url) {
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(mainUrl, url));
             var article = doc.GetElementbyId("arrticle");
@@ -88,8 +82,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
 
         private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
             var imagePath = doc.GetByFilter("div", "poster")
-                ?.Descendants()
-                ?.FirstOrDefault(t => t.Name == "img")
+                ?.GetByFilter("img")
                 ?.Attributes["src"]?.Value;
 
             return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));

@@ -79,11 +79,9 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 }
                 
                 var chapter = new Chapter();
-                var chapterDoc = HttpUtility.HtmlDecode(await GetChapter(bookId, darkNovelsChapter.Id)).AsHtmlDoc();
-                var toRemove = chapterDoc.DocumentNode.ChildNodes.Where(t => t.Name == "h1").ToList();
-                foreach (var node in toRemove) {
-                    node.Remove();
-                }
+                var chapterDoc = HttpUtility.HtmlDecode(await GetChapter(bookId, darkNovelsChapter.Id))
+                    .AsHtmlDoc()
+                    .RemoveNodes(t => t.Name == "h1");
                 
                 chapter.Images = await GetImages(chapterDoc, SystemUrl);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
@@ -97,8 +95,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
         
         private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
             var imagePath = doc.GetByFilter("div", "book-cover-container")
-                ?.Descendants()
-                ?.FirstOrDefault(t => t.Name == "img")
+                ?.GetByFilter("img")
                 ?.Attributes["data-src"]?.Value;
 
             return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));

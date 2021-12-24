@@ -36,7 +36,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             if (url.Segments[1] != "category/") {
                 var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
                 var div = doc.DocumentNode.GetByFilterContains("span", "entry-category");
-                return new Uri(url, div.Descendants().FirstOrDefault(t => t.Name == "a").Attributes["href"].Value);
+                return new Uri(url, div.GetByFilter("a").Attributes["href"].Value);
             }
 
             return url;
@@ -116,8 +116,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
         
         private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
             var imagePath = doc.GetByFilter("div", "img-book")
-                ?.Descendants()
-                ?.FirstOrDefault(t => t.Name == "img")
+                ?.GetByFilter("img")
                 ?.Attributes["src"]?.Value;
 
             return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));

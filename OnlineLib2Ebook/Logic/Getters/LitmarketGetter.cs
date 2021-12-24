@@ -43,10 +43,8 @@ namespace OnlineLib2Ebook.Logic.Getters {
         }
 
         private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
-            var imagePath = doc.DocumentNode.Descendants()
-                .FirstOrDefault(t => t.Name == "div" && t.Attributes["class"]?.Value == "front")
-                ?.Descendants()
-                ?.FirstOrDefault(t => t.Name == "img")
+            var imagePath = doc.GetByFilter("div", "front")
+                ?.GetByFilter("img")
                 ?.Attributes["data-src"]?.Value;
 
             return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));

@@ -12,7 +12,7 @@ using OnlineLib2Ebook.Logic.Builders;
 using OnlineLib2Ebook.Logic.Getters;
 
 namespace OnlineLib2Ebook {
-    class Program {
+    internal static class Program {
         private static async Task Main(string[] args) {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             Console.OutputEncoding = Encoding.UTF8;
@@ -20,7 +20,8 @@ namespace OnlineLib2Ebook {
             await Parser.Default.ParseArguments<Options>(args)
                 .WithParsedAsync(async options => {
                     var handler = new HttpClientHandler {
-                        AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate |
+                        AutomaticDecompression = DecompressionMethods.GZip | 
+                                                 DecompressionMethods.Deflate |
                                                  DecompressionMethods.Brotli
                     };
 

@@ -112,10 +112,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
         /// <param name="bookUri">Адрес страницы с книгой</param>
         /// <returns></returns>
         private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
-            var imagePath = doc.DocumentNode.Descendants()
-                .FirstOrDefault(t => t.Name == "img" && t.Attributes["class"]?.Value == "cover-image")
-                ?.Attributes["src"]?.Value;
-
+            var imagePath = doc.GetByFilter("img", "cover-image")?.Attributes["src"]?.Value;
             return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
         }
 

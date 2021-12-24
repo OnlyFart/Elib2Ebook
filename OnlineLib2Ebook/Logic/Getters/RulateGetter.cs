@@ -51,8 +51,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
         
         private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
             var imagePath = doc.GetByFilter("div", "slick")
-                ?.Descendants()
-                ?.FirstOrDefault(t => t.Name == "img")
+                ?.GetByFilter("img")
                 ?.Attributes["src"]?.Value;
 
             return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));

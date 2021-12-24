@@ -39,10 +39,8 @@ namespace OnlineLib2Ebook.Logic.Getters {
         }
         
         private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
-            var imagePath = doc.DocumentNode.Descendants()
-                .FirstOrDefault(t => t.Name == "div" && t.Attributes["class"]?.Value == "book-view-cover")
-                ?.Descendants()
-                ?.FirstOrDefault(t => t.Name == "img")
+            var imagePath = doc.GetByFilter("div", "book-view-cover")
+                ?.GetByFilter("img")
                 ?.Attributes["src"]?.Value;
 
             return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
@@ -63,11 +61,9 @@ namespace OnlineLib2Ebook.Logic.Getters {
                         break;
                     }
 
-                    var pageDoc = page.Data.AsHtmlDoc();
-                    var toRemove = pageDoc.DocumentNode.ChildNodes.Where(t => t.Name != "p" && t.Name != "#text").ToList();
-                    foreach (var node in toRemove) {
-                        node.Remove();
-                    }
+                    var pageDoc = page.Data
+                        .AsHtmlDoc()
+                        .RemoveNodes(t => t.Name != "p" && t.Name != "#text");
                     
                     text.Append(pageDoc.DocumentNode.InnerHtml);
                     if (page.IsLastPage) {

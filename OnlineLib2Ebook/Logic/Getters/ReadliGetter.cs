@@ -26,7 +26,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
 
             var pages = long.Parse(doc.GetTextByFilter("span", "button-pages__right").Split(' ')[0]);
             var imageDiv = doc.GetByFilter("div", "book-image");
-            var href = new Uri(url, imageDiv.Descendants().FirstOrDefault(t => t.Name == "a").Attributes["href"].Value);
+            var href = new Uri(url, imageDiv.GetByFilter("a").Attributes["href"].Value);
             var bookId = GetBookId(href);
             
             var name = doc.GetTextByFilter("h1", "main-info__title");
@@ -50,11 +50,10 @@ namespace OnlineLib2Ebook.Logic.Getters {
             return uri.Segments.Last();
         }
 
-        private Uri GetMainUrl(Uri url, HtmlDocument doc) {
-            var href = doc.DocumentNode.Descendants()
-                .FirstOrDefault(t => t.Name == "h1")
-                .Descendants()
-                .FirstOrDefault(t => t.Name == "a")
+        private static Uri GetMainUrl(Uri url, HtmlDocument doc) {
+            var href = doc
+                .GetByFilter("h1")
+                .GetByFilter("a")
                 .Attributes["href"]
                 .Value;
 
@@ -62,10 +61,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
         }
 
         private Task<Image> GetCover(HtmlNode doc, Uri bookUri) {
-            var imagePath = doc.Descendants()
-                ?.FirstOrDefault(t => t.Name == "img")
-                ?.Attributes["src"]?.Value;
-
+            var imagePath = doc.GetByFilter("img")?.Attributes["src"]?.Value;
             return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
         }
 
