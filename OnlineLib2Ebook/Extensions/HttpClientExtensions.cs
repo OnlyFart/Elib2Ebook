@@ -19,6 +19,7 @@ namespace OnlineLib2Ebook.Extensions {
 
                     return response;
                 } catch (Exception ex) {
+                    Console.WriteLine(ex);
                     await Task.Delay(i * 3000);
                 }
             }
@@ -42,6 +43,7 @@ namespace OnlineLib2Ebook.Extensions {
                     
                     return response;
                 } catch (Exception ex) {
+                    Console.WriteLine(ex);
                     await Task.Delay(i * 3000);
                 }
             }

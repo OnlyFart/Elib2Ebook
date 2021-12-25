@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using HtmlAgilityPack;
+using HtmlAgilityPack.CssSelectors.NetCore;
 using OnlineLib2Ebook.Configs;
 using OnlineLib2Ebook.Exceptions;
 using OnlineLib2Ebook.Extensions;

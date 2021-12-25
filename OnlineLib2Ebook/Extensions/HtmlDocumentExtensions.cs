@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using HtmlAgilityPack;
+using HtmlAgilityPack.CssSelectors.NetCore;
 
 namespace OnlineLib2Ebook.Extensions {
     public static class HtmlDocumentExtensions {

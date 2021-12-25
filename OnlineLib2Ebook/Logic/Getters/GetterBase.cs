@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
+using HtmlAgilityPack.CssSelectors.NetCore;
 using OnlineLib2Ebook.Configs;
 using OnlineLib2Ebook.Extensions;
 using OnlineLib2Ebook.Types.Book;
