@@ -14,11 +14,11 @@ namespace OnlineLib2Ebook.Extensions {
             return sw.ToString();
         }
 
-        public static string GetTextByFilter(this HtmlDocument doc, string selector) {
-            return doc.DocumentNode.GetTextByFilter(selector);
+        public static string GetTextBySelector(this HtmlDocument doc, string selector) {
+            return doc.DocumentNode.GetTextBySelector(selector);
         }
         
-        public static string GetTextByFilter(this HtmlNode node, string selector) {
+        public static string GetTextBySelector(this HtmlNode node, string selector) {
             return node.QuerySelector(selector)?.InnerText?.Trim();
         }
 

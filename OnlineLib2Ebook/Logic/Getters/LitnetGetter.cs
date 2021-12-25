@@ -26,13 +26,13 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var uri = new Uri($"https://litnet.com/ru/book/{bookId}");
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
 
-            var title = HttpUtility.HtmlDecode(doc.GetTextByFilter("h1.roboto"));
+            var title = HttpUtility.HtmlDecode(doc.GetTextBySelector("h1.roboto"));
             
             var book = new Book {
                 Cover = await GetCover(doc, uri),
                 Chapters = await FillChapters(doc, uri, title, bookId, token),
                 Title = title,
-                Author = HttpUtility.HtmlDecode(doc.GetTextByFilter("a.author"))
+                Author = HttpUtility.HtmlDecode(doc.GetTextBySelector("a.author"))
             };
             
             return book;
@@ -109,8 +109,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
         }
 
         private async Task<IEnumerable<ChapterShort>> GetChapters(HtmlDocument doc, string bookId, string title) {
-            var result = doc.QuerySelectorAll("option")
-                .Where(t => !string.IsNullOrWhiteSpace(t.Attributes["value"].Value))
+            var result = doc.QuerySelectorAll("option[value]")
                 .Select(option => new ChapterShort(option.Attributes["value"].Value, option.InnerText)).ToList();
 
             if (result.Count > 0) {
@@ -118,7 +117,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             }
 
             var readerPage = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://litnet.com/ru/reader/{bookId}"));
-            var chapter = readerPage.QuerySelectorAll("div").FirstOrDefault(t => t.Attributes["data-chapter"] != null);
+            var chapter = readerPage.QuerySelector("div[data-chapter]");
             if (chapter == null) {
                 return result;
             }

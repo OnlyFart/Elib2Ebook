@@ -29,7 +29,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var book = new Book {
                 Cover = await GetCover(doc, url),
                 Chapters = await FillChapters(doc, url, bookId),
-                Title = HttpUtility.HtmlDecode(doc.GetTextByFilter("h1")),
+                Title = HttpUtility.HtmlDecode(doc.GetTextBySelector("h1")),
                 Author = HttpUtility.HtmlDecode(GetAuthor(doc))
             };
             
@@ -37,12 +37,11 @@ namespace OnlineLib2Ebook.Logic.Getters {
         }
 
         private static string GetAuthor(HtmlDocument doc) {
-            var info = doc.QuerySelector("#Info");
             const string AUTHOR = "rulate";
-            foreach (var p in info.QuerySelectorAll("p")) {
+            foreach (var p in doc.QuerySelectorAll("#Info p")) {
                 var strong = p.QuerySelector("strong");
                 if (strong != null && strong.InnerText.Contains("Автор")) {
-                    return p.GetTextByFilter("em") ?? AUTHOR;
+                    return p.GetTextBySelector("em") ?? AUTHOR;
                 }
             }
 
@@ -76,13 +75,13 @@ namespace OnlineLib2Ebook.Logic.Getters {
 
         private async Task<string> GetChapter(string bookId, string chapterId) {
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://tl.rulate.ru/book/{bookId}/{chapterId}/ready"));
-            return doc.GetTextByFilter("h1") == "Доступ запрещен" ? string.Empty : doc.QuerySelector("div.content-text")?.InnerHtml ?? string.Empty;
+            return doc.GetTextBySelector("h1") == "Доступ запрещен" ? string.Empty : doc.QuerySelector("div.content-text")?.InnerHtml ?? string.Empty;
         }
 
         private static IEnumerable<ChapterShort> GetChapters(HtmlDocument doc) {
             return doc.QuerySelectorAll("#Chapters tr[data-id]")
                 .Skip(1)
-                .Select(chapter => new ChapterShort(chapter.Attributes["data-id"].Value, HttpUtility.HtmlDecode(chapter.GetTextByFilter("td.t")).Trim()));
+                .Select(chapter => new ChapterShort(chapter.Attributes["data-id"].Value, HttpUtility.HtmlDecode(chapter.GetTextBySelector("td.t")).Trim()));
         }
 
         private async Task Mature(Uri url) {

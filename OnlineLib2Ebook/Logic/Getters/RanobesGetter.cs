@@ -67,9 +67,8 @@ namespace OnlineLib2Ebook.Logic.Getters {
 
         private async Task<string> GetChapter(Uri mainUrl, string url) {
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(mainUrl, url));
-            var article = doc.QuerySelector("#arrticle");
             var sb = new StringBuilder();
-            foreach (var node in article.ChildNodes) {
+            foreach (var node in doc.QuerySelector("#arrticle").ChildNodes) {
                 if (node.Attributes["class"]?.Value?.Contains("splitnewsnavigation") == null) {
                     var tag = node.Name == "#text" ? "p" : node.Name;
                     sb.AppendLine($"<{tag}>{node.InnerHtml.Trim()}</{tag}>");
@@ -99,11 +98,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             for (var i = 1; i <= pages; i++) {
                 doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(tocUri.AbsoluteUri + "/page/" + i));
                 chapters.AddRange(doc
-                    .QuerySelector("#dle-content")
-                    .ChildNodes
-                    .Where(child => child.Attributes["class"]?.Value == "cat_block cat_line")
-                    .Select(child => child.QuerySelector("a"))
-                    .Where(a => a != null)
+                    .QuerySelectorAll("#dle-content > .cat_block.cat_line a")
                     .Select(a => new RanobesChapter(a.Attributes["title"].Value, a.Attributes["href"].Value)));
             }
             Console.WriteLine($"Получено {chapters.Count} глав");

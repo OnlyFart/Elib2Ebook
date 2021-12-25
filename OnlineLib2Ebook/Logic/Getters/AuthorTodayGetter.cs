@@ -57,8 +57,8 @@ namespace OnlineLib2Ebook.Logic.Getters {
             return new Book {
                 Cover = await GetCover(doc, bookUri),
                 Chapters = await FillChapters(content, long.Parse(bookId), GetUserId(content)),
-                Title = HttpUtility.HtmlDecode(doc.GetTextByFilter("div.book-title")),
-                Author = HttpUtility.HtmlDecode(doc.GetTextByFilter("div.book-author"))
+                Title = HttpUtility.HtmlDecode(doc.GetTextBySelector("div.book-title")),
+                Author = HttpUtility.HtmlDecode(doc.GetTextBySelector("div.book-author"))
             };
         }
 

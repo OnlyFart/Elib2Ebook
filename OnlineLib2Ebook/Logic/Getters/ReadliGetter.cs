@@ -24,13 +24,13 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
             }
 
-            var pages = long.Parse(doc.GetTextByFilter("span.button-pages__right").Split(' ')[0]);
+            var pages = long.Parse(doc.GetTextBySelector("span.button-pages__right").Split(' ')[0]);
             var imageDiv = doc.QuerySelector("div.book-image");
             var href = new Uri(url, imageDiv.QuerySelector("a").Attributes["href"].Value);
             var bookId = GetBookId(href);
             
-            var name = doc.GetTextByFilter("h1.main-info__title");
-            var author = doc.GetTextByFilter("a.main-info__link");
+            var name = doc.GetTextBySelector("h1.main-info__title");
+            var author = doc.GetTextBySelector("a.main-info__link");
             
             var book = new Book {
                 Cover = await GetCover(imageDiv, url),
@@ -69,10 +69,8 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 var page = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://readli.net/chitat-online/?b={bookId}&pg={i}"));
                 var content = page.QuerySelector("div.reading__text");
 
-                foreach (var node in content.ChildNodes) {
-                    if (node.Name is "h3" or "p") {
-                        text.AppendFormat($"<p>{HttpUtility.HtmlEncode(node.InnerText)}</p>");
-                    }
+                foreach (var node in content.QuerySelectorAll("> h3, > p")) {
+                    text.AppendFormat($"<p>{HttpUtility.HtmlEncode(node.InnerText)}</p>");
                 }
             }
             

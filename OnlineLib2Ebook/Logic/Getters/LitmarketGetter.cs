@@ -27,12 +27,12 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var toc = JsonSerializer.Deserialize<List<Block>>(content.Toc);
             var blocks = await GetBlocks(content.Book.EbookId);
 
-            var title = Normalize(doc.GetTextByFilter("h1.card-title"));
+            var title = Normalize(doc.GetTextBySelector("h1.card-title"));
             var book = new Book {
                 Cover = await GetCover(doc, url),
                 Chapters = await FillChapters(toc, blocks, url, content.Book.EbookId, title),
                 Title = title,
-                Author = Normalize(doc.GetTextByFilter("div.card-author").Replace("Автор:", "")),
+                Author = Normalize(doc.GetTextBySelector("div.card-author").Replace("Автор:", "")),
             };
             
             return book;

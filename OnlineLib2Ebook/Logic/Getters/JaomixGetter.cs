@@ -25,7 +25,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var book = new Book {
                 Cover = await GetCover(doc, uri),
                 Chapters = await FillChapters(doc, uri),
-                Title = HttpUtility.HtmlDecode(doc.GetTextByFilter("h1")),
+                Title = HttpUtility.HtmlDecode(doc.GetTextBySelector("h1")),
                 Author = "Jaomix"
             };
             
@@ -87,12 +87,10 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var post = await _config.Client.PostAsync("https://jaomix.ru/wp-admin/admin-ajax.php", new FormUrlEncodedContent(data));
             var content = await post.Content.ReadAsStringAsync();
             doc = content.AsHtmlDoc();
-            
-            var toc = doc.QuerySelector("select.sel-toc");
 
             Console.WriteLine("Получаем оглавление");
             
-            foreach (var option in toc.ChildNodes) {
+            foreach (var option in doc.QuerySelector("select.sel-toc").ChildNodes) {
                 var pageId = option.Attributes["value"].Value;
                 if (pageId == "0") {
                     continue;
