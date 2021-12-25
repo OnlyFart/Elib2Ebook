@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using OnlineLib2Ebook.Configs;
@@ -20,7 +19,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
         public override async Task<Book> Get(Uri url) {
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
 
-            var title = HttpUtility.HtmlDecode(doc.GetTextBySelector("h2"));
+            var title = doc.GetTextBySelector("h2").HtmlDecode();
             var book = new Book {
                 Cover = null,
                 Chapters = await FillChapters(doc, url, title),
@@ -48,7 +47,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
 
             doc.LoadHtml(doc.Text[start..stop]);
             
-            var sr = new StringReader(HttpUtility.HtmlDecode(doc.DocumentNode.InnerHtml));
+            var sr = new StringReader(doc.DocumentNode.InnerHtml.HtmlDecode());
             var text = new StringBuilder();
             while (true) {
                 var line = await sr.ReadLineAsync();
@@ -67,7 +66,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             }
             
 
-            var chapterDoc = HttpUtility.HtmlDecode(text.ToString()).AsHtmlDoc();
+            var chapterDoc = text.ToString().HtmlDecode().AsHtmlDoc();
             chapter.Images = await GetImages(chapterDoc, url);
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;
             chapter.Title = title;

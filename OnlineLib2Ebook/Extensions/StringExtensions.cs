@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Text;
+using System.Web;
 using HtmlAgilityPack;
 
 namespace OnlineLib2Ebook.Extensions {
@@ -66,6 +67,24 @@ namespace OnlineLib2Ebook.Extensions {
         /// <returns></returns>
         public static string Crop(this string self, int lenght) {
             return self.Length > lenght ? self[..lenght] : self;
+        }
+
+        /// <summary>
+        /// HtmlDecode
+        /// </summary>
+        /// <param name="self"></param>
+        /// <returns></returns>
+        public static string HtmlDecode(this string self) {
+            return HttpUtility.HtmlDecode(self);
+        }
+        
+        /// <summary>
+        /// HtmlEncode
+        /// </summary>
+        /// <param name="self"></param>
+        /// <returns></returns>
+        public static string HtmlEncode(this string self) {
+            return HttpUtility.HtmlEncode(self);
         }
     }
 }

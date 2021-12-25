@@ -40,7 +40,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
         }
 
         private static string Normalize(string str) {
-            return HttpUtility.HtmlDecode(Regex.Replace(Regex.Replace(str, "\t|\n", " "), "\\s+", " ").Trim());
+            return Regex.Replace(Regex.Replace(str, "\t|\n", " "), "\\s+", " ").Trim().HtmlDecode();
         }
 
         private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
@@ -87,7 +87,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
                     text.Append("<p>" + p + "</p>");
                 }
 
-                var chapterDoc = HttpUtility.HtmlDecode(text.ToString()).AsHtmlDoc();
+                var chapterDoc = text.ToString().HtmlDecode().AsHtmlDoc();
                 chapter.Images = await GetImages(chapterDoc, bookUri);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
                 chapter.Title = toc[i].Chunk.Mods[0].Text.Trim();

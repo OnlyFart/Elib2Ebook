@@ -71,11 +71,11 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 var content = page.QuerySelector("div.reading__text");
 
                 foreach (var node in content.QuerySelectorAll("> h3, > p")) {
-                    text.AppendFormat($"<p>{HttpUtility.HtmlEncode(node.InnerText)}</p>");
+                    text.AppendFormat($"<p>{node.InnerText.HtmlEncode()}</p>");
                 }
             }
             
-            var chapterDoc = HttpUtility.HtmlDecode(text.ToString()).AsHtmlDoc();
+            var chapterDoc =text.ToString().HtmlDecode().AsHtmlDoc();
             chapter.Images = await GetImages(chapterDoc, new Uri("https://readli.net/chitat-online/"));
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;
             chapter.Title = name;

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using OnlineLib2Ebook.Configs;
@@ -26,7 +25,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var book = new Book {
                 Cover = await GetCover(doc, uri),
                 Chapters = await FillChapters(doc, uri),
-                Title = HttpUtility.HtmlDecode(doc.GetTextBySelector("h1")),
+                Title = doc.GetTextBySelector("h1").HtmlDecode(),
                 Author = "Jaomix"
             };
             
@@ -49,7 +48,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             foreach (var jaomixChapter in await GetChapters(doc, url)) {
                 Console.WriteLine($"Загружаем главу \"{jaomixChapter.Title}\"");
                 var chapter = new Chapter();
-                var chapterDoc = HttpUtility.HtmlDecode(await GetChapter(jaomixChapter.Url)).AsHtmlDoc();
+                var chapterDoc = await GetChapter(jaomixChapter.Url);
                 chapter.Images = await GetImages(chapterDoc, url);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
                 chapter.Title = jaomixChapter.Title;
@@ -60,7 +59,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             return result;
         }
 
-        private async Task<string> GetChapter(Uri jaomixChapterUrl) {
+        private async Task<HtmlDocument> GetChapter(Uri jaomixChapterUrl) {
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(jaomixChapterUrl);
             var sb = new StringBuilder();
             
@@ -71,7 +70,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 }
             }
             
-            return sb.ToString();
+            return sb.ToString().HtmlDecode().AsHtmlDoc();
         }
 
         private async Task<IEnumerable<JaomixChapter>> GetChapters(HtmlDocument doc, Uri url) {

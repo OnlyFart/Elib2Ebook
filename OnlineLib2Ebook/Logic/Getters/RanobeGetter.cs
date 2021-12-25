@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.Web;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using OnlineLib2Ebook.Configs;
@@ -45,7 +44,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 Console.WriteLine($"Загружаем главу \"{ranobeChapter.Title}\"");
                 var chapter = new Chapter();
                 var ranobesChapter = await GetChapter(url, ranobeChapter.Url);
-                var chapterDoc = HttpUtility.HtmlDecode(ranobesChapter.Content.Text).AsHtmlDoc();
+                var chapterDoc = ranobesChapter.Content.Text.HtmlDecode().AsHtmlDoc();
                 chapter.Images = await GetImages(chapterDoc, url);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
                 chapter.Title = ranobeChapter.Title;

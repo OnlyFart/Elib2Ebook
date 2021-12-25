@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using OnlineLib2Ebook.Configs;
@@ -30,7 +29,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var book = new Book {
                 Cover = await GetCover(doc, uri),
                 Chapters = await FillChapters(doc, uri),
-                Title = HttpUtility.HtmlDecode(doc.QuerySelector("h1.title").FirstChild.InnerText.Trim()),
+                Title = doc.QuerySelector("h1.title").FirstChild.InnerText.Trim().HtmlDecode(),
                 Author = "Ранобэс"
             };
             
@@ -52,10 +51,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             foreach (var ranobeChapter in await GetChapters(GetTocLink(doc, url))) {
                 Console.WriteLine($"Загружаем главу \"{ranobeChapter.Title}\"");
                 var chapter = new Chapter();
-                var chapterDoc = HttpUtility.HtmlDecode(await GetChapter(url, ranobeChapter.Url))
-                    .AsHtmlDoc()
-                    .RemoveNodes(t => t.Name is "script" or "br" || t.Id?.Contains("yandex_rtb") == true);
-                
+                var chapterDoc = await GetChapter(url, ranobeChapter.Url);
                 chapter.Images = await GetImages(chapterDoc, url);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
                 chapter.Title = ranobeChapter.Title;
@@ -66,7 +62,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             return result;
         }
 
-        private async Task<string> GetChapter(Uri mainUrl, string url) {
+        private async Task<HtmlDocument> GetChapter(Uri mainUrl, string url) {
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(mainUrl, url));
             var sb = new StringBuilder();
             foreach (var node in doc.QuerySelectorAll("#arrticle > :not(.splitnewsnavigation)")) {
@@ -74,7 +70,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 sb.AppendLine($"<{tag}>{node.InnerHtml.Trim()}</{tag}>");
             }
             
-            return sb.ToString();
+            return sb.ToString().HtmlDecode().AsHtmlDoc().RemoveNodes(t => t.Name is "script" or "br" || t.Id?.Contains("yandex_rtb") == true);
         }
 
         private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {

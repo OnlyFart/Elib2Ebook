@@ -9,7 +9,6 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Web;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using OnlineLib2Ebook.Configs;
@@ -53,7 +52,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var book = new Book {
                 Cover = await GetCover(doc, uri),
                 Chapters = await FillChapters(bookId),
-                Title = HttpUtility.HtmlDecode(doc.GetTextBySelector("h2.display-1")),
+                Title = doc.GetTextBySelector("h2.display-1").HtmlDecode(),
                 Author = "DarkNovels"
             };
             
@@ -80,10 +79,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 }
                 
                 var chapter = new Chapter();
-                var chapterDoc = HttpUtility.HtmlDecode(await GetChapter(bookId, darkNovelsChapter.Id))
-                    .AsHtmlDoc()
-                    .RemoveNodes(t => t.Name == "h1");
-                
+                var chapterDoc = await GetChapter(bookId, darkNovelsChapter.Id);
                 chapter.Images = await GetImages(chapterDoc, SystemUrl);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
                 chapter.Title = darkNovelsChapter.Title;
@@ -103,10 +99,10 @@ namespace OnlineLib2Ebook.Logic.Getters {
             return await _config.Client.GetFromJsonAsync<DarkNovelsData<DarkNovelsChapter[]>>($"https://api.dark-novels.ru/v2/toc/{bookId}").ContinueWith(t => t.Result.Data);
         }
 
-        private async Task<string> GetChapter(string bookId, int chapterId) {
+        private async Task<HtmlDocument> GetChapter(string bookId, int chapterId) {
             var data = await _config.Client.PostWithTriesAsync(new Uri("https://api.dark-novels.ru/v2/chapter/"), GetData(bookId, chapterId));
             if (data.StatusCode == HttpStatusCode.BadRequest) {
-                return string.Empty;
+                return new HtmlDocument();
             }
 
             using var zip = new ZipArchive(await data.Content.ReadAsStreamAsync());
@@ -118,7 +114,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 }
             }
 
-            return sb.ToString();
+            return sb.ToString().HtmlDecode().AsHtmlDoc().RemoveNodes(d => d.Name == "h1");
         }
 
         private static MultipartFormDataContent GetData(string bookId, int chapterId) {

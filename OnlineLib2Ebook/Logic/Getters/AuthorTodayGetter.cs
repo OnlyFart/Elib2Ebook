@@ -8,7 +8,6 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Web;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using OnlineLib2Ebook.Configs;
@@ -58,8 +57,8 @@ namespace OnlineLib2Ebook.Logic.Getters {
             return new Book {
                 Cover = await GetCover(doc, bookUri),
                 Chapters = await FillChapters(content, long.Parse(bookId), GetUserId(content)),
-                Title = HttpUtility.HtmlDecode(doc.GetTextBySelector("div.book-title")),
-                Author = HttpUtility.HtmlDecode(doc.GetTextBySelector("div.book-author"))
+                Title = doc.GetTextBySelector("div.book-title").HtmlDecode(),
+                Author = doc.GetTextBySelector("div.book-author").HtmlDecode()
             };
         }
 
@@ -214,7 +213,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 sb.Append((char) (encodedText[i] ^ secret[i % secret.Length]));
             }
 
-            return HttpUtility.HtmlDecode(sb.ToString());
+            return sb.ToString().HtmlDecode();
         }
     }
 }

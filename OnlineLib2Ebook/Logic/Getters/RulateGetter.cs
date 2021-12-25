@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using OnlineLib2Ebook.Configs;
@@ -30,8 +29,8 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var book = new Book {
                 Cover = await GetCover(doc, url),
                 Chapters = await FillChapters(doc, url, bookId),
-                Title = HttpUtility.HtmlDecode(doc.GetTextBySelector("h1")),
-                Author = HttpUtility.HtmlDecode(GetAuthor(doc))
+                Title = doc.GetTextBySelector("h1").HtmlDecode(),
+                Author = GetAuthor(doc).HtmlDecode()
             };
             
             return book;
@@ -63,7 +62,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 
                 var text = await GetChapter(bookId, id);
 
-                var chapterDoc = HttpUtility.HtmlDecode(text).AsHtmlDoc();
+                var chapterDoc = text.HtmlDecode().AsHtmlDoc();
                 chapter.Images = await GetImages(chapterDoc, bookUri);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
                 chapter.Title = name;
@@ -81,7 +80,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
 
         private static IEnumerable<ChapterShort> GetChapters(HtmlDocument doc) {
             return doc.QuerySelectorAll("#Chapters tr[data-id]")
-                .Select(chapter => new ChapterShort(chapter.Attributes["data-id"].Value, HttpUtility.HtmlDecode(chapter.GetTextBySelector("td.t")).Trim()));
+                .Select(chapter => new ChapterShort(chapter.Attributes["data-id"].Value, chapter.GetTextBySelector("td.t").HtmlDecode().Trim()));
         }
 
         private async Task Mature(Uri url) {

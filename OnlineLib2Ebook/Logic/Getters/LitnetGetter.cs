@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using OnlineLib2Ebook.Configs;
@@ -27,13 +26,13 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var uri = new Uri($"https://litnet.com/ru/book/{bookId}");
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
 
-            var title = HttpUtility.HtmlDecode(doc.GetTextBySelector("h1.roboto"));
+            var title = doc.GetTextBySelector("h1.roboto").HtmlDecode();
             
             var book = new Book {
                 Cover = await GetCover(doc, uri),
                 Chapters = await FillChapters(doc, uri, title, bookId, token),
                 Title = title,
-                Author = HttpUtility.HtmlDecode(doc.GetTextBySelector("a.author"))
+                Author = doc.GetTextBySelector("a.author").HtmlDecode()
             };
             
             return book;
@@ -69,7 +68,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
                     }
                 }
                 
-                var chapterDoc = HttpUtility.HtmlDecode(text.ToString()).AsHtmlDoc();
+                var chapterDoc = text.ToString().HtmlDecode().AsHtmlDoc();
                 chapter.Images = await GetImages(chapterDoc, bookUri);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
                 chapter.Title = litnetChapter.Name;
