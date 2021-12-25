@@ -69,11 +69,9 @@ namespace OnlineLib2Ebook.Logic.Getters {
         private async Task<string> GetChapter(Uri mainUrl, string url) {
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(mainUrl, url));
             var sb = new StringBuilder();
-            foreach (var node in doc.QuerySelector("#arrticle").ChildNodes) {
-                if (node.Attributes["class"]?.Value?.Contains("splitnewsnavigation") == null) {
-                    var tag = node.Name == "#text" ? "p" : node.Name;
-                    sb.AppendLine($"<{tag}>{node.InnerHtml.Trim()}</{tag}>");
-                }
+            foreach (var node in doc.QuerySelectorAll("#arrticle > :not(.splitnewsnavigation)")) {
+                var tag = node.Name == "#text" ? "p" : node.Name;
+                sb.AppendLine($"<{tag}>{node.InnerHtml.Trim()}</{tag}>");
             }
             
             return sb.ToString();
@@ -85,13 +83,13 @@ namespace OnlineLib2Ebook.Logic.Getters {
         }
 
         private Uri GetTocLink(HtmlDocument doc, Uri uri) {
-            var div = doc.QuerySelector("div.r-fullstory-chapters-foot");
-            return new Uri(uri, div.QuerySelectorAll("a").LastOrDefault(t => t.Attributes["title"]?.Value == "Перейти в оглавление").Attributes["href"].Value);
+            var relativeUri = doc.QuerySelector("div.r-fullstory-chapters-foot a[title~=оглавление]").Attributes["href"].Value;
+            return new Uri(uri, relativeUri);
         }
         
         private async Task<IEnumerable<RanobesChapter>> GetChapters(Uri tocUri) {
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(tocUri);
-            var lastA = doc.QuerySelectorAll("div.pages a").LastOrDefault()?.InnerText;
+            var lastA = doc.QuerySelector("div.pages a:last-child")?.InnerText;
             var pages = string.IsNullOrWhiteSpace(lastA) ? 1 : int.Parse(lastA);
             
             Console.WriteLine("Получаем оглавление");

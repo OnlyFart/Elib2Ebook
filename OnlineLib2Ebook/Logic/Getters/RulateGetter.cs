@@ -81,7 +81,6 @@ namespace OnlineLib2Ebook.Logic.Getters {
 
         private static IEnumerable<ChapterShort> GetChapters(HtmlDocument doc) {
             return doc.QuerySelectorAll("#Chapters tr[data-id]")
-                .Skip(1)
                 .Select(chapter => new ChapterShort(chapter.Attributes["data-id"].Value, HttpUtility.HtmlDecode(chapter.GetTextBySelector("td.t")).Trim()));
         }
 
