@@ -24,13 +24,13 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
             }
 
-            var pages = long.Parse(doc.GetTextByFilter("span", "button-pages__right").Split(' ')[0]);
-            var imageDiv = doc.GetByFilter("div", "book-image");
-            var href = new Uri(url, imageDiv.GetByFilter("a").Attributes["href"].Value);
+            var pages = long.Parse(doc.GetTextByFilter("span.button-pages__right").Split(' ')[0]);
+            var imageDiv = doc.QuerySelector("div.book-image");
+            var href = new Uri(url, imageDiv.QuerySelector("a").Attributes["href"].Value);
             var bookId = GetBookId(href);
             
-            var name = doc.GetTextByFilter("h1", "main-info__title");
-            var author = doc.GetTextByFilter("a", "main-info__link");
+            var name = doc.GetTextByFilter("h1.main-info__title");
+            var author = doc.GetTextByFilter("a.main-info__link");
             
             var book = new Book {
                 Cover = await GetCover(imageDiv, url),
@@ -51,17 +51,12 @@ namespace OnlineLib2Ebook.Logic.Getters {
         }
 
         private static Uri GetMainUrl(Uri url, HtmlDocument doc) {
-            var href = doc
-                .GetByFilter("h1")
-                .GetByFilter("a")
-                .Attributes["href"]
-                .Value;
-
+            var href = doc.QuerySelector("h1 a").Attributes["href"].Value;
             return new Uri(url, href);
         }
 
         private Task<Image> GetCover(HtmlNode doc, Uri bookUri) {
-            var imagePath = doc.GetByFilter("img")?.Attributes["src"]?.Value;
+            var imagePath = doc.QuerySelector("img")?.Attributes["src"]?.Value;
             return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
         }
 
@@ -72,7 +67,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             for (var i = 1; i <= pages; i++) {
                 Console.WriteLine($"Получаю страницу {i}/{pages}");
                 var page = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://readli.net/chitat-online/?b={bookId}&pg={i}"));
-                var content = page.GetByFilter("div", "reading__text");
+                var content = page.QuerySelector("div.reading__text");
 
                 foreach (var node in content.ChildNodes) {
                     if (node.Name is "h3" or "p") {

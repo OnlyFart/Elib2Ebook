@@ -25,7 +25,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var book = new Book {
                 Cover = await GetCover(doc, uri),
                 Chapters = await FillChapters(doc, uri),
-                Title = HttpUtility.HtmlDecode(doc.GetByFilter("h1").InnerText.Trim()),
+                Title = HttpUtility.HtmlDecode(doc.GetTextByFilter("h1")),
                 Author = "Jaomix"
             };
             
@@ -35,8 +35,8 @@ namespace OnlineLib2Ebook.Logic.Getters {
         private async Task<Uri> GetMainUrl(Uri url) {
             if (url.Segments[1] != "category/") {
                 var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
-                var div = doc.DocumentNode.GetByFilterContains("span", "entry-category");
-                return new Uri(url, div.GetByFilter("a").Attributes["href"].Value);
+                var div = doc.QuerySelector("span.entry-category");
+                return new Uri(url, div.QuerySelector("a").Attributes["href"].Value);
             }
 
             return url;
@@ -63,7 +63,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(jaomixChapterUrl);
             var sb = new StringBuilder();
             
-            foreach (var node in doc.DocumentNode.GetByFilterContains("div", "themeform").ChildNodes) {
+            foreach (var node in doc.QuerySelector("div.themeform").ChildNodes) {
                 if (node.Name != "br" && node.Name != "script" && !string.IsNullOrWhiteSpace(node.InnerHtml) && node.Attributes["class"]?.Value?.Contains("adblock-service") == null) {
                     var tag = node.Name == "#text" ? "p" : node.Name;
                     sb.AppendLine($"<{tag}>{node.InnerHtml.Trim()}</{tag}>");
@@ -74,7 +74,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
         }
 
         private async Task<IEnumerable<JaomixChapter>> GetChapters(HtmlDocument doc, Uri url) {
-            var termId = doc.GetByFilter("div", "like-but").Id;
+            var termId = doc.QuerySelector("div.like-but").Id;
 
             var data = new Dictionary<string, string> {
                 { "action", "toc" },
@@ -88,7 +88,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var content = await post.Content.ReadAsStringAsync();
             doc = content.AsHtmlDoc();
             
-            var toc = doc.DocumentNode.GetByFilterContains("select", "sel-toc");
+            var toc = doc.QuerySelector("select.sel-toc");
 
             Console.WriteLine("Получаем оглавление");
             
@@ -115,19 +115,12 @@ namespace OnlineLib2Ebook.Logic.Getters {
         }
         
         private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
-            var imagePath = doc.GetByFilter("div", "img-book")
-                ?.GetByFilter("img")
-                ?.Attributes["src"]?.Value;
-
+            var imagePath = doc.QuerySelector("div.img-book img")?.Attributes["src"]?.Value;
             return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
         }
 
-        private IEnumerable<JaomixChapter> ParseChapters(HtmlDocument doc, Uri url) {
-            return doc.DocumentNode
-                .GetByFilterContains("div", "hiddenstab")
-                .Descendants()
-                .Where(t => t.Name == "a")
-                .Select(a => new JaomixChapter(a.InnerText.Trim(), new Uri(url, a.Attributes["href"].Value)));
+        private static IEnumerable<JaomixChapter> ParseChapters(HtmlDocument doc, Uri url) {
+            return doc.QuerySelectorAll("div.hiddenstab a").Select(a => new JaomixChapter(a.InnerText.Trim(), new Uri(url, a.Attributes["href"].Value)));
         }
     }
 }

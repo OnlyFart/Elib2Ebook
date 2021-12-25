@@ -57,8 +57,8 @@ namespace OnlineLib2Ebook.Logic.Getters {
             return new Book {
                 Cover = await GetCover(doc, bookUri),
                 Chapters = await FillChapters(content, long.Parse(bookId), GetUserId(content)),
-                Title = HttpUtility.HtmlDecode(doc.GetTextByFilter("div", "book-title")),
-                Author = HttpUtility.HtmlDecode(doc.GetTextByFilter("div", "book-author"))
+                Title = HttpUtility.HtmlDecode(doc.GetTextByFilter("div.book-title")),
+                Author = HttpUtility.HtmlDecode(doc.GetTextByFilter("div.book-author"))
             };
         }
 
@@ -93,7 +93,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 .GetStringAsync("https://author.today/")
                 .ContinueWith(t => t.Result.AsHtmlDoc());
 
-            var token = doc.GetAttributeByNameAttribute("__RequestVerificationToken", "value");
+            var token = doc.QuerySelector($"[name={"__RequestVerificationToken"}]")?.Attributes["value"]?.Value;
 
             using var post = await _config.Client.PostAsync("https://author.today/account/login", GenerateAuthData(token));
             var response = await post.Content.ReadFromJsonAsync<ApiResponse<object>>();
@@ -112,7 +112,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
         /// <param name="bookUri">Адрес страницы с книгой</param>
         /// <returns></returns>
         private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
-            var imagePath = doc.GetByFilter("img", "cover-image")?.Attributes["src"]?.Value;
+            var imagePath = doc.QuerySelector("img.cover-image")?.Attributes["src"]?.Value;
             return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
         }
 

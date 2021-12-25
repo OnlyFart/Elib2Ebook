@@ -61,7 +61,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
         }
 
         private static T GetNextData<T>(HtmlDocument doc, string node) {
-            var json = doc.GetElementbyId("__NEXT_DATA__").InnerText;
+            var json = doc.QuerySelector("#__NEXT_DATA__").InnerText;
             var bookProperty = JsonDocument.Parse(json)
                 .RootElement.GetProperty("props")
                 .GetProperty("pageProps")

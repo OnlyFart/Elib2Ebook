@@ -51,12 +51,8 @@ namespace OnlineLib2Ebook.Logic.Getters {
         /// <param name="doc"></param>
         /// <param name="baseUri"></param>
         protected async Task<IEnumerable<Image>> GetImages(HtmlDocument doc, Uri baseUri) {
-            var imgUrls = doc.DocumentNode
-                .Descendants()
-                .Where(t => t.Name == "img");
-
             var images = new List<Image>();
-            foreach (var img in imgUrls) {
+            foreach (var img in doc.QuerySelectorAll("img")) {
                 var path = img.Attributes["src"]?.Value;
                 if (string.IsNullOrWhiteSpace(path)) {
                     continue;

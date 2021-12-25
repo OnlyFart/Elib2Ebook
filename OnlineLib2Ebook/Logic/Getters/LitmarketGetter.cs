@@ -27,12 +27,12 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var toc = JsonSerializer.Deserialize<List<Block>>(content.Toc);
             var blocks = await GetBlocks(content.Book.EbookId);
 
-            var title = Normalize(doc.GetTextByFilter("h1", "card-title"));
+            var title = Normalize(doc.GetTextByFilter("h1.card-title"));
             var book = new Book {
                 Cover = await GetCover(doc, url),
                 Chapters = await FillChapters(toc, blocks, url, content.Book.EbookId, title),
                 Title = title,
-                Author = Normalize(doc.GetTextByFilter("div", "card-author").Replace("Автор:", "")),
+                Author = Normalize(doc.GetTextByFilter("div.card-author").Replace("Автор:", "")),
             };
             
             return book;
@@ -43,10 +43,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
         }
 
         private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
-            var imagePath = doc.GetByFilter("div", "front")
-                ?.GetByFilter("img")
-                ?.Attributes["data-src"]?.Value;
-
+            var imagePath = doc.QuerySelector("div.front img")?.Attributes["data-src"]?.Value;
             return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
         }
 
@@ -104,7 +101,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var response = await _config.Client.GetStringWithTriesAsync(uri);
             var doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
 
-            var csrf = doc.GetAttributeByNameAttribute("csrf-token", "content");
+            var csrf = doc.QuerySelector("[name=csrf-token]")?.Attributes["content"]?.Value;
             if (string.IsNullOrWhiteSpace(csrf)) {
                 throw new ArgumentException("Не удалось получить csrf-token", nameof(csrf));
             }

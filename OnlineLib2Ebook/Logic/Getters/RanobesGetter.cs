@@ -29,7 +29,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var book = new Book {
                 Cover = await GetCover(doc, uri),
                 Chapters = await FillChapters(doc, uri),
-                Title = HttpUtility.HtmlDecode(doc.GetByFilter("h1", "title").FirstChild.InnerText.Trim()),
+                Title = HttpUtility.HtmlDecode(doc.QuerySelector("h1.title").FirstChild.InnerText.Trim()),
                 Author = "Ранобэс"
             };
             
@@ -39,8 +39,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
         private async Task<Uri> GetMainUrl(Uri url) {
             if (url.Segments[1] == "chapters/") {
                 var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
-                var div = doc.DocumentNode.GetByFilterContains("div", "category");
-                return new Uri(url, div.GetByFilter("a").Attributes["href"].Value);
+                return new Uri(url, doc.QuerySelector("div.category a").Attributes["href"].Value);
             }
 
             return url;
@@ -68,7 +67,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
 
         private async Task<string> GetChapter(Uri mainUrl, string url) {
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(mainUrl, url));
-            var article = doc.GetElementbyId("arrticle");
+            var article = doc.QuerySelector("#arrticle");
             var sb = new StringBuilder();
             foreach (var node in article.ChildNodes) {
                 if (node.Attributes["class"]?.Value?.Contains("splitnewsnavigation") == null) {
@@ -81,21 +80,18 @@ namespace OnlineLib2Ebook.Logic.Getters {
         }
 
         private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
-            var imagePath = doc.GetByFilter("div", "poster")
-                ?.GetByFilter("img")
-                ?.Attributes["src"]?.Value;
-
+            var imagePath = doc.QuerySelector("div.poster img")?.Attributes["src"]?.Value;
             return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
         }
 
         private Uri GetTocLink(HtmlDocument doc, Uri uri) {
-            var div = doc.GetByFilter("div", "r-fullstory-chapters-foot");
-            return new Uri(uri, div.Descendants().LastOrDefault(t => t.Name == "a" && t.Attributes["title"]?.Value == "Перейти в оглавление").Attributes["href"].Value);
+            var div = doc.QuerySelector("div.r-fullstory-chapters-foot");
+            return new Uri(uri, div.QuerySelectorAll("a").LastOrDefault(t => t.Attributes["title"]?.Value == "Перейти в оглавление").Attributes["href"].Value);
         }
         
         private async Task<IEnumerable<RanobesChapter>> GetChapters(Uri tocUri) {
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(tocUri);
-            var lastA = doc.GetByFilter("div", "pages")?.Descendants().LastOrDefault(t => t.Name == "a")?.InnerText;
+            var lastA = doc.QuerySelectorAll("div.pages a").LastOrDefault()?.InnerText;
             var pages = string.IsNullOrWhiteSpace(lastA) ? 1 : int.Parse(lastA);
             
             Console.WriteLine("Получаем оглавление");
@@ -103,10 +99,10 @@ namespace OnlineLib2Ebook.Logic.Getters {
             for (var i = 1; i <= pages; i++) {
                 doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(tocUri.AbsoluteUri + "/page/" + i));
                 chapters.AddRange(doc
-                    .GetElementbyId("dle-content")
+                    .QuerySelector("#dle-content")
                     .ChildNodes
                     .Where(child => child.Attributes["class"]?.Value == "cat_block cat_line")
-                    .Select(child => child.GetByFilter("a"))
+                    .Select(child => child.QuerySelector("a"))
                     .Where(a => a != null)
                     .Select(a => new RanobesChapter(a.Attributes["title"].Value, a.Attributes["href"].Value)));
             }

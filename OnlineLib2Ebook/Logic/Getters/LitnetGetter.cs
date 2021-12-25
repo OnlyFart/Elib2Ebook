@@ -26,23 +26,20 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var uri = new Uri($"https://litnet.com/ru/book/{bookId}");
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
 
-            var title = HttpUtility.HtmlDecode(doc.GetTextByFilter("h1", "roboto"));
+            var title = HttpUtility.HtmlDecode(doc.GetTextByFilter("h1.roboto"));
             
             var book = new Book {
                 Cover = await GetCover(doc, uri),
                 Chapters = await FillChapters(doc, uri, title, bookId, token),
                 Title = title,
-                Author = HttpUtility.HtmlDecode(doc.GetTextByFilter("a", "author"))
+                Author = HttpUtility.HtmlDecode(doc.GetTextByFilter("a.author"))
             };
             
             return book;
         }
         
         private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
-            var imagePath = doc.GetByFilter("div", "book-view-cover")
-                ?.GetByFilter("img")
-                ?.Attributes["src"]?.Value;
-
+            var imagePath = doc.QuerySelector("div.book-view-cover img")?.Attributes["src"]?.Value;
             return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
         }
 
@@ -112,10 +109,8 @@ namespace OnlineLib2Ebook.Logic.Getters {
         }
 
         private async Task<IEnumerable<ChapterShort>> GetChapters(HtmlDocument doc, string bookId, string title) {
-            var result = doc
-                .DocumentNode
-                .Descendants()
-                .Where(t => t.Name == "option" && !string.IsNullOrWhiteSpace(t.Attributes["value"].Value))
+            var result = doc.QuerySelectorAll("option")
+                .Where(t => !string.IsNullOrWhiteSpace(t.Attributes["value"].Value))
                 .Select(option => new ChapterShort(option.Attributes["value"].Value, option.InnerText)).ToList();
 
             if (result.Count > 0) {
@@ -123,7 +118,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             }
 
             var readerPage = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://litnet.com/ru/reader/{bookId}"));
-            var chapter = readerPage.DocumentNode.Descendants().FirstOrDefault(t => t.Name == "div" && t.Attributes["data-chapter"] != null);
+            var chapter = readerPage.QuerySelectorAll("div").FirstOrDefault(t => t.Attributes["data-chapter"] != null);
             if (chapter == null) {
                 return result;
             }
@@ -133,7 +128,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
 
         private async Task<string> GetToken() {
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri("https://litnet.com/auth/login?classic=1&link=https://litnet.com/"));
-            return doc.GetAttributeByNameAttribute("_csrf", "value");
+            return doc.QuerySelector("[name=_csrf]")?.Attributes["value"]?.Value;
         }
     }
 }

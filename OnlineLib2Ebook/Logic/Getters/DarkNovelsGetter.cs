@@ -52,7 +52,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var book = new Book {
                 Cover = await GetCover(doc, uri),
                 Chapters = await FillChapters(bookId),
-                Title = HttpUtility.HtmlDecode(doc.GetTextByFilter("h2", "display-1").Trim()),
+                Title = HttpUtility.HtmlDecode(doc.GetTextByFilter("h2.display-1").Trim()),
                 Author = "DarkNovels"
             };
             
@@ -94,10 +94,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
         }
         
         private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
-            var imagePath = doc.GetByFilter("div", "book-cover-container")
-                ?.GetByFilter("img")
-                ?.Attributes["data-src"]?.Value;
-
+            var imagePath = doc.QuerySelector("div.book-cover-container img")?.Attributes["data-src"]?.Value;
             return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
         }
 
