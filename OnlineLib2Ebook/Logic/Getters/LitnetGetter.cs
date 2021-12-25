@@ -26,13 +26,13 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var uri = new Uri($"https://litnet.com/ru/book/{bookId}");
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
 
-            var title = doc.GetTextBySelector("h1.roboto").HtmlDecode();
+            var title = doc.GetTextBySelector("h1.roboto");
             
             var book = new Book {
                 Cover = await GetCover(doc, uri),
                 Chapters = await FillChapters(doc, uri, title, bookId, token),
                 Title = title,
-                Author = doc.GetTextBySelector("a.author").HtmlDecode()
+                Author = doc.GetTextBySelector("a.author")
             };
             
             return book;

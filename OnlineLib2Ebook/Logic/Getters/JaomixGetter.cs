@@ -25,7 +25,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var book = new Book {
                 Cover = await GetCover(doc, uri),
                 Chapters = await FillChapters(doc, uri),
-                Title = doc.GetTextBySelector("h1").HtmlDecode(),
+                Title = doc.GetTextBySelector("h1"),
                 Author = "Jaomix"
             };
             

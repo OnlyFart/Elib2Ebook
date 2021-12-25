@@ -20,7 +20,7 @@ namespace OnlineLib2Ebook.Extensions {
         }
         
         public static string GetTextBySelector(this HtmlNode node, string selector) {
-            return node.QuerySelector(selector)?.InnerText?.Trim();
+            return node.QuerySelector(selector)?.InnerText?.Trim().HtmlDecode();
         }
 
         public static HtmlDocument RemoveNodes(this HtmlDocument doc, Func<HtmlNode, bool> predicate) {

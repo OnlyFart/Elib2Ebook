@@ -52,7 +52,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var book = new Book {
                 Cover = await GetCover(doc, uri),
                 Chapters = await FillChapters(bookId),
-                Title = doc.GetTextBySelector("h2.display-1").HtmlDecode(),
+                Title = doc.GetTextBySelector("h2.display-1"),
                 Author = "DarkNovels"
             };
             

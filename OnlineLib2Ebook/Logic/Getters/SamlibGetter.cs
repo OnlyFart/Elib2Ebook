@@ -19,7 +19,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
         public override async Task<Book> Get(Uri url) {
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
 
-            var title = doc.GetTextBySelector("h2").HtmlDecode();
+            var title = doc.GetTextBySelector("h2");
             var book = new Book {
                 Cover = null,
                 Chapters = await FillChapters(doc, url, title),

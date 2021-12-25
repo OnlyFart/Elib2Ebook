@@ -40,7 +40,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
         }
 
         private static string Normalize(string str) {
-            return Regex.Replace(Regex.Replace(str, "\t|\n", " "), "\\s+", " ").Trim().HtmlDecode();
+            return Regex.Replace(Regex.Replace(str, "\t|\n", " "), "\\s+", " ").Trim();
         }
 
         private Task<Image> GetCover(HtmlDocument doc, Uri uri) {

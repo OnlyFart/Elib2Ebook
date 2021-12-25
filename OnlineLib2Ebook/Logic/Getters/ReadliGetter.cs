@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using OnlineLib2Ebook.Configs;
@@ -43,11 +42,11 @@ namespace OnlineLib2Ebook.Logic.Getters {
             return book; 
         }
 
-        private long GetBookId(Uri uri) {
+        private static long GetBookId(Uri uri) {
             return long.Parse(uri.Query.Trim('?').Split("&").FirstOrDefault(p => p.StartsWith("b=")).Replace("b=", ""));
         }
 
-        private string GetLastSegment(Uri uri) {
+        private static string GetLastSegment(Uri uri) {
             return uri.Segments.Last();
         }
 

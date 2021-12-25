@@ -29,8 +29,8 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var book = new Book {
                 Cover = await GetCover(doc, url),
                 Chapters = await FillChapters(doc, url, bookId),
-                Title = doc.GetTextBySelector("h1").HtmlDecode(),
-                Author = GetAuthor(doc).HtmlDecode()
+                Title = doc.GetTextBySelector("h1"),
+                Author = GetAuthor(doc)
             };
             
             return book;
@@ -80,7 +80,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
 
         private static IEnumerable<ChapterShort> GetChapters(HtmlDocument doc) {
             return doc.QuerySelectorAll("#Chapters tr[data-id]")
-                .Select(chapter => new ChapterShort(chapter.Attributes["data-id"].Value, chapter.GetTextBySelector("td.t").HtmlDecode().Trim()));
+                .Select(chapter => new ChapterShort(chapter.Attributes["data-id"].Value, chapter.GetTextBySelector("td.t").Trim()));
         }
 
         private async Task Mature(Uri url) {
