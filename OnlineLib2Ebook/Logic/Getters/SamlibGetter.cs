@@ -54,13 +54,15 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 if (line == null) {
                     break;
                 }
+
+                if (string.IsNullOrWhiteSpace(line)) {
+                    continue;
+                }
                 
-                if (!string.IsNullOrWhiteSpace(line)) {
-                    var htmlDoc = line.AsHtmlDoc();
-                    foreach (var node in htmlDoc.DocumentNode.ChildNodes) {
-                        if (!string.IsNullOrWhiteSpace(node.InnerText) || node.QuerySelector("img") != null) {
-                            text.AppendLine($"<p>{node.InnerHtml.Trim()}</p>");
-                        }
+                var htmlDoc = line.AsHtmlDoc();
+                foreach (var node in htmlDoc.DocumentNode.ChildNodes) {
+                    if (!string.IsNullOrWhiteSpace(node.InnerText) || node.QuerySelector("img") != null) {
+                        text.AppendLine($"<p>{node.InnerHtml.Trim()}</p>");
                     }
                 }
             }

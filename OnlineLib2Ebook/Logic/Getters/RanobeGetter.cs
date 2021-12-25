@@ -43,10 +43,9 @@ namespace OnlineLib2Ebook.Logic.Getters {
             foreach (var ranobeChapter in ranobeBook.Chapters.Reverse()) {
                 Console.WriteLine($"Загружаем главу \"{ranobeChapter.Title}\"");
                 var chapter = new Chapter();
-                var ranobesChapter = await GetChapter(url, ranobeChapter.Url);
-                var chapterDoc = ranobesChapter.Content.Text.HtmlDecode().AsHtmlDoc();
-                chapter.Images = await GetImages(chapterDoc, url);
-                chapter.Content = chapterDoc.DocumentNode.InnerHtml;
+                var doc = await GetChapter(url, ranobeChapter.Url);
+                chapter.Images = await GetImages(doc, url);
+                chapter.Content = doc.DocumentNode.InnerHtml;
                 chapter.Title = ranobeChapter.Title;
 
                 result.Add(chapter);
@@ -55,9 +54,9 @@ namespace OnlineLib2Ebook.Logic.Getters {
             return result;
         }
 
-        private async Task<RanobeChapter> GetChapter(Uri mainUrl, string url) {
+        private async Task<HtmlDocument> GetChapter(Uri mainUrl, string url) {
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(mainUrl, url));
-            return GetNextData<RanobeChapter>(doc, "chapter");
+            return GetNextData<RanobeChapter>(doc, "chapter").Content.Text.HtmlDecode().AsHtmlDoc();
         }
 
         private static T GetNextData<T>(HtmlDocument doc, string node) {

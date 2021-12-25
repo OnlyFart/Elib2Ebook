@@ -74,7 +74,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 }
             }
             
-            var chapterDoc =text.ToString().HtmlDecode().AsHtmlDoc();
+            var chapterDoc = text.ToString().HtmlDecode().AsHtmlDoc();
             chapter.Images = await GetImages(chapterDoc, new Uri("https://readli.net/chitat-online/"));
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;
             chapter.Title = name;

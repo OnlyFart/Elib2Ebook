@@ -35,8 +35,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
         private async Task<Uri> GetMainUrl(Uri url) {
             if (url.Segments[1] != "category/") {
                 var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
-                var div = doc.QuerySelector("span.entry-category");
-                return new Uri(url, div.QuerySelector("a").Attributes["href"].Value);
+                return new Uri(url, doc.QuerySelector("span.entry-category a").Attributes["href"].Value);
             }
 
             return url;
@@ -101,7 +100,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
                     { "page", pageId },
                     { "termid", termId }
                 };
-                
+
                 post = await _config.Client.PostAsync("https://jaomix.ru/wp-admin/admin-ajax.php", new FormUrlEncodedContent(data));
                 content = await post.Content.ReadAsStringAsync();
                 chapters.AddRange(ParseChapters(content.AsHtmlDoc(), url));
