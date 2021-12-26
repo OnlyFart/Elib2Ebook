@@ -68,7 +68,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
                     continue;
                 }
                 
-                // Костыль. Исправление урла картинки, что она отображась в книге
+                // Костыль. Исправление урла картинки, что бы она отображась в книге
                 img.Attributes["src"].Value = uri.GetFileName();
                 images.Add(image);
             }
@@ -86,7 +86,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
         }
 
         public void Dispose() {
-            _config.Client?.Dispose();
+            _config?.Dispose();
         }
     }
 }

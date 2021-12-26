@@ -43,7 +43,6 @@ namespace OnlineLib2Ebook.Logic.Getters {
             return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
         }
 
-
         private async Task<List<Chapter>> FillChapters(HtmlDocument doc, Uri bookUri, string title, string bookId, string token) {
             var result = new List<Chapter>();
             

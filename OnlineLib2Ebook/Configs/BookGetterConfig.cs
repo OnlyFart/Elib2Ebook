@@ -1,7 +1,8 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 
 namespace OnlineLib2Ebook.Configs {
-    public class BookGetterConfig  {
+    public class BookGetterConfig : IDisposable {
         public HttpClient Client { get; }
         public string Login { get; }
         public string Password { get; }
@@ -11,6 +12,10 @@ namespace OnlineLib2Ebook.Configs {
             Client = client;
             Login = options.Login;
             Password = options.Password;
+        }
+
+        public void Dispose() {
+            Client?.Dispose();
         }
     }
 }
