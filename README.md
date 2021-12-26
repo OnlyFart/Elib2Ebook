@@ -2,6 +2,7 @@
 Инструмент для сохранения любой доступной книги со следующих сайтов в форматах epub или fb2:
 * https://author.today/
 * https://dark-novels.ru/
+* https://ficbook.ru/
 * https://jaomix.ru/
 * https://litmarket.ru/
 * https://litnet.com/
