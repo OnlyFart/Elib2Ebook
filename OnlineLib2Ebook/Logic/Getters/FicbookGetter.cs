@@ -26,13 +26,18 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
 
             var book = new Book {
-                Cover = null,
+                Cover = await GetCover(doc, uri),
                 Chapters = await FillChapters(doc, url),
                 Title = doc.GetTextBySelector("h1.mb-10"),
-                Author = "Ficbook"
+                Author = doc.GetTextBySelector("a.creator-nickname")
             };
             
             return book;
+        }
+        
+        private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
+            var imagePath = doc.QuerySelector("fanfic-cover")?.Attributes["src-original"]?.Value;
+            return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
         }
 
         private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {
