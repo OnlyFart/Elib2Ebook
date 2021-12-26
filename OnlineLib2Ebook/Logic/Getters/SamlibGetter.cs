@@ -67,7 +67,6 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 }
             }
             
-
             var chapterDoc = text.ToString().HtmlDecode().AsHtmlDoc();
             chapter.Images = await GetImages(chapterDoc, url);
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;

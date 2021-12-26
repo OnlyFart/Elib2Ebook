@@ -78,9 +78,9 @@ namespace OnlineLib2Ebook.Logic.Getters {
             return doc.GetTextBySelector("h1") == "Доступ запрещен" ? string.Empty : doc.QuerySelector("div.content-text")?.InnerHtml ?? string.Empty;
         }
 
-        private static IEnumerable<ChapterShort> GetChapters(HtmlDocument doc) {
+        private static IEnumerable<IdChapter> GetChapters(HtmlDocument doc) {
             return doc.QuerySelectorAll("#Chapters tr[data-id]")
-                .Select(chapter => new ChapterShort(chapter.Attributes["data-id"].Value, chapter.GetTextBySelector("td.t").Trim()));
+                .Select(chapter => new IdChapter(chapter.Attributes["data-id"].Value, chapter.GetTextBySelector("td.t").Trim()));
         }
 
         private async Task Mature(Uri url) {

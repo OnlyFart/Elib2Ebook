@@ -47,7 +47,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var result = new List<Chapter>();
             
             foreach (var litnetChapter in await GetChapters(doc, bookId, title)) {
-                Console.WriteLine($"Загружаем главу \"{litnetChapter.Name}\"");
+                Console.WriteLine($"Загружаем главу \"{litnetChapter.Title}\"");
                 var text = new StringBuilder();
                 var chapter = new Chapter();
                 
@@ -70,7 +70,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 var chapterDoc = text.ToString().HtmlDecode().AsHtmlDoc();
                 chapter.Images = await GetImages(chapterDoc, bookUri);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
-                chapter.Title = litnetChapter.Name;
+                chapter.Title = litnetChapter.Title;
 
                 result.Add(chapter);
             }
@@ -78,14 +78,14 @@ namespace OnlineLib2Ebook.Logic.Getters {
             return result;
         }
 
-        private async Task<LitnetResponse> GetPage(ChapterShort chapter, int page, string token) {
+        private async Task<LitnetResponse> GetPage(IdChapter idChapter, int page, string token) {
             var data = new Dictionary<string, string> {
-                ["chapterId"] = chapter.Id,
+                ["chapterId"] = idChapter.Id,
                 ["page"] = page.ToString(),
                 ["_csrf"] = token
             };
             
-            Console.WriteLine($"Загружаем страницу {page} главы \"{chapter.Name}\"");
+            Console.WriteLine($"Загружаем страницу {page} главы \"{idChapter.Title}\"");
             for (var i = 0; i < 5; i++) {
                 var resp = await _config.Client.PostAsync("https://litnet.com/reader/get-page", new FormUrlEncodedContent(data));
                 if (resp.StatusCode == HttpStatusCode.TooManyRequests) {
@@ -107,9 +107,9 @@ namespace OnlineLib2Ebook.Logic.Getters {
             return new LitnetResponse();
         }
 
-        private async Task<IEnumerable<ChapterShort>> GetChapters(HtmlDocument doc, string bookId, string title) {
+        private async Task<IEnumerable<IdChapter>> GetChapters(HtmlDocument doc, string bookId, string title) {
             var result = doc.QuerySelectorAll("option[value]")
-                .Select(option => new ChapterShort(option.Attributes["value"].Value, option.InnerText)).ToList();
+                .Select(option => new IdChapter(option.Attributes["value"].Value, option.InnerText)).ToList();
 
             if (result.Count > 0) {
                 return result;
@@ -121,7 +121,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 return result;
             }
 
-            return new[] { new ChapterShort(chapter.Attributes["data-chapter"].Value, title) };
+            return new[] { new IdChapter(chapter.Attributes["data-chapter"].Value, title) };
         }
 
         private async Task<string> GetToken() {

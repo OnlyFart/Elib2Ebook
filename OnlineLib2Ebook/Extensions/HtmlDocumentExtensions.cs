@@ -24,12 +24,17 @@ namespace OnlineLib2Ebook.Extensions {
         }
 
         public static HtmlDocument RemoveNodes(this HtmlDocument doc, Func<HtmlNode, bool> predicate) {
-            var toRemove = doc.DocumentNode.ChildNodes.Where(predicate).ToList();
+            doc.DocumentNode.RemoveNodes(predicate);
+            return doc;
+        }
+        
+        public static HtmlNode RemoveNodes(this HtmlNode self, Func<HtmlNode, bool> predicate) {
+            var toRemove = self.ChildNodes.Where(predicate).ToList();
             foreach (var node in toRemove) {
                 node.Remove();
             }
 
-            return doc;
+            return self;
         }
     }
 }
