@@ -62,7 +62,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 
                 var text = await GetChapter(bookId, id);
 
-                var chapterDoc = text.HtmlDecode().AsHtmlDoc();
+                var chapterDoc = text.AsHtmlDoc();
                 chapter.Images = await GetImages(chapterDoc, bookUri);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
                 chapter.Title = name;
@@ -80,7 +80,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
 
         private static IEnumerable<IdChapter> GetChapters(HtmlDocument doc) {
             return doc.QuerySelectorAll("#Chapters tr[data-id]")
-                .Select(chapter => new IdChapter(chapter.Attributes["data-id"].Value, chapter.GetTextBySelector("td.t").Trim()));
+                .Select(chapter => new IdChapter(chapter.Attributes["data-id"].Value, chapter.GetTextBySelector("td.t")));
         }
 
         private async Task Mature(Uri url) {
