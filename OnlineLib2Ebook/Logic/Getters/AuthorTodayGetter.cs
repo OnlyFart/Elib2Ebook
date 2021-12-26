@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using OnlineLib2Ebook.Configs;
-using OnlineLib2Ebook.Exceptions;
 using OnlineLib2Ebook.Extensions;
 using OnlineLib2Ebook.Types.AuthorToday.Response;
 using OnlineLib2Ebook.Types.Book;
@@ -41,22 +40,12 @@ namespace OnlineLib2Ebook.Logic.Getters {
             await Authorize();
             
             var bookUri = new Uri($"https://author.today/reader/{bookId}");
-            Console.WriteLine($"Загружаем книгу {bookUri.ToString().CoverQuotes()}");
-            using var response = await _config.Client.GetStringWithTriesAsync(bookUri);
+            Console.WriteLine($"Загружаем книгу {bookUri.ToString().CoverQuotes()}"); 
+            var doc = await _config.Client.GetHtmlDocWithTriesAsync(bookUri);
 
-            switch (response.StatusCode) {
-                case HttpStatusCode.NotFound:
-                    throw new BookNotFoundException(bookId);
-                case HttpStatusCode.Forbidden:
-                    throw new BookForbiddenException(bookId);
-            }
-
-            var content = await response.Content.ReadAsStringAsync();
-            var doc = content.AsHtmlDoc();
-            
             return new Book {
                 Cover = await GetCover(doc, bookUri),
-                Chapters = await FillChapters(content, long.Parse(bookId), GetUserId(content)),
+                Chapters = await FillChapters(doc, long.Parse(bookId), GetUserId(doc)),
                 Title = doc.GetTextBySelector("div.book-title"),
                 Author = doc.GetTextBySelector("div.book-author")
             };
@@ -65,10 +54,10 @@ namespace OnlineLib2Ebook.Logic.Getters {
         /// <summary>
         /// Получение идентификатора пользователя из контента
         /// </summary>
-        /// <param name="content"></param>
+        /// <param name="doc"></param>
         /// <returns></returns>
-        private string GetUserId(string content) {
-            var match = _userIdRgx.Match(content);
+        private string GetUserId(HtmlDocument doc) {
+            var match = _userIdRgx.Match(doc.ParsedText);
             return match.Success ? match.Groups["userId"].Value : string.Empty;
         }
         
@@ -93,7 +82,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 .GetStringAsync("https://author.today/")
                 .ContinueWith(t => t.Result.AsHtmlDoc());
 
-            var token = doc.QuerySelector($"[name={"__RequestVerificationToken"}]")?.Attributes["value"]?.Value;
+            var token = doc.QuerySelector("[name=__RequestVerificationToken]")?.Attributes["value"]?.Value;
 
             using var post = await _config.Client.PostAsync("https://author.today/account/login", GenerateAuthData(token));
             var response = await post.Content.ReadFromJsonAsync<ApiResponse<object>>();
@@ -119,24 +108,24 @@ namespace OnlineLib2Ebook.Logic.Getters {
         /// <summary>
         /// Получение списка частей из кода страницы
         /// </summary>
-        /// <param name="content">Код страницы</param>
+        /// <param name="doc">Код страницы</param>
         /// <returns></returns>
-        private static List<Chapter> GetChapters(string content) {
+        private static List<Chapter> GetChapters(HtmlDocument doc) {
             const string START_PATTERN = "chapters:";
-            var startIndex = content.IndexOf(START_PATTERN, StringComparison.Ordinal) + START_PATTERN.Length;
-            var endIndex = content.IndexOf("}],", startIndex, StringComparison.Ordinal) + 2;
-            var metaContent = content[startIndex..endIndex].Trim().TrimEnd(';', ')');
+            var startIndex = doc.ParsedText.IndexOf(START_PATTERN, StringComparison.Ordinal) + START_PATTERN.Length;
+            var endIndex = doc.ParsedText.IndexOf("}],", startIndex, StringComparison.Ordinal) + 2;
+            var metaContent = doc.ParsedText[startIndex..endIndex].Trim().TrimEnd(';', ')');
             return JsonSerializer.Deserialize<List<Chapter>>(metaContent);
         }
 
         /// <summary>
         /// Дозагрузка различных пареметров частей
         /// </summary>
-        /// <param name="content">Контент книги</param>
+        /// <param name="doc">Контент книги</param>
         /// <param name="bookId">Идентификатор книги</param>
         /// <param name="userId">Идентификатор пользователя</param>
-        private async Task<IEnumerable<Chapter>> FillChapters(string content, long bookId, string userId) {
-            var chapters = GetChapters(content);
+        private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, long bookId, string userId) {
+            var chapters = GetChapters(doc);
             
             foreach (var chapter in chapters) {
                 var chapterUri = new Uri($"https://author.today/reader/{bookId}/chapter?id={chapter.Id}");
@@ -159,9 +148,9 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 
                 // Порядок вызова функций важен. В методе GetImages происходит
                 // исправления урлов картинок для их отображения в epub документе
-                var doc = decodeText.AsHtmlDoc();
-                chapter.Images = await GetImages(doc, chapterUri);
-                chapter.Content = doc.DocumentNode.InnerHtml;
+                var chapterDoc = decodeText.AsHtmlDoc();
+                chapter.Images = await GetImages(chapterDoc, chapterUri);
+                chapter.Content = chapterDoc.DocumentNode.InnerHtml;
             }
             
             return chapters;

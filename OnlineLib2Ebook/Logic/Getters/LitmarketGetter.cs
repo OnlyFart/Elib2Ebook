@@ -25,13 +25,13 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var doc = await Init(url);
 
             var content = await GetMainData(bookId);
-            var toc = JsonSerializer.Deserialize<List<Block>>(content.Toc);
+            
             var blocks = await GetBlocks(content.Book.EbookId);
 
             var title = Normalize(doc.GetTextBySelector("h1.card-title"));
             var book = new Book {
                 Cover = await GetCover(doc, url),
-                Chapters = await FillChapters(toc, blocks, url, content.Book.EbookId, title),
+                Chapters = await FillChapters(GetToc(content, title), blocks, url, content.Book.EbookId, title),
                 Title = title,
                 Author = Normalize(doc.GetTextBySelector("div.card-author").Replace("Автор:", "")),
             };
@@ -48,20 +48,29 @@ namespace OnlineLib2Ebook.Logic.Getters {
             return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
         }
 
+        private static List<Block> GetToc(Response response, string title) {
+            var toc = JsonSerializer.Deserialize<List<Block>>(response.Toc);
+            if (toc?.Count == 0) {
+                toc = new List<Block> {
+                    new() {
+                        Index = 0,
+                        Chunk = new Chunk {
+                            Mods = new[] {
+                                new Mod {
+                                    Text = title
+                                }
+                            }
+                        }
+                    }
+                };
+            }
+
+            return toc;
+        }
+
         private async Task<List<Chapter>> FillChapters(List<Block> toc, Block[] blocks, Uri bookUri, long eBookId, string title) {
             var result = new List<Chapter>();
 
-            if (toc.Count == 0) {
-                toc.Add(new Block {
-                    Index = 0,
-                    Chunk = new Chunk {
-                        Mods = new[]{new Mod {
-                            Text = title
-                        }}
-                    }
-                });
-            }
-            
             for (var i = 0; i < toc.Count; i++) {
                 Console.WriteLine($"Загружаем главу \"{toc[i].Chunk.Mods[0].Text.Trim()}\"");
                 var text = new StringBuilder();

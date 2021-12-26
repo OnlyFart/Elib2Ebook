@@ -80,7 +80,7 @@ namespace OnlineLib2Ebook.Logic.Builders {
                 Console.WriteLine($"Добавляем файл {file.CoverQuotes()}");
                 _writer.AddFile(Path.GetFileName(file), File.ReadAllBytes(file), type);
             }
-
+            
             return this;
         }
 
