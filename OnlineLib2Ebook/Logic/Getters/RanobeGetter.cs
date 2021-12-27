@@ -31,7 +31,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 Cover = await GetCover(ranobeBook, uri),
                 Chapters = await FillChapters(ranobeBook, url),
                 Title = ranobeBook.Title,
-                Author = ranobeBook.Author?.Name ?? "Ranobe"
+                Author = ranobeBook.Author ?? "Ranobe"
             };
             
             return book;

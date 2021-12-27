@@ -78,10 +78,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 return;
             }
 
-            var doc = await _config.Client
-                .GetStringAsync("https://author.today/")
-                .ContinueWith(t => t.Result.AsHtmlDoc());
-
+            var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri("https://author.today/"));
             var token = doc.QuerySelector("[name=__RequestVerificationToken]")?.Attributes["value"]?.Value;
 
             using var post = await _config.Client.PostAsync("https://author.today/account/login", GenerateAuthData(token));
