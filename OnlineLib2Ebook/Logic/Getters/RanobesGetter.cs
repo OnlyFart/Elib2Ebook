@@ -49,7 +49,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var result = new List<Chapter>();
 
             foreach (var ranobeChapter in await GetChapters(GetTocLink(doc, url))) {
-                Console.WriteLine($"Загружаем главу \"{ranobeChapter.Title}\"");
+                Console.WriteLine($"Загружаем главу {ranobeChapter.Title.CoverQuotes()}");
                 var chapter = new Chapter();
                 var chapterDoc = await GetChapter(url, ranobeChapter.Url);
                 chapter.Images = await GetImages(chapterDoc, url);

@@ -41,7 +41,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var result = new List<Chapter>();
             
             foreach (var ranobeChapter in ranobeBook.Chapters.Reverse()) {
-                Console.WriteLine($"Загружаем главу \"{ranobeChapter.Title}\"");
+                Console.WriteLine($"Загружаем главу {ranobeChapter.Title.CoverQuotes()}");
                 var chapter = new Chapter();
                 var doc = await GetChapter(url, ranobeChapter.Url);
                 chapter.Images = await GetImages(doc, url);

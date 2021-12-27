@@ -38,7 +38,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var result = new List<Chapter>();
             
             foreach (var urlChapter in GetChapters(doc, url, title)) {
-                Console.WriteLine($"Загружаем главу \"{urlChapter.Title}\"");
+                Console.WriteLine($"Загружаем главу {urlChapter.Title.CoverQuotes()}");
                 result.Add(await GetChapter(urlChapter));
             }
 

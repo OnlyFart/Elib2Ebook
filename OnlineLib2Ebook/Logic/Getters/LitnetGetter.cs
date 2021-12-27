@@ -47,7 +47,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var result = new List<Chapter>();
             
             foreach (var litnetChapter in await GetChapters(doc, bookId, title)) {
-                Console.WriteLine($"Загружаем главу \"{litnetChapter.Title}\"");
+                Console.WriteLine($"Загружаем главу {litnetChapter.Title.CoverQuotes()}");
                 var text = new StringBuilder();
                 var chapter = new Chapter();
                 
@@ -85,7 +85,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
                 ["_csrf"] = token
             };
             
-            Console.WriteLine($"Загружаем страницу {page} главы \"{idChapter.Title}\"");
+            Console.WriteLine($"Загружаем страницу {page} главы {idChapter.Title.CoverQuotes()}");
             for (var i = 0; i < 5; i++) {
                 var resp = await _config.Client.PostAsync("https://litnet.com/reader/get-page", new FormUrlEncodedContent(data));
                 if (resp.StatusCode == HttpStatusCode.TooManyRequests) {

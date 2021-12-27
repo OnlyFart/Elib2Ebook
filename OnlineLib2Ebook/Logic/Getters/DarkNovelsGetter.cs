@@ -73,7 +73,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var result = new List<Chapter>();
 
             foreach (var darkNovelsChapter in await GetChapters(bookId)) {
-                Console.WriteLine($"Загружаем главу \"{darkNovelsChapter.Title}\"");
+                Console.WriteLine($"Загружаем главу {darkNovelsChapter.Title.CoverQuotes()}");
                 if (darkNovelsChapter.Title.StartsWith("Volume:") || darkNovelsChapter.Payed == 1) {
                     continue;
                 }

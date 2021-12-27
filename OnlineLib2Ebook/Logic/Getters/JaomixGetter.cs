@@ -45,7 +45,7 @@ namespace OnlineLib2Ebook.Logic.Getters {
             var result = new List<Chapter>();
 
             foreach (var jaomixChapter in await GetChapters(doc, url)) {
-                Console.WriteLine($"Загружаем главу \"{jaomixChapter.Title}\"");
+                Console.WriteLine($"Загружаем главу {jaomixChapter.Title.CoverQuotes()}");
                 var chapter = new Chapter();
                 var chapterDoc = await GetChapter(jaomixChapter.Url);
                 chapter.Images = await GetImages(chapterDoc, url);
