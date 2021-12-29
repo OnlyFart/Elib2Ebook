@@ -16,10 +16,9 @@ namespace OnlineLib2Ebook.Logic.Getters {
         public override async Task<Book> Get(Uri url) {
             Init();
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
-            var lastSegment = GetLastSegment(url);
-            
+
             // Находимся на странице ридера
-            if (lastSegment.StartsWith("chitat-online", StringComparison.InvariantCultureIgnoreCase)) {
+            if (GetId(url).StartsWith("chitat-online", StringComparison.InvariantCultureIgnoreCase)) {
                 url = GetMainUrl(url, doc); 
                 doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
             }
@@ -44,10 +43,6 @@ namespace OnlineLib2Ebook.Logic.Getters {
 
         private static long GetBookId(Uri uri) {
             return long.Parse(uri.Query.Trim('?').Split("&").FirstOrDefault(p => p.StartsWith("b=")).Replace("b=", ""));
-        }
-
-        private static string GetLastSegment(Uri uri) {
-            return uri.Segments.Last();
         }
 
         private static Uri GetMainUrl(Uri url, HtmlDocument doc) {
