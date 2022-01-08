@@ -92,6 +92,13 @@ namespace OnlineLib2Ebook.Logic.Getters {
         
         private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
             var imagePath = doc.QuerySelector("div.book-cover-container img")?.Attributes["data-src"]?.Value;
+            if (string.IsNullOrWhiteSpace(imagePath)) {
+                var match = new Regex("\"image\": \"(?<url>.*?)\"").Match(doc.Text);
+                if (match.Success) {
+                    imagePath = match.Groups["url"].Value;
+                }
+            }
+            
             return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
         }
 
