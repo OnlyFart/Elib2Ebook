@@ -11,50 +11,50 @@ using OnlineLib2Ebook.Configs;
 using OnlineLib2Ebook.Logic.Builders;
 using OnlineLib2Ebook.Logic.Getters;
 
-namespace OnlineLib2Ebook {
-    internal static class Program {
-        private static async Task Main(string[] args) {
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            Console.OutputEncoding = Encoding.UTF8;
+namespace OnlineLib2Ebook; 
 
-            await Parser.Default.ParseArguments<Options>(args)
-                .WithParsedAsync(async options => {
-                    var handler = new HttpClientHandler {
-                        AutomaticDecompression = DecompressionMethods.GZip | 
-                                                 DecompressionMethods.Deflate |
-                                                 DecompressionMethods.Brotli
-                    };
+internal static class Program {
+    private static async Task Main(string[] args) {
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        Console.OutputEncoding = Encoding.UTF8;
 
-                    if (!string.IsNullOrEmpty(options.Proxy)) {
-                        var split = options.Proxy.Split(":");
-                        handler.Proxy = new WebProxy(split[0], int.Parse(split[1]));
-                    }
+        await Parser.Default.ParseArguments<Options>(args)
+            .WithParsedAsync(async options => {
+                var handler = new HttpClientHandler {
+                    AutomaticDecompression = DecompressionMethods.GZip | 
+                                             DecompressionMethods.Deflate |
+                                             DecompressionMethods.Brotli
+                };
 
-                    var client = new HttpClient(handler);
-                    var url = new Uri(options.Url);
+                if (!string.IsNullOrEmpty(options.Proxy)) {
+                    var split = options.Proxy.Split(":");
+                    handler.Proxy = new WebProxy(split[0], int.Parse(split[1]));
+                }
 
-                    var getterConfig = new BookGetterConfig(options, client);
-                    using var getter = GetGetter(getterConfig, url);
+                var client = new HttpClient(handler);
+                var url = new Uri(options.Url);
 
-                    var book = await getter.Get(url);
-                    book.Save(GetBuilder(options.Format), options.SavePath, "Patterns");
-                });
-        }
+                var getterConfig = new BookGetterConfig(options, client);
+                using var getter = GetGetter(getterConfig, url);
 
-        private static BuilderBase GetBuilder(string format) {
-            return format switch {
-                "fb2" => Fb2Builder.Create(),
-                "epub" => EpubBuilder.Create(File.ReadAllText("Patterns/ChapterPattern.xhtml")),
-                _ => throw new ArgumentException("Неизвестный формат", nameof(format))
-            };
-        }
+                var book = await getter.Get(url);
+                book.Save(GetBuilder(options.Format), options.SavePath, "Patterns");
+            });
+    }
 
-        private static GetterBase GetGetter(BookGetterConfig config, Uri url) {
-            return Assembly.GetAssembly(typeof(GetterBase))!.GetTypes()
-                       .Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(GetterBase)))
-                       .Select(type => (GetterBase) Activator.CreateInstance(type, config))
-                       .FirstOrDefault(g => g!.IsSameUrl(url)) ??
-                   throw new ArgumentException("Данная система не поддерживается", nameof(url));
-        }
+    private static BuilderBase GetBuilder(string format) {
+        return format switch {
+            "fb2" => Fb2Builder.Create(),
+            "epub" => EpubBuilder.Create(File.ReadAllText("Patterns/ChapterPattern.xhtml")),
+            _ => throw new ArgumentException("Неизвестный формат", nameof(format))
+        };
+    }
+
+    private static GetterBase GetGetter(BookGetterConfig config, Uri url) {
+        return Assembly.GetAssembly(typeof(GetterBase))!.GetTypes()
+                   .Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(GetterBase)))
+                   .Select(type => (GetterBase) Activator.CreateInstance(type, config))
+                   .FirstOrDefault(g => g!.IsSameUrl(url)) ??
+               throw new ArgumentException("Данная система не поддерживается", nameof(url));
     }
 }

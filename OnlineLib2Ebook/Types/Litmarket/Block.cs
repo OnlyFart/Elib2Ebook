@@ -1,14 +1,14 @@
 using System.Text.Json.Serialization;
 
-namespace OnlineLib2Ebook.Types.Litmarket {
-    public class Block {
-        [JsonPropertyName("type")] 
-        public string Type { get; set; }
+namespace OnlineLib2Ebook.Types.Litmarket; 
 
-        [JsonPropertyName("chunk")] 
-        public Chunk Chunk { get; set; }
+public class Block {
+    [JsonPropertyName("type")] 
+    public string Type { get; set; }
+
+    [JsonPropertyName("chunk")] 
+    public Chunk Chunk { get; set; }
         
-        [JsonPropertyName("index")] 
-        public int Index { get; set; }
-    }
+    [JsonPropertyName("index")] 
+    public int Index { get; set; }
 }
