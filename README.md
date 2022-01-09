@@ -6,6 +6,7 @@
 * https://jaomix.ru/
 * https://litmarket.ru/
 * https://litnet.com/
+* https://ranobelib.me/
 * https://ranobes.com/
 * https://readli.net/
 * http://samlib.ru/
