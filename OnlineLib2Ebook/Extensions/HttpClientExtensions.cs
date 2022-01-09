@@ -6,7 +6,7 @@ using HtmlAgilityPack;
 
 namespace OnlineLib2Ebook.Extensions {
     public static class HttpClientExtensions {
-        private const int MAX_TRY_COUNT = 3;
+        private const int MAX_TRY_COUNT = 5;
         
         public static async Task<HttpResponseMessage> GetStringWithTriesAsync(this HttpClient client, Uri url) {
             for (var i = 0; i < MAX_TRY_COUNT; i++) {

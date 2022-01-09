@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -71,8 +72,13 @@ namespace OnlineLib2Ebook.Logic.Getters {
 
         private async Task<IEnumerable<Chapter>> FillChapters(WindowData data, Uri url) {
             var result = new List<Chapter>();
-            
-            foreach (var ranobeChapter in data.Chapters.List) {
+            var branchId = data.Chapters.List
+                .GroupBy(c => c.BranchId)
+                .OrderByDescending(c => c.Count())
+                .First()
+                .Key;
+
+            foreach (var ranobeChapter in data.Chapters.List.Where(c => c.BranchId == branchId)) {
                 Console.WriteLine($"Загружаем главу {ranobeChapter.GetName()}");
                 var chapter = new Chapter();
                 var chapterDoc = await GetChapter(ranobeChapter.GetUri(url));
