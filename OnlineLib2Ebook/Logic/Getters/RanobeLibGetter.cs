@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -19,12 +20,35 @@ namespace OnlineLib2Ebook.Logic.Getters {
         protected override string GetId(Uri url) {
             return url.Segments[1].Trim('/');
         }
+        
+        /// <summary>
+        /// Авторизация в системе
+        /// </summary>
+        /// <exception cref="Exception"></exception>
+        private async Task Authorize(HtmlDocument doc){
+            if (!_config.HasCredentials) {
+                return;
+            }
+            
+            var token = doc.QuerySelector("meta[name=_token]")?.Attributes["content"]?.Value;
+            using var post = await _config.Client.PostAsync("https://staticlib.me/login", GenerateAuthData(token));
+        }
+        
+        public MultipartFormDataContent GenerateAuthData(string token) {
+            return new() {
+                {new StringContent(token), "_token"},
+                {new StringContent(_config.Login), "email"},
+                {new StringContent(_config.Password), "password"},
+                {new StringContent("on"), "remember"}
+            };
+        }
 
         public override async Task<Book> Get(Uri url) {
             Init();
             var bookId = GetId(url);
             var uri = new Uri($"https://staticlib.me/{bookId}");
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
+            await Authorize(doc);
 
             var data = GetData(doc);
 
@@ -51,15 +75,20 @@ namespace OnlineLib2Ebook.Logic.Getters {
             foreach (var ranobeChapter in data.Chapters.List) {
                 Console.WriteLine($"Загружаем главу {ranobeChapter.GetName()}");
                 var chapter = new Chapter();
-                var chapterDoc = await _config.Client.GetHtmlDocWithTriesAsync(ranobeChapter.GetUri(url));
+                var chapterDoc = await GetChapter(ranobeChapter.GetUri(url));
                 chapter.Images = await GetImages(chapterDoc, ranobeChapter.GetUri(url));
-                chapter.Content = chapterDoc.QuerySelector("div.reader-container").InnerHtml;
+                chapter.Content = chapterDoc.DocumentNode.InnerHtml;
                 chapter.Title = ranobeChapter.GetName();
 
                 result.Add(chapter);
             }
 
             return result;
+        }
+
+        private async Task<HtmlDocument> GetChapter(Uri url) {
+            var chapterDoc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+            return chapterDoc.QuerySelector("div.reader-container").InnerHtml.AsHtmlDoc();
         }
 
         private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
