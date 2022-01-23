@@ -75,8 +75,7 @@ public class RanobeLibGetter : GetterBase {
         var result = new List<Chapter>();
         var branchId = data.Chapters.List
             .GroupBy(c => c.BranchId)
-            .OrderByDescending(c => c.Count())
-            .First()
+            .MaxBy(c => c.Count())!
             .Key;
 
         foreach (var ranobeChapter in data.Chapters.List.Where(c => c.BranchId == branchId)) {
