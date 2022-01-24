@@ -8,7 +8,6 @@ using HtmlAgilityPack.CssSelectors.NetCore;
 using OnlineLib2Ebook.Configs;
 using OnlineLib2Ebook.Extensions;
 using OnlineLib2Ebook.Types.Book;
-using OnlineLib2Ebook.Types.Readli;
 
 namespace OnlineLib2Ebook.Logic.Getters; 
 
@@ -58,20 +57,30 @@ public class ReadliGetter : GetterBase {
     }
 
     private async Task AddChapter(ICollection<Chapter> chapters, Chapter chapter, StringBuilder text) {
+        if (chapter == null) {
+            return;
+        }
+        
         var chapterDoc = text.ToString().HtmlDecode().AsHtmlDoc();
         chapter.Images = await GetImages(chapterDoc, new Uri("https://readli.net/chitat-online/"));
         chapter.Content = chapterDoc.DocumentNode.InnerHtml;
         chapters.Add(chapter);
     }
 
-    private static GenerateMode GetGenerationMode(IList<HtmlNode> nodes) {
-        return nodes.First().Name == "h3" ? GenerateMode.ByChapters : GenerateMode.SingleChapter;
+    private static bool IsSingleChapter(IEnumerable<HtmlNode> nodes) {
+        return nodes.First().Name != "h3";
+    }
+
+    private static Chapter CreateChapter(string title) {
+        return new Chapter {
+            Title = title
+        };
     }
 
     private async Task<List<Chapter>> FillChapters(long bookId, long pages, string name) {
         var chapters = new List<Chapter>();
         Chapter chapter = null;
-        var mode = GenerateMode.SingleChapter;
+        var singleChapter = true;
         var text = new StringBuilder();
             
         for (var i = 1; i <= pages; i++) {
@@ -79,40 +88,20 @@ public class ReadliGetter : GetterBase {
             var page = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://readli.net/chitat-online/?b={bookId}&pg={i}"));
             var content = page.QuerySelector("div.reading__text");
             var nodes = content.QuerySelectorAll("> h3, > p");
+            singleChapter = i == 1 ? IsSingleChapter(nodes) : singleChapter;
 
-            if (i == 1) {
-                mode = GetGenerationMode(nodes);
-                if (mode == GenerateMode.SingleChapter) {
-                    chapter = new Chapter {
-                        Title = name
-                    };
-                }
-            }
-            
             foreach (var node in nodes) {
-                if (mode == GenerateMode.SingleChapter) {
+                if (singleChapter || node.Name != "h3") {
                     text.AppendFormat($"<p>{node.InnerText.HtmlEncode()}</p>");
                 } else {
-                    if (node.Name == "h3") {
-                        if (chapter == null) {
-                            chapter = new Chapter {
-                                Title = node.InnerText.HtmlDecode()
-                            };
-                        } else {
-                            await AddChapter(chapters, chapter, text);
-                            text.Clear();
-                            chapter = new Chapter {
-                                Title = node.InnerText.HtmlDecode()
-                            };
-                        }
-                    } else {
-                        text.AppendFormat($"<p>{node.InnerText.HtmlEncode()}</p>");
-                    }
+                    await AddChapter(chapters, chapter, text);
+                    text.Clear();
+                    chapter = CreateChapter(node.InnerText.HtmlDecode());
                 }
             }
         }
-        
-        await AddChapter(chapters, chapter, text);
+
+        await AddChapter(chapters, chapter ?? CreateChapter(name), text);
         return chapters;
     }
 }
