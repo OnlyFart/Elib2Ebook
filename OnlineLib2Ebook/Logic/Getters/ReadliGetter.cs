@@ -68,7 +68,8 @@ public class ReadliGetter : GetterBase {
     }
 
     private static bool IsSingleChapter(IEnumerable<HtmlNode> nodes) {
-        return nodes.First().Name != "h3";
+        var firstNode = nodes.First();
+        return firstNode.Name != "h3" || string.IsNullOrWhiteSpace(firstNode.InnerText);
     }
 
     private static Chapter CreateChapter(string title) {
