@@ -93,7 +93,7 @@ public class ReadliGetter : GetterBase {
 
             foreach (var node in nodes) {
                 if (singleChapter || node.Name != "h3") {
-                    text.AppendFormat($"<p>{node.InnerText.HtmlEncode()}</p>");
+                    text.AppendLine($"<p>{node.InnerText.HtmlEncode()}</p>");
                 } else {
                     await AddChapter(chapters, chapter, text);
                     text.Clear();
