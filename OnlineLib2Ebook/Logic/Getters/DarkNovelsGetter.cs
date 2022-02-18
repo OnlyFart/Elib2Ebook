@@ -81,9 +81,11 @@ public class DarkNovelsGetter : GetterBase {
                 
             var chapter = new Chapter();
             var chapterDoc = await GetChapter(bookId, darkNovelsChapter.Id);
-            chapter.Images = await GetImages(chapterDoc, SystemUrl);
-            chapter.Content = chapterDoc.DocumentNode.InnerHtml;
-            chapter.Title = darkNovelsChapter.Title;
+            if (chapterDoc != default) {
+                chapter.Images = await GetImages(chapterDoc, SystemUrl);
+                chapter.Content = chapterDoc.DocumentNode.InnerHtml;
+                chapter.Title = darkNovelsChapter.Title;
+            }
 
             result.Add(chapter);
         }
@@ -110,7 +112,7 @@ public class DarkNovelsGetter : GetterBase {
     private async Task<HtmlDocument> GetChapter(string bookId, int chapterId) {
         var data = await _config.Client.PostWithTriesAsync(new Uri("https://api.dark-novels.ru/v2/chapter/"), GetData(bookId, chapterId));
         if (data.StatusCode == HttpStatusCode.BadRequest) {
-            return new HtmlDocument();
+            return default;
         }
 
         using var zip = new ZipArchive(await data.Content.ReadAsStreamAsync());
