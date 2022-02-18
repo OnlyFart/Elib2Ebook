@@ -76,7 +76,7 @@ public static class StringExtensions {
     /// <param name="self"></param>
     /// <returns></returns>
     public static string HtmlDecode(this string self) {
-        return HttpUtility.HtmlDecode(self);
+        return HttpUtility.HtmlDecode(self).Trim();
     }
         
     /// <summary>
@@ -85,6 +85,6 @@ public static class StringExtensions {
     /// <param name="self"></param>
     /// <returns></returns>
     public static string HtmlEncode(this string self) {
-        return HttpUtility.HtmlEncode(self);
+        return HttpUtility.HtmlEncode(self.Trim());
     }
 }

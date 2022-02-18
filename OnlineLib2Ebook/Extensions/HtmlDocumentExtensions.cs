@@ -25,7 +25,7 @@ public static class HtmlDocumentExtensions {
     }
         
     public static string GetTextBySelector(this HtmlNode node) {
-        return node?.InnerText?.HtmlDecode().Trim();
+        return node?.InnerText?.HtmlDecode();
     }
 
     public static HtmlDocument RemoveNodes(this HtmlDocument doc, Func<HtmlNode, bool> predicate) {
