@@ -83,10 +83,8 @@ public class JaomixGetter : GetterBase {
             
         var chapters = new List<JaomixChapter>();
         chapters.AddRange(ParseChapters(doc, url));
-            
-        var post = await _config.Client.PostAsync("https://jaomix.ru/wp-admin/admin-ajax.php", new FormUrlEncodedContent(data));
-        var content = await post.Content.ReadAsStringAsync();
-        doc = content.AsHtmlDoc();
+        
+        doc = await _config.Client.PostHtmlDocWithTriesAsync(new Uri("https://jaomix.ru/wp-admin/admin-ajax.php"), new FormUrlEncodedContent(data));
 
         Console.WriteLine("Получаем оглавление");
             
@@ -102,10 +100,10 @@ public class JaomixGetter : GetterBase {
                 { "termid", termId }
             };
 
-            post = await _config.Client.PostAsync("https://jaomix.ru/wp-admin/admin-ajax.php", new FormUrlEncodedContent(data));
-            content = await post.Content.ReadAsStringAsync();
-            chapters.AddRange(ParseChapters(content.AsHtmlDoc(), url));
+            var chapterDoc = await _config.Client.PostHtmlDocWithTriesAsync(new Uri("https://jaomix.ru/wp-admin/admin-ajax.php"), new FormUrlEncodedContent(data));
+            chapters.AddRange(ParseChapters(chapterDoc, url));
         }
+        
         Console.WriteLine($"Получено {chapters.Count} глав");
 
         chapters.Reverse();

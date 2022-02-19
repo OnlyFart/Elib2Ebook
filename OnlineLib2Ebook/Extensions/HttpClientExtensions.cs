@@ -58,4 +58,11 @@ public static class HttpClientExtensions {
             
         return content.AsHtmlDoc();
     }
+    
+    public static async Task<HtmlDocument> PostHtmlDocWithTriesAsync(this HttpClient client, Uri url, HttpContent content) {
+        var response = await client.PostWithTriesAsync(url, content);
+        var data = await response.Content.ReadAsStringAsync();
+            
+        return data.AsHtmlDoc();
+    }
 }
