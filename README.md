@@ -11,8 +11,8 @@
 * https://readli.net/
 * http://samlib.ru/
 * https://tl.rulate.ru/
-* https://ранобэ.рф/
 * https://twilightrussia.ru/
+* https://ранобэ.рф/
 
 Используется, как backend для телеграм бота https://t.me/author_today_book_bot
 
