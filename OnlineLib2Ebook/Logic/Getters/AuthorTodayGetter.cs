@@ -129,7 +129,7 @@ public class AuthorTodayGetter : GetterBase {
             var chapterUri = new Uri($"https://author.today/reader/{bookId}/chapter?id={chapter.Id}");
                 
             Console.WriteLine($"Получаем главу {chapter.Title.CoverQuotes()}");
-            using var response = await _config.Client.GetStringWithTriesAsync(chapterUri);
+            using var response = await _config.Client.GetWithTriesAsync(chapterUri);
 
             if (response is not { StatusCode: HttpStatusCode.OK }) {
                 throw new Exception($"Не удалось получить главу {chapter.Title.CoverQuotes()}");

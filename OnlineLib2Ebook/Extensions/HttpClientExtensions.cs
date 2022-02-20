@@ -9,7 +9,7 @@ namespace OnlineLib2Ebook.Extensions;
 public static class HttpClientExtensions {
     private const int MAX_TRY_COUNT = 5;
         
-    public static async Task<HttpResponseMessage> GetStringWithTriesAsync(this HttpClient client, Uri url) {
+    public static async Task<HttpResponseMessage> GetWithTriesAsync(this HttpClient client, Uri url) {
         for (var i = 0; i < MAX_TRY_COUNT; i++) {
             try { 
                 var response = await client.GetAsync(url);
@@ -21,7 +21,7 @@ public static class HttpClientExtensions {
                 return response;
             } catch (Exception ex) {
                 Console.WriteLine(ex);
-                await Task.Delay(i * 3000);
+                await Task.Delay(i * 1000);
             }
         }
 
@@ -53,7 +53,7 @@ public static class HttpClientExtensions {
     }
         
     public static async Task<HtmlDocument> GetHtmlDocWithTriesAsync(this HttpClient client, Uri url) {
-        var response = await client.GetStringWithTriesAsync(url);
+        var response = await client.GetWithTriesAsync(url);
         var content = await response.Content.ReadAsStringAsync();
             
         return content.AsHtmlDoc();

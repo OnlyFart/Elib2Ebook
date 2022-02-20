@@ -109,7 +109,7 @@ public class LitmarketGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> Init(Uri uri) {
-        var response = await _config.Client.GetStringWithTriesAsync(uri);
+        var response = await _config.Client.GetWithTriesAsync(uri);
         var doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
 
         var csrf = doc.QuerySelector("[name=csrf-token]")?.Attributes["content"]?.Value;
@@ -132,12 +132,12 @@ public class LitmarketGetter : GetterBase {
     }
 
     private async Task<Response> GetMainData(string bookId) {
-        var data = await _config.Client.GetStringWithTriesAsync(new Uri($"https://litmarket.ru/reader/data/{bookId}"));
+        var data = await _config.Client.GetWithTriesAsync(new Uri($"https://litmarket.ru/reader/data/{bookId}"));
         return await data.Content.ReadFromJsonAsync<Response>();
     }
 
     private async Task<Block[]> GetBlocks(int eBookId) {
-        var resp = await _config.Client.GetStringWithTriesAsync(new Uri($"https://litmarket.ru/reader/blocks/{eBookId}"));
+        var resp = await _config.Client.GetWithTriesAsync(new Uri($"https://litmarket.ru/reader/blocks/{eBookId}"));
         return await resp.Content.ReadFromJsonAsync<Block[]>();
     }
 }

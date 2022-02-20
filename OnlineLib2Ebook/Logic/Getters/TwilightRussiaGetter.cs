@@ -33,9 +33,14 @@ public class TwilightRussiaGetter : GetterBase {
         
         var result = new List<Chapter>();
         foreach (var a in post.QuerySelectorAll("a[href*='/publ/']")) {
-            Console.WriteLine($"Загружаем главу {a.GetTextBySelector()}");
-            var href = new Uri(url, a.Attributes["href"].Value); 
-            result.Add(await GetChapter(href, a.GetTextBySelector()));
+            var title = a.GetTextBySelector();
+            if (string.IsNullOrWhiteSpace(title)) {
+                continue;
+            }
+            
+            Console.WriteLine($"Загружаем главу {title}");
+            var href = new Uri(url, a.Attributes["href"].Value);
+            result.Add(await GetChapter(href, title));
         }
 
         return result;
@@ -48,6 +53,12 @@ public class TwilightRussiaGetter : GetterBase {
         
         var text = new StringBuilder();
         foreach (var node in doc.QuerySelector("#msgd").ChildNodes) {
+            var img = node.QuerySelector("img[src]");
+            if (img != null) {
+                text.Append($"<img src='{img.Attributes["src"].Value}'/>");
+                continue;
+            }
+            
             var nodeText = node.GetTextBySelector();
             if (!string.IsNullOrWhiteSpace(nodeText)) {
                 text.Append($"<p>{nodeText}</p>");
