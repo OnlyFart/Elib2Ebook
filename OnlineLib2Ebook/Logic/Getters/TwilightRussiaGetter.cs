@@ -23,7 +23,7 @@ public class TwilightRussiaGetter : GetterBase {
             Cover = null,
             Chapters = await FillChapters(doc, url),
             Title = doc.GetTextBySelector("a.forumBarA"),
-            Author = "twilightrussia"
+            Author = doc.GetTextBySelector("span[class^='forum_nik']")
         };
             
         return book;
