@@ -12,6 +12,7 @@
 * http://samlib.ru/
 * https://tl.rulate.ru/
 * https://ранобэ.рф/
+* https://twilightrussia.ru/
 
 Используется, как backend для телеграм бота https://t.me/author_today_book_bot
 
