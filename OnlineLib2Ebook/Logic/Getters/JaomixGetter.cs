@@ -66,7 +66,7 @@ public class JaomixGetter : GetterBase {
         foreach (var node in doc.QuerySelector("div.themeform").ChildNodes) {
             if (node.Name != "br" && node.Name != "script" && !string.IsNullOrWhiteSpace(node.InnerHtml) && node.Attributes["class"]?.Value?.Contains("adblock-service") == null) {
                 var tag = node.Name == "#text" ? "p" : node.Name;
-                sb.AppendLine($"<{tag}>{node.InnerHtml.Trim()}</{tag}>");
+                sb.Append($"<{tag}>{node.InnerHtml.Trim()}</{tag}>");
             }
         }
             

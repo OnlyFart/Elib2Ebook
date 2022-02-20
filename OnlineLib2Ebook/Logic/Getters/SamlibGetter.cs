@@ -97,7 +97,7 @@ public class SamlibGetter : GetterBase {
             var htmlDoc = line.AsHtmlDoc();
             foreach (var node in htmlDoc.DocumentNode.ChildNodes) {
                 if (!string.IsNullOrWhiteSpace(node.InnerText) || node.QuerySelector("img") != null) {
-                    text.AppendLine($"<p>{node.InnerHtml.Trim()}</p>");
+                    text.Append($"<p>{node.InnerHtml.Trim()}</p>");
                 }
             }
         }

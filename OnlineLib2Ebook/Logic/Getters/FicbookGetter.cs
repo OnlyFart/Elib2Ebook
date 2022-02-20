@@ -75,7 +75,7 @@ public class FicbookGetter : GetterBase {
                 continue;
             }
                 
-            text.AppendLine($"<p>{line.HtmlEncode()}</p>");
+            text.Append($"<p>{line.HtmlEncode()}</p>");
         }
 
         return text.ToString().HtmlDecode().AsHtmlDoc();

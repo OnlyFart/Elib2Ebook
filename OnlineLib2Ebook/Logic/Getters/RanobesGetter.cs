@@ -68,7 +68,7 @@ public class RanobesGetter : GetterBase {
         var sb = new StringBuilder();
         foreach (var node in doc.QuerySelectorAll("#arrticle > :not(.splitnewsnavigation)")) {
             var tag = node.Name == "#text" ? "p" : node.Name;
-            sb.AppendLine($"<{tag}>{node.InnerHtml.Trim()}</{tag}>");
+            sb.Append($"<{tag}>{node.InnerHtml.Trim()}</{tag}>");
         }
             
         return sb.ToString().HtmlDecode().AsHtmlDoc().RemoveNodes(t => t.Name is "script" or "br" || t.Id?.Contains("yandex_rtb") == true);
