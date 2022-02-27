@@ -171,7 +171,10 @@ public class Fb2Builder : BuilderBase {
             case "#text":
             case "br":
             case "span":
-                p.Add(new XText(node.InnerText));
+                if (!string.IsNullOrWhiteSpace(node.InnerText)) {
+                    p.Add(new XText(node.InnerText));
+                }
+
                 break;
             case "img":
                 if (node.Attributes["src"] == null) {
@@ -194,8 +197,10 @@ public class Fb2Builder : BuilderBase {
 
                 break;
         }
-            
-        section.Add(p);
+
+        if (!p.IsEmpty) {
+            section.Add(p);
+        }
     }
 
     protected override void BuildInternal(string name) {
