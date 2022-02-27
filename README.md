@@ -12,8 +12,8 @@
 * http://samlib.ru/
 * https://tl.rulate.ru/
 * https://twilightrussia.ru/
+* https://wattpad.com/
 * https://ранобэ.рф/
-* https://www.wattpad.com/
 
 Используется, как backend для телеграм бота https://t.me/author_today_book_bot
 
