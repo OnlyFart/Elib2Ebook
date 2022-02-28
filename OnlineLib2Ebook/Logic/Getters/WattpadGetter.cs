@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
@@ -20,7 +19,7 @@ public class WattpadGetter : GetterBase {
         return base.GetId(url).Split('-')[0];
     }
 
-    public async Task<WattpadMeta> GetMeta(Uri url) {
+    private async Task<WattpadMeta> GetMeta(Uri url) {
         if (url.ToString().Contains("/story/")) {
             var result = new WattpadMeta();
             
@@ -71,7 +70,7 @@ public class WattpadGetter : GetterBase {
 
     private async Task<HtmlDocument> GetChapter(WattpadGroup group) {
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(group.Url);
-        foreach (var node in doc.QuerySelectorAll("p").Where(x => x.NodeType == HtmlNodeType.Element)) {
+        foreach (var node in doc.QuerySelectorAll("p")) {
             node.Attributes.RemoveAll();
         }
         
