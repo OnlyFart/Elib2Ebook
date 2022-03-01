@@ -15,7 +15,7 @@
 * https://wattpad.com/
 * https://ранобэ.рф/
 
-Используется, как backend для телеграм-~~~~~~~~бота https://t.me/author_today_book_bot
+Используется, как backend для телеграм-бота https://t.me/author_today_book_bot
 
 ## Пример вызова сервиса
 ```
