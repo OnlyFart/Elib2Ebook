@@ -33,9 +33,3 @@ OnlineLib2Ebook.exe --url https://litnet.com/ru/book/kniga-7-vladyka-magii-b3640
 ```
 OnlineLib2Ebook.exe --help
 ```
-
-## Публикация
-```
-dotnet publish -c Release -o Binary/win-x64 -r win-x64 --self-contained true
-dotnet publish -c Release -o Binary/linux-x64 -r linux-x64 --self-contained true
-```
