@@ -15,6 +15,8 @@ public static class HttpClientExtensions {
                 var response = await client.GetAsync(url);
 
                 if (response.StatusCode != HttpStatusCode.OK) {
+                    await Task.Delay(100);
+                    Console.WriteLine(response.StatusCode);
                     continue;
                 }
 
@@ -35,6 +37,7 @@ public static class HttpClientExtensions {
 
                 if (response.StatusCode != HttpStatusCode.OK) {
                     await Task.Delay(100);
+                    Console.WriteLine(response.StatusCode);
                     if (i == MAX_TRY_COUNT - 1) {
                         return response;
                     }
