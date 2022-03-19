@@ -11,6 +11,9 @@ public class RanobeBook {
         
     [JsonPropertyName("verticalImages")]
     public RanobeImage[] Images { get; set; }
+    
+    [JsonPropertyName("verticalImage")]
+    public RanobeImage Image { get; set; }
         
     [JsonPropertyName("chapters")]
     public RanobeChapterShort[] Chapters { get; set; }

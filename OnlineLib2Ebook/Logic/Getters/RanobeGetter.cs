@@ -72,7 +72,7 @@ public class RanobeGetter : GetterBase {
     }
         
     private Task<Image> GetCover(RanobeBook book, Uri bookUri) {
-        var imagePath = book.Images?.OrderByDescending(t => t.Height).FirstOrDefault()?.Url;
+        var imagePath = book.Image?.Url ?? book.Images?.OrderByDescending(t => t.Height).FirstOrDefault()?.Url;
         return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
     }
 }
