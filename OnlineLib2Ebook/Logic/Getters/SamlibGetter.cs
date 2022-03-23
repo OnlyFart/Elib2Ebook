@@ -14,6 +14,7 @@ namespace OnlineLib2Ebook.Logic.Getters;
 
 public class SamlibGetter : GetterBase {
     private const string START_BOOK_PATTERN = "Собственно произведение";
+    private const string ABOUT_BLOCK_PATTERN = "Блок описания произведения";
     private const string END_BOOK_PATTERN = "-----------------------------------------------";
 
     private const string START_LINK_BLOCK_PATTERN = "Блок ссылок на произведения";
@@ -75,12 +76,36 @@ public class SamlibGetter : GetterBase {
 
         return origin[start..stop];
     }
+    
+    private static string GetBookContent(string origin) {
+        var start = origin.IndexOf(START_BOOK_PATTERN, StringComparison.InvariantCultureIgnoreCase);
+        if (start == -1) {
+            return string.Empty;
+        }
+
+        var about = origin.LastIndexOf(ABOUT_BLOCK_PATTERN, StringComparison.OrdinalIgnoreCase);
+        if (about == -1) {
+            return string.Empty;
+        }
+            
+        start = origin.IndexOf(">", start, StringComparison.InvariantCultureIgnoreCase) + 1;
+        var stop = origin.LastIndexOf(END_BOOK_PATTERN, about, StringComparison.InvariantCultureIgnoreCase);
+        
+        for (var i = stop;; i--) {
+            if (origin[i] == '<') {
+                stop = i - 1;
+                break;
+            }
+        }
+
+        return origin[start..stop];
+    }
 
     private async Task<Chapter> GetChapter(UrlChapter urlChapter) {
         var chapter = new Chapter();
 
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(urlChapter.Url);
-        doc.LoadHtml(GetStringBetween(doc.Text, START_BOOK_PATTERN, END_BOOK_PATTERN));
+        doc.LoadHtml(GetBookContent(doc.Text));
             
         var sr = new StringReader(doc.DocumentNode.InnerHtml.HtmlDecode());
         var text = new StringBuilder();
