@@ -112,10 +112,13 @@ public class Fb2Builder : BuilderBase {
     /// <returns></returns>
     public override BuilderBase WithCover(Image cover) {
         if (cover != default) {
+            var coverPage = CreateXElement("coverpage");
+            
             var imageElem = CreateXElement("image");
             imageElem.SetAttributeValue(_xlink + "href", "#" + cover.Path);
-
-            _titleInfo.Add(imageElem);
+            
+            coverPage.Add(imageElem);
+            _titleInfo.Add(coverPage);
             _images.Add(GetBinary(cover));
         }
 
