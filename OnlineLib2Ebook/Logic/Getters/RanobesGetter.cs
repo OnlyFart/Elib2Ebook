@@ -71,7 +71,9 @@ public class RanobesGetter : GetterBase {
             if (tag == "img") {
                 sb.Append($"<{tag}>{node.OuterHtml.Trim()}</{tag}>");
             } else {
-                sb.Append($"<{tag}>{node.InnerHtml.Trim()}</{tag}>");
+                if (node.InnerHtml?.Contains("window.yaContextCb") == false) {
+                    sb.Append($"<{tag}>{node.InnerHtml.Trim()}</{tag}>");
+                }
             }
         }
             
