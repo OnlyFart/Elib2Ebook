@@ -172,16 +172,16 @@ public class Fb2Builder : BuilderBase {
     }
 
     private void ProcessSection(XElement parent, HtmlNode node) {
-        if (node.ChildNodes.Count > 0) {
-            if (node.Name == "a") {
-                if (node.Attributes["href"] == null) {
-                    return;
-                }
-                
-                parent.Add(node.Attributes["href"].Value);
+        if (node.Name == "a") {
+            if (node.Attributes["href"] == null) {
                 return;
             }
-            
+                
+            parent.Add(node.Attributes["href"].Value);
+            return;
+        }
+        
+        if (node.ChildNodes.Count > 0) {
             var section = CreateXElement(_map.GetValueOrDefault(node.Name, "p"));
 
             foreach (var child in node.ChildNodes) {
