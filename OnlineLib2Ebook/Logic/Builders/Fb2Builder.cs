@@ -25,6 +25,12 @@ public class Fb2Builder : BuilderBase {
         {"i", "emphasis"},
         {"em", "emphasis"},
         {"blockquote", "cite"},
+        {"h1", "subtitle"},
+        {"h2", "subtitle"},
+        {"h3", "subtitle"},
+        {"h4", "subtitle"},
+        {"h5", "subtitle"},
+        {"h6", "subtitle"},
     };
 
     private Fb2Builder() {
@@ -167,6 +173,15 @@ public class Fb2Builder : BuilderBase {
 
     private void ProcessSection(XElement parent, HtmlNode node) {
         if (node.ChildNodes.Count > 0) {
+            if (node.Name == "a") {
+                if (node.Attributes["href"] == null) {
+                    return;
+                }
+                
+                parent.Add(node.Attributes["href"].Value);
+                return;
+            }
+            
             var section = CreateXElement(_map.GetValueOrDefault(node.Name, "p"));
 
             foreach (var child in node.ChildNodes) {
