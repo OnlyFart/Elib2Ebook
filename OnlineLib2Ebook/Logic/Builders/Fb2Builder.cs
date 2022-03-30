@@ -148,13 +148,7 @@ public class Fb2Builder : BuilderBase {
                 
             var doc = CreateDoc(chapter.Content);
             foreach (var node in doc.DocumentNode.ChildNodes) {
-                if (node.Name is "p" or "div") {
-                    foreach (var child in node.ChildNodes) {
-                        ProcessSection(section, child);
-                    }
-                } else {
-                    ProcessSection(section, node);
-                }
+                ProcessSection(section, node);
             }
                 
             _body.Add(section);
@@ -167,43 +161,49 @@ public class Fb2Builder : BuilderBase {
         return this;
     }
 
-    private void ProcessSection(XElement section, HtmlNode node) {
-        var p = CreateXElement("p");
-            
-        switch (node.Name) {
-            case "#text":
-            case "br":
-            case "span":
-                if (string.IsNullOrWhiteSpace(node.InnerText)) {
-                    return;
-                }
-                
-                p.Add(new XText(node.InnerText));
-                break;
-            case "img":
-                if (node.Attributes["src"] == null) {
-                    return;
-                }
-                    
-                var imageElem = CreateXElement("image");
-                imageElem.SetAttributeValue(_xlink + "href", "#" + node.Attributes["src"].Value);
-                p.Add(imageElem);
-                break;
-            default:
-                if (_map.TryGetValue(node.Name, out var fb2Tag)) {
-                    var tag = CreateXElement(fb2Tag);
-                    tag.Value = node.InnerText;
-                    p.Add(tag);
-                } else {
-                    p.Add(new XText(node.InnerText));
-                    Console.WriteLine(node.Name);
-                }
+    private static bool IsTextNode(HtmlNode node) {
+        return node.Name is "#text" or "br" or "span";
+    }
 
-                break;
+    private void ProcessSection(XElement parent, HtmlNode node) {
+        if (node.ChildNodes.Count > 0) {
+            var section = CreateXElement(_map.GetValueOrDefault(node.Name, "p"));
+
+            foreach (var child in node.ChildNodes) {
+                ProcessSection(IsTextNode(node) ? parent : section, child);
+            }
+
+            if (!section.IsEmpty) {
+                parent.Add(section);
+            }
+
+            return;
         }
 
-        if (!p.IsEmpty) {
-            section.Add(p);
+        if (IsTextNode(node)) {
+            parent.Add(new XText(node.InnerText));
+            return;
+        }
+
+        if (node.Name == "img") {
+            if (node.Attributes["src"] == null) {
+                return;
+            }
+            
+            var imageElem = CreateXElement("image");
+            imageElem.SetAttributeValue(_xlink + "href", "#" + node.Attributes["src"].Value);
+            parent.Add(imageElem);
+
+            return;
+        }
+
+        if (_map.TryGetValue(node.Name, out var fb2Tag)) {
+            var tag = CreateXElement(fb2Tag);
+            tag.Value = node.InnerText;
+            parent.Add(tag);
+        } else {
+            parent.Add(new XText(node.InnerText));
+            Console.WriteLine(node.Name);
         }
     }
 
