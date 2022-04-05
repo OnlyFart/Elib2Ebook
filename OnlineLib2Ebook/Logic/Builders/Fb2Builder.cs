@@ -31,6 +31,8 @@ public class Fb2Builder : BuilderBase {
         {"h4", "subtitle"},
         {"h5", "subtitle"},
         {"h6", "subtitle"},
+        {"p", "p"},
+        {"div", "p"},
     };
 
     private Fb2Builder() {

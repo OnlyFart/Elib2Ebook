@@ -16,14 +16,10 @@ public class ReadliGetter : GetterBase {
     protected override Uri SystemUrl => new("https://readli.net");
     public override async Task<Book> Get(Uri url) {
         Init();
+        
+        url = await GetMainUrl(url);
+
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
-
-        // Находимся на странице ридера
-        if (GetId(url).StartsWith("chitat-online", StringComparison.InvariantCultureIgnoreCase)) {
-            url = GetMainUrl(url, doc); 
-            doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
-        }
-
         var pages = long.Parse(doc.GetTextBySelector("span.button-pages__right").Split(' ')[0]);
         var imageDiv = doc.QuerySelector("div.book-image");
         var href = new Uri(url, imageDiv.QuerySelector("a").Attributes["href"].Value);
@@ -46,9 +42,14 @@ public class ReadliGetter : GetterBase {
         return long.Parse(uri.Query.Trim('?').Split("&").FirstOrDefault(p => p.StartsWith("b=")).Replace("b=", ""));
     }
 
-    private static Uri GetMainUrl(Uri url, HtmlDocument doc) {
-        var href = doc.QuerySelector("h1 a").Attributes["href"].Value;
-        return new Uri(url, href);
+    private async Task<Uri> GetMainUrl(Uri url) {
+        if (GetId(url).StartsWith("chitat-online", StringComparison.InvariantCultureIgnoreCase)) {
+            var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://readli.net/chitat-online/?b={GetBookId(url)}"));
+            var href = doc.QuerySelector("h1 a").Attributes["href"].Value;
+            return new Uri(url, href);
+        }
+
+        return url;
     }
 
     private Task<Image> GetCover(HtmlNode doc, Uri bookUri) {
