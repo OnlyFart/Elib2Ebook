@@ -38,8 +38,8 @@ public class ReadliGetter : GetterBase {
         return book; 
     }
 
-    private static long GetBookId(Uri uri) {
-        return long.Parse(uri.Query.Trim('?').Split("&").FirstOrDefault(p => p.StartsWith("b=")).Replace("b=", ""));
+    private static string GetBookId(Uri uri) {
+        return uri.GetQueryParameter("b") ?? throw new InvalidOperationException("Не удалось определить идентификатор книги");
     }
 
     private async Task<Uri> GetMainUrl(Uri url) {
@@ -79,7 +79,7 @@ public class ReadliGetter : GetterBase {
         };
     }
 
-    private async Task<List<Chapter>> FillChapters(long bookId, long pages, string name) {
+    private async Task<List<Chapter>> FillChapters(string bookId, long pages, string name) {
         var chapters = new List<Chapter>();
         Chapter chapter = null;
         var singleChapter = true;
