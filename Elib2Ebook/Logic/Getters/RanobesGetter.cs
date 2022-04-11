@@ -22,9 +22,11 @@ public class RanobesGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         Init();
+        _config.Client.DefaultRequestHeaders.Add("Host", "ranobes.com");
+        
         url = await GetMainUrl(url);
         var bookId = GetId(url);
-        var uri = new Uri($"https://ranobes.com/ranobe/{bookId}.html");
+        var uri = new Uri($"https://5.252.195.125/ranobe/{bookId}.html");
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
 
         var book = new Book {
@@ -39,7 +41,7 @@ public class RanobesGetter : GetterBase {
 
     private async Task<Uri> GetMainUrl(Uri url) {
         if (url.Segments[1] == "chapters/") {
-            var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+            var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(new Uri("https://5.252.195.125/"), url.AbsolutePath));
             return new Uri(url, doc.QuerySelector("div.category a").Attributes["href"].Value);
         }
 
@@ -63,7 +65,7 @@ public class RanobesGetter : GetterBase {
         return result;
     }
 
-    private async Task<HtmlDocument> GetChapter(Uri mainUrl, string url) {
+    private async Task<HtmlDocument> GetChapter(Uri mainUrl, Uri url) {
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(mainUrl, url));
         var sb = new StringBuilder();
         foreach (var node in doc.QuerySelectorAll("#arrticle > :not(.splitnewsnavigation)")) {
@@ -99,9 +101,12 @@ public class RanobesGetter : GetterBase {
         var chapters = new List<RanobesChapter>();
         for (var i = 1; i <= pages; i++) {
             doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(tocUri.AbsoluteUri + "/page/" + i));
-            chapters.AddRange(doc
+            var ranobesChapters = doc
                 .QuerySelectorAll("#dle-content > .cat_block.cat_line a")
-                .Select(a => new RanobesChapter(a.Attributes["title"].Value, a.Attributes["href"].Value)));
+                .Select(a => new RanobesChapter(a.Attributes["title"].Value, new Uri(new Uri("https://5.252.195.125/"), new Uri(a.Attributes["href"].Value).AbsolutePath)))
+                .ToList();
+            
+            chapters.AddRange(ranobesChapters);
         }
         Console.WriteLine($"Получено {chapters.Count} глав");
 
