@@ -1,4 +1,4 @@
-# OnlineLib2Ebook
+# Elib2Ebook
 Инструмент для сохранения любой доступной книги со следующих сайтов в форматах epub или fb2:
 * https://author.today/
 * https://bigliba.com/
@@ -21,7 +21,7 @@
 
 ## Пример вызова сервиса
 ```
-OnlineLib2Ebook.exe --url https://litnet.com/ru/book/kniga-7-vladyka-magii-b364041 --format epub
+Elib2Ebook.exe --url https://litnet.com/ru/book/kniga-7-vladyka-magii-b364041 --format epub
 ```
 
 ## Где 
@@ -33,5 +33,5 @@ OnlineLib2Ebook.exe --url https://litnet.com/ru/book/kniga-7-vladyka-magii-b3640
 ## Полный список опций 
 
 ```
-OnlineLib2Ebook.exe --help
+Elib2Ebook.exe --help
 ```
