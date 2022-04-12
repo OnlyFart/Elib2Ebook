@@ -41,4 +41,13 @@ public static class HtmlDocumentExtensions {
 
         return self;
     }
+    
+    public static HtmlNode RemoveNodes(this HtmlNode self, string selector) {
+        var toRemove = self.QuerySelectorAll(selector);
+        foreach (var node in toRemove) {
+            node.Remove();
+        }
+
+        return self;
+    }
 }

@@ -11,7 +11,6 @@ using Elib2Ebook.Types.RanobeLib;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Elib2Ebook.Extensions;
-using Chapter = Elib2Ebook.Types.Book.Chapter;
 
 namespace Elib2Ebook.Logic.Getters; 
 
