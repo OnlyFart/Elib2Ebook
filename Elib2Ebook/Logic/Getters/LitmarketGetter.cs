@@ -19,7 +19,8 @@ namespace Elib2Ebook.Logic.Getters;
 public class LitmarketGetter : GetterBase {
     public LitmarketGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://litmarket.ru");
-
+    
+    // cloudflare :(
     private const string HOST = "89.108.111.237";
 
     public override async Task<Book> Get(Uri url) {

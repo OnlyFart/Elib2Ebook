@@ -15,6 +15,9 @@ namespace Elib2Ebook.Logic.Getters;
 public class RanobesGetter : GetterBase {
     public RanobesGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://ranobes.com");
+    
+    // cloudflare :(
+    private const string HOST = "5.252.195.125";
 
     protected override string GetId(Uri url) {
         return base.GetId(url).Split(".")[0];
@@ -26,7 +29,7 @@ public class RanobesGetter : GetterBase {
         
         url = await GetMainUrl(url);
         var bookId = GetId(url);
-        var uri = new Uri($"https://5.252.195.125/ranobe/{bookId}.html");
+        var uri = new Uri($"https://{HOST}/ranobe/{bookId}.html");
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
 
         var book = new Book {
@@ -41,7 +44,7 @@ public class RanobesGetter : GetterBase {
 
     private async Task<Uri> GetMainUrl(Uri url) {
         if (url.Segments[1] == "chapters/") {
-            var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(new Uri("https://5.252.195.125/"), url.AbsolutePath));
+            var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(new Uri($"https://{HOST}/"), url.AbsolutePath));
             return new Uri(url, doc.QuerySelector("div.category a").Attributes["href"].Value);
         }
 
@@ -103,7 +106,7 @@ public class RanobesGetter : GetterBase {
             doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(tocUri.AbsoluteUri + "/page/" + i));
             var ranobesChapters = doc
                 .QuerySelectorAll("#dle-content > .cat_block.cat_line a")
-                .Select(a => new RanobesChapter(a.Attributes["title"].Value, new Uri(new Uri("https://5.252.195.125/"), new Uri(a.Attributes["href"].Value).AbsolutePath)))
+                .Select(a => new RanobesChapter(a.Attributes["title"].Value, new Uri(new Uri($"https://{HOST}/"), new Uri(a.Attributes["href"].Value).AbsolutePath)))
                 .ToList();
             
             chapters.AddRange(ranobesChapters);
