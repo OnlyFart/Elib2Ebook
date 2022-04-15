@@ -57,7 +57,7 @@ public class RanobeGetter : GetterBase {
 
     private async Task<HtmlDocument> GetChapter(Uri mainUrl, string url) {
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(mainUrl, url));
-        return GetNextData<RanobeChapter>(doc, "chapter").Content.Text.HtmlDecode().AsHtmlDoc();
+        return GetNextData<RanobeChapter>(doc, "chapter").Content.Text.AsHtmlDoc();
     }
 
     private static T GetNextData<T>(HtmlDocument doc, string node) {
