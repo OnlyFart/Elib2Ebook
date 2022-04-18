@@ -12,7 +12,6 @@ using HtmlAgilityPack.CssSelectors.NetCore;
 
 namespace Elib2Ebook.Logic.Getters; 
 
-// Captcha. Не работает.
 public class RanobeHubGetter : GetterBase {
     public RanobeHubGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://ranobehub.org");
@@ -50,6 +49,12 @@ public class RanobeHubGetter : GetterBase {
 
     private async Task<HtmlDocument> GetChapter(string url) {
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(url));
+        while (doc.QuerySelector("div[data-callback=correctCaptcha]") != null) {
+            Console.WriteLine($"Обнаружена каптча. Перейдите по ссылке {url}, введите каптчу и нажмите Enter...");
+            Console.Read();
+            doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(url));
+        }
+        
         var result = doc.QuerySelector("div.container[data-container]").RemoveNodes("div.title-wrapper, div.ads-desktop, div.tablet").InnerHtml.AsHtmlDoc();
         
         foreach (var img in result.QuerySelectorAll("img")) {
@@ -57,8 +62,7 @@ public class RanobeHubGetter : GetterBase {
             if (string.IsNullOrWhiteSpace(id)) {
                 continue;
             }
-
-            // Костыль. Исправление урла картинки, что бы она отображась в книге
+            
             img.Attributes["src"].Value = $"/api/media/{id}";
         }
         
