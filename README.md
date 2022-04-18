@@ -8,6 +8,7 @@
 * https://jaomix.ru/
 * https://litmarket.ru/
 * https://litnet.com/
+* https://ranobehub.org/
 * https://ranobelib.me/
 * https://ranobes.com/
 * https://readli.net/
