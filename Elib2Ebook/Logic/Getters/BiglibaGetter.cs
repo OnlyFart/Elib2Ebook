@@ -31,7 +31,7 @@ public class BiglibaGetter : GetterBase{
             Cover = await GetCover(doc, uri),
             Chapters = await FillChapters(uri, bookId, token, title),
             Title = doc.GetTextBySelector("h1[itemprop=name]"),
-            Author = doc.GetTextBySelector("h2[itemprop=author]")
+            Author = doc.GetTextBySelector("h2[itemprop=author]") ?? "BigLiba"
         };
             
         return book;
