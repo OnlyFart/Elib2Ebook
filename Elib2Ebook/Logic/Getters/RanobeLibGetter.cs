@@ -17,6 +17,9 @@ namespace Elib2Ebook.Logic.Getters;
 public class RanobeLibGetter : GetterBase {
     public RanobeLibGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://ranobelib.me");
+    
+    // cloudflare :(
+    private const string HOST = "staticlib.me";
 
     protected override string GetId(Uri url) {
         return url.Segments[1].Trim('/');
@@ -32,7 +35,7 @@ public class RanobeLibGetter : GetterBase {
         }
             
         var token = doc.QuerySelector("meta[name=_token]")?.Attributes["content"]?.Value;
-        using var post = await _config.Client.PostAsync("https://staticlib.me/login", GenerateAuthData(token));
+        using var post = await _config.Client.PostAsync($"https://{HOST}/login", GenerateAuthData(token));
     }
         
     public MultipartFormDataContent GenerateAuthData(string token) {
@@ -47,7 +50,7 @@ public class RanobeLibGetter : GetterBase {
     public override async Task<Book> Get(Uri url) {
         Init();
         var bookId = GetId(url);
-        var uri = new Uri($"https://staticlib.me/{bookId}");
+        var uri = new Uri($"https://{HOST}/{bookId}");
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
         await Authorize(doc);
 
@@ -98,6 +101,6 @@ public class RanobeLibGetter : GetterBase {
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("meta[property=og:image]").Attributes["content"].Value.Trim();
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri($"https://{HOST}" + new Uri(uri, imagePath).AbsolutePath)) : Task.FromResult(default(Image));
     }
 }
