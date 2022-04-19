@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Elib2Ebook.Configs;
 using Elib2Ebook.Logic.Builders;
 using EpubSharp.Format;
 using Elib2Ebook.Extensions;
@@ -30,15 +31,19 @@ public class Book {
     /// Сохранение книги
     /// </summary>
     /// <param name="builder"></param>
-    /// <param name="savePath">Путь для сохранения</param>
+    /// <param name="options"></param>
     /// <param name="resourcesPath">Путь к папке с ресурсами</param>
-    public void Save(BuilderBase builder, string savePath, string resourcesPath) {
+    public void Save(BuilderBase builder, Options options, string resourcesPath) {
         builder.AddAuthor(Author)
             .WithTitle(Title)
             .WithCover(Cover)
             .WithFiles(resourcesPath, "*.ttf", EpubContentType.FontTruetype)
             .WithFiles(resourcesPath, "*.css", EpubContentType.Css)
             .WithChapters(Chapters)
-            .Build(savePath, Title.Crop(100));
+            .Build(options.SavePath, Title.Crop(100));
+
+        if (options.Cover) {
+            builder.SaveCover(options.SavePath, Cover, Title);
+        }
     }
 }

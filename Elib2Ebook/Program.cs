@@ -38,7 +38,7 @@ internal static class Program {
                 using var getter = GetGetter(getterConfig, url);
 
                 var book = await getter.Get(url);
-                book.Save(GetBuilder(options.Format), options.SavePath, "Patterns");
+                book.Save(GetBuilder(options.Format), options, "Patterns");
             });
     }
 

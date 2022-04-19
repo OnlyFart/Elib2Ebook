@@ -78,4 +78,28 @@ public abstract class BuilderBase {
 
         Console.WriteLine($"Книга {fileName.CoverQuotes()} успешно сохранена");
     }
+
+    /// <summary>
+    /// Сохранение обложки книни в отдельный файл
+    /// </summary>
+    /// <param name="directory"></param>
+    /// <param name="cover"></param>
+    /// <param name="name"></param>
+    public void SaveCover(string directory, Image cover, string name) {
+        if (cover == null) {
+            return;
+        }
+        
+        var fileName = $"{name}_cover.{cover.Extension}";
+
+        if (!string.IsNullOrWhiteSpace(directory)) {
+            if (!Directory.Exists(directory)) {
+                Directory.CreateDirectory(directory);
+            }
+
+            fileName = Path.Combine(directory, fileName);
+        }
+
+        File.WriteAllBytes(fileName, cover.Content);
+    }
 }

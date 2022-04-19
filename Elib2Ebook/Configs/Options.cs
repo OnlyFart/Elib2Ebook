@@ -14,6 +14,9 @@ public class Options {
         
     [Option("format", Required = true, HelpText = "Формат для сохранения книги")]
     public string Format { get; set; }
+    
+    [Option("cover", Required = false, HelpText = "Сохранить обложку книги в отдельный файл")]
+    public bool Cover { get; set; }
 
     [Option("login", Required = false, HelpText = "Логин от системы")]
     public string Login { get; set; }
