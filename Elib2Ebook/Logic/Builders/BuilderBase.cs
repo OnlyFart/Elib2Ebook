@@ -90,7 +90,7 @@ public abstract class BuilderBase {
             return;
         }
         
-        var fileName = $"{name}_cover.{cover.Extension}";
+        var fileName = $"{name}_cover.{cover.Extension}".RemoveInvalidChars();
 
         if (!string.IsNullOrWhiteSpace(directory)) {
             if (!Directory.Exists(directory)) {

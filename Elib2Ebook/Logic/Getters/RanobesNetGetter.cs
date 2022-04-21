@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Types.Book;
@@ -9,12 +11,13 @@ using Elib2Ebook.Types.Ranobes;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Elib2Ebook.Extensions;
+using Elib2Ebook.Types.RanobesNet;
 
 namespace Elib2Ebook.Logic.Getters; 
 
-public class RanobesGetter : GetterBase {
-    public RanobesGetter(BookGetterConfig config) : base(config) { }
-    protected override Uri SystemUrl => new("https://ranobes.com");
+public class RanobesNetGetter : GetterBase {
+    public RanobesNetGetter(BookGetterConfig config) : base(config) { }
+    protected override Uri SystemUrl => new("https://ranobes.net");
     
     // cloudflare :(
     private const string HOST = "5.252.195.125";
@@ -25,12 +28,13 @@ public class RanobesGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         Init();
-        _config.Client.DefaultRequestHeaders.Add("Host", "ranobes.com");
-        
+
         url = await GetMainUrl(url);
         var bookId = GetId(url);
-        var uri = new Uri($"https://{HOST}/ranobe/{bookId}.html");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
+        
+        _config.Client.DefaultRequestHeaders.Add("Host", "ranobes.net");
+        var uri = new Uri($"https://{HOST}/novels/{bookId}.html");
+        var doc = await GetSafety(uri);
 
         var book = new Book {
             Cover = await GetCover(doc, uri),
@@ -43,8 +47,8 @@ public class RanobesGetter : GetterBase {
     }
 
     private async Task<Uri> GetMainUrl(Uri url) {
-        if (url.Segments[1] == "chapters/") {
-            var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(new Uri($"https://{HOST}/"), url.AbsolutePath));
+        if (GetId(url).StartsWith("read-", StringComparison.InvariantCultureIgnoreCase)) {
+            var doc = await GetSafety(url);
             return new Uri(url, doc.QuerySelector("div.category a").Attributes["href"].Value);
         }
 
@@ -69,7 +73,7 @@ public class RanobesGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(Uri mainUrl, Uri url) {
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(mainUrl, url));
+        var doc = await GetSafety(new Uri(mainUrl, url));
         var sb = new StringBuilder();
         foreach (var node in doc.QuerySelectorAll("#arrticle > :not(.splitnewsnavigation)")) {
             var tag = node.Name == "#text" ? "p" : node.Name;
@@ -91,29 +95,49 @@ public class RanobesGetter : GetterBase {
     }
 
     private Uri GetTocLink(HtmlDocument doc, Uri uri) {
-        var relativeUri = doc.QuerySelector("div.r-fullstory-chapters-foot a[title~=оглавление]").Attributes["href"].Value;
+        var relativeUri = doc.QuerySelector("div.r-fullstory-chapters-foot a[title~=contents]").Attributes["href"].Value;
         return new Uri(uri, relativeUri);
+    }
+    
+    
+    private WindowData GetData(HtmlDocument doc) {
+        var match = new Regex("window.__DATA__ = (?<data>{.*})</script>", RegexOptions.Compiled | RegexOptions.Singleline).Match(doc.Text).Groups["data"].Value;
+        var windowData = JsonSerializer.Deserialize<WindowData>(match);
+        return windowData;
     }
         
     private async Task<IEnumerable<RanobesChapter>> GetChapters(Uri tocUri) {
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(tocUri);
-        var lastA = doc.QuerySelector("div.pages a:last-child")?.InnerText;
-        var pages = string.IsNullOrWhiteSpace(lastA) ? 1 : int.Parse(lastA);
+        var doc = await GetSafety(tocUri);
+        var data = GetData(doc);
             
         Console.WriteLine("Получаем оглавление");
         var chapters = new List<RanobesChapter>();
-        for (var i = 1; i <= pages; i++) {
-            doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(tocUri.AbsoluteUri + "/page/" + i));
-            var ranobesChapters = doc
-                .QuerySelectorAll("#dle-content > .cat_block.cat_line a")
-                .Select(a => new RanobesChapter(a.Attributes["title"].Value, new Uri(new Uri($"https://{HOST}/"), new Uri(a.Attributes["href"].Value).AbsolutePath)))
+        for (var i = 1; i <= data.Pages; i++) {
+            var url = i == 1 ? tocUri : new Uri($"{tocUri.AbsoluteUri}page/{i}/");
+            doc = await GetSafety(url);
+            data = GetData(doc);
+            var ranobesChapters = data
+                .Chapters
+                .Select(a => new RanobesChapter(a.Title, new Uri($"https://ranobes.net/read-{a.Id}.html")))
                 .ToList();
             
             chapters.AddRange(ranobesChapters);
         }
+        
         Console.WriteLine($"Получено {chapters.Count} глав");
 
         chapters.Reverse();
         return chapters;
+    }
+
+    private async Task<HtmlDocument> GetSafety(Uri url) {
+        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        while (doc.GetTextBySelector("h1.title.h2") == "Antibot system") {
+            Console.WriteLine($"Обнаружена каптча. Перейдите по ссылке {url}, введите каптчу и нажмите Enter...");
+            Console.Read();
+            doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        }
+
+        return doc;
     }
 }
