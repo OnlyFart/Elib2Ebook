@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -24,11 +25,12 @@ public class LitmarketGetter : GetterBase {
     private const string HOST = "89.108.111.237";
 
     public override async Task<Book> Get(Uri url) {
+        Init();
+        
         var bookId = GetId(url);
-        _config.Client.DefaultRequestHeaders.Add("Host", "litmarket.ru");
         url = new Uri($"https://{HOST}/books/{bookId}");
         var doc = await Init(url);
-
+        await Authorize();
         var content = await GetMainData(bookId);
             
         var blocks = await GetBlocks(content.Book.EbookId);
@@ -42,6 +44,26 @@ public class LitmarketGetter : GetterBase {
         };
             
         return book;
+    }
+    
+    /// <summary>
+    /// Авторизация в системе
+    /// </summary>
+    /// <exception cref="Exception"></exception>
+    private async Task Authorize(){
+        if (!_config.HasCredentials) {
+            return;
+        }
+
+        var data = new {
+            email = _config.Login,
+            password = _config.Password
+        };
+        
+        using var post = await _config.Client.PostAsJsonAsync($"https://{HOST}/auth/login", data);
+        if (post.StatusCode != HttpStatusCode.OK) {
+            throw new Exception($"Не удалось авторизоваться");
+        }
     }
 
     private static string Normalize(string str) {
@@ -113,6 +135,9 @@ public class LitmarketGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> Init(Uri uri) {
+        _config.Client.DefaultRequestHeaders.Add("Host", "litmarket.ru");
+        _config.Client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+        
         var response = await _config.Client.GetWithTriesAsync(uri);
         var doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
 
