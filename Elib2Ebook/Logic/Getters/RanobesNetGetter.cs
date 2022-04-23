@@ -33,7 +33,7 @@ public class RanobesNetGetter : GetterBase {
         var bookId = GetId(url);
         
         _config.Client.DefaultRequestHeaders.Add("Host", "ranobes.net");
-        var uri = new Uri($"https://{HOST}/novels/{bookId}.html");
+        var uri = new Uri($"http://{HOST}/novels/{bookId}.html");
         var doc = await GetSafety(uri);
 
         var book = new Book {

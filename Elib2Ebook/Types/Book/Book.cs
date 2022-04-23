@@ -34,16 +34,18 @@ public class Book {
     /// <param name="options"></param>
     /// <param name="resourcesPath">Путь к папке с ресурсами</param>
     public void Save(BuilderBase builder, Options options, string resourcesPath) {
+        var title = Title.Crop(100);
+        
         builder.AddAuthor(Author)
             .WithTitle(Title)
             .WithCover(Cover)
             .WithFiles(resourcesPath, "*.ttf", EpubContentType.FontTruetype)
             .WithFiles(resourcesPath, "*.css", EpubContentType.Css)
             .WithChapters(Chapters)
-            .Build(options.SavePath, Title.Crop(100));
+            .Build(options.SavePath, title);
 
         if (options.Cover) {
-            builder.SaveCover(options.SavePath, Cover, Title);
+            builder.SaveCover(options.SavePath, Cover, title);
         }
     }
 }
