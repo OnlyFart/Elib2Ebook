@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Web;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Types.Book;
 using HtmlAgilityPack;
@@ -57,7 +58,7 @@ public abstract class LitnetGetterBase : GetterBase {
     private async Task<string> Authorize() {
         var path = _config.HasCredentials ? "user/find-by-login" : "registration/registration-by-device";
 
-        var url = $"https://api.{SystemUrl.Host}/v1/{path}?login={_config.Login}&password={_config.Password}&app=android&device_id={DeviceId}&sign={GetSign(string.Empty)}";
+        var url = $"https://api.{SystemUrl.Host}/v1/{path}?login={HttpUtility.UrlEncode(_config.Login)}&password={HttpUtility.UrlEncode(_config.Password)}&app=android&device_id={DeviceId}&sign={GetSign(string.Empty)}";
         var response = await _config.Client.GetFromJsonAsync<LitnetAuthResponse>(url);
 
         if (!string.IsNullOrWhiteSpace(response.Token)) {
