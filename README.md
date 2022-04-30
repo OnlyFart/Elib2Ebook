@@ -18,8 +18,6 @@
 * https://wattpad.com/
 * https://ранобэ.рф/
 
-Используется, как backend для телеграм-бота https://t.me/author_today_book_bot
-
 ## Пример вызова сервиса
 ```
 Elib2Ebook.exe --url https://litnet.com/ru/book/kniga-7-vladyka-magii-b364041 --format epub
