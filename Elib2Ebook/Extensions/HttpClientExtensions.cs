@@ -15,8 +15,8 @@ public static class HttpClientExtensions {
                 var response = await client.GetAsync(url);
 
                 if (response.StatusCode != HttpStatusCode.OK) {
-                    await Task.Delay(100);
                     Console.WriteLine(response.StatusCode);
+                    await Task.Delay(i * 500);
                     continue;
                 }
 

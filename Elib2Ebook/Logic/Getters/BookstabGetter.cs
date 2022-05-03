@@ -23,13 +23,14 @@ public class BookstabGetter : GetterBase {
         
         var bookId = GetId(url);
         var uri = new Uri($"https://bookstab.ru/book/{bookId}");
-        var response = await _config.Client.GetFromJsonAsync<BookstabApiResponse>($"https://api.bookstab.ru/api/reader-get/{bookId}");
+        var response = await _config.Client.GetWithTriesAsync(new Uri($"https://api.bookstab.ru/api/reader-get/{bookId}"));
+        var data = await response.Content.ReadFromJsonAsync<BookstabApiResponse>();
 
         var book = new Book {
-            Cover = await GetCover(response),
-            Chapters = await FillChapters(response, uri, bookId),
-            Title = response.Book.Title,
-            Author = response.Book.User.Pseudonym
+            Cover = await GetCover(data),
+            Chapters = await FillChapters(data, uri, bookId),
+            Title = data.Book.Title,
+            Author = data.Book.User.Pseudonym
         };
             
         return book;

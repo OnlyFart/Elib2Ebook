@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -55,14 +54,19 @@ public class LitmarketGetter : GetterBase {
             return;
         }
 
-        var data = new {
+        var payload = new {
             email = _config.Login,
             password = _config.Password
         };
         
-        using var post = await _config.Client.PostAsJsonAsync($"https://{HOST}/auth/login", data);
-        if (post.StatusCode != HttpStatusCode.OK) {
-            throw new Exception($"Не удалось авторизоваться");
+        using var post = await _config.Client.PostAsJsonAsync($"https://{HOST}/auth/login", payload);
+        try {
+            var data = await post.Content.ReadFromJsonAsync<AuthResponse>();
+            if (!data.Success) {
+                throw new Exception("Не удалось авторизоваться");
+            }
+        } catch {
+            throw new Exception("Не удалось авторизоваться");
         }
     }
 
