@@ -1,0 +1,68 @@
+using System;
+using System.Collections.Generic;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
+using Elib2Ebook.Configs;
+using Elib2Ebook.Extensions;
+using Elib2Ebook.Types.Book;
+using Elib2Ebook.Types.Bookstab;
+using HtmlAgilityPack;
+
+namespace Elib2Ebook.Logic.Getters; 
+
+public class BookstabGetter : GetterBase {
+    public BookstabGetter(BookGetterConfig config) : base(config) { }
+    protected override Uri SystemUrl => new("https://bookstab.ru/");
+
+    protected override string GetId(Uri url) {
+        return url.Segments[2].Trim('/');
+    }
+
+    public override async Task<Book> Get(Uri url) {
+        Init();
+        
+        var bookId = GetId(url);
+        var uri = new Uri($"https://bookstab.ru/book/{bookId}");
+        var response = await _config.Client.GetFromJsonAsync<BookstabApiResponse>($"https://api.bookstab.ru/api/reader-get/{bookId}");
+
+        var book = new Book {
+            Cover = await GetCover(response),
+            Chapters = await FillChapters(response, uri, bookId),
+            Title = response.Book.Title,
+            Author = response.Book.User.Pseudonym
+        };
+            
+        return book;
+    }
+
+    private async Task<IEnumerable<Chapter>> FillChapters(BookstabApiResponse response, Uri uri, string bookId) {
+        var result = new List<Chapter>();
+
+        foreach (var bookChapter in response.Book.ChaptersShow) {
+            var chapter = new Chapter();
+            Console.WriteLine($"Загружаем главу {bookChapter.Title.CoverQuotes()}");
+            
+            var doc = await GetChapter(bookChapter.Id, bookId);
+
+            if (doc != default) {
+                chapter.Title = bookChapter.Title;
+                chapter.Images = await GetImages(doc, uri);
+                chapter.Content = doc.DocumentNode.InnerHtml;
+
+                result.Add(chapter);
+            }
+        }
+
+        return result;
+    }
+
+    private async Task<HtmlDocument> GetChapter(int bookChapterId, string bookId) {
+        var response = await _config.Client.GetFromJsonAsync<BookstabApiResponse>($"https://api.bookstab.ru/api/reader-get/{bookId}/{bookChapterId}");
+        return string.IsNullOrWhiteSpace(response.Chapter.Body) ? default : response.Chapter.Body.AsHtmlDoc();
+    }
+
+    private Task<Image> GetCover(BookstabApiResponse response) {
+        var imagePath = response.Book.Image;
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri($"https://api.bookstab.ru/storage/{imagePath}")) : Task.FromResult(default(Image));
+    }
+}
