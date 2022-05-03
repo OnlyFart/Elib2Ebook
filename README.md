@@ -3,6 +3,7 @@
 * https://author.today/
 * https://bigliba.com/
 * https://booknet.com/
+* https://bookstab.ru/
 * https://bookriver.ru/
 * https://dark-novels.ru/
 * https://ficbook.net/
