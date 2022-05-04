@@ -32,7 +32,7 @@ public class BiglibaGetter : GetterBase{
             Chapters = await FillChapters(uri, bookId, token, title),
             Title = doc.GetTextBySelector("h1[itemprop=name]"),
             Author = doc.GetTextBySelector("h2[itemprop=author]") ?? "BigLiba",
-            Annotation = doc.GetTextBySelector("div.description").CollapseWhitespace()
+            Annotation = doc.QuerySelector("div.description")?.InnerHtml
         };
             
         return book;

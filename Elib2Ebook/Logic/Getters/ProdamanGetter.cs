@@ -131,7 +131,7 @@ public class ProdamanGetter : GetterBase {
             Chapters = await FillChapter(url, title),
             Title = title,
             Author = doc.GetTextBySelector("a[data-widget-feisovet-author]") ?? "Prodaman",
-            Annotation = doc.GetTextBySelector("div[itemprop=description]").CollapseWhitespace()
+            Annotation = doc.QuerySelector("div[itemprop=description]")?.InnerHtml
         };
 
         return book;

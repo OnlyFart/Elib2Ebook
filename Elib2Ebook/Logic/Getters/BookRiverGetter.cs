@@ -52,7 +52,7 @@ public class BookriverGetter : GetterBase {
             Chapters = await FillChapters(uri, bookId),
             Title = doc.GetTextBySelector("h1[itemprop=name]"),
             Author = doc.GetTextBySelector("span[itemprop=author]"),
-            Annotation = doc.GetTextBySelector("span[itemprop=description]").CollapseWhitespace()
+            Annotation = doc.QuerySelector("span[itemprop=description]")?.InnerHtml
         };
             
         return book;

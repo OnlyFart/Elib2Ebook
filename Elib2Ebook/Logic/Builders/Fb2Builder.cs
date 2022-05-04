@@ -143,10 +143,12 @@ public class Fb2Builder : BuilderBase {
 
     private XElement CreateAnnotation(string annotation) {
         var a = CreateXElement("annotation");
-        var p = CreateXElement("p");
-        p.Value = annotation.Trim();
+
+        var doc = CreateDoc(annotation);
+        foreach (var node in doc.DocumentNode.ChildNodes) {
+            ProcessSection(a, node, "p");
+        }
         
-        a.Add(p);
         return a;
     }
 
@@ -190,13 +192,21 @@ public class Fb2Builder : BuilderBase {
         return node.Name is "#text" or "br" or "span";
     }
 
-    private void ProcessSection(XElement parent, HtmlNode node) {
+    private void ProcessSection(XElement parent, HtmlNode node, string textNode = "") {
         if (node.Name == "a") {
             if (node.Attributes["href"] == null) {
                 return;
             }
-                
-            parent.Add(node.Attributes["href"].Value);
+
+            var href = node.Attributes["href"].Value;
+            if (string.IsNullOrWhiteSpace(textNode)) {
+                parent.Add(href);
+            } else {
+                var tag = CreateXElement(textNode);
+                tag.Value = href;
+                parent.Add(tag);
+            }
+
             return;
         }
         
@@ -215,7 +225,14 @@ public class Fb2Builder : BuilderBase {
         }
 
         if (IsTextNode(node)) {
-            parent.Add(new XText(node.InnerText));
+            if (string.IsNullOrWhiteSpace(textNode)) {
+                parent.Add(new XText(node.InnerText));
+            } else {
+                var tag = CreateXElement(textNode);
+                tag.Value = node.InnerText.HtmlDecode().HtmlEncode().Trim();
+                parent.Add(tag);
+            }
+            
             return;
         }
 
@@ -236,7 +253,7 @@ public class Fb2Builder : BuilderBase {
             tag.Value = node.InnerText;
             parent.Add(tag);
         } else {
-            parent.Add(new XText(node.InnerText));
+            parent.Add(node.InnerText);
             Console.WriteLine(node.Name);
         }
     }
