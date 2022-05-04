@@ -133,6 +133,23 @@ public class Fb2Builder : BuilderBase {
         return this;
     }
 
+    public override BuilderBase WithAnnotation(string annotation) {
+        if (!string.IsNullOrWhiteSpace(annotation)) {
+            _titleInfo.Add(CreateAnnotation(annotation));
+        }
+
+        return this;
+    }
+
+    private XElement CreateAnnotation(string annotation) {
+        var a = CreateXElement("annotation");
+        var p = CreateXElement("p");
+        p.Value = annotation.Trim();
+        
+        a.Add(p);
+        return a;
+    }
+
     /// <summary>
     /// Добавление внешних файлов
     /// </summary>

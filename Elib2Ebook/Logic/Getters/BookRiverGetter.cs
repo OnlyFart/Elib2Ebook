@@ -51,7 +51,8 @@ public class BookriverGetter : GetterBase {
             Cover = await GetCover(doc, uri),
             Chapters = await FillChapters(uri, bookId),
             Title = doc.GetTextBySelector("h1[itemprop=name]"),
-            Author = doc.GetTextBySelector("span[itemprop=author]")
+            Author = doc.GetTextBySelector("span[itemprop=author]"),
+            Annotation = doc.GetTextBySelector("span[itemprop=description]").CollapseWhitespace()
         };
             
         return book;

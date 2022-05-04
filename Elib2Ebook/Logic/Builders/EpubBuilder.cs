@@ -69,6 +69,10 @@ public class EpubBuilder : BuilderBase {
         return this;
     }
 
+    public override BuilderBase WithAnnotation(string annotation) {
+        return this;
+    }
+
     /// <summary>
     /// Добавление внешних файлов
     /// </summary>

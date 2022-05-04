@@ -40,6 +40,7 @@ public class LitmarketGetter : GetterBase {
             Chapters = await FillChapters(GetToc(content, title), blocks, url, content.Book.EbookId, title),
             Title = title,
             Author = Normalize(doc.GetTextBySelector("div.card-author").Replace("Автор:", "")),
+            Annotation = doc.GetTextBySelector("div.card-description").CollapseWhitespace()
         };
             
         return book;

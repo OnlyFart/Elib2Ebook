@@ -20,9 +20,7 @@ namespace Elib2Ebook.Logic.Getters;
 public class AuthorTodayGetter : GetterBase {
     private readonly Regex _userIdRgx = new("userId: (?<userId>\\d+),");
 
-    public AuthorTodayGetter(BookGetterConfig config) : base(config) {
-
-    }
+    public AuthorTodayGetter(BookGetterConfig config) : base(config) { }
 
     protected override Uri SystemUrl => new("https://author.today");
 
@@ -48,7 +46,7 @@ public class AuthorTodayGetter : GetterBase {
             Cover = await GetCover(doc, bookUri),
             Chapters = await FillChapters(doc, long.Parse(bookId), GetUserId(doc)),
             Title = doc.GetTextBySelector("div.book-title"),
-            Author = doc.GetTextBySelector("div.book-author")
+            Author = doc.GetTextBySelector("div.book-author"),
         };
     }
 

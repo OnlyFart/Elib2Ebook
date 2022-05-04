@@ -11,4 +11,7 @@ public class LitnetBookResponse {
     
     [JsonPropertyName("cover")]
     public string Cover { get; set; }
+    
+    [JsonPropertyName("annotation")]
+    public string Annotation { get; set; }
 }

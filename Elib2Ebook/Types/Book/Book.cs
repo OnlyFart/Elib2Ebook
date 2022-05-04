@@ -16,6 +16,11 @@ public class Book {
     /// Автор книги
     /// </summary>
     public string Author { get; init; }
+    
+    /// <summary>
+    /// Описание книги
+    /// </summary>
+    public string Annotation { get; set; }
         
     /// <summary>
     /// Обложка
@@ -39,6 +44,7 @@ public class Book {
         builder.AddAuthor(Author)
             .WithTitle(Title)
             .WithCover(Cover)
+            .WithAnnotation(Annotation)
             .WithFiles(resourcesPath, "*.ttf", EpubContentType.FontTruetype)
             .WithFiles(resourcesPath, "*.css", EpubContentType.Css)
             .WithChapters(Chapters)

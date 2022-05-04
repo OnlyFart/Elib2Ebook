@@ -28,6 +28,13 @@ public abstract class BuilderBase {
     /// <param name="cover">Обложка</param>
     /// <returns></returns>
     public abstract BuilderBase WithCover(Image cover);
+    
+    /// <summary>
+    /// Добавление описания книги
+    /// </summary>
+    /// <param name="annotation">Описание</param>
+    /// <returns></returns>
+    public abstract BuilderBase WithAnnotation(string annotation);
 
     /// <summary>
     /// Добавление внешних файлов

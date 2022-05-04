@@ -30,7 +30,8 @@ public class BookstabGetter : GetterBase {
             Cover = await GetCover(data),
             Chapters = await FillChapters(data, uri, bookId),
             Title = data.Book.Title,
-            Author = data.Book.User.Pseudonym
+            Author = data.Book.User.Pseudonym,
+            Annotation = data.Book.Excerpt
         };
             
         return book;

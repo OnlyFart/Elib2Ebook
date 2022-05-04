@@ -11,6 +11,9 @@ public class BookstabBook {
     
     [JsonPropertyName("title")]
     public string Title { get; set; }
+    
+    [JsonPropertyName("excerpt")]
+    public string Excerpt { get; set; }
 
     [JsonPropertyName("user")]
     public BooksnabUser User { get; set; }

@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 using HtmlAgilityPack;
 
@@ -86,5 +87,9 @@ public static class StringExtensions {
     /// <returns></returns>
     public static string HtmlEncode(this string self) {
         return HttpUtility.HtmlEncode(self.Trim());
+    }
+
+    public static string CollapseWhitespace(this string self) {
+        return !string.IsNullOrEmpty(self) ? Regex.Replace(self, @"\s+", " ") : self;
     }
 }
