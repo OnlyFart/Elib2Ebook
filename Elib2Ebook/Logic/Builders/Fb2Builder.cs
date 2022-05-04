@@ -146,7 +146,9 @@ public class Fb2Builder : BuilderBase {
 
         var doc = CreateDoc(annotation);
         foreach (var node in doc.DocumentNode.ChildNodes) {
-            ProcessSection(a, node, "p");
+            if (!string.IsNullOrWhiteSpace(node.InnerText)) {
+                ProcessSection(a, node, "p");
+            }
         }
         
         return a;
@@ -229,7 +231,7 @@ public class Fb2Builder : BuilderBase {
                 parent.Add(new XText(node.InnerText));
             } else {
                 var tag = CreateXElement(textNode);
-                tag.Value = node.InnerText.HtmlDecode().HtmlEncode().Trim();
+                tag.Value = node.InnerText.HtmlDecode().Trim();
                 parent.Add(tag);
             }
             

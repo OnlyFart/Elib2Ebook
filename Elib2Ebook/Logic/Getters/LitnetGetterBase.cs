@@ -99,12 +99,18 @@ public abstract class LitnetGetterBase : GetterBase {
             Chapters = await FillChapters(token, litnetBook, bookId),
             Title = litnetBook.Title,
             Author = litnetBook.AuthorName ?? "Litnet",
-            Annotation = litnetBook.Annotation
+            Annotation = GetAnnotation(litnetBook)
         };
             
         return book;
     }
-        
+
+    private static string GetAnnotation(LitnetBookResponse book) {
+        return string.IsNullOrWhiteSpace(book.Annotation) ? 
+            string.Empty : 
+            string.Join("", book.Annotation.Split("\n", StringSplitOptions.RemoveEmptyEntries).Select(s => $"<p>{s.Trim()}</p>"));
+    }
+    
     private Task<Image> GetCover(LitnetBookResponse book) {
         return !string.IsNullOrWhiteSpace(book.Cover) ? GetImage(new Uri(book.Cover)) : Task.FromResult(default(Image));
     }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
@@ -31,10 +32,16 @@ public class BookstabGetter : GetterBase {
             Chapters = await FillChapters(data, uri, bookId),
             Title = data.Book.Title,
             Author = data.Book.User.Pseudonym,
-            Annotation = data.Book.Excerpt
+            Annotation = GetAnnotation(data.Book)
         };
             
         return book;
+    }
+    
+    private static string GetAnnotation(BookstabBook book) {
+        return string.IsNullOrWhiteSpace(book.Excerpt) ? 
+            string.Empty : 
+            string.Join("", book.Excerpt.Split("\n", StringSplitOptions.RemoveEmptyEntries).Select(s => $"<p>{s.Trim()}</p>"));
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(BookstabApiResponse response, Uri uri, string bookId) {

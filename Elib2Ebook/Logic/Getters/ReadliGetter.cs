@@ -32,7 +32,8 @@ public class ReadliGetter : GetterBase {
             Cover = await GetCover(imageDiv, url),
             Chapters = await FillChapters(bookId, pages, name),
             Title = name,
-            Author = author
+            Author = author,
+            Annotation = doc.QuerySelector("article.seo__content")?.RemoveNodes("h2")?.InnerHtml
         };
             
         return book; 
