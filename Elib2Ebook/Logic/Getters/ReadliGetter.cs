@@ -90,12 +90,16 @@ public class ReadliGetter : GetterBase {
             Console.WriteLine($"Получаю страницу {i}/{pages}");
             var page = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://readli.net/chitat-online/?b={bookId}&pg={i}"));
             var content = page.QuerySelector("div.reading__text");
-            var nodes = content.QuerySelectorAll("> h3, > p");
+            var nodes = content.QuerySelectorAll("> h3, > p, img");
             singleChapter = i == 1 ? IsSingleChapter(nodes) : singleChapter;
 
             foreach (var node in nodes) {
                 if (singleChapter || node.Name != "h3") {
-                    text.Append($"<p>{node.InnerText.HtmlEncode()}</p>");
+                    if (node.Name == "img" && node.Attributes["src"] != null) {
+                        text.Append($"<img src='{node.Attributes["src"].Value}'/>");
+                    } else {
+                        text.Append($"<p>{node.InnerText.HtmlEncode()}</p>");
+                    }
                 } else {
                     await AddChapter(chapters, chapter, text);
                     text.Clear();
