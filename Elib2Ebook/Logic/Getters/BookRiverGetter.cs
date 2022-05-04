@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
@@ -19,10 +20,29 @@ public class BookriverGetter : GetterBase {
     protected override string GetId(Uri url) {
         return url.Segments[2].Trim('/');
     }
-    
+
+    private async Task Authorize() {
+        if (!_config.HasCredentials) {
+            return;
+        }
+
+        var payload = new {
+            email = _config.Login,
+            password = _config.Password,
+            rememberMe = 1
+        };
+
+        using var post = await _config.Client.PostAsJsonAsync($"https://api.bookriver.ru/api/v1/auth/login", payload);
+        var data = await post.Content.ReadFromJsonAsync<BookRiverAuthResponse>();
+        if (string.IsNullOrWhiteSpace(data.Token)) {
+            throw new Exception("Не удалось авторизоваться");
+        }
+    }
+
     public override async Task<Book> Get(Uri url) {
         Init();
-        
+
+        await Authorize();
         var bookId = GetId(url);
         var uri = new Uri($"https://bookriver.ru/book/{bookId}");
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
