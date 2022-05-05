@@ -49,10 +49,23 @@ public class Fb2Builder : BuilderBase {
 
     private XElement CreateAuthor(string author) {
         var authorElem = CreateXElement("author");
-        var nicknameElem = CreateXElement("nickname");
-        nicknameElem.Value = author;
-            
-        authorElem.Add(nicknameElem);
+
+        var parts = author.Split(" ");
+        if (parts.Length == 2) {
+            var firstName = CreateXElement("first-name");
+            firstName.Value = parts[0];
+            authorElem.Add(firstName);
+
+            var lastName = CreateXElement("last-name");
+            lastName.Value = parts[1];
+            authorElem.Add(lastName);
+
+        } else {
+            var nicknameElem = CreateXElement("nickname");
+            nicknameElem.Value = author;
+            authorElem.Add(nicknameElem);
+        }
+
         return authorElem;
     }
 
