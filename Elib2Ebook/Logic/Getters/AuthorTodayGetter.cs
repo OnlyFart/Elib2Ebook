@@ -38,16 +38,19 @@ public class AuthorTodayGetter : GetterBase {
         var bookId = GetId(url);
         await Authorize();
             
-        var bookUri = new Uri($"https://author.today/reader/{bookId}");
+        var bookUri = new Uri($"https://author.today/work/{bookId}");
         Console.WriteLine($"Загружаем книгу {bookUri.ToString().CoverQuotes()}"); 
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(bookUri);
 
-        return new Book {
+        var book = new Book {
             Cover = await GetCover(doc, bookUri),
-            Chapters = await FillChapters(doc, long.Parse(bookId), GetUserId(doc)),
-            Title = doc.GetTextBySelector("div.book-title"),
-            Author = doc.GetTextBySelector("div.book-author"),
+            Chapters = await FillChapters(doc, bookId, GetUserId(doc)),
+            Title = doc.GetTextBySelector("h1"),
+            Author = doc.GetTextBySelector("div.book-authors"),
+            Annotation = doc.QuerySelector("div.rich-content")?.InnerHtml
         };
+        
+        return book;
     }
 
     /// <summary>
@@ -104,9 +107,12 @@ public class AuthorTodayGetter : GetterBase {
     /// <summary>
     /// Получение списка частей из кода страницы
     /// </summary>
-    /// <param name="doc">Код страницы</param>
+    /// <param name="bookId">Идентификатор книги</param>
     /// <returns></returns>
-    private static List<Chapter> GetChapters(HtmlDocument doc) {
+    private async Task<List<Chapter>> GetChapters(string bookId) {
+        var bookUri = new Uri($"https://author.today/reader/{bookId}");
+        var doc = await _config.Client.GetHtmlDocWithTriesAsync(bookUri);
+        
         const string START_PATTERN = "chapters:";
         var startIndex = doc.ParsedText.IndexOf(START_PATTERN, StringComparison.Ordinal) + START_PATTERN.Length;
         var endIndex = doc.ParsedText.IndexOf("}],", startIndex, StringComparison.Ordinal) + 2;
@@ -120,8 +126,8 @@ public class AuthorTodayGetter : GetterBase {
     /// <param name="doc">Контент книги</param>
     /// <param name="bookId">Идентификатор книги</param>
     /// <param name="userId">Идентификатор пользователя</param>
-    private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, long bookId, string userId) {
-        var chapters = GetChapters(doc);
+    private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, string bookId, string userId) {
+        var chapters = await GetChapters(bookId);
             
         foreach (var chapter in chapters) {
             var chapterUri = new Uri($"https://author.today/reader/{bookId}/chapter?id={chapter.Id}");
