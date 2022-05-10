@@ -15,8 +15,6 @@ public class ReadliGetter : GetterBase {
     public ReadliGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://readli.net");
     public override async Task<Book> Get(Uri url) {
-        Init();
-        
         url = await GetMainUrl(url);
 
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);

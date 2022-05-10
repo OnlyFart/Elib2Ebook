@@ -26,13 +26,15 @@ public class RanobesNetGetter : GetterBase {
         return base.GetId(url).Split(".")[0];
     }
 
-    public override async Task<Book> Get(Uri url) {
-        Init();
+    public override async Task Init() {
+        await base.Init();
+        _config.Client.DefaultRequestHeaders.Add("Host", "ranobes.net");
+    }
 
+    public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);
         var bookId = GetId(url);
         
-        _config.Client.DefaultRequestHeaders.Add("Host", "ranobes.net");
         var uri = new Uri($"http://{HOST}/novels/{bookId}.html");
         var doc = await GetSafety(uri);
 

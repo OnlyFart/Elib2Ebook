@@ -17,7 +17,6 @@ public class JaomixGetter : GetterBase {
     public JaomixGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://jaomix.ru/");
     public override async Task<Book> Get(Uri url) {
-        Init();
         url = await GetMainUrl(url);
         var bookId = GetId(url);
         var uri = new Uri($"https://jaomix.ru/category/{bookId}/");

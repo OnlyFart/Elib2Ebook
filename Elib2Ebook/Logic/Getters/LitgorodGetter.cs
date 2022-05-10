@@ -16,8 +16,6 @@ public class LitgorodGetter : GetterBase {
     public LitgorodGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://litgorod.ru/");
     public override async Task<Book> Get(Uri url) {
-        Init();
-        
         var bookId = GetId(url);
         var uri = new Uri($"https://litgorod.ru/books/view/{bookId}");
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);

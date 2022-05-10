@@ -41,7 +41,6 @@ public class DarkNovelsGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
-        Init();
         url = await GetMainUrl(url);
             
         var bookFullId = GetId(url);

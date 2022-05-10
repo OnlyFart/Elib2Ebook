@@ -33,13 +33,19 @@ internal static class Program {
                 }
 
                 var client = new HttpClient(handler);
-                var url = new Uri(options.Url);
 
                 var getterConfig = new BookGetterConfig(options, client);
-                using var getter = GetGetter(getterConfig, url);
+                using var getter = GetGetter(getterConfig, new Uri(options.Url.First()));
+                
+                await getter.Init();
+                await getter.Authorize();
 
-                var book = await getter.Get(url);
-                book.Save(GetBuilder(options.Format), options, "Patterns");
+                foreach (var url in options.Url) {
+                    var book = await getter.Get(new Uri(url));
+                    foreach (var format in options.Format) {
+                        book.Save(GetBuilder(format), options, "Patterns");
+                    }
+                }
             });
     }
 

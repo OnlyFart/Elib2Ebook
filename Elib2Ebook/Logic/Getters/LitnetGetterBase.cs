@@ -22,6 +22,8 @@ public abstract class LitnetGetterBase : GetterBase {
     private static readonly string DeviceId = Guid.NewGuid().ToString().ToUpper();
     private const string SECRET = "14a6579a984b3c6abecda6c2dfa83a64";
 
+    private string _token { get; set; }
+
     protected override string GetId(Uri url) {
         return base.GetId(url).Split('-').Last().Replace("b", string.Empty);
     }
@@ -55,7 +57,7 @@ public abstract class LitnetGetterBase : GetterBase {
     /// Авторизация в системе
     /// </summary>
     /// <exception cref="Exception"></exception>
-    private async Task<string> Authorize() {
+    public override async Task Authorize() {
         var path = _config.HasCredentials ? "user/find-by-login" : "registration/registration-by-device";
 
         var url = $"https://api.{SystemUrl.Host}/v1/{path}?login={_config.Login}&password={HttpUtility.UrlEncode(_config.Password)}&app=android&device_id={DeviceId}&sign={GetSign(string.Empty)}";
@@ -63,7 +65,7 @@ public abstract class LitnetGetterBase : GetterBase {
 
         if (!string.IsNullOrWhiteSpace(response.Token)) {
             Console.WriteLine("Успешно авторизовались");
-            return response.Token;
+            _token = response.Token;
         } else {
             throw new Exception($"Не удалось авторизоваться. {response.Error}");
         }
@@ -89,14 +91,13 @@ public abstract class LitnetGetterBase : GetterBase {
     }
     
     public override async Task<Book> Get(Uri url) {
-        var token = await Authorize();
         var bookId = GetId(url);
 
-        var litnetBook = await GetBook(token, bookId);
+        var litnetBook = await GetBook(_token, bookId);
 
         var book = new Book {
             Cover = await GetCover(litnetBook),
-            Chapters = await FillChapters(token, litnetBook, bookId),
+            Chapters = await FillChapters(_token, litnetBook, bookId),
             Title = litnetBook.Title,
             Author = litnetBook.AuthorName ?? "Litnet",
             Annotation = GetAnnotation(litnetBook)

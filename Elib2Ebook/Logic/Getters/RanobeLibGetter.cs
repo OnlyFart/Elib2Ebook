@@ -29,16 +29,17 @@ public class RanobeLibGetter : GetterBase {
     /// Авторизация в системе
     /// </summary>
     /// <exception cref="Exception"></exception>
-    private async Task Authorize(HtmlDocument doc){
+    public override async Task Authorize() {
         if (!_config.HasCredentials) {
             return;
         }
-            
+        
+        var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://{HOST}/"));
         var token = doc.QuerySelector("meta[name=_token]")?.Attributes["content"]?.Value;
         using var post = await _config.Client.PostAsync($"https://{HOST}/login", GenerateAuthData(token));
     }
-        
-    public MultipartFormDataContent GenerateAuthData(string token) {
+
+    private MultipartFormDataContent GenerateAuthData(string token) {
         return new() {
             {new StringContent(token), "_token"},
             {new StringContent(_config.Login), "email"},
@@ -48,11 +49,11 @@ public class RanobeLibGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
-        Init();
         var bookId = GetId(url);
+        
         var uri = new Uri($"https://{HOST}/{bookId}");
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
-        await Authorize(doc);
+        
 
         var data = GetData(doc);
 

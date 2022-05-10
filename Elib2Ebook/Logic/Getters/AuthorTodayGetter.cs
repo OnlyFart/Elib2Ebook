@@ -35,11 +35,8 @@ public class AuthorTodayGetter : GetterBase {
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
     public override async Task<Book> Get(Uri url) {
-        Init();
-
         var bookId = GetId(url);
-        await Authorize();
-        
+
         var bookUri = new Uri($"https://author.today/work/{bookId}");
         Console.WriteLine($"Загружаем книгу {bookUri.ToString().CoverQuotes()}"); 
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(bookUri);
@@ -77,7 +74,7 @@ public class AuthorTodayGetter : GetterBase {
     /// Авторизация в системе
     /// </summary>
     /// <exception cref="Exception"></exception>
-    private async Task Authorize(){
+    public override async Task Authorize(){
         if (!_config.HasCredentials) {
             return;
         }

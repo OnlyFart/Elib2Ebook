@@ -21,7 +21,7 @@ public class BookriverGetter : GetterBase {
         return url.Segments[2].Trim('/');
     }
 
-    private async Task Authorize() {
+    public override async Task Authorize() {
         if (!_config.HasCredentials) {
             return;
         }
@@ -40,9 +40,6 @@ public class BookriverGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
-        Init();
-
-        await Authorize();
         var bookId = GetId(url);
         var uri = new Uri($"https://bookriver.ru/book/{bookId}");
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);

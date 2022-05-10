@@ -23,13 +23,37 @@ public class LitmarketGetter : GetterBase {
     // cloudflare :(
     private const string HOST = "89.108.111.237";
 
-    public override async Task<Book> Get(Uri url) {
-        Init();
+    public override async Task Init() {
+        await base.Init();
         
+        _config.Client.DefaultRequestHeaders.Add("Host", "litmarket.ru");
+        _config.Client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+        
+        var response = await _config.Client.GetWithTriesAsync(new Uri($"https://{HOST}/"));
+        var doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
+
+        var csrf = doc.QuerySelector("[name=csrf-token]")?.Attributes["content"]?.Value;
+        if (string.IsNullOrWhiteSpace(csrf)) {
+            throw new ArgumentException("Не удалось получить csrf-token", nameof(csrf));
+        }
+            
+        var cookies = response.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value;
+        var xsrfCookie = cookies.FirstOrDefault(c => c.StartsWith("XSRF-TOKEN="));
+        if (xsrfCookie == null) {
+            throw new ArgumentException("Не удалось получить XSRF-TOKEN", nameof(xsrfCookie));
+        }
+            
+        var xsrf = HttpUtility.UrlDecode(xsrfCookie.Split(";")[0].Replace("XSRF-TOKEN=", ""));
+            
+        _config.Client.DefaultRequestHeaders.Add("X-CSRF-TOKEN", csrf);
+        _config.Client.DefaultRequestHeaders.Add("X-XSRF-TOKEN", xsrf);
+    }
+
+    public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
         url = new Uri($"https://{HOST}/books/{bookId}");
-        var doc = await Init(url);
-        await Authorize();
+
+        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
         var content = await GetMainData(bookId);
             
         var blocks = await GetBlocks(content.Book.EbookId);
@@ -50,7 +74,7 @@ public class LitmarketGetter : GetterBase {
     /// Авторизация в системе
     /// </summary>
     /// <exception cref="Exception"></exception>
-    private async Task Authorize(){
+    public override async Task Authorize(){
         if (!_config.HasCredentials) {
             return;
         }
@@ -137,32 +161,6 @@ public class LitmarketGetter : GetterBase {
         }
 
         return result;
-    }
-
-    private async Task<HtmlDocument> Init(Uri uri) {
-        _config.Client.DefaultRequestHeaders.Add("Host", "litmarket.ru");
-        _config.Client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
-        
-        var response = await _config.Client.GetWithTriesAsync(uri);
-        var doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
-
-        var csrf = doc.QuerySelector("[name=csrf-token]")?.Attributes["content"]?.Value;
-        if (string.IsNullOrWhiteSpace(csrf)) {
-            throw new ArgumentException("Не удалось получить csrf-token", nameof(csrf));
-        }
-            
-        var cookies = response.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value;
-        var xsrfCookie = cookies.FirstOrDefault(c => c.StartsWith("XSRF-TOKEN="));
-        if (xsrfCookie == null) {
-            throw new ArgumentException("Не удалось получить XSRF-TOKEN", nameof(xsrfCookie));
-        }
-            
-        var xsrf = HttpUtility.UrlDecode(xsrfCookie.Split(";")[0].Replace("XSRF-TOKEN=", ""));
-            
-        _config.Client.DefaultRequestHeaders.Add("X-CSRF-TOKEN", csrf);
-        _config.Client.DefaultRequestHeaders.Add("X-XSRF-TOKEN", xsrf);
-
-        return doc;
     }
 
     private async Task<Response> GetMainData(string bookId) {

@@ -20,8 +20,6 @@ public class BookstabGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
-        Init();
-        
         var bookId = GetId(url);
         var uri = new Uri($"https://bookstab.ru/book/{bookId}");
         var response = await _config.Client.GetWithTriesAsync(new Uri($"https://api.bookstab.ru/api/reader-get/{bookId}"));

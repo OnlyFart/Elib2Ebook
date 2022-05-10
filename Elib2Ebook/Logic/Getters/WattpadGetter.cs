@@ -36,7 +36,6 @@ public class WattpadGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
-        Init();
         var meta = await GetMeta(url);
         var wattpadInfo = await _config.Client.GetFromJsonAsync<WattpadInfo>(new Uri($"https://www.wattpad.com/apiv2/info?id={meta.BookId}"));
 

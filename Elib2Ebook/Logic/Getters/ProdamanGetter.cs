@@ -32,7 +32,7 @@ public class ProdamanGetter : GetterBase {
     /// Авторизация в системе
     /// </summary>
     /// <exception cref="Exception"></exception>
-    private async Task Authorize(){
+    public override async Task Authorize(){
         if (!_config.HasCredentials) {
             return;
         }
@@ -119,9 +119,6 @@ public class ProdamanGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
-        Init();
-
-        await Authorize();
         url = new Uri(SystemUrl, url.AbsolutePath);
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
 

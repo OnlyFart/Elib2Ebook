@@ -21,7 +21,6 @@ public class FicbookGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
-        Init();
         var bookId = GetId(url);
         var uri = new Uri($"https://ficbook.net/readfic/{bookId}");
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
