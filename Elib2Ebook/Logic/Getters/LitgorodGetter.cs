@@ -61,7 +61,7 @@ public class LitgorodGetter : GetterBase {
         var sb = new StringBuilder();
         for (var i = 1; i <= pages; i++) {
             doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://litgorod.ru/books/read/{bookId}?chapter={chapterId}&page={i}"));
-            sb.Append(doc.QuerySelector("div.reader__content__wrap").RemoveNodes("div.reader__content__title").InnerHtml.Trim());
+            sb.Append(doc.QuerySelector("div.reader__content__wrap").RemoveNodes("div.reader__content__title").InnerHtml.HtmlDecode().Trim());
         }
 
         return sb.ToString().AsHtmlDoc();

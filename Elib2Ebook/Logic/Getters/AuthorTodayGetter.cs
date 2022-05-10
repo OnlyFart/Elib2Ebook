@@ -22,8 +22,6 @@ public class AuthorTodayGetter : GetterBase {
 
     public AuthorTodayGetter(BookGetterConfig config) : base(config) { }
 
-    private const string HOST = "185.26.98.227";
-    
     protected override Uri SystemUrl => new("https://author.today/");
     
     protected override string GetId(Uri url) {
@@ -38,13 +36,11 @@ public class AuthorTodayGetter : GetterBase {
     /// <exception cref="Exception"></exception>
     public override async Task<Book> Get(Uri url) {
         Init();
-        
-        _config.Client.DefaultRequestHeaders.Add("Host", SystemUrl.Host);
-        
+
         var bookId = GetId(url);
         await Authorize();
         
-        var bookUri = new Uri($"https://author.today/work/{bookId}").ReplaceHost(HOST);
+        var bookUri = new Uri($"https://author.today/work/{bookId}");
         Console.WriteLine($"Загружаем книгу {bookUri.ToString().CoverQuotes()}"); 
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(bookUri);
 
@@ -86,10 +82,10 @@ public class AuthorTodayGetter : GetterBase {
             return;
         }
 
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri("https://author.today/").ReplaceHost(HOST));
+        var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri("https://author.today/"));
         var token = doc.QuerySelector("[name=__RequestVerificationToken]")?.Attributes["value"]?.Value;
 
-        using var post = await _config.Client.PostAsync(new Uri("https://author.today/account/login").ReplaceHost(HOST), GenerateAuthData(token));
+        using var post = await _config.Client.PostAsync(new Uri("https://author.today/account/login"), GenerateAuthData(token));
         var response = await post.Content.ReadFromJsonAsync<ApiResponse<object>>();
             
         if (response?.IsSuccessful == true) {
@@ -107,7 +103,7 @@ public class AuthorTodayGetter : GetterBase {
     /// <returns></returns>
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
         var imagePath = doc.QuerySelector("img.cover-image")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath).ReplaceHost(HOST)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
     }
 
     /// <summary>
@@ -116,7 +112,7 @@ public class AuthorTodayGetter : GetterBase {
     /// <param name="bookId">Идентификатор книги</param>
     /// <returns></returns>
     private async Task<List<Chapter>> GetChapters(string bookId) {
-        var bookUri = new Uri($"https://author.today/reader/{bookId}").ReplaceHost(HOST);
+        var bookUri = new Uri($"https://author.today/reader/{bookId}");
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(bookUri);
         
         const string START_PATTERN = "chapters:";
@@ -135,7 +131,7 @@ public class AuthorTodayGetter : GetterBase {
         var chapters = await GetChapters(bookId);
             
         foreach (var chapter in chapters) {
-            var chapterUri = new Uri($"https://author.today/reader/{bookId}/chapter?id={chapter.Id}").ReplaceHost(HOST);
+            var chapterUri = new Uri($"https://author.today/reader/{bookId}/chapter?id={chapter.Id}");
                 
             Console.WriteLine($"Получаем главу {chapter.Title.CoverQuotes()}");
             using var response = await _config.Client.GetWithTriesAsync(chapterUri);
