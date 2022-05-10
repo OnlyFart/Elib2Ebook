@@ -98,7 +98,9 @@ public class ReadliGetter : GetterBase {
                     if (node.Name == "img" && node.Attributes["src"] != null) {
                         text.Append($"<img src='{node.Attributes["src"].Value}'/>");
                     } else {
-                        text.Append($"<p>{node.InnerText.HtmlEncode()}</p>");
+                        if (!string.IsNullOrWhiteSpace(node.InnerText)) {
+                            text.Append($"<p>{node.InnerText.HtmlEncode()}</p>");
+                        }
                     }
                 } else {
                     await AddChapter(chapters, chapter, text);

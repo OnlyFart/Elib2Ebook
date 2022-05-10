@@ -23,7 +23,8 @@ internal static class Program {
                 var handler = new HttpClientHandler {
                     AutomaticDecompression = DecompressionMethods.GZip | 
                                              DecompressionMethods.Deflate |
-                                             DecompressionMethods.Brotli
+                                             DecompressionMethods.Brotli,
+                    ServerCertificateCustomValidationCallback = (_, _, _, _) => true
                 };
 
                 if (!string.IsNullOrEmpty(options.Proxy)) {
