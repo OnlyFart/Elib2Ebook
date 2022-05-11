@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
@@ -17,22 +19,17 @@ public class RanobesComGetter : GetterBase {
     protected override Uri SystemUrl => new("https://ranobes.com");
     
     // cloudflare :(
-    private const string HOST = "5.252.195.125";
+    private const string IP = "5.252.195.125";
 
     protected override string GetId(Uri url) {
         return base.GetId(url).Split(".")[0];
     }
 
-    public override async Task Init() {
-        await base.Init();
-        _config.Client.DefaultRequestHeaders.Add("Host", "ranobes.com");
-    }
-
     public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);
         var bookId = GetId(url);
-        var uri = new Uri($"https://{HOST}/ranobe/{bookId}.html");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
+        var uri = new Uri($"https://{IP}/ranobe/{bookId}.html");
+        var doc = await GetHtmlDocument(uri);
 
         var book = new Book {
             Cover = await GetCover(doc, uri),
@@ -46,7 +43,7 @@ public class RanobesComGetter : GetterBase {
 
     private async Task<Uri> GetMainUrl(Uri url) {
         if (url.Segments[1] == "chapters/") {
-            var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(new Uri($"https://{HOST}/"), url.AbsolutePath));
+            var doc = await GetHtmlDocument(new Uri(new Uri($"https://{IP}/"), url.AbsolutePath));
             return new Uri(url, doc.QuerySelector("div.category a").Attributes["href"].Value);
         }
 
@@ -71,7 +68,7 @@ public class RanobesComGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(Uri mainUrl, Uri url) {
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(mainUrl, url));
+        var doc = await GetHtmlDocument(new Uri(mainUrl, url));
         var sb = new StringBuilder();
         foreach (var node in doc.QuerySelectorAll("#arrticle > :not(.splitnewsnavigation)")) {
             var tag = node.Name == "#text" ? "p" : node.Name;
@@ -79,7 +76,7 @@ public class RanobesComGetter : GetterBase {
                 sb.Append($"<{tag}>{node.OuterHtml.Trim()}</{tag}>");
             } else {
                 if (node.InnerHtml?.Contains("window.yaContextCb") == false) {
-                    sb.Append($"<{tag}>{node.InnerHtml.Trim()}</{tag}>");
+                    sb.Append($"<{tag}>{node.InnerHtml}</{tag}>");
                 }
             }
         }
@@ -102,17 +99,17 @@ public class RanobesComGetter : GetterBase {
     }
         
     private async Task<IEnumerable<RanobesChapter>> GetChapters(Uri tocUri) {
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(tocUri);
+        var doc = await GetHtmlDocument(tocUri);
         var lastA = doc.QuerySelector("div.pages a:last-child")?.InnerText;
         var pages = string.IsNullOrWhiteSpace(lastA) ? 1 : int.Parse(lastA);
             
         Console.WriteLine("Получаем оглавление");
         var chapters = new List<RanobesChapter>();
         for (var i = 1; i <= pages; i++) {
-            doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(tocUri.AbsoluteUri + "/page/" + i));
+            doc = await GetHtmlDocument(new Uri(tocUri.AbsoluteUri + "/page/" + i));
             var ranobesChapters = doc
                 .QuerySelectorAll("#dle-content > .cat_block.cat_line a")
-                .Select(a => new RanobesChapter(a.Attributes["title"].Value, new Uri(new Uri($"https://{HOST}/"), new Uri(a.Attributes["href"].Value).AbsolutePath)))
+                .Select(a => new RanobesChapter(a.Attributes["title"].Value, new Uri(new Uri($"https://{IP}/"), new Uri(a.Attributes["href"].Value).AbsolutePath)))
                 .ToList();
             
             chapters.AddRange(ranobesChapters);
@@ -121,5 +118,25 @@ public class RanobesComGetter : GetterBase {
 
         chapters.Reverse();
         return chapters;
+    }
+
+    private async Task<HtmlDocument> GetHtmlDocument(Uri url) {
+        var message = new HttpRequestMessage(HttpMethod.Get, url);
+        message.Headers.Add("Host", SystemUrl.Host);
+        
+        var response = await _config.Client.SendWithTriesAsync(message);
+        var content = await response.Content.ReadAsStringAsync();
+            
+        return content.AsHtmlDoc();
+    }
+
+    protected override HttpRequestMessage GetImageRequestMessage(Uri uri) {
+        if (uri.Host != SystemUrl.Host && uri.Host != IP) {
+            return base.GetImageRequestMessage(uri);
+        }
+        
+        var message = new HttpRequestMessage(HttpMethod.Get, uri.ReplaceHost(IP));
+        message.Headers.Add("Host", SystemUrl.Host);
+        return message;
     }
 }

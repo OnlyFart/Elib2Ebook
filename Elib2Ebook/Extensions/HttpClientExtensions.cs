@@ -29,6 +29,27 @@ public static class HttpClientExtensions {
 
         return default;
     }
+
+    public static async Task<HttpResponseMessage> SendWithTriesAsync(this HttpClient client, HttpRequestMessage message) {
+        for (var i = 0; i < MAX_TRY_COUNT; i++) {
+            try { 
+                var response = await client.SendAsync(message);
+
+                if (response.StatusCode != HttpStatusCode.OK) {
+                    Console.WriteLine(response.StatusCode);
+                    await Task.Delay(i * 500);
+                    continue;
+                }
+
+                return response;
+            } catch (Exception ex) {
+                Console.WriteLine(ex);
+                await Task.Delay(i * 1000);
+            }
+        }
+
+        return default;
+    }
         
     public static async Task<HttpResponseMessage> PostWithTriesAsync(this HttpClient client, Uri url, HttpContent content) {
         for (var i = 0; i < MAX_TRY_COUNT; i++) {

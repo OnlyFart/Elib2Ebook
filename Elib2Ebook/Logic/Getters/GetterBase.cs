@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Types.Book;
@@ -29,7 +30,10 @@ public abstract class GetterBase : IDisposable {
     public virtual bool IsSameUrl(Uri url) {
         return string.Equals(_idn.GetAscii(SystemUrl.Host).Replace("www.", ""), _idn.GetAscii(url.Host).Replace("www.", ""), StringComparison.InvariantCultureIgnoreCase);
     }
-        
+
+    protected virtual HttpRequestMessage GetImageRequestMessage(Uri uri) {
+        return new HttpRequestMessage(HttpMethod.Get, uri);
+    }
     /// <summary>
     /// Получение изображения
     /// </summary>
@@ -38,7 +42,7 @@ public abstract class GetterBase : IDisposable {
     protected async Task<Image> GetImage(Uri uri) {
         Console.WriteLine($"Загружаем картинку {uri.ToString().CoverQuotes()}");
         try {
-            using var response = await _config.Client.GetWithTriesAsync(uri);
+            using var response = await _config.Client.SendWithTriesAsync(GetImageRequestMessage(uri));
             return response is { StatusCode: HttpStatusCode.OK } ? 
                 new Image(uri.GetFileName(), await response.Content.ReadAsByteArrayAsync()) : 
                 null;
