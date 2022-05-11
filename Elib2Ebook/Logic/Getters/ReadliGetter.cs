@@ -88,7 +88,7 @@ public class ReadliGetter : GetterBase {
             Console.WriteLine($"Получаю страницу {i}/{pages}");
             var page = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://readli.net/chitat-online/?b={bookId}&pg={i}"));
             var content = page.QuerySelector("div.reading__text");
-            var nodes = content.QuerySelectorAll("> h3, > p, img");
+            var nodes = content.QuerySelectorAll("> h3, > p, > img");
             nodes = nodes.Count == 0 ? content.ChildNodes : nodes;
             singleChapter = i == 1 ? IsSingleChapter(nodes) : singleChapter;
 
@@ -97,14 +97,14 @@ public class ReadliGetter : GetterBase {
                     if (node.Name == "img" && node.Attributes["src"] != null) {
                         text.Append($"<img src='{node.Attributes["src"].Value}'/>");
                     } else {
-                        if (!string.IsNullOrWhiteSpace(node.InnerText)) {
-                            text.Append($"<p>{node.InnerText.HtmlEncode()}</p>");
+                        if (!string.IsNullOrWhiteSpace(node.InnerHtml)) {
+                            text.Append($"<p>{node.InnerHtml.HtmlDecode()}</p>");
                         }
                     }
                 } else {
                     await AddChapter(chapters, chapter, text);
                     text.Clear();
-                    chapter = CreateChapter(node.InnerText.HtmlDecode());
+                    chapter = CreateChapter(node.InnerHtml.HtmlDecode());
                 }
             }
         }
