@@ -70,20 +70,20 @@ public class RanobeLibGetter : GetterBase {
     private WindowData GetData(HtmlDocument doc) {
         var match = new Regex("window.__DATA__ = (?<data>{.*}).*window._SITE_COLOR_", RegexOptions.Compiled | RegexOptions.Singleline).Match(doc.Text).Groups["data"].Value;
         var windowData = JsonSerializer.Deserialize<WindowData>(match);
-        windowData.Chapters.List.Reverse();
+        windowData.RanobeLibChapters.List.Reverse();
         return windowData;
     }
 
     private async Task<IEnumerable<Types.Book.Chapter>> FillChapters(WindowData data, Uri url) {
         var result = new List<Types.Book.Chapter>();
-        var branchId = data.Chapters.List
+        var branchId = data.RanobeLibChapters.List
             .GroupBy(c => c.BranchId)
             .MaxBy(c => c.Count())!
             .Key;
 
-        foreach (var ranobeChapter in data.Chapters.List.Where(c => c.BranchId == branchId)) {
+        foreach (var ranobeChapter in data.RanobeLibChapters.List.Where(c => c.BranchId == branchId)) {
             Console.WriteLine($"Загружаем главу {ranobeChapter.GetName()}");
-            var chapter = new Types.Book.Chapter();
+            var chapter = new Chapter();
             var chapterDoc = await GetChapter(ranobeChapter.GetUri(url));
             chapter.Images = await GetImages(chapterDoc, ranobeChapter.GetUri(url));
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;

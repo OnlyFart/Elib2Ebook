@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Elib2Ebook.Types.RanobeLib; 
 
-public class Chapters {
+public class RanobeLibChapters {
     [JsonPropertyName("list")] 
-    public List<Chapter> List { get; set; }
+    public List<RanobeLibChapter> List { get; set; }
 }

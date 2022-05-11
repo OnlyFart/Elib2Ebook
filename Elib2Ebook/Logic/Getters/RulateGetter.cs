@@ -61,9 +61,7 @@ public class RulateGetter : GetterBase {
             Console.WriteLine($"Загружаем главу {name.CoverQuotes()}");
             var chapter = new Chapter();
                 
-            var text = await GetChapter(bookId, id);
-
-            var chapterDoc = text.AsHtmlDoc();
+            var chapterDoc = await GetChapter(bookId, id);
             chapter.Images = await GetImages(chapterDoc, bookUri);
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;
             chapter.Title = name;
@@ -74,9 +72,9 @@ public class RulateGetter : GetterBase {
         return result;
     }
 
-    private async Task<string> GetChapter(string bookId, string chapterId) {
+    private async Task<HtmlDocument> GetChapter(string bookId, string chapterId) {
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://tl.rulate.ru/book/{bookId}/{chapterId}/ready"));
-        return doc.GetTextBySelector("h1") == "Доступ запрещен" ? string.Empty : doc.QuerySelector("div.content-text")?.InnerHtml ?? string.Empty;
+        return (doc.GetTextBySelector("h1") == "Доступ запрещен" ? string.Empty : doc.QuerySelector("div.content-text")?.InnerHtml ?? string.Empty).AsHtmlDoc();
     }
 
     private static IEnumerable<IdChapter> GetChapters(HtmlDocument doc) {
