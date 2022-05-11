@@ -97,6 +97,7 @@ public class RanobesComGetter : GetterBase {
         if (!relativeUri.Contains("chapters")) {
             relativeUri = $"/chapters/{string.Join("-", GetId(uri).Split(".")[0].Split("-").Skip(1))}";
         }
+        
         return new Uri(uri, new Uri(relativeUri).AbsolutePath);
     }
         
