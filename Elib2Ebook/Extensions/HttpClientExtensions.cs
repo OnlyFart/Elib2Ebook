@@ -30,10 +30,10 @@ public static class HttpClientExtensions {
         return default;
     }
 
-    public static async Task<HttpResponseMessage> SendWithTriesAsync(this HttpClient client, HttpRequestMessage message) {
+    public static async Task<HttpResponseMessage> SendWithTriesAsync(this HttpClient client, Func<HttpRequestMessage> message) {
         for (var i = 0; i < MAX_TRY_COUNT; i++) {
             try { 
-                var response = await client.SendAsync(message);
+                var response = await client.SendAsync(message());
 
                 if (response.StatusCode != HttpStatusCode.OK) {
                     Console.WriteLine(response.StatusCode);

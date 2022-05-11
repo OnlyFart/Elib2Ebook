@@ -238,7 +238,7 @@ public class Fb2Builder : BuilderBase {
                 parent.Add(new XText(node.InnerText));
             } else {
                 var tag = CreateXElement(textNode);
-                tag.Value = node.InnerText.HtmlDecode().Trim();
+                tag.Value = node.InnerText.HtmlDecode();
                 parent.Add(tag);
             }
             

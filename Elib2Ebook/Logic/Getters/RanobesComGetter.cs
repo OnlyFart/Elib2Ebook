@@ -35,7 +35,8 @@ public class RanobesComGetter : GetterBase {
             Cover = await GetCover(doc, uri),
             Chapters = await FillChapters(doc, uri),
             Title = doc.QuerySelector("h1.title").FirstChild.InnerText.Trim().HtmlDecode(),
-            Author = "Ранобэс"
+            Author = doc.GetTextBySelector("span[itemprop=creator]") ?? "Ranobes",
+            Annotation = doc.QuerySelector("div[itemprop=description]")?.RemoveNodes("style")?.InnerHtml
         };
             
         return book;
@@ -120,11 +121,14 @@ public class RanobesComGetter : GetterBase {
         return chapters;
     }
 
-    private async Task<HtmlDocument> GetHtmlDocument(Uri url) {
-        var message = new HttpRequestMessage(HttpMethod.Get, url);
+    private HttpRequestMessage CreateRequestMessage(Uri uri) {
+        var message = new HttpRequestMessage(HttpMethod.Get, uri);
         message.Headers.Add("Host", SystemUrl.Host);
-        
-        var response = await _config.Client.SendWithTriesAsync(message);
+        return message;
+    }
+
+    private async Task<HtmlDocument> GetHtmlDocument(Uri uri) {
+        var response = await _config.Client.SendWithTriesAsync(() => CreateRequestMessage(uri));
         var content = await response.Content.ReadAsStringAsync();
             
         return content.AsHtmlDoc();
