@@ -89,6 +89,7 @@ public class ReadliGetter : GetterBase {
             var page = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://readli.net/chitat-online/?b={bookId}&pg={i}"));
             var content = page.QuerySelector("div.reading__text");
             var nodes = content.QuerySelectorAll("> h3, > p, img");
+            nodes = nodes.Count == 0 ? content.ChildNodes : nodes;
             singleChapter = i == 1 ? IsSingleChapter(nodes) : singleChapter;
 
             foreach (var node in nodes) {
