@@ -44,6 +44,7 @@ public class WattpadGetter : GetterBase {
             Chapters = await FillChapters(wattpadInfo),
             Title = meta.Title,
             Author = wattpadInfo.Author ?? "Wattpad",
+            Annotation = wattpadInfo.Description
         };
             
         return book;
