@@ -165,10 +165,10 @@ public class ProdamanGetter : GetterBase {
         chapters.Add(chapter);
     }
 
-    private string Decode(string encode) {
+    private static string Decode(string encode) {
         var sb = new StringBuilder();
         foreach (var c in encode) {
-            sb.Append(_map.TryGetValue(c, out var d) ? d : c);
+            sb.Append(_map.GetValueOrDefault(c, c));
         }
 
         return sb.ToString();
@@ -192,12 +192,12 @@ public class ProdamanGetter : GetterBase {
             foreach (var node in nodes) {
                 if (singleChapter || node.Name != "h3") {
                     if (!string.IsNullOrWhiteSpace(node.InnerText)) {
-                        text.Append($"<p>{Decode(node.InnerText.HtmlDecode().HtmlEncode())}</p>");
+                        text.Append($"<p>{Decode(node.InnerText.HtmlDecode())}</p>");
                     }
                 } else {
                     await AddChapter(chapters, chapter, text, url);
                     text.Clear();
-                    chapter = CreateChapter(Decode(node.InnerText.HtmlDecode().HtmlEncode()));
+                    chapter = CreateChapter(Decode(node.InnerText.HtmlDecode()));
                     Console.WriteLine(chapter.Title);
                 }
             }

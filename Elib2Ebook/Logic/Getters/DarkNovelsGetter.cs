@@ -20,7 +20,7 @@ namespace Elib2Ebook.Logic.Getters;
 
 public class DarkNovelsGetter : GetterBase {
     private static readonly Dictionary<int, char> _map = new();
-    private static readonly string _alphabet = "аАбБвВгГдДеЕёЁжЖзЗиИйЙкКлЛмМнНоОпПрРсСтТуУфФхХцЦчЧшШщЩъЪыЫьЬэЭюЮяЯ";
+    private const string ALPHABET = "аАбБвВгГдДеЕёЁжЖзЗиИйЙкКлЛмМнНоОпПрРсСтТуУфФхХцЦчЧшШщЩъЪыЫьЬэЭюЮяЯ";
 
     public DarkNovelsGetter(BookGetterConfig config) : base(config) {
         InitMap();
@@ -31,7 +31,7 @@ public class DarkNovelsGetter : GetterBase {
     private static void InitMap() {
         var start = 13338;
         const int shift = 38;
-        foreach (var c in _alphabet) {
+        foreach (var c in ALPHABET) {
             for (var i = start; i < start + shift; i++) {
                 _map[i] = c;
             }
@@ -119,7 +119,7 @@ public class DarkNovelsGetter : GetterBase {
         foreach (var entry in zip.Entries) {
             using var sr = new StreamReader(entry.Open());
             foreach (var c in await sr.ReadToEndAsync()) {
-                sb.Append(_map.TryGetValue(c, out var d) ? d : c);
+                sb.Append(_map.GetValueOrDefault(c, c));
             }
         }
 
@@ -128,9 +128,9 @@ public class DarkNovelsGetter : GetterBase {
 
     private static MultipartFormDataContent GetData(string bookId, int chapterId) {
         return new MultipartFormDataContent {
-            {new StringContent(bookId), "b"},
-            {new StringContent("html"), "f"},
-            {new StringContent(chapterId.ToString()), "c"}
+            { new StringContent(bookId), "b" },
+            { new StringContent("html"), "f" },
+            { new StringContent(chapterId.ToString()), "c" }
         };
     }
 }
