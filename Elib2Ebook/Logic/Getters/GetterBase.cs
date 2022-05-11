@@ -66,11 +66,12 @@ public abstract class GetterBase : IDisposable {
             }
         
             if (!Uri.TryCreate(baseUri, path, out var uri)) {
+                img.Remove();
                 continue;
             }
                 
             var image = await GetImage(uri);
-            if (image == null) {
+            if (image?.Content == null || image.Content.Length == 0) {
                 img.Remove();
                 continue;
             }
@@ -81,7 +82,6 @@ public abstract class GetterBase : IDisposable {
             } else {
                 img.Attributes["src"].Value = uri.GetFileName();
             }
-
             
             images.Add(image);
         }

@@ -6,7 +6,7 @@ namespace Elib2Ebook.Extensions;
 
 public static class UriExtension {
     public static string GetFileName(this Uri self) {
-        return self.Segments.Last().TrimEnd('/');
+        return self.Segments.Last().Split(":")[0].TrimEnd('/');
     }
     
     public static string GetQueryParameter(this Uri self, string name) {
