@@ -153,6 +153,6 @@ public abstract class LitnetGetterBase : GetterBase {
             sb.Append(page);
         }
 
-        return sb.ToString().HtmlDecode().AsHtmlDoc();
+        return sb.ToString().AsHtmlDoc();
     }
 }

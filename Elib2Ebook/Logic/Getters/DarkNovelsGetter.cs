@@ -123,7 +123,7 @@ public class DarkNovelsGetter : GetterBase {
             }
         }
 
-        return sb.ToString().HtmlDecode().AsHtmlDoc().RemoveNodes(d => d.Name == "h1");
+        return sb.ToString().AsHtmlDoc().RemoveNodes(d => d.Name == "h1");
     }
 
     private static MultipartFormDataContent GetData(string bookId, int chapterId) {

@@ -17,7 +17,7 @@ public class Chapter {
     public int? BranchId { get; set; }
 
     public Uri GetUri(Uri baseUri) {
-        return new Uri(baseUri + $"/v{ChapterVolume}/c{ChapterNumber}");
+        return new Uri(baseUri + $"/v{ChapterVolume}/c{ChapterNumber}?bid={BranchId}");
     }
 
     public string GetName() {

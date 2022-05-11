@@ -88,7 +88,7 @@ public class RanobesNetGetter : GetterBase {
             }
         }
             
-        return sb.ToString().HtmlDecode().AsHtmlDoc().RemoveNodes(t => t.Name is "script" or "br" || t.Id?.Contains("yandex_rtb") == true);
+        return sb.ToString().AsHtmlDoc().RemoveNodes(t => t.Name is "script" or "br" || t.Id?.Contains("yandex_rtb") == true);
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {

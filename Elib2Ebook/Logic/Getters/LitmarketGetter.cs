@@ -152,7 +152,7 @@ public class LitmarketGetter : GetterBase {
                 text.Append("<p>" + p + "</p>");
             }
 
-            var chapterDoc = text.ToString().HtmlDecode().AsHtmlDoc();
+            var chapterDoc = text.ToString().AsHtmlDoc();
             chapter.Images = await GetImages(chapterDoc, bookUri);
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;
             chapter.Title = toc[i].Chunk.Mods[0].Text.Trim();

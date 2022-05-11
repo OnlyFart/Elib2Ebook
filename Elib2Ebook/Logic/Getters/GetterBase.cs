@@ -70,7 +70,13 @@ public abstract class GetterBase : IDisposable {
             }
                 
             // Костыль. Исправление урла картинки, что бы она отображась в книге
-            img.Attributes["src"].Value = uri.GetFileName();
+            if (img.Attributes["src"] == null) {
+                img.Attributes.Add("src",  uri.GetFileName());
+            } else {
+                img.Attributes["src"].Value = uri.GetFileName();
+            }
+
+            
             images.Add(image);
         }
 

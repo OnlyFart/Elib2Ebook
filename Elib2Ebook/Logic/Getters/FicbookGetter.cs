@@ -77,7 +77,7 @@ public class FicbookGetter : GetterBase {
             text.Append($"<p>{line.HtmlEncode()}</p>");
         }
 
-        return text.ToString().HtmlDecode().AsHtmlDoc();
+        return text.ToString().AsHtmlDoc();
     }
 
     private static IEnumerable<UrlChapter> GetChapters(HtmlDocument doc, Uri url, string title) {

@@ -61,7 +61,7 @@ public class ReadliGetter : GetterBase {
             return;
         }
         
-        var chapterDoc = text.ToString().HtmlDecode().AsHtmlDoc();
+        var chapterDoc = text.ToString().AsHtmlDoc();
         chapter.Images = await GetImages(chapterDoc, new Uri("https://readli.net/chitat-online/"));
         chapter.Content = chapterDoc.DocumentNode.InnerHtml;
         chapters.Add(chapter);

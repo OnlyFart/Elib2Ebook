@@ -159,7 +159,7 @@ public class ProdamanGetter : GetterBase {
             return;
         }
         
-        var chapterDoc = text.ToString().HtmlDecode().AsHtmlDoc();
+        var chapterDoc = text.ToString().AsHtmlDoc();
         chapter.Images = await GetImages(chapterDoc, url);
         chapter.Content = chapterDoc.DocumentNode.InnerHtml;
         chapters.Add(chapter);

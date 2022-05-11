@@ -15,7 +15,7 @@ public static class StringExtensions {
     /// <returns></returns>
     public static HtmlDocument AsHtmlDoc(this string self) {
         var doc = new HtmlDocument();
-        doc.LoadHtml(self);
+        doc.LoadHtml(self.Replace("&gt;", "").Replace("&lt;", "").HtmlDecode());
         return doc;
     }
 
