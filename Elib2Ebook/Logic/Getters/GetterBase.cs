@@ -61,15 +61,17 @@ public abstract class GetterBase : IDisposable {
         foreach (var img in doc.QuerySelectorAll("img")) {
             var path = img.Attributes["src"]?.Value ?? img.Attributes["data-src"]?.Value;
             if (string.IsNullOrWhiteSpace(path)) {
+                img.Remove();
                 continue;
             }
-
+        
             if (!Uri.TryCreate(baseUri, path, out var uri)) {
                 continue;
             }
                 
             var image = await GetImage(uri);
             if (image == null) {
+                img.Remove();
                 continue;
             }
                 

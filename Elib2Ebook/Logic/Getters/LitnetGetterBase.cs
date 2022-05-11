@@ -98,8 +98,8 @@ public abstract class LitnetGetterBase : GetterBase {
         var book = new Book {
             Cover = await GetCover(litnetBook),
             Chapters = await FillChapters(_token, litnetBook, bookId),
-            Title = litnetBook.Title,
-            Author = litnetBook.AuthorName ?? "Litnet",
+            Title = litnetBook.Title.Trim(),
+            Author = (litnetBook.AuthorName ?? "Litnet").Trim(),
             Annotation = GetAnnotation(litnetBook)
         };
             
