@@ -88,12 +88,6 @@ public class Fb2Builder : BuilderBase {
         return binaryElem;
     }
 
-    private static HtmlDocument CreateDoc(string content) {
-        var doc = new HtmlDocument();
-        doc.LoadHtml(content);
-        return doc;
-    }
-
     /// <summary>
     /// Создание нового объекта Builder'a
     /// </summary>
@@ -157,7 +151,7 @@ public class Fb2Builder : BuilderBase {
     private XElement CreateAnnotation(string annotation) {
         var a = CreateXElement("annotation");
 
-        var doc = CreateDoc(annotation);
+        var doc = annotation.AsHtmlDoc();
         foreach (var node in doc.DocumentNode.ChildNodes) {
             if (!string.IsNullOrWhiteSpace(node.InnerText)) {
                 ProcessSection(a, node, "p");
@@ -188,7 +182,7 @@ public class Fb2Builder : BuilderBase {
             var section = CreateXElement("section");
             section.Add(CreateTitle(chapter.Title));
                 
-            var doc = CreateDoc(chapter.Content);
+            var doc = chapter.Content.AsHtmlDoc();
             foreach (var node in doc.DocumentNode.ChildNodes) {
                 ProcessSection(section, node);
             }

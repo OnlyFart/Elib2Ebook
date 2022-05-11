@@ -33,7 +33,7 @@ public class EpubBuilder : BuilderBase {
     /// <param name="decodeText">Раскодированный текст</param>
     /// <returns></returns>
     private string ApplyPattern(string title, string decodeText) {
-        return _pattern.Replace("{title}", title).Replace("{body}", decodeText).AsXHtmlDoc().AsString();
+        return _pattern.Replace("{title}", title).Replace("{body}", decodeText.HtmlDecode()).AsXHtmlDoc().AsString();
     }
 
     /// <summary>
