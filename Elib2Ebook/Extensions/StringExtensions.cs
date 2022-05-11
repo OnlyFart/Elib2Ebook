@@ -15,7 +15,7 @@ public static class StringExtensions {
     /// <returns></returns>
     public static HtmlDocument AsHtmlDoc(this string self) {
         var doc = new HtmlDocument();
-        doc.LoadHtml(self.Replace("&gt;", "").Replace("&lt;", "").HtmlDecode());
+        doc.LoadHtml(self.HtmlDecode());
         return doc;
     }
 
@@ -77,7 +77,7 @@ public static class StringExtensions {
     /// <param name="self"></param>
     /// <returns></returns>
     public static string HtmlDecode(this string self) {
-        return HttpUtility.HtmlDecode(self).Trim();
+        return HttpUtility.HtmlDecode(self).Replace("&gt;", "").Replace("&lt;", "").Trim();
     }
         
     /// <summary>

@@ -66,7 +66,7 @@ public class BiglibaGetter : GetterBase{
     }
     
     private static string Normalize(string str) {
-        return Regex.Replace(Regex.Replace(str, "\t|\n", " "), "\\s+", " ").Trim();
+        return Regex.Replace(str, "\t|\n", " ").CollapseWhitespace().Trim();
     }
 
     private async Task<string> GetChapter(string bookId, string id, string token) {

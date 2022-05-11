@@ -1,6 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using Elib2Ebook.Extensions;
 
 namespace Elib2Ebook.Types.Wattpad; 
 
@@ -12,7 +13,7 @@ public class WattpadGroup {
     public string Title { private get; set; }
 
     public string GetTitle() {
-        return Regex.Replace(Title.Replace("\r", " "), "\\s+", " ").Trim();
+        return Title.Replace("\r", " ").CollapseWhitespace().Trim();
     }
 
     public Uri Url => new($"https://www.wattpad.com/apiv2/storytext?id={Id}");

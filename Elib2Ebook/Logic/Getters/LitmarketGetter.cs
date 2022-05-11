@@ -74,7 +74,7 @@ public class LitmarketGetter : GetterBase {
     /// Авторизация в системе
     /// </summary>
     /// <exception cref="Exception"></exception>
-    public override async Task Authorize(){
+    public override async Task Authorize() {
         if (!_config.HasCredentials) {
             return;
         }
@@ -96,7 +96,7 @@ public class LitmarketGetter : GetterBase {
     }
 
     private static string Normalize(string str) {
-        return Regex.Replace(Regex.Replace(str, "\t|\n", " "), "\\s+", " ").Trim();
+        return Regex.Replace(str, "\t|\n", " ").CollapseWhitespace().Trim();
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
