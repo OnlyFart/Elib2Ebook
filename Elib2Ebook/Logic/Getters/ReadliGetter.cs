@@ -78,6 +78,15 @@ public class ReadliGetter : GetterBase {
         };
     }
 
+    private async Task<HtmlDocument> GetChapter(string bookId, int page) {
+        var response = await _config.Client.GetWithTriesAsync(new Uri($"https://readli.net/chitat-online/?b={bookId}&pg={page}"));
+        if (response == default) {
+            return default;
+        }
+
+        return await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
+    }
+
     private async Task<List<Chapter>> FillChapters(string bookId, long pages, string name) {
         var chapters = new List<Chapter>();
         Chapter chapter = null;
@@ -86,7 +95,12 @@ public class ReadliGetter : GetterBase {
             
         for (var i = 1; i <= pages; i++) {
             Console.WriteLine($"Получаю страницу {i}/{pages}");
-            var page = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://readli.net/chitat-online/?b={bookId}&pg={i}"));
+            var page = await GetChapter(bookId, i);
+            if (page == default) {
+                Console.WriteLine("Неожиданный конец");
+                break;
+            }
+            
             var content = page.QuerySelector("div.reading__text");
             var nodes = content.QuerySelectorAll("> h3, > p, > img");
             nodes = nodes.Count == 0 ? content.RemoveNodes("script, ins").ChildNodes : nodes;

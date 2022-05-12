@@ -96,7 +96,7 @@ public class RanobesComGetter : GetterBase {
             relativeUri = $"/chapters/{string.Join("-", GetId(uri).Split(".")[0].Split("-").Skip(1))}";
         }
         
-        return new Uri(uri, new Uri(relativeUri).AbsolutePath);
+        return new Uri(uri, new Uri(relativeUri).AbsolutePath.Trim('/'));
     }
         
     private async Task<IEnumerable<RanobesChapter>> GetChapters(Uri tocUri) {
