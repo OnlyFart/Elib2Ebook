@@ -62,7 +62,7 @@ public class LitgorodGetter : GetterBase {
             sb.Append(doc.QuerySelector("div.reader__content__wrap").RemoveNodes("div.reader__content__title").InnerHtml.HtmlDecode());
         }
 
-        return sb.ToString().AsHtmlDoc();
+        return sb.AsHtmlDoc();
     }
 
     private async Task<IEnumerable<IdChapter>> GetChapters(string bookId) {

@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Web;
 using HtmlAgilityPack;
@@ -91,5 +92,9 @@ public static class StringExtensions {
 
     public static string CollapseWhitespace(this string self) {
         return !string.IsNullOrEmpty(self) ? Regex.Replace(self, @"\s+", " ") : self;
+    }
+
+    public static T Deserialize<T>(this string self) {
+        return JsonSerializer.Deserialize<T>(self);
     }
 }

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
@@ -51,7 +50,7 @@ public class RanobeLibGetter : GetterBase {
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
         
-        var uri = new Uri($"https://{HOST}/{bookId}");
+        var uri = new Uri($"https://ranobelib.me/{bookId}");
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
         
 
@@ -69,7 +68,7 @@ public class RanobeLibGetter : GetterBase {
 
     private WindowData GetData(HtmlDocument doc) {
         var match = new Regex("window.__DATA__ = (?<data>{.*}).*window._SITE_COLOR_", RegexOptions.Compiled | RegexOptions.Singleline).Match(doc.Text).Groups["data"].Value;
-        var windowData = JsonSerializer.Deserialize<WindowData>(match);
+        var windowData = match.Deserialize<WindowData>();
         windowData.RanobeLibChapters.List.Reverse();
         return windowData;
     }
@@ -96,7 +95,7 @@ public class RanobeLibGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(Uri url) {
-        var chapterDoc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var chapterDoc = await _config.Client.GetHtmlDocWithTriesAsync(url.ReplaceHost(HOST));
         return chapterDoc.QuerySelector("div.reader-container").InnerHtml.AsHtmlDoc();
     }
 

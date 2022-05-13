@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
@@ -159,19 +157,14 @@ public class ProdamanGetter : GetterBase {
             return;
         }
         
-        var chapterDoc = text.ToString().AsHtmlDoc();
+        var chapterDoc = text.AsHtmlDoc();
         chapter.Images = await GetImages(chapterDoc, url);
         chapter.Content = chapterDoc.DocumentNode.InnerHtml;
         chapters.Add(chapter);
     }
 
     private static string Decode(string encode) {
-        var sb = new StringBuilder();
-        foreach (var c in encode) {
-            sb.Append(_map.GetValueOrDefault(c, c));
-        }
-
-        return sb.ToString();
+        return encode.Aggregate(new StringBuilder(), (sb, c) => sb.Append(_map.GetValueOrDefault(c, c))).ToString();
     }
 
     private async Task<IEnumerable<Chapter>> FillChapter(Uri url, string title) {

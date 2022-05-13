@@ -50,4 +50,9 @@ public static class HtmlDocumentExtensions {
 
         return self;
     }
+    
+    public static HtmlDocument RemoveNodes(this HtmlDocument self, string selector) {
+        self.DocumentNode.RemoveNodes(selector);
+        return self;
+    }
 }

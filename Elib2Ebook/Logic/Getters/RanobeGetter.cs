@@ -62,13 +62,12 @@ public class RanobeGetter : GetterBase {
 
     private static T GetNextData<T>(HtmlDocument doc, string node) {
         var json = doc.QuerySelector("#__NEXT_DATA__").InnerText;
-        var bookProperty = JsonDocument.Parse(json)
+        return JsonDocument.Parse(json)
             .RootElement.GetProperty("props")
             .GetProperty("pageProps")
             .GetProperty(node)
-            .GetRawText();
-            
-        return JsonSerializer.Deserialize<T>(bookProperty);
+            .GetRawText()
+            .Deserialize<T>();
     }
         
     private Task<Image> GetCover(RanobeBook book, Uri bookUri) {

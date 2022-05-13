@@ -60,7 +60,7 @@ public class FicbookGetter : GetterBase {
 
     private async Task<HtmlDocument> GetChapter(UrlChapter urlChapter) {
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(urlChapter.Url);
-        var content = doc.QuerySelector("#content").RemoveNodes(n => n.Name == "div");
+        var content = doc.QuerySelector("#content").RemoveNodes("div");
         using var sr = new StringReader(content.InnerText.HtmlDecode());
 
         var text = new StringBuilder();
@@ -77,7 +77,7 @@ public class FicbookGetter : GetterBase {
             text.Append($"<p>{line.HtmlEncode()}</p>");
         }
 
-        return text.ToString().AsHtmlDoc();
+        return text.AsHtmlDoc();
     }
 
     private static IEnumerable<UrlChapter> GetChapters(HtmlDocument doc, Uri url, string title) {

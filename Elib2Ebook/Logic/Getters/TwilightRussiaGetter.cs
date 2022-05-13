@@ -77,7 +77,7 @@ public class TwilightRussiaGetter : GetterBase {
         }
         
             
-        var chapterDoc = text.ToString().AsHtmlDoc();
+        var chapterDoc = text.AsHtmlDoc();
         chapter.Images = await GetImages(chapterDoc, url);
         chapter.Content = chapterDoc.DocumentNode.InnerHtml;
         chapter.Title = title;

@@ -52,7 +52,7 @@ public class BiglibaGetter : GetterBase{
             var doc = content.AsHtmlDoc();
             chapter.Title = Normalize(doc.GetTextBySelector("h1.capter-title") ?? title);
 
-            doc.RemoveNodes(node => node.Name == "h1");
+            doc.RemoveNodes("h1");
             chapter.Images = await GetImages(doc, uri);
             chapter.Content = doc.DocumentNode.InnerHtml;
             

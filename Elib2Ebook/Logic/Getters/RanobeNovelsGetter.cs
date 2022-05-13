@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
@@ -52,13 +52,10 @@ public class RanobeNovelsGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(Uri url) {
-        var sb = new StringBuilder();
         var doc = await GetSafety(url);
-        foreach (var node in doc.QuerySelectorAll("div.entry-content > p")) {
-            sb.Append($"<p>{node.InnerHtml}</p>");
-        }
-
-        return sb.ToString().AsHtmlDoc();
+        return doc.QuerySelectorAll("div.entry-content > p")
+            .Aggregate(new StringBuilder(), (sb, node) => sb.Append($"<p>{node.InnerHtml}</p>"))
+            .AsHtmlDoc();
     }
 
     private async Task<IEnumerable<RanobeNovelsChapter>> GetChapters(HtmlDocument doc) {
@@ -70,7 +67,7 @@ public class RanobeNovelsGetter : GetterBase {
         };
 
         var response = await _config.Client.PostAsync(new Uri("https://ranobe-novels.ru/wp-admin/admin-ajax.php"), new FormUrlEncodedContent(data));
-        var result = JsonSerializer.Deserialize<List<RanobeNovelsChapter>>(await response.Content.ReadAsStringAsync());
+        var result = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.Deserialize<List<RanobeNovelsChapter>>());
         result.Reverse();
         return result;
     }

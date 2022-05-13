@@ -127,7 +127,7 @@ public class SamlibGetter : GetterBase {
             }
         }
             
-        var chapterDoc = text.ToString().AsHtmlDoc();
+        var chapterDoc = text.AsHtmlDoc();
         chapter.Images = await GetImages(chapterDoc, urlChapter.Url);
         chapter.Content = chapterDoc.DocumentNode.InnerHtml.Replace("&#x0;", "[0x00]").Replace("\x00", "[0x00]");
         chapter.Title = urlChapter.Title;

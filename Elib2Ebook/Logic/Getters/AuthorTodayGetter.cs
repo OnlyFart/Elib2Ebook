@@ -5,7 +5,6 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
@@ -116,7 +115,7 @@ public class AuthorTodayGetter : GetterBase {
         var startIndex = doc.ParsedText.IndexOf(START_PATTERN, StringComparison.Ordinal) + START_PATTERN.Length;
         var endIndex = doc.ParsedText.IndexOf("}],", startIndex, StringComparison.Ordinal) + 2;
         var metaContent = doc.ParsedText[startIndex..endIndex].Trim().TrimEnd(';', ')');
-        return JsonSerializer.Deserialize<List<Chapter>>(metaContent);
+        return metaContent.Deserialize<List<Chapter>>();
     }
 
     /// <summary>

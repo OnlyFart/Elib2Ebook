@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
@@ -88,7 +87,7 @@ public class RanobesNetGetter : GetterBase {
             }
         }
             
-        return sb.ToString().AsHtmlDoc().RemoveNodes(t => t.Name is "script" or "br" || t.Id?.Contains("yandex_rtb") == true);
+        return sb.AsHtmlDoc().RemoveNodes(t => t.Name is "script" or "br" || t.Id?.Contains("yandex_rtb") == true);
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
@@ -96,15 +95,15 @@ public class RanobesNetGetter : GetterBase {
         return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
     }
 
-    private Uri GetTocLink(HtmlDocument doc, Uri uri) {
+    private static Uri GetTocLink(HtmlDocument doc, Uri uri) {
         var relativeUri = doc.QuerySelector("div.r-fullstory-chapters-foot a[title~=contents]").Attributes["href"].Value;
         return new Uri(uri, relativeUri);
     }
     
     
-    private WindowData GetData(HtmlDocument doc) {
+    private static WindowData GetData(HtmlDocument doc) {
         var match = new Regex("window.__DATA__ = (?<data>{.*})</script>", RegexOptions.Compiled | RegexOptions.Singleline).Match(doc.Text).Groups["data"].Value;
-        var windowData = JsonSerializer.Deserialize<WindowData>(match);
+        var windowData = match.Deserialize<WindowData>();
         return windowData;
     }
         

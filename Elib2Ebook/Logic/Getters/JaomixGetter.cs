@@ -69,7 +69,7 @@ public class JaomixGetter : GetterBase {
             }
         }
             
-        return sb.ToString().AsHtmlDoc();
+        return sb.AsHtmlDoc();
     }
 
     private async Task<IEnumerable<JaomixChapter>> GetChapters(HtmlDocument doc, Uri url) {

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Json;
 using System.Text;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
@@ -105,7 +104,7 @@ public class LitmarketGetter : GetterBase {
     }
 
     private static List<Block> GetToc(Response response, string title) {
-        var toc = JsonSerializer.Deserialize<List<Block>>(response.Toc);
+        var toc = response.Toc.Deserialize<List<Block>>();
         if (toc?.Count == 0) {
             toc = new List<Block> {
                 new() {
@@ -149,10 +148,10 @@ public class LitmarketGetter : GetterBase {
                     }
                 }
 
-                text.Append("<p>" + p + "</p>");
+                text.Append($"<p>{p}</p>");
             }
 
-            var chapterDoc = text.ToString().AsHtmlDoc();
+            var chapterDoc = text.AsHtmlDoc();
             chapter.Images = await GetImages(chapterDoc, bookUri);
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;
             chapter.Title = toc[i].Chunk.Mods[0].Text.Trim();

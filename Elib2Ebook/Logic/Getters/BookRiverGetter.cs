@@ -81,18 +81,18 @@ public class BookriverGetter : GetterBase {
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://bookriver.ru/reader/{bookId}"));
         return GetNextData<BookRiverBook>(doc, "book").Book.Id.ToString();
     }
-    
+
     private static T GetNextData<T>(HtmlDocument doc, string node) {
         var json = doc.QuerySelector("#__NEXT_DATA__").InnerText;
-        var bookProperty = JsonDocument.Parse(json)
+
+        return JsonDocument.Parse(json)
             .RootElement
             .GetProperty("props")
             .GetProperty("pageProps")
             .GetProperty("state")
             .GetProperty(node)
-            .GetRawText();
-            
-        return JsonSerializer.Deserialize<T>(bookProperty);
+            .GetRawText()
+            .Deserialize<T>();
     }
 
     private async Task<HtmlDocument> GetChapter(long bookChapterId) {
@@ -102,13 +102,13 @@ public class BookriverGetter : GetterBase {
         }
         
         var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<BookRiverApiResponse<BookRiverChapterContent>>(content).Data.Content.AsHtmlDoc();
+        return content.Deserialize<BookRiverApiResponse<BookRiverChapterContent>>().Data.Content.AsHtmlDoc();
     }
 
     private async Task<BookRiverChapter[]> GetChapters(string bookId) {
         var response = await _config.Client.GetWithTriesAsync(new Uri($"https://api.bookriver.ru/api/v1/books/chapters/text/published?bookId={bookId}"));
         var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<BookRiverApiResponse<BookRiverChapter[]>>(content).Data;
+        return content.Deserialize<BookRiverApiResponse<BookRiverChapter[]>>().Data;
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {

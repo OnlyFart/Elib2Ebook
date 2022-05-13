@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using System.Web;
 using Elib2Ebook.Configs;
@@ -147,12 +146,6 @@ public abstract class LitnetGetterBase : GetterBase {
     }
 
     private static HtmlDocument GetChapter(LitnetChapterResponse chapter) {
-        var sb = new StringBuilder();
-
-        foreach (var page in JsonSerializer.Deserialize<string[]>(Decrypt(chapter.Text))) {
-            sb.Append(page);
-        }
-
-        return sb.ToString().AsHtmlDoc();
+        return Decrypt(chapter.Text).Deserialize<string[]>().Aggregate(new StringBuilder(), (sb, row) => sb.Append(row)).AsHtmlDoc();
     }
 }
