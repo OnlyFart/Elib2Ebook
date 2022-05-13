@@ -23,7 +23,8 @@
 * https://ранобэ.рф/
 
 ## Скачать
-[тыыкс](https://github.com/OnlyFart/Elib2Ebook/actions/runs/2321017714)
+Сборки - [тыыкс](https://github.com/OnlyFart/Elib2Ebook/actions/runs/2321017714)
+.NET(нужен для работы приложения) - [тыыкс](https://aka.ms/dotnet-core-applaunch?framework=Microsoft.NETCore.App&framework_version=6.0.0&arch=x64&rid=win10-x64)
 
 ## Пример вызова сервиса
 ```
