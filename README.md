@@ -22,6 +22,9 @@
 * https://wattpad.com/
 * https://ранобэ.рф/
 
+## Скачать
+[тыыкс](https://github.com/OnlyFart/Elib2Ebook/actions/runs/2321017714)
+
 ## Пример вызова сервиса
 ```
 Elib2Ebook.exe --url https://litnet.com/ru/book/kniga-7-vladyka-magii-b364041 --format epub
