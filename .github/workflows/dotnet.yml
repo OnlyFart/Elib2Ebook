@@ -8,8 +8,11 @@ on:
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
+    strategy:
+        matrix:
+          os: [ubuntu-latest, macos-latest, windows-latest]
+          
+    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v2
@@ -20,6 +23,10 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build --no-restore -c release
     - name: Test
       run: dotnet test --no-build --verbosity normal
+    - uses: actions/upload-artifact@v3
+      with:
+        name: Elib2Ebook-${{ matrix.os }}
+        path: ${{ github.workspace }}/Elib2Ebook/bin/Release/net6.0/
