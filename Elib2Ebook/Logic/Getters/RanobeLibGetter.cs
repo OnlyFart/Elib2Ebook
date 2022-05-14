@@ -60,7 +60,7 @@ public class RanobeLibGetter : GetterBase {
             Cover = await GetCover(doc, uri),
             Chapters = await FillChapters(data, uri),
             Title = doc.QuerySelector("meta[property=og:title]").Attributes["content"].Value.Trim(),
-            Author = "RanobeLib"
+            Author = doc.QuerySelector(".media-info-list__value a").Value
         };
             
         return book;
