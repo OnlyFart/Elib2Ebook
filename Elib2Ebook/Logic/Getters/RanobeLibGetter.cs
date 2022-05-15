@@ -52,7 +52,6 @@ public class RanobeLibGetter : GetterBase {
         
         var uri = new Uri($"https://{HOST}/{bookId}");
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
-        
 
         var data = GetData(doc);
 
@@ -66,15 +65,15 @@ public class RanobeLibGetter : GetterBase {
         return book;
     }
 
-    private WindowData GetData(HtmlDocument doc) {
+    private static WindowData GetData(HtmlDocument doc) {
         var match = new Regex("window.__DATA__ = (?<data>{.*}).*window._SITE_COLOR_", RegexOptions.Compiled | RegexOptions.Singleline).Match(doc.Text).Groups["data"].Value;
         var windowData = match.Deserialize<WindowData>();
         windowData.RanobeLibChapters.List.Reverse();
         return windowData;
     }
 
-    private async Task<IEnumerable<Types.Book.Chapter>> FillChapters(WindowData data, Uri url) {
-        var result = new List<Types.Book.Chapter>();
+    private async Task<IEnumerable<Chapter>> FillChapters(WindowData data, Uri url) {
+        var result = new List<Chapter>();
         var branchId = data.RanobeLibChapters.List
             .GroupBy(c => c.BranchId)
             .MaxBy(c => c.Count())!
