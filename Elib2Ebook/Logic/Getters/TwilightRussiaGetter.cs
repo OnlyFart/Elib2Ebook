@@ -49,7 +49,7 @@ public class TwilightRussiaGetter : GetterBase {
                 continue;
             }
             
-            Console.WriteLine($"Загружаем главу {title}");
+            Console.WriteLine($"Загружаю главу {title}");
             var href = new Uri(url, a.Attributes["href"].Value);
             result.Add(await GetChapter(href, title));
         }

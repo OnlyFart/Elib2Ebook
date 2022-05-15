@@ -126,7 +126,7 @@ public abstract class LitnetGetterBase : GetterBase {
         foreach (var content in contents) {
             var litnetChapter = map[content.Id];
 
-            Console.WriteLine($"Загружаем главу {content.Title.Trim().CoverQuotes()}");
+            Console.WriteLine($"Загружаю главу {content.Title.Trim().CoverQuotes()}");
             if (string.IsNullOrWhiteSpace(litnetChapter.Text)) {
                 Console.WriteLine($"Главу {content.Title.Trim().CoverQuotes()} в платном доступе");
                 continue;

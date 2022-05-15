@@ -61,7 +61,7 @@ public class BookriverGetter : GetterBase {
         
         foreach (var bookChapter in await GetChapters(internalId)) {
             var chapter = new Chapter();
-            Console.WriteLine($"Загружаем главу {bookChapter.Name.CoverQuotes()}");
+            Console.WriteLine($"Загружаю главу {bookChapter.Name.CoverQuotes()}");
             
             var doc = await GetChapter(bookChapter.Id);
 

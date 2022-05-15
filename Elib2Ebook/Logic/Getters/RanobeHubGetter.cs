@@ -34,7 +34,7 @@ public class RanobeHubGetter : GetterBase {
         var result = new List<Chapter>();
 
         foreach (var ranobeChapter in await GetChapters(doc)) {
-            Console.WriteLine($"Загружаем главу {ranobeChapter.Name}");
+            Console.WriteLine($"Загружаю главу {ranobeChapter.Name}");
             var chapter = new Chapter();
             var chapterDoc = await GetChapter(ranobeChapter.Url);
             chapter.Images = await GetImages(chapterDoc, url);

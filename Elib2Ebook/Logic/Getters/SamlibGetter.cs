@@ -40,7 +40,7 @@ public class SamlibGetter : GetterBase {
         var result = new List<Chapter>();
             
         foreach (var urlChapter in GetChapters(doc, url, title)) {
-            Console.WriteLine($"Загружаем главу {urlChapter.Title.CoverQuotes()}");
+            Console.WriteLine($"Загружаю главу {urlChapter.Title.CoverQuotes()}");
             result.Add(await GetChapter(urlChapter));
         }
 

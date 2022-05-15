@@ -37,7 +37,7 @@ public class AuthorTodayGetter : GetterBase {
         var bookId = GetId(url);
 
         var bookUri = new Uri($"https://author.today/work/{bookId}");
-        Console.WriteLine($"Загружаем книгу {bookUri.ToString().CoverQuotes()}"); 
+        Console.WriteLine($"Загружаю книгу {bookUri.ToString().CoverQuotes()}"); 
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(bookUri);
 
         var book = new Book {

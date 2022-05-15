@@ -57,7 +57,7 @@ public class BiglibaGetter : GetterBase{
             chapter.Content = doc.DocumentNode.InnerHtml;
             
             
-            Console.WriteLine($"Загружаем главу {chapter.Title.CoverQuotes()}");
+            Console.WriteLine($"Загружаю главу {chapter.Title.CoverQuotes()}");
 
             result.Add(chapter);
         }

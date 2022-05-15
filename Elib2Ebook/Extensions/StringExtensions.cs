@@ -78,7 +78,13 @@ public static class StringExtensions {
     /// <param name="self"></param>
     /// <returns></returns>
     public static string HtmlDecode(this string self) {
-        return HttpUtility.HtmlDecode(self.Replace("&gt;", "").Replace("&lt;", "")).Trim();
+        var temp = HttpUtility.HtmlDecode(self);
+        while (temp != self) {
+            self = temp;
+            temp = HttpUtility.HtmlDecode(self);
+        }
+        
+        return self;
     }
         
     /// <summary>

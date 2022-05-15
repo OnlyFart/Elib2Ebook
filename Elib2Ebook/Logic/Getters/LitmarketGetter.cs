@@ -127,7 +127,7 @@ public class LitmarketGetter : GetterBase {
         var result = new List<Chapter>();
 
         for (var i = 0; i < toc.Count; i++) {
-            Console.WriteLine($"Загружаем главу {toc[i].Chunk.Mods[0].Text.Trim().CoverQuotes()}");
+            Console.WriteLine($"Загружаю главу {toc[i].Chunk.Mods[0].Text.Trim().CoverQuotes()}");
             var text = new StringBuilder();
             var chapter = new Chapter();
 

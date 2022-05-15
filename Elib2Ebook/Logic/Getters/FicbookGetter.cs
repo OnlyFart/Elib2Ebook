@@ -45,7 +45,7 @@ public class FicbookGetter : GetterBase {
         var result = new List<Chapter>();
             
         foreach (var ficbookChapter in GetChapters(doc, url, title)) {
-            Console.WriteLine($"Загружаем главу {ficbookChapter.Title.CoverQuotes()}");
+            Console.WriteLine($"Загружаю главу {ficbookChapter.Title.CoverQuotes()}");
             var chapter = new Chapter();
             var chapterDoc = await GetChapter(ficbookChapter);
             chapter.Images = await GetImages(chapterDoc, url);

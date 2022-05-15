@@ -54,7 +54,7 @@ public class WattpadGetter : GetterBase {
         var result = new List<Chapter>();
             
         foreach (var group in wattpadInfo.Group) {
-            Console.WriteLine($"Загружаем главу {group.GetTitle().CoverQuotes()}");
+            Console.WriteLine($"Загружаю главу {group.GetTitle().CoverQuotes()}");
             var chapter = new Chapter();
                 
             var chapterDoc = await GetChapter(group);

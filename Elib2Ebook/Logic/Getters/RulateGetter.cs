@@ -58,7 +58,7 @@ public class RulateGetter : GetterBase {
         var result = new List<Chapter>();
             
         foreach (var (id, name) in GetChapters(doc)) {
-            Console.WriteLine($"Загружаем главу {name.CoverQuotes()}");
+            Console.WriteLine($"Загружаю главу {name.CoverQuotes()}");
             var chapter = new Chapter();
                 
             var chapterDoc = await GetChapter(bookId, id);

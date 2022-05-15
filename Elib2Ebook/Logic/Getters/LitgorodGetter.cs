@@ -36,7 +36,7 @@ public class LitgorodGetter : GetterBase {
 
         foreach (var bookChapter in await GetChapters(bookId)) {
             var chapter = new Chapter();
-            Console.WriteLine($"Загружаем главу {bookChapter.Title.CoverQuotes()}");
+            Console.WriteLine($"Загружаю главу {bookChapter.Title.CoverQuotes()}");
             
             var doc = await GetChapter(bookChapter.Id, bookId);
 

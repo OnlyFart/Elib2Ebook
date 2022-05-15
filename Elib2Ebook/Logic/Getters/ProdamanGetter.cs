@@ -34,8 +34,7 @@ public class ProdamanGetter : GetterBase {
         if (!_config.HasCredentials) {
             return;
         }
-        
-        
+
         using var post = await _config.Client.PostWithTriesAsync(new Uri("https://prodaman.ru/login"), GetAuthData());
         var doc = await post.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
         

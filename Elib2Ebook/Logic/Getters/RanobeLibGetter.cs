@@ -50,7 +50,7 @@ public class RanobeLibGetter : GetterBase {
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
         
-        var uri = new Uri($"https://ranobelib.me/{bookId}");
+        var uri = new Uri($"https://{HOST}/{bookId}");
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
         
 
@@ -81,7 +81,7 @@ public class RanobeLibGetter : GetterBase {
             .Key;
 
         foreach (var ranobeChapter in data.RanobeLibChapters.List.Where(c => c.BranchId == branchId)) {
-            Console.WriteLine($"Загружаем главу {ranobeChapter.GetName()}");
+            Console.WriteLine($"Загружаю главу {ranobeChapter.GetName()}");
             var chapter = new Chapter();
             var chapterDoc = await GetChapter(ranobeChapter.GetUri(url));
             chapter.Images = await GetImages(chapterDoc, ranobeChapter.GetUri(url));

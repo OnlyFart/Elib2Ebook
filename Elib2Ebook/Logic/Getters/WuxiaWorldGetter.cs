@@ -3,46 +3,65 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
-using Elib2Ebook.Types.RanobeNovels;
+using Elib2Ebook.Types.Common;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 
 namespace Elib2Ebook.Logic.Getters; 
 
-public class RanobeNovelsGetter : GetterBase {
-    public RanobeNovelsGetter(BookGetterConfig config) : base(config) { }
-    protected override Uri SystemUrl => new("https://ranobe-novels.ru/");
-    public override async Task<Book> Get(Uri url) {
-        var bookId = GetId(url);
-        var uri = new Uri($"https://ranobe-novels.ru/ranobe/{bookId}/");
+public class WuxiaWorldGetter : GetterBase {
+    public WuxiaWorldGetter(BookGetterConfig config) : base(config) { }
+    protected override Uri SystemUrl => new("https://wuxiaworld.ru/");
+    public override async Task<Book> Get(Uri url) { ;
         var doc = await GetSafety(url);
 
         var book = new Book {
-            Cover = await GetCover(doc, uri),
-            Chapters = await FillChapters(doc, uri),
+            Cover = await GetCover(doc, url),
+            Chapters = await FillChapters(doc, url),
             Title = doc.GetTextBySelector("h1"),
-            Author = "ranobe-novels"
+            Author = "WuxiaWorld",
         };
             
         return book;
     }
-    
+
+    private async Task<IEnumerable<UrlChapter>> GetChapters(HtmlDocument doc, Uri url) {
+        var catId = Regex.Match(doc.ParsedText, @"catID = (?<catId>\d+)").Groups["catId"].Value;
+        var slug = url.Segments[1].Trim('/');
+        var result = new List<UrlChapter>();
+        
+        foreach (var span in doc.QuerySelectorAll("ul.myUL span.caret[data-id]")) {
+            var payload = new FormUrlEncodedContent(new Dictionary<string, string> {
+                ["cat_id"] = catId,
+                ["cat_slug"] = slug,
+                ["chapter"] = span.Attributes["data-id"].Value
+            });
+
+            var data = await _config.Client.PostWithTriesAsync(new Uri("https://wuxiaworld.ru/wp-content/themes/Wuxia/template-parts/post/menu-query.php"), payload);
+            var tocDoc = await data.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
+
+            result.AddRange(tocDoc.QuerySelectorAll("li a").Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.InnerText.HtmlDecode())));
+        }
+
+        return result;
+    }
+
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {
         var result = new List<Chapter>();
-            
-        foreach (var ranobeChapter in await GetChapters(doc)) {
-            Console.WriteLine($"Загружаю главу {ranobeChapter.Title.CoverQuotes()}");
+
+        foreach (var bookChapter in await GetChapters(doc, url)) {
             var chapter = new Chapter();
-            var chapterDoc = await GetChapter(new Uri($"https://ranobe-novels.ru/{ranobeChapter.Name}"));
+            Console.WriteLine($"Загружаю главу {bookChapter.Title.CoverQuotes()}");
+            
+            var chapterDoc = await GetChapter(bookChapter.Url);
+            chapter.Title = bookChapter.Title;
             chapter.Images = await GetImages(chapterDoc, url);
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;
-            chapter.Title = ranobeChapter.Title;
 
             result.Add(chapter);
         }
@@ -52,30 +71,14 @@ public class RanobeNovelsGetter : GetterBase {
 
     private async Task<HtmlDocument> GetChapter(Uri url) {
         var doc = await GetSafety(url);
-        return doc.QuerySelectorAll("div.entry-content > p")
-            .Aggregate(new StringBuilder(), (sb, node) => sb.Append($"<p>{node.InnerHtml}</p>"))
-            .AsHtmlDoc();
-    }
-
-    private async Task<IEnumerable<RanobeNovelsChapter>> GetChapters(HtmlDocument doc) {
-        var data = new Dictionary<string, string> {
-            ["action"] = "select_Ajax",
-            ["query"] = "catChapters",
-            ["cat_id"] = GetId(new Uri(doc.QuerySelector("link[rel=alternate][type=application/json]").Attributes["href"].Value)),
-            ["security"] = Regex.Match(doc.ParsedText, "\"nonce\":\"(?<id>.*?)\"").Groups["id"].Value
-        };
-
-        var response = await _config.Client.PostAsync(new Uri("https://ranobe-novels.ru/wp-admin/admin-ajax.php"), new FormUrlEncodedContent(data));
-        var result = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.Deserialize<List<RanobeNovelsChapter>>());
-        result.Reverse();
-        return result;
+        return doc.QuerySelector("div.entry-content").RemoveNodes("> :not(p)").InnerHtml.AsHtmlDoc();
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("meta[property=og:image]")?.Attributes["content"]?.Value;
         return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
     }
-
+    
     private async Task<HtmlDocument> GetSafety(Uri url) {
         var response = await _config.Client.GetAsync(url);
         await Task.Delay(TimeSpan.FromSeconds(1));
