@@ -99,10 +99,6 @@ public class LitmirGetter : GetterBase {
             singleChapter = i == 1 ? IsSingleChapter(nodes) : singleChapter;
 
             foreach (var node in nodes) {
-                if (node.InnerText.Contains("window.adrunTag")) {
-                    Console.WriteLine(node);
-                }
-                
                 if (singleChapter || !IsChapterHeader(node)) {
                     if (node.Name == "img" && node.Attributes["src"] != null) {
                         text.Append($"<img src='{node.Attributes["src"].Value}'/>");
