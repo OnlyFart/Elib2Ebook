@@ -10,6 +10,7 @@
 * https://jaomix.ru/
 * https://litgorod.ru/
 * https://litmarket.ru/
+* https://litmir.me/
 * https://litnet.com/
 * https://prodaman.ru/
 * https://ranobe-novels.ru/
