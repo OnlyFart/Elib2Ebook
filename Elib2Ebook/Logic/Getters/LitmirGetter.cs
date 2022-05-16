@@ -94,17 +94,15 @@ public class LitmirGetter : GetterBase {
         for (var i = 1; i <= pages; i++) {
             Console.WriteLine($"Получаю страницу {i}/{pages}");
             var page = await GetChapter(bookId, i);
-            if (page == default) {
-                Console.WriteLine("Неожиданный конец");
-                break;
-            }
-            
-            var content = page.QuerySelector("div.page_text");
-            var nodes = content.QuerySelectorAll("> a, > p, > img");
-            nodes = nodes.Count == 0 ? content.RemoveNodes("div[id*=adrun]").ChildNodes : nodes;
+
+            var nodes = page.QuerySelector("div.page_text").RemoveNodes("div[id^=adrun], script").ChildNodes;
             singleChapter = i == 1 ? IsSingleChapter(nodes) : singleChapter;
 
             foreach (var node in nodes) {
+                if (node.InnerText.Contains("window.adrunTag")) {
+                    Console.WriteLine(node);
+                }
+                
                 if (singleChapter || !IsChapterHeader(node)) {
                     if (node.Name == "img" && node.Attributes["src"] != null) {
                         text.Append($"<img src='{node.Attributes["src"].Value}'/>");
