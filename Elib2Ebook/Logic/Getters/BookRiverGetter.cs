@@ -44,11 +44,11 @@ public class BookriverGetter : GetterBase {
         var uri = new Uri($"https://bookriver.ru/book/{bookId}");
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
 
-        var book = new Book {
+        var book = new Book(uri) {
             Cover = await GetCover(doc, uri),
             Chapters = await FillChapters(uri, bookId),
             Title = doc.GetTextBySelector("h1[itemprop=name]"),
-            Author = doc.GetTextBySelector("span[itemprop=author]"),
+            Author = new Author(doc.GetTextBySelector("span[itemprop=author]")),
             Annotation = doc.QuerySelector("span[itemprop=description]")?.InnerHtml
         };
             

@@ -28,11 +28,11 @@ public class LitmirGetter : GetterBase {
 
         var name = doc.GetTextBySelector("div[itemprop=name]");
 
-        var book = new Book {
+        var book = new Book(url) {
             Cover = await GetCover(doc, url),
             Chapters = await FillChapters(bookId, pages, name),
             Title = name,
-            Author = doc.QuerySelector("span[itemprop=author] meta")?.Attributes["content"]?.Value ?? "Litmir",
+            Author = new Author(doc.QuerySelector("span[itemprop=author] meta")?.Attributes["content"]?.Value ?? "Litmir"),
             Annotation = doc.QuerySelector("div[itemprop=description]")?.InnerHtml
         };
             

@@ -26,11 +26,11 @@ public class FicbookGetter : GetterBase {
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
 
         var title = doc.GetTextBySelector("h1.mb-10");
-        var book = new Book {
+        var book = new Book(uri) {
             Cover = await GetCover(doc, uri),
             Chapters = await FillChapters(doc, url, title),
             Title = title,
-            Author = doc.GetTextBySelector("a.creator-nickname")
+            Author = new Author(doc.GetTextBySelector("a.creator-nickname"))
         };
             
         return book;

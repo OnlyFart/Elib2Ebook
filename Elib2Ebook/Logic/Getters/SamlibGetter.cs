@@ -26,11 +26,11 @@ public class SamlibGetter : GetterBase {
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
 
         var title = doc.GetTextBySelector("h2, h3 font");
-        var book = new Book {
+        var book = new Book(url) {
             Cover = null,
             Chapters = await FillChapters(doc, url, title),
             Title = title,
-            Author = "Samlib"
+            Author = new Author("Samlib")
         };
             
         return book;

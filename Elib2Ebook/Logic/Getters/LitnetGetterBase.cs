@@ -59,7 +59,7 @@ public abstract class LitnetGetterBase : GetterBase {
     public override async Task Authorize() {
         var path = _config.HasCredentials ? "user/find-by-login" : "registration/registration-by-device";
 
-        var url = $"https://api.{SystemUrl.Host}/v1/{path}?login={_config.Login.TrimStart('+')}&password={HttpUtility.UrlEncode(_config.Password)}&app=android&device_id={DeviceId}&sign={GetSign(string.Empty)}";
+        var url = $"https://api.{SystemUrl.Host}/v1/{path}?login={_config.Login?.TrimStart('+') ?? string.Empty}&password={HttpUtility.UrlEncode(_config.Password)}&app=android&device_id={DeviceId}&sign={GetSign(string.Empty)}";
         var response = await _config.Client.GetFromJsonAsync<LitnetAuthResponse>(url);
 
         if (!string.IsNullOrWhiteSpace(response.Token)) {
@@ -94,12 +94,13 @@ public abstract class LitnetGetterBase : GetterBase {
 
         var litnetBook = await GetBook(_token, bookId);
 
-        var book = new Book {
+        var book = new Book(new Uri(litnetBook.Url)) {
             Cover = await GetCover(litnetBook),
             Chapters = await FillChapters(_token, litnetBook, bookId),
             Title = litnetBook.Title.Trim(),
-            Author = (litnetBook.AuthorName ?? "Litnet").Trim(),
-            Annotation = GetAnnotation(litnetBook)
+            Author = new Author((litnetBook.AuthorName ?? "Litnet").Trim(), new Uri($"https://litnet.com/ru/{litnetBook.AuthorId}")),
+            Annotation = GetAnnotation(litnetBook),
+            Genres = litnetBook.Genres?.Select(g => g.Name.Trim()) ?? new List<string>()
         };
             
         return book;

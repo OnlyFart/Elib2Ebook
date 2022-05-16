@@ -19,11 +19,11 @@ public class TwilightRussiaGetter : GetterBase {
         url = new Uri($"https://twilightrussia.ru/forum/{bookId}");
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
 
-        var book = new Book {
+        var book = new Book(url){
             Cover = null,
             Chapters = await FillChapters(doc, url),
             Title = doc.GetTextBySelector("a.forumBarA"),
-            Author = doc.GetTextBySelector("span[class^='forum_nik']")
+            Author = new Author(doc.GetTextBySelector("span[class^='forum_nik']"))
         };
             
         return book;

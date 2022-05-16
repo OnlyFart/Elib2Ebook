@@ -27,11 +27,11 @@ public class BiglibaGetter : GetterBase{
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
         var title = doc.GetTextBySelector("h1[itemprop=name]");
 
-        var book = new Book {
+        var book = new Book(uri) {
             Cover = await GetCover(doc, uri),
             Chapters = await FillChapters(uri, bookId, token, title),
             Title = doc.GetTextBySelector("h1[itemprop=name]"),
-            Author = doc.GetTextBySelector("h2[itemprop=author]") ?? "BigLiba",
+            Author = new Author(doc.GetTextBySelector("h2[itemprop=author]") ?? "BigLiba"),
             Annotation = doc.QuerySelector("div.description")?.InnerHtml
         };
             

@@ -58,11 +58,11 @@ public class LitmarketGetter : GetterBase {
         var blocks = await GetBlocks(content.Book.EbookId);
 
         var title = Normalize(doc.GetTextBySelector("h1.card-title"));
-        var book = new Book {
+        var book = new Book(url.ReplaceHost(SystemUrl.Host)) {
             Cover = await GetCover(doc, url),
             Chapters = await FillChapters(GetToc(content, title), blocks, url, content.Book.EbookId, title),
             Title = title,
-            Author = Normalize(doc.GetTextBySelector("div.card-author").Replace("Автор:", "")),
+            Author = new Author(Normalize(doc.GetTextBySelector("div.card-author").Replace("Автор:", ""))),
             Annotation = doc.QuerySelector("div.card-description")?.InnerHtml
         };
             

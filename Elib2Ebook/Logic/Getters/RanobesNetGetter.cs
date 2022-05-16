@@ -37,11 +37,11 @@ public class RanobesNetGetter : GetterBase {
         var uri = new Uri($"http://{HOST}/novels/{bookId}.html");
         var doc = await GetSafety(uri);
 
-        var book = new Book {
+        var book = new Book(uri.ReplaceHost(SystemUrl.Host)) {
             Cover = await GetCover(doc, uri),
             Chapters = await FillChapters(doc, uri),
             Title = doc.QuerySelector("h1.title").FirstChild.InnerText.Trim().HtmlDecode(),
-            Author = "Ранобэс"
+            Author = new Author("Ранобэс")
         };
             
         return book;

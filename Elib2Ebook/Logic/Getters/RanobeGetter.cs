@@ -28,11 +28,11 @@ public class RanobeGetter : GetterBase {
 
         var ranobeBook = GetNextData<RanobeBook>(doc, "book");
 
-        var book = new Book {
+        var book = new Book(uri) {
             Cover = await GetCover(ranobeBook, uri),
             Chapters = await FillChapters(ranobeBook, url),
             Title = ranobeBook.Title,
-            Author = ranobeBook.Author ?? "Ranobe"
+            Author = new Author(ranobeBook.Author ?? "Ranobe")
         };
             
         return book;

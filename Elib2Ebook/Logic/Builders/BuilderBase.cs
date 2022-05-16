@@ -13,7 +13,7 @@ public abstract class BuilderBase {
     /// </summary>
     /// <param name="author">Автор</param>
     /// <returns></returns>
-    public abstract BuilderBase AddAuthor(string author);
+    public abstract BuilderBase AddAuthor(Author author);
 
     /// <summary>
     /// Указание названия книги
@@ -28,6 +28,13 @@ public abstract class BuilderBase {
     /// <param name="cover">Обложка</param>
     /// <returns></returns>
     public abstract BuilderBase WithCover(Image cover);
+    
+    /// <summary>
+    /// Добавление адреса книги
+    /// </summary>
+    /// <param name="url">Url</param>
+    /// <returns></returns>
+    public abstract BuilderBase WithBookUrl(Uri url);
     
     /// <summary>
     /// Добавление описания книги
@@ -51,6 +58,20 @@ public abstract class BuilderBase {
     /// <param name="chapters">Список частей</param>
     /// <returns></returns>
     public abstract BuilderBase WithChapters(IEnumerable<Chapter> chapters);
+    
+    /// <summary>
+    /// Добавление жанров книги
+    /// </summary>
+    /// <param name="genres">Жанры</param>
+    /// <returns></returns>
+    public abstract BuilderBase WithGenres(IEnumerable<string> genres);
+
+    /// <summary>
+    /// Добавление цикла книги
+    /// </summary>
+    /// <param name="seria"></param>
+    /// <returns></returns>
+    public abstract BuilderBase WithSeria(Seria seria);
 
     /// <summary>
     ///  Создание файла

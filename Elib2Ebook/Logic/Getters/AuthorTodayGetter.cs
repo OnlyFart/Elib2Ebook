@@ -40,15 +40,35 @@ public class AuthorTodayGetter : GetterBase {
         Console.WriteLine($"Загружаю книгу {bookUri.ToString().CoverQuotes()}"); 
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(bookUri);
 
-        var book = new Book {
+        var author = doc.QuerySelector("div.book-authors a");
+        var book = new Book(bookUri) {
             Cover = await GetCover(doc, bookUri),
             Chapters = await FillChapters(bookId, GetUserId(doc)),
             Title = doc.GetTextBySelector("h1"),
-            Author = doc.GetTextBySelector("div.book-authors"),
-            Annotation = doc.QuerySelector("div.rich-content")?.InnerHtml
+            Genres = doc.QuerySelectorAll("div.book-genres a").Select(a => a.Attributes["href"].Value.Split("/").Last().Trim()),
+            Author = new Author(author.GetTextBySelector(), new Uri(url, author.Attributes["href"]?.Value ?? string.Empty)),
+            Annotation = doc.QuerySelector("div.rich-content")?.InnerHtml,
+            Seria = GetSeria(doc)
         };
         
         return book;
+    }
+
+    private static Seria GetSeria(HtmlDocument doc) {
+        var a = doc.QuerySelector("div.book-meta-panel a[href^=/work/series/]");
+        if (a != default) {
+            var seria = new Seria();
+            seria.Name = a.GetTextBySelector();
+            
+            var numberText = a.GetTextBySelector("+ span");
+            if (!string.IsNullOrWhiteSpace(numberText) && numberText.StartsWith("#")) {
+                seria.Number = numberText.Trim('#');
+            }
+
+            return seria;
+        }
+
+        return default;
     }
 
     /// <summary>

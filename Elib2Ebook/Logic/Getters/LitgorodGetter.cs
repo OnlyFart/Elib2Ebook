@@ -20,11 +20,11 @@ public class LitgorodGetter : GetterBase {
         var uri = new Uri($"https://litgorod.ru/books/view/{bookId}");
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
 
-        var book = new Book {
+        var book = new Book(uri) {
             Cover = await GetCover(doc, uri),
             Chapters = await FillChapters(uri, bookId),
             Title = doc.GetTextBySelector("p.info_title"),
-            Author = doc.GetTextBySelector("a.info_author"),
+            Author = new Author(doc.GetTextBySelector("a.info_author")),
             Annotation = doc.QuerySelector("div.annotation_footer--content p.item_info")?.InnerHtml
         };
             

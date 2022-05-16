@@ -27,7 +27,7 @@ public class RulateGetter : GetterBase {
         await Mature(url);
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
 
-        var book = new Book {
+        var book = new Book(url) {
             Cover = await GetCover(doc, url),
             Chapters = await FillChapters(doc, url, bookId),
             Title = doc.GetTextBySelector("h1"),
@@ -37,16 +37,17 @@ public class RulateGetter : GetterBase {
         return book;
     }
 
-    private static string GetAuthor(HtmlDocument doc) {
-        const string AUTHOR = "rulate";
+    private static Author GetAuthor(HtmlDocument doc) {
+        var def = new Author("rulate");
         foreach (var p in doc.QuerySelectorAll("#Info p")) {
             var strong = p.QuerySelector("strong");
             if (strong != null && strong.InnerText.Contains("Автор")) {
-                return p.GetTextBySelector("em") ?? AUTHOR;
+                var author = p.GetTextBySelector("em");
+                return author == null ? def : new Author(author);
             }
         }
 
-        return AUTHOR;
+        return def;
     }
         
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {

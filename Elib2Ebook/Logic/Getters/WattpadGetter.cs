@@ -39,11 +39,11 @@ public class WattpadGetter : GetterBase {
         var meta = await GetMeta(url);
         var wattpadInfo = await _config.Client.GetFromJsonAsync<WattpadInfo>(new Uri($"https://www.wattpad.com/apiv2/info?id={meta.BookId}"));
 
-        var book = new Book {
+        var book = new Book(url) {
             Cover = await GetCover(wattpadInfo),
             Chapters = await FillChapters(wattpadInfo),
             Title = meta.Title,
-            Author = wattpadInfo.Author ?? "Wattpad",
+            Author = new Author(wattpadInfo.Author ?? "Wattpad"),
             Annotation = wattpadInfo.Description
         };
             

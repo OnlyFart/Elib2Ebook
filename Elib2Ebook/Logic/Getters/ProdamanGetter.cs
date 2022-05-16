@@ -120,11 +120,11 @@ public class ProdamanGetter : GetterBase {
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
 
         var title = doc.GetTextBySelector("h1");
-        var book = new Book {
+        var book = new Book(url) {
             Cover = await GetCover(doc, url),
             Chapters = await FillChapter(url, title),
             Title = title,
-            Author = doc.GetTextBySelector("a[data-widget-feisovet-author]") ?? "Prodaman",
+            Author = new Author(doc.GetTextBySelector("a[data-widget-feisovet-author]") ?? "Prodaman"),
             Annotation = doc.QuerySelector("div[itemprop=description]")?.InnerHtml
         };
 

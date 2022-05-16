@@ -23,11 +23,11 @@ public class RanobeNovelsGetter : GetterBase {
         var uri = new Uri($"https://ranobe-novels.ru/ranobe/{bookId}/");
         var doc = await GetSafety(url);
 
-        var book = new Book {
+        var book = new Book(uri) {
             Cover = await GetCover(doc, uri),
             Chapters = await FillChapters(doc, uri),
             Title = doc.GetTextBySelector("h1"),
-            Author = "ranobe-novels"
+            Author = new Author("ranobe-novels")
         };
             
         return book;

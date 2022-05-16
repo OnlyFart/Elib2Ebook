@@ -26,11 +26,11 @@ public class ReadliGetter : GetterBase {
         var name = doc.GetTextBySelector("h1.main-info__title");
         var author = doc.GetTextBySelector("a.main-info__link");
             
-        var book = new Book {
+        var book = new Book(url) {
             Cover = await GetCover(imageDiv, url),
             Chapters = await FillChapters(bookId, pages, name),
             Title = name,
-            Author = author,
+            Author = new Author(author),
             Annotation = doc.QuerySelector("article.seo__content")?.RemoveNodes("h2")?.InnerHtml
         };
             

@@ -30,11 +30,11 @@ public class RanobesComGetter : GetterBase {
         var uri = new Uri($"https://{IP}/ranobe/{bookId}.html");
         var doc = await GetHtmlDocument(uri);
 
-        var book = new Book {
+        var book = new Book(uri) {
             Cover = await GetCover(doc, uri),
             Chapters = await FillChapters(doc, uri),
             Title = doc.QuerySelector("h1.title").FirstChild.InnerText.Trim().HtmlDecode(),
-            Author = doc.GetTextBySelector("span[itemprop=creator]") ?? "Ranobes",
+            Author = new Author(doc.GetTextBySelector("span[itemprop=creator]") ?? "Ranobes"),
             Annotation = doc.QuerySelector("div[itemprop=description]")?.RemoveNodes("style")?.InnerHtml
         };
             

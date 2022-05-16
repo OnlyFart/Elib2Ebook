@@ -20,11 +20,11 @@ public class RanobeHubGetter : GetterBase {
         var uri = new Uri($"https://ranobehub.org/ranobe/{bookId}");
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
 
-        var book = new Book {
+        var book = new Book(uri) {
             Cover = await GetCover(doc, uri),
             Chapters = await FillChapters(doc, uri),
             Title = doc.GetTextBySelector("h1.header"),
-            Author = "RanobeHub"
+            Author = new Author("RanobeHub")
         };
             
         return book;

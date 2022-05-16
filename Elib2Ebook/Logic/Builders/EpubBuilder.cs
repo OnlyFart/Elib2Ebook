@@ -41,8 +41,8 @@ public class EpubBuilder : BuilderBase {
     /// </summary>
     /// <param name="author">Автор</param>
     /// <returns></returns>
-    public override BuilderBase AddAuthor(string author) {
-        _writer.AddAuthor(author);
+    public override BuilderBase AddAuthor(Author author) {
+        _writer.AddAuthor(author.Name);
         return this;
     }
 
@@ -66,6 +66,10 @@ public class EpubBuilder : BuilderBase {
             _writer.SetCover(cover.Content, cover.Format);
         }
 
+        return this;
+    }
+
+    public override BuilderBase WithBookUrl(Uri url) {
         return this;
     }
 
@@ -104,6 +108,14 @@ public class EpubBuilder : BuilderBase {
             _writer.AddChapter(chapter.Title.HtmlDecode(), ApplyPattern(chapter.Title, chapter.Content));
         }
 
+        return this;
+    }
+
+    public override BuilderBase WithGenres(IEnumerable<string> genres) {
+        return this;
+    }
+
+    public override BuilderBase WithSeria(Seria seria) {
         return this;
     }
 

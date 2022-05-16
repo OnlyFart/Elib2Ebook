@@ -49,11 +49,11 @@ public class DarkNovelsGetter : GetterBase {
         var uri = new Uri($"https://dark-novels.ru/{bookFullId}/");
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
 
-        var book = new Book {
+        var book = new Book(uri) {
             Cover = await GetCover(doc, uri),
             Chapters = await FillChapters(bookId),
             Title = doc.GetTextBySelector("h2.display-1"),
-            Author = "DarkNovels"
+            Author = new Author("DarkNovels")
         };
             
         return book;

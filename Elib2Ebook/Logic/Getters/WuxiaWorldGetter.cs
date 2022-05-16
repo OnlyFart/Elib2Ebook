@@ -20,11 +20,11 @@ public class WuxiaWorldGetter : GetterBase {
     public override async Task<Book> Get(Uri url) { ;
         var doc = await GetSafety(url);
 
-        var book = new Book {
+        var book = new Book(url) {
             Cover = await GetCover(doc, url),
             Chapters = await FillChapters(doc, url),
             Title = doc.GetTextBySelector("h1"),
-            Author = "WuxiaWorld",
+            Author = new Author("WuxiaWorld"),
         };
             
         return book;

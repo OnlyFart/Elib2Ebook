@@ -55,11 +55,11 @@ public class RanobeLibGetter : GetterBase {
 
         var data = GetData(doc);
 
-        var book = new Book {
+        var book = new Book(uri) {
             Cover = await GetCover(doc, uri),
             Chapters = await FillChapters(data, uri),
             Title = doc.QuerySelector("meta[property=og:title]").Attributes["content"].Value.Trim(),
-            Author = "RanobeLib"
+            Author = new Author("RanobeLib")
         };
             
         return book;

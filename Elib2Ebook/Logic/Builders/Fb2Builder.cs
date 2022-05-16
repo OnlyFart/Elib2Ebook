@@ -17,6 +17,7 @@ public class Fb2Builder : BuilderBase {
     private readonly XElement _description;
     private readonly XElement _titleInfo;
     private readonly XElement _body;
+    private readonly XElement _documentInfo;
     private readonly List<XElement> _images = new();
 
     private readonly Dictionary<string, string> _map = new() {
@@ -40,6 +41,7 @@ public class Fb2Builder : BuilderBase {
         _book.SetAttributeValue(XNamespace.Xmlns + "xlink", _xlink.NamespaceName);
         _description = CreateXElement("description");
         _titleInfo = CreateXElement("title-info");
+        _documentInfo = CreateXElement("document-info");
         _body = CreateXElement("body");
     }
 
@@ -47,10 +49,10 @@ public class Fb2Builder : BuilderBase {
         return new XElement(_ns + name);
     }
 
-    private XElement CreateAuthor(string author) {
+    private XElement CreateAuthor(Author author) {
         var authorElem = CreateXElement("author");
 
-        var parts = author.Split(" ");
+        var parts = author.Name.Split(" ");
         if (parts.Length == 2) {
             var firstName = CreateXElement("first-name");
             firstName.Value = parts[0];
@@ -59,11 +61,16 @@ public class Fb2Builder : BuilderBase {
             var lastName = CreateXElement("last-name");
             lastName.Value = parts[1];
             authorElem.Add(lastName);
-
         } else {
             var nicknameElem = CreateXElement("nickname");
-            nicknameElem.Value = author;
+            nicknameElem.Value = author.Name;
             authorElem.Add(nicknameElem);
+        }
+
+        if (author.Url != default) {
+            var homePageElem = CreateXElement("home-page");
+            homePageElem.Value = author.Url.ToString();
+            authorElem.Add(homePageElem);
         }
 
         return authorElem;
@@ -101,8 +108,10 @@ public class Fb2Builder : BuilderBase {
     /// </summary>
     /// <param name="author">Автор</param>
     /// <returns></returns>
-    public override BuilderBase AddAuthor(string author) {
-        _titleInfo.Add(CreateAuthor(author));
+    public override BuilderBase AddAuthor(Author author) {
+        var authorElem = CreateAuthor(author);
+        _titleInfo.Add(authorElem);
+        _documentInfo.Add(authorElem);
         return this;
     }
 
@@ -135,6 +144,16 @@ public class Fb2Builder : BuilderBase {
             coverPage.Add(imageElem);
             _titleInfo.Add(coverPage);
             _images.Add(GetBinary(cover));
+        }
+
+        return this;
+    }
+
+    public override BuilderBase WithBookUrl(Uri url) {
+        if (url != default) {
+            var srcUrlElem = CreateXElement("src-url");
+            srcUrlElem.Value = url.ToString();
+            _documentInfo.Add(srcUrlElem);
         }
 
         return this;
@@ -192,6 +211,27 @@ public class Fb2Builder : BuilderBase {
             foreach (var image in chapter.Images) {
                 _images.Add(GetBinary(image));
             }
+        }
+
+        return this;
+    }
+
+    public override BuilderBase WithGenres(IEnumerable<string> genres) {
+        foreach (var genre in genres) {
+            var genreElem = CreateXElement("genre");
+            genreElem.Value = genre;
+            _titleInfo.Add(genreElem);
+        }
+        
+        return this;
+    }
+
+    public override BuilderBase WithSeria(Seria seria) {
+        if (seria != default) {
+            var sequenceElem = CreateXElement("sequence");
+            sequenceElem.SetAttributeValue("name", seria.Name);
+            sequenceElem.SetAttributeValue("number", seria.Number);
+            _titleInfo.Add(sequenceElem);
         }
 
         return this;
@@ -267,8 +307,19 @@ public class Fb2Builder : BuilderBase {
         }
     }
 
+    private XElement GetDateElement(DateTime date) {
+        var dateElem = CreateXElement("date");
+        var today = DateTime.Today.ToString("yyyy-MM-dd");
+        dateElem.SetAttributeValue("value", today);
+        dateElem.Value = today;
+        return dateElem;
+    }
+
     protected override void BuildInternal(string name) {
+        _documentInfo.Add(GetDateElement(DateTime.Today));
+        
         _description.Add(_titleInfo);
+        _description.Add(_documentInfo);
         _book.Add(_description);
         _book.Add(_body);
 

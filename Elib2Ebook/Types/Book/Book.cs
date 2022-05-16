@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Logic.Builders;
@@ -15,7 +16,7 @@ public class Book {
     /// <summary>
     /// Автор книги
     /// </summary>
-    public string Author { get; init; }
+    public Author Author { get; init; }
     
     /// <summary>
     /// Описание книги
@@ -26,11 +27,30 @@ public class Book {
     /// Обложка
     /// </summary>
     public Image Cover { get; init; }
+    
+    /// <summary>
+    /// Серия
+    /// </summary>
+    public Seria Seria { get; set; }
 
     /// <summary>
     /// Части
     /// </summary>
-    public IEnumerable<Chapter> Chapters { get; init; }
+    public IEnumerable<Chapter> Chapters { get; init; } = new List<Chapter>();
+
+    /// <summary>
+    /// Жанры
+    /// </summary>
+    public IEnumerable<string> Genres { get; set; } = new List<string>();
+
+    /// <summary>
+    /// Url расположения книги
+    /// </summary>
+    public Uri Url { get; set; }
+
+    public Book(Uri url) {
+        Url = url;
+    }
 
     /// <summary>
     /// Сохранение книги
@@ -39,12 +59,16 @@ public class Book {
     /// <param name="options"></param>
     /// <param name="resourcesPath">Путь к папке с ресурсами</param>
     public void Save(BuilderBase builder, Options options, string resourcesPath) {
-        var title = $"{Author} - {Title}".Crop(100);
+        var title = $"{Author.Name} - {Title}".Crop(100);
         
-        builder.AddAuthor(Author)
+        builder
+            .WithGenres(Genres)
+            .AddAuthor(Author)
             .WithTitle(Title)
             .WithCover(Cover)
+            .WithBookUrl(Url)
             .WithAnnotation(Annotation)
+            .WithSeria(Seria)
             .WithFiles(resourcesPath, "*.ttf", EpubContentType.FontTruetype)
             .WithFiles(resourcesPath, "*.css", EpubContentType.Css)
             .WithChapters(Chapters)

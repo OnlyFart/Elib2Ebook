@@ -22,11 +22,11 @@ public class JaomixGetter : GetterBase {
         var uri = new Uri($"https://jaomix.ru/category/{bookId}/");
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
 
-        var book = new Book {
+        var book = new Book(uri) {
             Cover = await GetCover(doc, uri),
             Chapters = await FillChapters(doc, uri),
             Title = doc.GetTextBySelector("h1"),
-            Author = "Jaomix"
+            Author = new Author("Jaomix")
         };
             
         return book;
