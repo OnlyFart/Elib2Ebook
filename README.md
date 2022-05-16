@@ -12,6 +12,7 @@
 * https://litmarket.ru/
 * https://litnet.com/
 * https://prodaman.ru/
+* https://ranobe-novels.ru/
 * https://ranobehub.org/
 * https://ranobelib.me/
 * https://ranobes.com/
@@ -20,6 +21,7 @@
 * https://tl.rulate.ru/
 * https://twilightrussia.ru/
 * https://wattpad.com/
+* https://wuxiaworld.ru/
 * https://ранобэ.рф/
 
 ## Пример вызова сервиса
