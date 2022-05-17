@@ -62,11 +62,33 @@ public class LitmarketGetter : GetterBase {
             Cover = await GetCover(doc, url),
             Chapters = await FillChapters(GetToc(content, title), blocks, url, content.Book.EbookId, title),
             Title = title,
-            Author = new Author(Normalize(doc.GetTextBySelector("div.card-author").Replace("Автор:", ""))),
-            Annotation = doc.QuerySelector("div.card-description")?.InnerHtml
+            Author = GetAuthor(doc, url),
+            Annotation = doc.QuerySelector("div.card-description")?.InnerHtml,
+            Seria = GetSeria(doc)
         };
             
         return book;
+    }
+    
+    private static Seria GetSeria(HtmlDocument doc) {
+        var a = doc.GetTextBySelector("div.card-cycle a");
+        if (string.IsNullOrWhiteSpace(a) || !a.Contains('#')) {
+            return default;
+        }
+        
+        var parts = a.Split('#', StringSplitOptions.RemoveEmptyEntries);
+
+        return new Seria {
+            Name = parts[0].HtmlDecode(),
+            Number = parts[1].HtmlDecode()
+        };
+    }
+
+    private Author GetAuthor(HtmlDocument doc, Uri url) {
+        var a = doc.QuerySelector("div.card-author a");
+        return a == default ? 
+            new Author(Normalize(doc.GetTextBySelector("div.card-author").Replace("Автор:", ""))) : 
+            new Author(Normalize(a.GetTextBySelector()), new Uri(url, a.Attributes["href"].Value).ReplaceHost(SystemUrl.Host));
     }
     
     /// <summary>

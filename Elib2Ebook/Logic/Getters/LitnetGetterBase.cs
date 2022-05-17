@@ -98,11 +98,15 @@ public abstract class LitnetGetterBase : GetterBase {
             Cover = await GetCover(litnetBook),
             Chapters = await FillChapters(_token, litnetBook, bookId),
             Title = litnetBook.Title.Trim(),
-            Author = new Author((litnetBook.AuthorName ?? "Litnet").Trim(), new Uri($"https://litnet.com/ru/{litnetBook.AuthorId}")),
+            Author = GetAuthor(litnetBook),
             Annotation = GetAnnotation(litnetBook)
         };
             
         return book;
+    }
+
+    private Author GetAuthor(LitnetBookResponse book) {
+        return new Author((book.AuthorName ?? SystemUrl.Host).Trim(), new Uri($"https://{SystemUrl.Host}/ru/{book.AuthorId}"));
     }
 
     private static string GetAnnotation(LitnetBookResponse book) {

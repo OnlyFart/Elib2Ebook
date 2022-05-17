@@ -24,17 +24,37 @@ public class ReadliGetter : GetterBase {
         var bookId = GetBookId(href);
             
         var name = doc.GetTextBySelector("h1.main-info__title");
-        var author = doc.GetTextBySelector("a.main-info__link");
+        var author = doc.QuerySelector("a.main-info__link");
             
         var book = new Book(url) {
             Cover = await GetCover(imageDiv, url),
             Chapters = await FillChapters(bookId, pages, name),
             Title = name,
-            Author = new Author(author),
-            Annotation = doc.QuerySelector("article.seo__content")?.RemoveNodes("h2")?.InnerHtml
+            Author = GetAuthor(doc, url),
+            Annotation = doc.QuerySelector("article.seo__content")?.RemoveNodes("h2")?.InnerHtml,
+            Seria = GetSeria(doc)
         };
-            
+
         return book; 
+    }
+    
+    private static Author GetAuthor(HtmlDocument doc, Uri url) {
+        var author = doc.QuerySelector("a.main-info__link");
+        return new Author(author.InnerText.HtmlDecode(), new Uri(url, author.Attributes["href"]?.Value ?? string.Empty));
+    }
+    
+    private static Seria GetSeria(HtmlDocument doc) {
+        var a = doc.GetTextBySelector("a.book-info__link[href^=/serie/]");
+        if (string.IsNullOrWhiteSpace(a) || !a.Contains('#')) {
+            return default;
+        }
+        
+        var parts = a.Split('#', StringSplitOptions.RemoveEmptyEntries);
+
+        return new Seria {
+            Name = parts[0].HtmlDecode(),
+            Number = parts[1].HtmlDecode()
+        };
     }
 
     private static string GetBookId(Uri uri) {
