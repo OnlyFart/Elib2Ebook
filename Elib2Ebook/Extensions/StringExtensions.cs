@@ -86,6 +86,10 @@ public static class StringExtensions {
         
         return self.Trim();
     }
+    
+    public static string CleanInvalidXmlChars(this string self) {
+        return Regex.Replace(self, "[\x00-\x08\x0B\x0C\x0E-\x1F\x26]", string.Empty, RegexOptions.Compiled);
+    }
         
     /// <summary>
     /// HtmlEncode

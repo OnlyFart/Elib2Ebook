@@ -33,7 +33,7 @@ public class EpubBuilder : BuilderBase {
     /// <param name="decodeText">Раскодированный текст</param>
     /// <returns></returns>
     private string ApplyPattern(string title, string decodeText) {
-        return _pattern.Replace("{title}", title).Replace("{body}", decodeText.HtmlDecode()).AsXHtmlDoc().AsString();
+        return _pattern.Replace("{title}", title.CleanInvalidXmlChars()).Replace("{body}", decodeText.HtmlDecode().CleanInvalidXmlChars()).AsXHtmlDoc().AsString();
     }
 
     /// <summary>
@@ -105,7 +105,7 @@ public class EpubBuilder : BuilderBase {
             }
 
             Console.WriteLine($"Добавляем часть {chapter.Title.CoverQuotes()}");
-            _writer.AddChapter(chapter.Title.HtmlDecode(), ApplyPattern(chapter.Title, chapter.Content));
+            _writer.AddChapter(chapter.Title.HtmlDecode().RemoveInvalidChars(), ApplyPattern(chapter.Title, chapter.Content));
         }
 
         return this;

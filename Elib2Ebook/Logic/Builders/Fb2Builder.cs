@@ -152,7 +152,7 @@ public class Fb2Builder : BuilderBase {
     public override BuilderBase WithBookUrl(Uri url) {
         if (url != default) {
             var srcUrlElem = CreateXElement("src-url");
-            srcUrlElem.Value = url.ToString();
+            srcUrlElem.Value = url.ToString().CleanInvalidXmlChars();
             _documentInfo.Add(srcUrlElem);
         }
 
@@ -219,7 +219,7 @@ public class Fb2Builder : BuilderBase {
     public override BuilderBase WithGenres(IEnumerable<string> genres) {
         foreach (var genre in genres) {
             var genreElem = CreateXElement("genre");
-            genreElem.Value = genre;
+            genreElem.Value = genre.CleanInvalidXmlChars();
             _titleInfo.Add(genreElem);
         }
         
@@ -229,8 +229,8 @@ public class Fb2Builder : BuilderBase {
     public override BuilderBase WithSeria(Seria seria) {
         if (seria != default) {
             var sequenceElem = CreateXElement("sequence");
-            sequenceElem.SetAttributeValue("name", seria.Name);
-            sequenceElem.SetAttributeValue("number", seria.Number);
+            sequenceElem.SetAttributeValue("name", seria.Name.CleanInvalidXmlChars());
+            sequenceElem.SetAttributeValue("number", seria.Number.CleanInvalidXmlChars());
             _titleInfo.Add(sequenceElem);
         }
 
@@ -252,7 +252,7 @@ public class Fb2Builder : BuilderBase {
                 parent.Add(href);
             } else {
                 var tag = CreateXElement(textNode);
-                tag.Value = href;
+                tag.Value = href.CleanInvalidXmlChars();
                 parent.Add(tag);
             }
 
@@ -275,10 +275,10 @@ public class Fb2Builder : BuilderBase {
 
         if (IsTextNode(node)) {
             if (string.IsNullOrWhiteSpace(textNode)) {
-                parent.Add(new XText(node.InnerText));
+                parent.Add(new XText(node.InnerText.CleanInvalidXmlChars()));
             } else {
                 var tag = CreateXElement(textNode);
-                tag.Value = node.InnerText.HtmlDecode();
+                tag.Value = node.InnerText.HtmlDecode().CleanInvalidXmlChars();
                 parent.Add(tag);
             }
             
@@ -299,10 +299,10 @@ public class Fb2Builder : BuilderBase {
 
         if (_map.TryGetValue(node.Name, out var fb2Tag)) {
             var tag = CreateXElement(fb2Tag);
-            tag.Value = node.InnerText;
+            tag.Value = node.InnerText.CleanInvalidXmlChars();
             parent.Add(tag);
         } else {
-            parent.Add(node.InnerText);
+            parent.Add(node.InnerText.CleanInvalidXmlChars());
             Console.WriteLine(node.Name);
         }
     }
