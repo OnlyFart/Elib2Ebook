@@ -111,10 +111,6 @@ public class EpubBuilder : BuilderBase {
         return this;
     }
 
-    public override BuilderBase WithGenres(IEnumerable<string> genres) {
-        return this;
-    }
-
     public override BuilderBase WithSeria(Seria seria) {
         return this;
     }

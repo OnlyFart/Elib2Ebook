@@ -58,13 +58,6 @@ public abstract class BuilderBase {
     /// <param name="chapters">Список частей</param>
     /// <returns></returns>
     public abstract BuilderBase WithChapters(IEnumerable<Chapter> chapters);
-    
-    /// <summary>
-    /// Добавление жанров книги
-    /// </summary>
-    /// <param name="genres">Жанры</param>
-    /// <returns></returns>
-    public abstract BuilderBase WithGenres(IEnumerable<string> genres);
 
     /// <summary>
     /// Добавление цикла книги

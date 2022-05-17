@@ -45,7 +45,6 @@ public class AuthorTodayGetter : GetterBase {
             Cover = await GetCover(doc, bookUri),
             Chapters = await FillChapters(bookId, GetUserId(doc)),
             Title = doc.GetTextBySelector("h1"),
-            Genres = doc.QuerySelectorAll("div.book-genres a").Select(a => a.Attributes["href"].Value.Split("/").Last().Trim()),
             Author = new Author(author.GetTextBySelector(), new Uri(url, author.Attributes["href"]?.Value ?? string.Empty)),
             Annotation = doc.QuerySelector("div.rich-content")?.InnerHtml,
             Seria = GetSeria(doc)

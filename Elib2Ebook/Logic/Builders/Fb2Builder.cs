@@ -216,16 +216,6 @@ public class Fb2Builder : BuilderBase {
         return this;
     }
 
-    public override BuilderBase WithGenres(IEnumerable<string> genres) {
-        foreach (var genre in genres) {
-            var genreElem = CreateXElement("genre");
-            genreElem.Value = genre.CleanInvalidXmlChars();
-            _titleInfo.Add(genreElem);
-        }
-        
-        return this;
-    }
-
     public override BuilderBase WithSeria(Seria seria) {
         if (seria != default) {
             var sequenceElem = CreateXElement("sequence");

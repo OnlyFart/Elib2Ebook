@@ -99,8 +99,7 @@ public abstract class LitnetGetterBase : GetterBase {
             Chapters = await FillChapters(_token, litnetBook, bookId),
             Title = litnetBook.Title.Trim(),
             Author = new Author((litnetBook.AuthorName ?? "Litnet").Trim(), new Uri($"https://litnet.com/ru/{litnetBook.AuthorId}")),
-            Annotation = GetAnnotation(litnetBook),
-            Genres = litnetBook.Genres?.Select(g => g.Name.Trim()) ?? new List<string>()
+            Annotation = GetAnnotation(litnetBook)
         };
             
         return book;

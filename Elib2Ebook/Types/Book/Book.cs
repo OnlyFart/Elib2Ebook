@@ -39,11 +39,6 @@ public class Book {
     public IEnumerable<Chapter> Chapters { get; init; } = new List<Chapter>();
 
     /// <summary>
-    /// Жанры
-    /// </summary>
-    public IEnumerable<string> Genres { get; set; } = new List<string>();
-
-    /// <summary>
     /// Url расположения книги
     /// </summary>
     public Uri Url { get; set; }
@@ -62,7 +57,6 @@ public class Book {
         var title = $"{Author.Name} - {Title}".Crop(100);
         
         builder
-            .WithGenres(Genres)
             .AddAuthor(Author)
             .WithTitle(Title)
             .WithCover(Cover)
