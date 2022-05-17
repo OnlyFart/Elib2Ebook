@@ -24,11 +24,28 @@ public class LitgorodGetter : GetterBase {
             Cover = await GetCover(doc, uri),
             Chapters = await FillChapters(uri, bookId),
             Title = doc.GetTextBySelector("p.info_title"),
-            Author = new Author(doc.GetTextBySelector("a.info_author")),
-            Annotation = doc.QuerySelector("div.annotation_footer--content p.item_info")?.InnerHtml
+            Author = GetAuthor(doc, uri),
+            Annotation = doc.QuerySelector("div.annotation_footer--content p.item_info")?.InnerHtml,
+            Seria = GetSeria(doc)
         };
             
         return book;
+    }
+
+    private static Author GetAuthor(HtmlDocument doc, Uri url) {
+        var a = doc.QuerySelector("a.info_author");
+        return new Author(a.GetTextBySelector(), new Uri(url, a.Attributes["href"].Value));
+    }
+
+    private static Seria GetSeria(HtmlDocument doc) {
+        var circle = doc.GetTextBySelector("p.info_desciption--circle");
+        if (!string.IsNullOrWhiteSpace(circle)) {
+            return new Seria {
+                Name = circle[4..].Trim()
+            };
+        }
+
+        return default;
     }
     
     private async Task<IEnumerable<Chapter>> FillChapters(Uri uri, string bookId) {

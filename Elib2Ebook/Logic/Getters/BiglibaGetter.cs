@@ -31,11 +31,30 @@ public class BiglibaGetter : GetterBase{
             Cover = await GetCover(doc, uri),
             Chapters = await FillChapters(uri, bookId, token, title),
             Title = doc.GetTextBySelector("h1[itemprop=name]"),
-            Author = new Author(doc.GetTextBySelector("h2[itemprop=author]") ?? "BigLiba"),
-            Annotation = doc.QuerySelector("div.description")?.InnerHtml
+            Author = GetAuthor(doc, uri),
+            Annotation = doc.QuerySelector("div.description")?.InnerHtml,
+            Seria = GetSeria(doc)
         };
             
         return book;
+    }
+
+    private static Seria GetSeria(HtmlDocument doc) {
+        var text = doc.GetTextBySelector("div.book-series");
+        if (!string.IsNullOrWhiteSpace(text) && text.Contains('#')) {
+            var parts = text.Split(':').Last().Split("(#");
+            return new Seria {
+                Name = parts[0].Trim(),
+                Number = parts[1].Trim(')').Trim()
+            };
+        }
+
+        return default;
+    }
+    
+    private static Author GetAuthor(HtmlDocument doc, Uri url) {
+        var a = doc.QuerySelector("h2[itemprop=author] a");
+        return new Author(a.GetTextBySelector(), new Uri(url, a.Attributes["href"].Value));
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(Uri uri, string bookId, string token, string title) {

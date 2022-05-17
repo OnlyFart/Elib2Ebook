@@ -29,11 +29,15 @@ public class BookstabGetter : GetterBase {
             Cover = await GetCover(data),
             Chapters = await FillChapters(data, uri, bookId),
             Title = data.Book.Title,
-            Author = new Author(data.Book.User.Pseudonym),
+            Author = GetAuthor(data),
             Annotation = GetAnnotation(data.Book)
         };
             
         return book;
+    }
+
+    private static Author GetAuthor(BookstabApiResponse book) {
+        return new Author(book.Book.User.Pseudonym, new Uri($"https://bookstab.ru/user/{book.Book.User.Name}"));
     }
     
     private static string GetAnnotation(BookstabBook book) {

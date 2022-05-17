@@ -48,11 +48,34 @@ public class BookriverGetter : GetterBase {
             Cover = await GetCover(doc, uri),
             Chapters = await FillChapters(uri, bookId),
             Title = doc.GetTextBySelector("h1[itemprop=name]"),
-            Author = new Author(doc.GetTextBySelector("span[itemprop=author]")),
-            Annotation = doc.QuerySelector("span[itemprop=description]")?.InnerHtml
+            Author = GetAuthor(doc, uri),
+            Annotation = doc.QuerySelector("span[itemprop=description]")?.InnerHtml,
+            Seria = GetSeria(doc)
         };
             
         return book;
+    }
+
+    private static Author GetAuthor(HtmlDocument doc, Uri url) {
+        var a = doc.QuerySelector("span[itemprop=author] a");
+        return new Author(a.GetTextBySelector(), new Uri(url, a.Attributes["href"].Value));
+    }
+
+    private static Seria GetSeria(HtmlDocument doc) {
+        var a = doc.QuerySelector("a[href^=/series/]");
+        if (a == default) {
+            return default;
+        }
+
+        var span = a.QuerySelector("+ span");
+        if (span == default) {
+            return default;
+        }
+
+        return new Seria {
+            Name = a.GetTextBySelector()[5..].Trim(),
+            Number = span.GetTextBySelector().Trim().Trim('#')
+        };
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(Uri uri, string bookId) {

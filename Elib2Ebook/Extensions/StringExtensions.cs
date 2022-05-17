@@ -88,7 +88,7 @@ public static class StringExtensions {
     }
     
     public static string CleanInvalidXmlChars(this string self) {
-        return Regex.Replace(self, "[\x00-\x08\x0B\x0C\x0E-\x1F\x26]", string.Empty, RegexOptions.Compiled);
+        return string.IsNullOrWhiteSpace(self) ? self : Regex.Replace(self, "[\x00-\x08\x0B\x0C\x0E-\x1F\x26]", string.Empty, RegexOptions.Compiled);
     }
         
     /// <summary>
