@@ -30,3 +30,106 @@ jobs:
       with:
         name: Elib2Ebook-${{ matrix.os }}
         path: ${{ github.workspace }}/Elib2Ebook/bin/Release/net6.0/
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+      
+      - uses: kzrnm/get-net-sdk-project-versions-action@v1
+        id: get-version
+        with:
+          proj-path: Elib2Ebook/Elib2Ebook.csproj
+          
+      - name: "get-last-release"
+        id: last_release
+        uses: InsonusK/get-latest-release@v1.0.1
+        with:
+          myToken: ${{ github.token }}
+          
+      - name: release
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/create-release@v1
+        id: create_release
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{steps.get-version.outputs.version}}
+          tag_name: ${{steps.get-version.outputs.version}}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+         
+      - name: download-artifact-ubuntu
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/download-artifact@v3
+        with:
+          name: Elib2Ebook-ubuntu-latest
+          path: ${{ github.workspace }}/linux
+          
+          
+      - name: download-artifact-windows
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/download-artifact@v3
+        with:
+          name: Elib2Ebook-windows-latest
+          path: ${{ github.workspace }}/windows
+          
+      - name: download-artifact-macos
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/download-artifact@v3
+        with:
+          name: Elib2Ebook-windows-latest
+          path: ${{ github.workspace }}/macos
+                  
+      - name: Install zip
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: montudor/action-zip@v0.1.0
+        
+      - name: Zip output
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        run: zip -qq -r Elib2Ebook-Linux.zip linux
+        working-directory: ${{ github.workspace }}
+          
+      - name: Zip output
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        run: zip -qq -r Elib2Ebook-Windows.zip windows
+        working-directory: ${{ github.workspace }}
+        
+      - name: Zip output
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        run: zip -qq -r Elib2Ebook-Macos.zip macos
+        working-directory: ${{ github.workspace }}
+                 
+      - name: upload linux artifact
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: Elib2Ebook-Linux.zip
+          asset_name: Elib2Ebook-Linux.zip
+          asset_content_type: application/zip
+                 
+      - name: upload windows artifact
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: Elib2Ebook-Windows.zip
+          asset_name: Elib2Ebook-Windows.zip
+          asset_content_type: application/zip
+          
+      - name: upload macos artifact
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: Elib2Ebook-Macos.zip
+          asset_name: Elib2Ebook-Macos.zip
+          asset_content_type: application/zip
