@@ -60,7 +60,7 @@ public class LitmarketGetter : GetterBase {
         var title = Normalize(doc.GetTextBySelector("h1.card-title"));
         var book = new Book(url.ReplaceHost(SystemUrl.Host)) {
             Cover = await GetCover(doc, url),
-            Chapters = await FillChapters(GetToc(content, title), blocks, url, content.Book.EbookId, title),
+            Chapters = await FillChapters(GetToc(content, title), blocks, url, content.Book.EbookId),
             Title = title,
             Author = GetAuthor(doc, url),
             Annotation = doc.QuerySelector("div.card-description")?.InnerHtml,
@@ -108,7 +108,7 @@ public class LitmarketGetter : GetterBase {
         using var post = await _config.Client.PostAsJsonAsync($"https://{HOST}/auth/login", payload);
         try {
             var data = await post.Content.ReadFromJsonAsync<AuthResponse>();
-            if (!data.Success) {
+            if (data is { Success: false }) {
                 throw new Exception("Не удалось авторизоваться");
             }
         } catch {
@@ -145,7 +145,7 @@ public class LitmarketGetter : GetterBase {
         return toc;
     }
 
-    private async Task<List<Chapter>> FillChapters(List<Block> toc, Block[] blocks, Uri bookUri, long eBookId, string title) {
+    private async Task<List<Chapter>> FillChapters(List<Block> toc, Block[] blocks, Uri bookUri, long eBookId) {
         var result = new List<Chapter>();
 
         for (var i = 0; i < toc.Count; i++) {

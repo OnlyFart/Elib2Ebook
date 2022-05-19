@@ -105,7 +105,7 @@ public class DarkNovelsGetter : GetterBase {
     }
 
     private async Task<DarkNovelsChapter[]> GetChapters(string bookId) {
-        return await _config.Client.GetFromJsonAsync<DarkNovelsData<DarkNovelsChapter[]>>($"https://api.dark-novels.ru/v2/toc/{bookId}").ContinueWith(t => t.Result.Data);
+        return await _config.Client.GetFromJsonAsync<DarkNovelsData<DarkNovelsChapter[]>>($"https://api.dark-novels.ru/v2/toc/{bookId}").ContinueWith(t => t.Result?.Data);
     }
 
     private async Task<HtmlDocument> GetChapter(string bookId, int chapterId) {

@@ -24,7 +24,7 @@ public class ReadliGetter : GetterBase {
         var bookId = GetBookId(href);
             
         var name = doc.GetTextBySelector("h1.main-info__title");
-        var author = doc.QuerySelector("a.main-info__link");
+        doc.QuerySelector("a.main-info__link");
             
         var book = new Book(url) {
             Cover = await GetCover(imageDiv, url),

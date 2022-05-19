@@ -32,7 +32,7 @@ public class WattpadGetter : GetterBase {
         }
 
         var info = await _config.Client.GetFromJsonAsync<WattpadInfo>(new Uri($"https://www.wattpad.com/apiv2/info?id={GetId(url)}"));
-        return await GetMeta(new Uri(url, info.Url));
+        return await GetMeta(new Uri(url, info?.Url));
     }
 
     public override async Task<Book> Get(Uri url) {
@@ -43,8 +43,8 @@ public class WattpadGetter : GetterBase {
             Cover = await GetCover(wattpadInfo),
             Chapters = await FillChapters(wattpadInfo),
             Title = meta.Title,
-            Author = new Author(wattpadInfo.Author ?? "Wattpad"),
-            Annotation = wattpadInfo.Description
+            Author = new Author(wattpadInfo?.Author ?? "Wattpad"),
+            Annotation = wattpadInfo?.Description
         };
             
         return book;

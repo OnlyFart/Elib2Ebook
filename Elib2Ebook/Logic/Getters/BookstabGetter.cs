@@ -28,9 +28,9 @@ public class BookstabGetter : GetterBase {
         var book = new Book(uri) {
             Cover = await GetCover(data),
             Chapters = await FillChapters(data, uri, bookId),
-            Title = data.Book.Title,
+            Title = data?.Book.Title,
             Author = GetAuthor(data),
-            Annotation = GetAnnotation(data.Book)
+            Annotation = GetAnnotation(data?.Book)
         };
             
         return book;
@@ -69,7 +69,7 @@ public class BookstabGetter : GetterBase {
 
     private async Task<HtmlDocument> GetChapter(int bookChapterId, string bookId) {
         var response = await _config.Client.GetFromJsonAsync<BookstabApiResponse>($"https://api.bookstab.ru/api/reader-get/{bookId}/{bookChapterId}");
-        return string.IsNullOrWhiteSpace(response.Chapter.Body) ? default : response.Chapter.Body.AsHtmlDoc();
+        return string.IsNullOrWhiteSpace(response?.Chapter.Body) ? default : response.Chapter.Body.AsHtmlDoc();
     }
 
     private Task<Image> GetCover(BookstabApiResponse response) {

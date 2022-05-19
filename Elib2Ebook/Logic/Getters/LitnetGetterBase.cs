@@ -62,11 +62,11 @@ public abstract class LitnetGetterBase : GetterBase {
         var url = $"https://api.{SystemUrl.Host}/v1/{path}?login={_config.Login?.TrimStart('+') ?? string.Empty}&password={HttpUtility.UrlEncode(_config.Password)}&app=android&device_id={DeviceId}&sign={GetSign(string.Empty)}";
         var response = await _config.Client.GetFromJsonAsync<LitnetAuthResponse>(url);
 
-        if (!string.IsNullOrWhiteSpace(response.Token)) {
+        if (!string.IsNullOrWhiteSpace(response?.Token)) {
             Console.WriteLine("Успешно авторизовались");
             _token = response.Token;
         } else {
-            throw new Exception($"Не удалось авторизоваться. {response.Error}");
+            throw new Exception($"Не удалось авторизоваться. {response?.Error}");
         }
     }
 

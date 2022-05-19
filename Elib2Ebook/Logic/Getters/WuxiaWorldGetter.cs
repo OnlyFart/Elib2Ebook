@@ -17,7 +17,7 @@ namespace Elib2Ebook.Logic.Getters;
 public class WuxiaWorldGetter : GetterBase {
     public WuxiaWorldGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://wuxiaworld.ru/");
-    public override async Task<Book> Get(Uri url) { ;
+    public override async Task<Book> Get(Uri url) {
         var doc = await GetSafety(url);
 
         var book = new Book(url) {

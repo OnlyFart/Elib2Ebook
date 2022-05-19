@@ -6,10 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Types.Book;
-using Elib2Ebook.Types.Jaomix;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Elib2Ebook.Extensions;
+using Elib2Ebook.Types.Common;
 
 namespace Elib2Ebook.Logic.Getters; 
 
@@ -72,7 +72,7 @@ public class JaomixGetter : GetterBase {
         return sb.AsHtmlDoc();
     }
 
-    private async Task<IEnumerable<JaomixChapter>> GetChapters(HtmlDocument doc, Uri url) {
+    private async Task<IEnumerable<UrlChapter>> GetChapters(HtmlDocument doc, Uri url) {
         var termId = doc.QuerySelector("div.like-but").Id;
 
         var data = new Dictionary<string, string> {
@@ -80,7 +80,7 @@ public class JaomixGetter : GetterBase {
             { "selectall", termId }
         };
             
-        var chapters = new List<JaomixChapter>();
+        var chapters = new List<UrlChapter>();
         chapters.AddRange(ParseChapters(doc, url));
         
         doc = await _config.Client.PostHtmlDocWithTriesAsync(new Uri("https://jaomix.ru/wp-admin/admin-ajax.php"), new FormUrlEncodedContent(data));
@@ -114,7 +114,7 @@ public class JaomixGetter : GetterBase {
         return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
     }
 
-    private static IEnumerable<JaomixChapter> ParseChapters(HtmlDocument doc, Uri url) {
-        return doc.QuerySelectorAll("div.hiddenstab a").Select(a => new JaomixChapter(a.InnerText.Trim(), new Uri(url, a.Attributes["href"].Value)));
+    private static IEnumerable<UrlChapter> ParseChapters(HtmlDocument doc, Uri url) {
+        return doc.QuerySelectorAll("div.hiddenstab a").Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.InnerText.Trim()));
     }
 }

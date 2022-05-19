@@ -6,10 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Types.Book;
-using Elib2Ebook.Types.Ranobes;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Elib2Ebook.Extensions;
+using Elib2Ebook.Types.Common;
 
 namespace Elib2Ebook.Logic.Getters; 
 
@@ -98,18 +98,18 @@ public class RanobesComGetter : GetterBase {
         return new Uri(uri, new Uri(relativeUri).AbsolutePath.Trim('/'));
     }
         
-    private async Task<IEnumerable<RanobesChapter>> GetChapters(Uri tocUri) {
+    private async Task<IEnumerable<UrlChapter>> GetChapters(Uri tocUri) {
         var doc = await GetHtmlDocument(tocUri);
         var lastA = doc.QuerySelector("div.pages a:last-child")?.InnerText;
         var pages = string.IsNullOrWhiteSpace(lastA) ? 1 : int.Parse(lastA);
             
         Console.WriteLine("Получаем оглавление");
-        var chapters = new List<RanobesChapter>();
+        var chapters = new List<UrlChapter>();
         for (var i = 1; i <= pages; i++) {
             doc = await GetHtmlDocument(new Uri(tocUri.AbsoluteUri + "/page/" + i));
             var ranobesChapters = doc
                 .QuerySelectorAll("#dle-content > .cat_block.cat_line a")
-                .Select(a => new RanobesChapter(a.Attributes["title"].Value, new Uri(new Uri($"https://{IP}/"), new Uri(a.Attributes["href"].Value).AbsolutePath)))
+                .Select(a => new UrlChapter(new Uri(new Uri($"https://{IP}/"), new Uri(a.Attributes["href"].Value).AbsolutePath), a.Attributes["title"].Value))
                 .ToList();
             
             chapters.AddRange(ranobesChapters);

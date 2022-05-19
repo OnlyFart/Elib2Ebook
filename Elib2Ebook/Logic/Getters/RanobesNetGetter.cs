@@ -6,10 +6,10 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Types.Book;
-using Elib2Ebook.Types.Ranobes;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Elib2Ebook.Extensions;
+using Elib2Ebook.Types.Common;
 using Elib2Ebook.Types.RanobesNet;
 
 namespace Elib2Ebook.Logic.Getters; 
@@ -107,19 +107,19 @@ public class RanobesNetGetter : GetterBase {
         return windowData;
     }
         
-    private async Task<IEnumerable<RanobesChapter>> GetChapters(Uri tocUri) {
+    private async Task<IEnumerable<UrlChapter>> GetChapters(Uri tocUri) {
         var doc = await GetSafety(tocUri);
         var data = GetData(doc);
             
         Console.WriteLine("Получаем оглавление");
-        var chapters = new List<RanobesChapter>();
+        var chapters = new List<UrlChapter>();
         for (var i = 1; i <= data.Pages; i++) {
             var url = i == 1 ? tocUri : new Uri($"{tocUri.AbsoluteUri}page/{i}/");
             doc = await GetSafety(url);
             data = GetData(doc);
             var ranobesChapters = data
                 .Chapters
-                .Select(a => new RanobesChapter(a.Title, new Uri($"https://ranobes.net/read-{a.Id}.html")))
+                .Select(a => new UrlChapter(new Uri($"https://ranobes.net/read-{a.Id}.html"), a.Title))
                 .ToList();
             
             chapters.AddRange(ranobesChapters);
