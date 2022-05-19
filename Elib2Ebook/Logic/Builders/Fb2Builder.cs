@@ -262,19 +262,7 @@ public class Fb2Builder : BuilderBase {
 
             return;
         }
-
-        if (IsTextNode(node)) {
-            if (string.IsNullOrWhiteSpace(textNode)) {
-                parent.Add(new XText(node.InnerText.HtmlDecode().CleanInvalidXmlChars()));
-            } else {
-                var tag = CreateXElement(textNode);
-                tag.Value = node.InnerText.HtmlDecode().CleanInvalidXmlChars();
-                parent.Add(tag);
-            }
-            
-            return;
-        }
-
+        
         if (node.Name == "img") {
             if (node.Attributes["src"] == null) {
                 return;
@@ -287,12 +275,25 @@ public class Fb2Builder : BuilderBase {
             return;
         }
 
+        var nodeText = node.InnerText.HtmlDecode().CleanInvalidXmlChars();
+        if (IsTextNode(node)) {
+            if (string.IsNullOrWhiteSpace(textNode)) {
+                parent.Add(new XText(nodeText));
+            } else {
+                var tag = CreateXElement(textNode);
+                tag.Value = nodeText;
+                parent.Add(tag);
+            }
+            
+            return;
+        }
+
         if (_map.TryGetValue(node.Name, out var fb2Tag)) {
             var tag = CreateXElement(fb2Tag);
-            tag.Value = node.InnerText.CleanInvalidXmlChars();
+            tag.Value = nodeText;
             parent.Add(tag);
         } else {
-            parent.Add(node.InnerText.CleanInvalidXmlChars());
+            parent.Add(nodeText);
             Console.WriteLine(node.Name);
         }
     }
