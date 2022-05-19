@@ -299,10 +299,12 @@ public class Fb2Builder : BuilderBase {
     }
 
     private XElement GetDateElement(DateTime date) {
+        var today = date.ToString("yyyy-MM-dd");
+        
         var dateElem = CreateXElement("date");
-        var today = DateTime.Today.ToString("yyyy-MM-dd");
         dateElem.SetAttributeValue("value", today);
         dateElem.Value = today;
+        
         return dateElem;
     }
 
