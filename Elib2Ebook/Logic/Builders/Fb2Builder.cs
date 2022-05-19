@@ -265,7 +265,7 @@ public class Fb2Builder : BuilderBase {
 
         if (IsTextNode(node)) {
             if (string.IsNullOrWhiteSpace(textNode)) {
-                parent.Add(new XText(node.InnerText.CleanInvalidXmlChars()));
+                parent.Add(new XText(node.InnerText.HtmlDecode().CleanInvalidXmlChars()));
             } else {
                 var tag = CreateXElement(textNode);
                 tag.Value = node.InnerText.HtmlDecode().CleanInvalidXmlChars();
