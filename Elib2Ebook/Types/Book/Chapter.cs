@@ -20,11 +20,11 @@ public class Chapter {
     /// Контент части
     /// </summary>
     public string Content { get; set; }
-        
+
     /// <summary>
     /// Изображения из части
     /// </summary>
-    public IEnumerable<Image> Images { get; set; }
+    public IEnumerable<Image> Images { get; set; } = new List<Image>();
 
     /// <summary>
     /// Валидна ли часть

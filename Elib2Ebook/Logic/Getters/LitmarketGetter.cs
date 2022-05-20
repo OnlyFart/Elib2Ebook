@@ -57,7 +57,7 @@ public class LitmarketGetter : GetterBase {
             
         var blocks = await GetBlocks(content.Book.EbookId);
 
-        var title = Normalize(doc.GetTextBySelector("h1.card-title"));
+        var title = doc.GetTextBySelector("h1.card-title").ReplaceNewLine();
         var book = new Book(url.ReplaceHost(SystemUrl.Host)) {
             Cover = await GetCover(doc, url),
             Chapters = await FillChapters(GetToc(content, title), blocks, url, content.Book.EbookId),
@@ -87,8 +87,8 @@ public class LitmarketGetter : GetterBase {
     private Author GetAuthor(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("div.card-author a");
         return a == default ? 
-            new Author(Normalize(doc.GetTextBySelector("div.card-author").Replace("Автор:", ""))) : 
-            new Author(Normalize(a.GetTextBySelector()), new Uri(url, a.Attributes["href"].Value).ReplaceHost(SystemUrl.Host));
+            new Author(doc.GetTextBySelector("div.card-author").Replace("Автор:", "").ReplaceNewLine()): 
+            new Author(a.GetTextBySelector().ReplaceNewLine(), new Uri(url, a.Attributes["href"].Value).ReplaceHost(SystemUrl.Host));
     }
     
     /// <summary>
@@ -114,10 +114,6 @@ public class LitmarketGetter : GetterBase {
         } catch {
             throw new Exception("Не удалось авторизоваться");
         }
-    }
-
-    private static string Normalize(string str) {
-        return Regex.Replace(str, "\t|\n", " ").CollapseWhitespace().Trim();
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {

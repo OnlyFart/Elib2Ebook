@@ -12,6 +12,7 @@
 * https://litmarket.ru/
 * https://litmir.me/
 * https://litnet.com/
+* https://litres.ru/
 * https://prodaman.ru/
 * https://ranobe-novels.ru/
 * https://ranobehub.org/

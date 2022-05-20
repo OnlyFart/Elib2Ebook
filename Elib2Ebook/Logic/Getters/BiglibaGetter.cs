@@ -69,7 +69,7 @@ public class BiglibaGetter : GetterBase{
             }
 
             var doc = content.AsHtmlDoc();
-            chapter.Title = Normalize(doc.GetTextBySelector("h1.capter-title") ?? title);
+            chapter.Title = (doc.GetTextBySelector("h1.capter-title") ?? title).ReplaceNewLine();
 
             doc.RemoveNodes("h1");
             chapter.Images = await GetImages(doc, uri);
@@ -82,10 +82,6 @@ public class BiglibaGetter : GetterBase{
         }
 
         return result;
-    }
-    
-    private static string Normalize(string str) {
-        return Regex.Replace(str, "\t|\n", " ").CollapseWhitespace().Trim();
     }
 
     private async Task<string> GetChapter(string bookId, string id, string token) {

@@ -40,17 +40,22 @@ public class AuthorTodayGetter : GetterBase {
         Console.WriteLine($"Загружаю книгу {bookUri.ToString().CoverQuotes()}"); 
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(bookUri);
 
-        var author = doc.QuerySelector("div.book-authors a");
+        
         var book = new Book(bookUri) {
             Cover = await GetCover(doc, bookUri),
             Chapters = await FillChapters(bookId, GetUserId(doc)),
             Title = doc.GetTextBySelector("h1"),
-            Author = new Author(author.GetTextBySelector(), new Uri(url, author.Attributes["href"]?.Value ?? string.Empty)),
+            Author = GetAuthor(doc, url),
             Annotation = doc.QuerySelector("div.rich-content")?.InnerHtml,
             Seria = GetSeria(doc)
         };
         
         return book;
+    }
+
+    private static Author GetAuthor(HtmlDocument doc, Uri url) {
+        var author = doc.QuerySelector("div.book-authors a");
+        return new Author(author.GetTextBySelector(), new Uri(url, author.Attributes["href"]?.Value ?? string.Empty));
     }
 
     private static Seria GetSeria(HtmlDocument doc) {

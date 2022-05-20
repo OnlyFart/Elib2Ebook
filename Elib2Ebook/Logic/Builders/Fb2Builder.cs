@@ -78,7 +78,7 @@ public class Fb2Builder : BuilderBase {
 
     private XElement CreateTitle(string text) {
         var p = CreateXElement("p");
-        p.Value = text.HtmlDecode();
+        p.Value = text.HtmlDecode().ReplaceNewLine();
             
         var title = CreateXElement("title");
             
@@ -122,7 +122,7 @@ public class Fb2Builder : BuilderBase {
     /// <returns></returns>
     public override BuilderBase WithTitle(string title) {
         var bookTitle = CreateXElement("book-title");
-        bookTitle.Value = title;
+        bookTitle.Value = title.ReplaceNewLine();
 
         _titleInfo.Add(bookTitle);
         _body.Add(CreateTitle(title));
