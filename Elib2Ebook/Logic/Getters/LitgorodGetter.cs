@@ -71,7 +71,8 @@ public class LitgorodGetter : GetterBase {
     
     private async Task<HtmlDocument> GetChapter(string chapterId, string bookId) {
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://litgorod.ru/books/read/{bookId}?chapter={chapterId}"));
-        var pages = int.Parse(doc.QuerySelectorAll("ul.reader__pagen__ul__wrap li").Last().InnerText);
+        var li = doc.QuerySelectorAll("ul.reader__pagen__ul__wrap li");
+        var pages = int.Parse(li.Count > 0 ? li.Last().InnerText : "1");
 
         var sb = new StringBuilder();
         for (var i = 1; i <= pages; i++) {
