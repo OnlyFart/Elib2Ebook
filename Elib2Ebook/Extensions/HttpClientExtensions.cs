@@ -8,54 +8,59 @@ namespace Elib2Ebook.Extensions;
 
 public static class HttpClientExtensions {
     private const int MAX_TRY_COUNT = 5;
-        
-    public static async Task<HttpResponseMessage> GetWithTriesAsync(this HttpClient client, Uri url) {
+    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(1);
+
+    private static TimeSpan GetTimeout(TimeSpan errorTimeout) {
+        return errorTimeout == default ? DefaultTimeout : errorTimeout;
+    }
+    
+    public static async Task<HttpResponseMessage> GetWithTriesAsync(this HttpClient client, Uri url, TimeSpan errorTimeout = default) {
         for (var i = 0; i < MAX_TRY_COUNT; i++) {
             try { 
                 var response = await client.GetAsync(url);
 
                 if (response.StatusCode != HttpStatusCode.OK) {
-                    await Task.Delay(i * 500);
+                    await Task.Delay(GetTimeout(errorTimeout));
                     continue;
                 }
 
                 return response;
             } catch (Exception ex) {
                 Console.WriteLine(ex);
-                await Task.Delay(i * 1000);
+                await Task.Delay(GetTimeout(errorTimeout));
             }
         }
 
         return default;
     }
 
-    public static async Task<HttpResponseMessage> SendWithTriesAsync(this HttpClient client, Func<HttpRequestMessage> message) {
+    public static async Task<HttpResponseMessage> SendWithTriesAsync(this HttpClient client, Func<HttpRequestMessage> message, TimeSpan errorTimeout = default) {
         for (var i = 0; i < MAX_TRY_COUNT; i++) {
             try { 
                 var response = await client.SendAsync(message());
 
                 if (response.StatusCode != HttpStatusCode.OK) {
-                    await Task.Delay(i * 500);
+                    await Task.Delay(GetTimeout(errorTimeout));
                     continue;
                 }
 
                 return response;
             } catch (Exception ex) {
                 Console.WriteLine(ex);
-                await Task.Delay(i * 1000);
+                await Task.Delay(GetTimeout(errorTimeout));
             }
         }
 
         return default;
     }
         
-    public static async Task<HttpResponseMessage> PostWithTriesAsync(this HttpClient client, Uri url, HttpContent content) {
+    public static async Task<HttpResponseMessage> PostWithTriesAsync(this HttpClient client, Uri url, HttpContent content, TimeSpan errorTimeout = default) {
         for (var i = 0; i < MAX_TRY_COUNT; i++) {
             try { 
                 var response = await client.PostAsync(url, content);
 
                 if (response.StatusCode != HttpStatusCode.OK) {
-                    await Task.Delay(100);
+                    await Task.Delay(GetTimeout(errorTimeout));
                     if (i == MAX_TRY_COUNT - 1) {
                         return response;
                     }
@@ -66,7 +71,7 @@ public static class HttpClientExtensions {
                 return response;
             } catch (Exception ex) {
                 Console.WriteLine(ex);
-                await Task.Delay(i * 3000);
+                await Task.Delay(GetTimeout(errorTimeout));
             }
         }
 

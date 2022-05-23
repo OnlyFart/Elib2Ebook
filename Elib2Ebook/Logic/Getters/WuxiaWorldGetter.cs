@@ -85,8 +85,9 @@ public class WuxiaWorldGetter : GetterBase {
         
         while (response == default || response.StatusCode == HttpStatusCode.ServiceUnavailable) {
             Console.WriteLine("Получили бан от системы. Жду...");
-            await Task.Delay(TimeSpan.FromSeconds(30));
-            response = await _config.Client.GetWithTriesAsync(url);
+            var errorTimeout = TimeSpan.FromSeconds(30);
+            response = await _config.Client.GetWithTriesAsync(url, errorTimeout);
+            await Task.Delay(errorTimeout);
         }
         
         return await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
