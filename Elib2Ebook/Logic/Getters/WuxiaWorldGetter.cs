@@ -80,13 +80,13 @@ public class WuxiaWorldGetter : GetterBase {
     }
     
     private async Task<HtmlDocument> GetSafety(Uri url) {
-        var response = await _config.Client.GetAsync(url);
+        var response = await _config.Client.GetWithTriesAsync(url);
         await Task.Delay(TimeSpan.FromSeconds(1));
         
-        while (response.StatusCode == HttpStatusCode.ServiceUnavailable) {
+        while (response == default || response.StatusCode == HttpStatusCode.ServiceUnavailable) {
             Console.WriteLine("Получили бан от системы. Жду...");
             await Task.Delay(TimeSpan.FromSeconds(30));
-            response = await _config.Client.GetAsync(url);
+            response = await _config.Client.GetWithTriesAsync(url);
         }
         
         return await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
