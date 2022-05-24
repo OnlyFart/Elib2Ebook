@@ -18,6 +18,10 @@ public class LitexitGetter : GetterBase {
     public LitexitGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://litexit.ru/");
 
+    protected override string GetId(Uri url) {
+        return url.Segments[2].Trim('/');
+    }
+
     public override async Task Authorize() {
         if (!_config.HasCredentials) {
             return;
