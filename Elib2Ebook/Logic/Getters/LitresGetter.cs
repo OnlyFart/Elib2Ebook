@@ -76,7 +76,17 @@ public class LitresGetter : GetterBase {
         return new FormUrlEncodedContent(d);
     }
 
+    private static Uri GetMainUrl(Uri url) {
+        var art = url.GetQueryParameter("art");
+        if (!string.IsNullOrWhiteSpace(art)) {
+            return new Uri($"https://www.litres.ru/{art}");
+        }
+
+        return url;
+    }
+
     public override async Task<Book> Get(Uri url) {
+        url = GetMainUrl(url);
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
         var bookId = GetId(new Uri(doc.QuerySelector("meta[property=al:ios:url]").Attributes["content"].Value));
 
