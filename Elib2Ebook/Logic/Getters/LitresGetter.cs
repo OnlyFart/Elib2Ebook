@@ -78,11 +78,7 @@ public class LitresGetter : GetterBase {
 
     private static Uri GetMainUrl(Uri url) {
         var art = url.GetQueryParameter("art");
-        if (!string.IsNullOrWhiteSpace(art)) {
-            return new Uri($"https://www.litres.ru/{art}");
-        }
-
-        return url;
+        return string.IsNullOrWhiteSpace(art) ? url : new Uri($"https://www.litres.ru/{art}");
     }
 
     public override async Task<Book> Get(Uri url) {
