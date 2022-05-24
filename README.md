@@ -8,6 +8,7 @@
 * https://dark-novels.ru/
 * https://ficbook.net/
 * https://jaomix.ru/
+* https://litexit.ru/
 * https://litgorod.ru/
 * https://litmarket.ru/
 * https://litmir.me/
