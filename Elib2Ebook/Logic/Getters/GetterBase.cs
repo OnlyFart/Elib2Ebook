@@ -58,7 +58,7 @@ public abstract class GetterBase : IDisposable {
     /// <param name="baseUri"></param>
     protected async Task<IEnumerable<Image>> GetImages(HtmlDocument doc, Uri baseUri) {
         var images = new List<Image>();
-        foreach (var img in doc.QuerySelectorAll("img")) {
+        foreach (var img in doc.QuerySelectorAll("img, image")) {
             var path = img.Attributes["src"]?.Value ?? img.Attributes["data-src"]?.Value;
             if (string.IsNullOrWhiteSpace(path)) {
                 img.Remove();
