@@ -24,7 +24,7 @@ internal static class Program {
                     AutomaticDecompression = DecompressionMethods.GZip | 
                                              DecompressionMethods.Deflate |
                                              DecompressionMethods.Brotli,
-                    ServerCertificateCustomValidationCallback = (_, _, _, _) => true
+                    ServerCertificateCustomValidationCallback = (_, _, _, _) => true,
                 };
 
                 if (!string.IsNullOrEmpty(options.Proxy)) {
@@ -33,6 +33,7 @@ internal static class Program {
                 }
 
                 var client = new HttpClient(handler);
+                client.Timeout = TimeSpan.FromSeconds(5);
 
                 var getterConfig = new BookGetterConfig(options, client);
                 using var getter = GetGetter(getterConfig, new Uri(options.Url.First()));
