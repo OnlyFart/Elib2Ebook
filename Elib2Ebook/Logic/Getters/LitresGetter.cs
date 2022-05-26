@@ -105,7 +105,7 @@ public class LitresGetter : GetterBase {
     }
     
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
-        var imagePath = doc.QuerySelector("meta[property=og:image]")?.Attributes["content"]?.Value;
+        var imagePath = (doc.QuerySelector("meta[property=og:image]")?.Attributes["content"] ?? doc.QuerySelector("img[itemprop=image]")?.Attributes["data-src"])?.Value;
         return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
     }
 
