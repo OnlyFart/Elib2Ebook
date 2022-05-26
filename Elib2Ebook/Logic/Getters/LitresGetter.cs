@@ -84,7 +84,7 @@ public class LitresGetter : GetterBase {
     public override async Task<Book> Get(Uri url) {
         url = GetMainUrl(url);
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
-        var bookId = GetId(new Uri(doc.QuerySelector("meta[property=al:ios:url]").Attributes["content"].Value));
+        var bookId = doc.QuerySelector("input[name=art]").Attributes["value"].Value;
 
         var title = doc.GetTextBySelector("h1");
         
@@ -119,7 +119,7 @@ public class LitresGetter : GetterBase {
             }
             
             var chapter = new Chapter {
-                Title = section.GetTextBySelector("title") ?? title
+                Title = (section.GetTextBySelector("title") ?? title).ReplaceNewLine()
             };
             
             section.RemoveNodes("title, note, clipped");
