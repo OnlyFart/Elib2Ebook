@@ -83,11 +83,14 @@ public class LitgorodGetter : GetterBase {
     }
 
     private static Seria GetSeria(HtmlDocument doc) {
-        var circle = doc.GetTextBySelector("p.info_desciption--circle");
-        if (!string.IsNullOrWhiteSpace(circle)) {
-            return new Seria {
-                Name = circle[4..].Trim()
-            };
+        var text = doc.GetTextBySelector("p.info_desciption--circle");
+        if (!string.IsNullOrWhiteSpace(text) && text.StartsWith("Цикл")) {
+            var circleName = text[4..].Trim();
+            if (!string.IsNullOrWhiteSpace(circleName)) {
+                return new Seria {
+                    Name = circleName
+                };
+            }
         }
 
         return default;
