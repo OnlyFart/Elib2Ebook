@@ -2,6 +2,7 @@
 Инструмент для сохранения любой доступной книги со следующих сайтов в форматах epub или fb2:
 * https://author.today/
 * https://bigliba.com/
+* https://bookinbook.ru/
 * https://booknet.com/
 * https://bookstab.ru/
 * https://bookriver.ru/
@@ -14,6 +15,7 @@
 * https://litmir.me/
 * https://litnet.com/
 * https://litres.ru/
+* https://online-knigi.com.ua/
 * https://prodaman.ru/
 * https://ranobe-novels.ru/
 * https://ranobehub.org/
