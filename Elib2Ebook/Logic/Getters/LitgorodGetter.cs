@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
 using Elib2Ebook.Types.Common;
+using Elib2Ebook.Types.Litgorod;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 
@@ -30,6 +33,48 @@ public class LitgorodGetter : GetterBase {
         };
             
         return book;
+    }
+
+    public override async Task Init() {
+        var response = await _config.Client.GetWithTriesAsync(new Uri("https://litgorod.ru/"));
+        var doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
+        
+        var csrf = doc.QuerySelector("[name=csrf-token]")?.Attributes["content"]?.Value;
+        if (string.IsNullOrWhiteSpace(csrf)) {
+            throw new ArgumentException("Не удалось получить csrf-token", nameof(csrf));
+        }
+            
+        var cookies = response.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value;
+        var xsrfCookie = cookies.FirstOrDefault(c => c.StartsWith("XSRF-TOKEN="));
+        if (xsrfCookie == null) {
+            throw new ArgumentException("Не удалось получить XSRF-TOKEN", nameof(xsrfCookie));
+        }
+            
+        var xsrf = HttpUtility.UrlDecode(xsrfCookie.Split(";")[0].Replace("XSRF-TOKEN=", ""));
+        
+        _config.Client.DefaultRequestHeaders.Add("Accept", "application/json, text/plain, */*");
+        _config.Client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+        _config.Client.DefaultRequestHeaders.Add("X-CSRF-TOKEN", csrf);
+        _config.Client.DefaultRequestHeaders.Add("X-XSRF-TOKEN", xsrf);
+    }
+
+    public override async Task Authorize() {
+        if (!_config.HasCredentials) {
+            return;
+        }
+
+        var payload = new {
+            email = _config.Login,
+            password = _config.Password
+        };
+
+        var response = await _config.Client.PostAsJsonAsync(new Uri("https://litgorod.ru/login"), payload);
+        var data = await response.Content.ReadFromJsonAsync<LitgorodAuthResponse>();
+        if (string.IsNullOrWhiteSpace(data?.Message)) {
+            Console.WriteLine("Успешно авторизовались");
+        } else {
+            throw new Exception($"Не удалось авторизоваться. {data.Message}");
+        }
     }
 
     private static Author GetAuthor(HtmlDocument doc, Uri url) {
