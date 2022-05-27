@@ -12,7 +12,7 @@ namespace Elib2Ebook.Logic.Getters;
 
 public class OnlineKnigiGetter : GetterBase {
     public OnlineKnigiGetter(BookGetterConfig config) : base(config) { }
-    protected override Uri SystemUrl => new Uri("https://online-knigi.com.ua/");
+    protected override Uri SystemUrl => new("https://online-knigi.com.ua/");
 
     protected override string GetId(Uri url) {
         return url.Segments[2].Trim('/');

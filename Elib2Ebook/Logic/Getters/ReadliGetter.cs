@@ -23,13 +23,11 @@ public class ReadliGetter : GetterBase {
         var href = new Uri(url, imageDiv.QuerySelector("a").Attributes["href"].Value);
         var bookId = GetBookId(href);
             
-        var name = doc.GetTextBySelector("h1.main-info__title");
-        doc.QuerySelector("a.main-info__link");
-            
+        var title = doc.GetTextBySelector("h1.main-info__title");
         var book = new Book(url) {
             Cover = await GetCover(imageDiv, url),
-            Chapters = await FillChapters(bookId, pages, name),
-            Title = name,
+            Chapters = await FillChapters(bookId, pages, title),
+            Title = title,
             Author = GetAuthor(doc, url),
             Annotation = doc.QuerySelector("article.seo__content")?.RemoveNodes("h2")?.InnerHtml,
             Seria = GetSeria(doc)
