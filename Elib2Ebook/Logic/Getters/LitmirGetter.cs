@@ -33,13 +33,40 @@ public class LitmirGetter : GetterBase {
             Chapters = await FillChapters(bookId, pages, name),
             Title = name,
             Author = new Author(doc.QuerySelector("span[itemprop=author] meta")?.Attributes["content"]?.Value ?? "Litmir"),
-            Annotation = doc.QuerySelector("div[itemprop=description]")?.InnerHtml
+            Annotation = doc.QuerySelector("div[itemprop=description]")?.InnerHtml,
+            Seria = GetSeria(doc)
         };
             
         return book; 
     }
     
+    private static Seria GetSeria(HtmlDocument doc) {
+        var a = doc.QuerySelector("td.bd_desc2 a[href^=/books_in_series/]");
+        if (a != default) {
+            var text = a.GetTextBySelector();
+            if (!string.IsNullOrWhiteSpace(text)) {
+                var seria = new Seria();
+                if (text.Contains('#')) {
+                    var split = text.Split("#");
+                    if (int.TryParse(split.Last(), out var number)) {
+                        seria.Number = number.ToString();
+                        seria.Name = split[0].Trim();
+                    } else {
+                        seria.Name = text;
+                    }
+                } else {
+                    seria.Name = text;
+                }
+                
+                return seria;
+            }
+            
+            
+        }
 
+        return default;
+    }
+    
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
         var imagePath = doc.QuerySelector("img[jq=BookCover]")?.Attributes["src"]?.Value;
         return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
