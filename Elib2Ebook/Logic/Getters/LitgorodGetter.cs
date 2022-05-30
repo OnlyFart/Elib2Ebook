@@ -19,13 +19,12 @@ public class LitgorodGetter : GetterBase {
     public LitgorodGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://litgorod.ru/");
     public override async Task<Book> Get(Uri url) {
-        var bookId = GetId(url);
-        var uri = new Uri($"https://litgorod.ru/books/view/{bookId}");
+        var uri = new Uri($"https://litgorod.ru/books/view/{GetId(url)}");
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
 
         var book = new Book(uri) {
             Cover = await GetCover(doc, uri),
-            Chapters = await FillChapters(uri, bookId),
+            Chapters = await FillChapters(doc, uri),
             Title = doc.GetTextBySelector("p.info_title"),
             Author = GetAuthor(doc, uri),
             Annotation = doc.QuerySelector("div.annotation_footer--content p.item_info")?.InnerHtml,
@@ -98,19 +97,19 @@ public class LitgorodGetter : GetterBase {
         return default;
     }
     
-    private async Task<IEnumerable<Chapter>> FillChapters(Uri uri, string bookId) {
+    private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri uri) {
         var result = new List<Chapter>();
 
-        foreach (var bookChapter in await GetChapters(bookId)) {
+        foreach (var bookChapter in GetToc(doc, uri)) {
             var chapter = new Chapter();
             Console.WriteLine($"Загружаю главу {bookChapter.Title.CoverQuotes()}");
             
-            var doc = await GetChapter(bookChapter.Id, bookId);
+            var chapterDoc = await GetChapter(bookChapter.Url);
 
-            if (doc != default) {
+            if (chapterDoc != default) {
                 chapter.Title = bookChapter.Title;
-                chapter.Images = await GetImages(doc, uri);
-                chapter.Content = doc.DocumentNode.InnerHtml;
+                chapter.Images = await GetImages(chapterDoc, uri);
+                chapter.Content = chapterDoc.DocumentNode.InnerHtml;
 
                 result.Add(chapter);
             }
@@ -119,8 +118,8 @@ public class LitgorodGetter : GetterBase {
         return result;
     }
     
-    private async Task<HtmlDocument> GetChapter(string chapterId, string bookId) {
-        var response = await _config.Client.GetWithTriesAsync(new Uri($"https://litgorod.ru/books/read/{bookId}?chapter={chapterId}"));
+    private async Task<HtmlDocument> GetChapter(Uri url) {
+        var response = await _config.Client.GetWithTriesAsync(url);
         if (response == default) {
             return default;
         }
@@ -131,19 +130,17 @@ public class LitgorodGetter : GetterBase {
 
         var sb = new StringBuilder();
         for (var i = 1; i <= pages; i++) {
-            doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://litgorod.ru/books/read/{bookId}?chapter={chapterId}&page={i}"));
+            doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(url + $"&page={i}"));
             sb.Append(doc.QuerySelector("div.reader__content__wrap").RemoveNodes("div.reader__content__title").InnerHtml.HtmlDecode());
         }
 
         return sb.AsHtmlDoc();
     }
 
-    private async Task<IEnumerable<IdChapter>> GetChapters(string bookId) {
-        var uri = new Uri($"https://litgorod.ru/books/read/{bookId}");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
+    private static IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
         return doc
-            .QuerySelectorAll("div.select__block ul.select__list li")
-            .Select((l, i) => new IdChapter((i + 1).ToString(), l.InnerText.Trim()));
+            .QuerySelectorAll("div.item-2 ul a")
+            .Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetTextBySelector()));
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
