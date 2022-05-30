@@ -16,12 +16,14 @@
 * https://litnet.com/
 * https://litres.ru/
 * https://online-knigi.com.ua/
+* https://novelxo.com/
 * https://prodaman.ru/
 * https://ranobe-novels.ru/
 * https://ranobehub.org/
 * https://ranobelib.me/
 * https://ranobes.com/
 * https://readli.net/
+* https://ru.novelxo.com/
 * http://samlib.ru/
 * https://tl.rulate.ru/
 * https://twilightrussia.ru/
