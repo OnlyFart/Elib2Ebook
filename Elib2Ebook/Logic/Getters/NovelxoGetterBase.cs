@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
@@ -55,11 +57,16 @@ public abstract class NovelxoGetterBase : GetterBase {
             var sb = new StringBuilder();
             doc = await _config.Client.GetHtmlDocWithTriesAsync(start);
 
-            foreach (var node in doc.QuerySelector("div.readerbody-wg").ChildNodes) {
+            var container = doc.QuerySelector("div.readerbody-wg");
+            foreach (var node in container.QuerySelectorAll("p, div.ctp")) {
                 if (node.Name == "p") {
                     sb.Append($"<p>{node.InnerHtml.HtmlDecode()}</p>");
                 } else if (node.Name == "div" && node.Attributes["class"]?.Value?.Contains("ctp") == true) {
-                    sb.Append(Decode(node.InnerText).HtmlDecode());
+                    if (node.Attributes["class"].Value.Contains("protected")) {
+                        sb.Append(await GetProtected(doc, node));
+                    } else {
+                        sb.Append(Encoding.UTF8.GetString(Transform(Convert.FromBase64String(node.InnerText), Key, IV)).HtmlDecode());
+                    }
                 }
             }
 
@@ -80,6 +87,32 @@ public abstract class NovelxoGetterBase : GetterBase {
 
             start = new Uri(start, next.Attributes["href"].Value);
         }
+    }
+    
+    private async Task<string> GetProtected(HtmlDocument doc, HtmlNode node) {
+        var id = node.Attributes["data-id"].Value;
+        var header = Regex.Match(doc.ParsedText, @"http.setRequestHeader\((?<name>.*?), '(?<value>.*?)'");
+        
+        var headerName = Regex.Match(doc.ParsedText, $"{header.Groups["name"].Value} = \'(?<id>.*?)\'").Groups["id"].Value;
+        var headerValue = header.Groups["value"].Value;
+        var key = StringToByteArray(Regex.Match(doc.ParsedText, "signKey = \'(?<id>.*?)\'").Groups["id"].Value);
+
+        var encode = Transform(Encoding.UTF8.GetBytes(id), key, IV);
+
+        var url = new Uri($"https://a.novelxo.com/v1/chapters/{id}/ctp?width=1140&sign=932870{Atob(Convert.ToBase64String(encode))}182906");
+        var message = new HttpRequestMessage(HttpMethod.Get, url);
+        message.Headers.Add(headerName, headerValue);
+        message.Headers.Add("referer", $"https://{SystemUrl.Host}/");
+
+        var response = await _config.Client.SendAsync(message);
+        var readAsStringAsync = await response.Content.ReadAsStringAsync();
+        var result = Encoding.UTF8.GetString(Transform(Convert.FromBase64String(readAsStringAsync.Trim('\"')), Key, IV)).HtmlDecode();
+
+        return result;
+    }
+
+    private static string Atob(string toEncode) {
+        return Convert.ToBase64String(Encoding.GetEncoding(28591).GetBytes(toEncode));
     }
 
     private static string GetAnnotation(HtmlDocument doc) {
@@ -143,13 +176,12 @@ public abstract class NovelxoGetterBase : GetterBase {
         }
     }
 
-    private static string Decode(string encode) {
-        using var outputEncryptedStream = new MemoryStream(Convert.FromBase64String(encode));
+    private static byte[] Transform(byte[] str, byte[] key, byte[] iv) {
+        using var outputEncryptedStream = new MemoryStream(str);
         using var outputDecryptedStream = new MemoryStream();
-        AesCtrTransform(Key, IV, outputEncryptedStream, outputDecryptedStream);
+        AesCtrTransform(key, iv, outputEncryptedStream, outputDecryptedStream);
 
         outputDecryptedStream.Position = 0;
-        using var reader = new StreamReader(outputDecryptedStream);
-        return reader.ReadToEnd().HtmlDecode();
+        return outputDecryptedStream.ToArray();
     }
 }
