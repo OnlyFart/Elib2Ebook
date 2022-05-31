@@ -98,7 +98,7 @@ public class SamlibGetter : GetterBase {
             }
         }
 
-        return origin[start..stop];
+        return origin[start..stop].HtmlDecode();
     }
 
     private async Task<Chapter> GetChapter(UrlChapter urlChapter) {
@@ -122,14 +122,14 @@ public class SamlibGetter : GetterBase {
             var htmlDoc = line.AsHtmlDoc();
             foreach (var node in htmlDoc.DocumentNode.ChildNodes) {
                 if (!string.IsNullOrWhiteSpace(node.InnerText) || node.QuerySelector("img") != null) {
-                    text.Append($"<p>{node.InnerHtml.Trim()}</p>");
+                    text.Append($"<p>{node.InnerHtml.HtmlDecode().Trim()}</p>");
                 }
             }
         }
             
         var chapterDoc = text.AsHtmlDoc();
         chapter.Images = await GetImages(chapterDoc, urlChapter.Url);
-        chapter.Content = chapterDoc.DocumentNode.InnerHtml.Replace("&#x0;", "[0x00]").Replace("\x00", "[0x00]");
+        chapter.Content = chapterDoc.DocumentNode.InnerHtml;
         chapter.Title = urlChapter.Title;
 
         return chapter;
