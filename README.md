@@ -8,6 +8,7 @@
 * https://bookriver.ru/
 * https://dark-novels.ru/
 * https://ficbook.net/
+* https://ifreedom.su/
 * https://jaomix.ru/
 * https://libbox.ru/
 * https://litexit.ru/
