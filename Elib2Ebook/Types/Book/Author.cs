@@ -6,12 +6,12 @@ public class Author {
     /// <summary>
     /// Имя автора
     /// </summary>
-    public string Name;
+    public string Name { get; set; }
 
     /// <summary>
     /// Url профиля автора
     /// </summary>
-    public Uri Url;
+    public Uri Url { get; set; }
 
     public Author(string name, Uri url = null) {
         Name = name;

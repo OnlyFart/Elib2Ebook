@@ -54,6 +54,7 @@ internal static class Program {
         return format switch {
             "fb2" => Fb2Builder.Create(),
             "epub" => EpubBuilder.Create(File.ReadAllText("Patterns/ChapterPattern.xhtml")),
+            "json" => JsonBuilder.Create(),
             _ => throw new ArgumentException("Неизвестный формат", nameof(format))
         };
     }

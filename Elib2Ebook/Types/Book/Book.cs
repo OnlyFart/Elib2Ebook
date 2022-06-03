@@ -11,12 +11,12 @@ public class Book {
     /// <summary>
     /// Название книги
     /// </summary>
-    public string Title { get; init; }
+    public string Title { get; set; }
         
     /// <summary>
     /// Автор книги
     /// </summary>
-    public Author Author { get; init; }
+    public Author Author { get; set; }
     
     /// <summary>
     /// Описание книги
@@ -26,7 +26,7 @@ public class Book {
     /// <summary>
     /// Обложка
     /// </summary>
-    public Image Cover { get; init; }
+    public Image Cover { get; set; }
     
     /// <summary>
     /// Серия
@@ -36,7 +36,7 @@ public class Book {
     /// <summary>
     /// Части
     /// </summary>
-    public IEnumerable<Chapter> Chapters { get; init; } = new List<Chapter>();
+    public IEnumerable<Chapter> Chapters { get; set; } = new List<Chapter>();
 
     /// <summary>
     /// Url расположения книги
