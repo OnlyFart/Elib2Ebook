@@ -56,7 +56,8 @@ public class JsonBuilder : BuilderBase {
     }
 
     protected override void BuildInternal(string name) {
-        File.WriteAllText(name, JsonSerializer.Serialize(_book));
+        using var file = File.Create(name);
+        JsonSerializer.Serialize(file, _book);
     }
 
     protected override string GetFileName(string name) {
