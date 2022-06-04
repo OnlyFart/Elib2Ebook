@@ -144,7 +144,8 @@ public class LitmarketGetter : GetterBase {
         var result = new List<Chapter>();
 
         for (var i = 0; i < toc.Count; i++) {
-            Console.WriteLine($"Загружаю главу {toc[i].Chunk.Mods[0].Text.Trim().CoverQuotes()}");
+            var chapterTitle = string.IsNullOrWhiteSpace(toc[i].Chunk.Mods[0].Text.Trim()) ? "Без названия" : toc[i].Chunk.Mods[0].Text.Trim();
+            Console.WriteLine($"Загружаю главу {chapterTitle.CoverQuotes()}");
             var text = new StringBuilder();
             var chapter = new Chapter();
 
@@ -171,7 +172,7 @@ public class LitmarketGetter : GetterBase {
             var chapterDoc = text.AsHtmlDoc();
             chapter.Images = await GetImages(chapterDoc, bookUri);
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;
-            chapter.Title = toc[i].Chunk.Mods[0].Text.Trim();
+            chapter.Title = chapterTitle;
 
             result.Add(chapter);
         }
