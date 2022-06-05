@@ -20,15 +20,15 @@ public class OnlineKnigiGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
-        var uri = new Uri($"https://online-knigi.com.ua/kniga/{bookId}");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
+        url = new Uri($"https://online-knigi.com.ua/kniga/{bookId}");
+        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
 
         var title = doc.GetTextBySelector("h1");
-        var book = new Book(uri) {
-            Cover = await GetCover(doc, uri),
+        var book = new Book(url) {
+            Cover = await GetCover(doc, url),
             Chapters = await FillChapters(bookId, title),
             Title = title,
-            Author = GetAuthor(doc, uri),
+            Author = GetAuthor(doc, url),
             Annotation = doc.QuerySelector("div.book_description")?.InnerHtml,
         };
             

@@ -15,11 +15,11 @@ public class TwilightRussiaGetter : GetterBase {
     protected override Uri SystemUrl => new("https://twilightrussia.ru/");
     public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);
-        var bookId = GetId(url);
-        url = new Uri($"https://twilightrussia.ru/forum/{bookId}");
+        url = new Uri($"https://twilightrussia.ru/forum/{GetId(url)}");
+        
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
 
-        var book = new Book(url){
+        var book = new Book(url) {
             Cover = null,
             Chapters = await FillChapters(doc, url),
             Title = doc.GetTextBySelector("a.forumBarA"),

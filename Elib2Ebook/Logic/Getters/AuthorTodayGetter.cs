@@ -35,14 +35,14 @@ public class AuthorTodayGetter : GetterBase {
     /// <exception cref="Exception"></exception>
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
-
-        var bookUri = new Uri($"https://author.today/work/{bookId}");
-        Console.WriteLine($"Загружаю книгу {bookUri.ToString().CoverQuotes()}"); 
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(bookUri);
+        
+        url = new Uri($"https://author.today/work/{bookId}");
+        Console.WriteLine($"Загружаю книгу {url.ToString().CoverQuotes()}"); 
+        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
 
         
-        var book = new Book(bookUri) {
-            Cover = await GetCover(doc, bookUri),
+        var book = new Book(url) {
+            Cover = await GetCover(doc, url),
             Chapters = await FillChapters(bookId, GetUserId(doc)),
             Title = doc.GetTextBySelector("h1"),
             Author = GetAuthor(doc, url),

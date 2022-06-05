@@ -20,12 +20,12 @@ public class RanobeNovelsGetter : GetterBase {
     protected override Uri SystemUrl => new("https://ranobe-novels.ru/");
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
-        var uri = new Uri($"https://ranobe-novels.ru/ranobe/{bookId}/");
+        url = new Uri($"https://ranobe-novels.ru/ranobe/{bookId}/");
         var doc = await GetSafety(url);
 
-        var book = new Book(uri) {
-            Cover = await GetCover(doc, uri),
-            Chapters = await FillChapters(doc, uri),
+        var book = new Book(url) {
+            Cover = await GetCover(doc, url),
+            Chapters = await FillChapters(doc, url),
             Title = doc.GetTextBySelector("h1"),
             Author = new Author("ranobe-novels")
         };

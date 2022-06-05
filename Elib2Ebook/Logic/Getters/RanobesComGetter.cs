@@ -26,13 +26,13 @@ public class RanobesComGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);
-        var bookId = GetId(url);
-        var uri = new Uri($"https://{IP}/ranobe/{bookId}.html");
-        var doc = await GetHtmlDocument(uri);
+        url = new Uri($"https://{IP}/ranobe/{GetId(url)}.html");
+        
+        var doc = await GetHtmlDocument(url);
 
-        var book = new Book(uri) {
-            Cover = await GetCover(doc, uri),
-            Chapters = await FillChapters(doc, uri),
+        var book = new Book(url) {
+            Cover = await GetCover(doc, url),
+            Chapters = await FillChapters(doc, url),
             Title = doc.QuerySelector("h1.title").FirstChild.InnerText.Trim().HtmlDecode(),
             Author = new Author(doc.GetTextBySelector("span[itemprop=creator]") ?? "Ranobes"),
             Annotation = doc.QuerySelector("div[itemprop=description]")?.RemoveNodes("style")?.InnerHtml

@@ -52,15 +52,14 @@ public class LitexitGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
-        var bookId = GetId(url);
-        var uri = new Uri($"https://litexit.ru/b/{bookId}");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
+        url = new Uri($"https://litexit.ru/b/{GetId(url)}");
+        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
         
-        var book = new Book(uri) {
-            Cover = await GetCover(doc, uri),
-            Chapters = await FillChapters(uri, doc),
+        var book = new Book(url) {
+            Cover = await GetCover(doc, url),
+            Chapters = await FillChapters(url, doc),
             Title = doc.GetTextBySelector("h1[itemprop=name]"),
-            Author = GetAuthor(doc, uri),
+            Author = GetAuthor(doc, url),
             Annotation = doc.QuerySelector("div[itemprop=description] p")?.InnerHtml,
             Seria = GetSeria(doc)
         };

@@ -18,13 +18,12 @@ public class JaomixGetter : GetterBase {
     protected override Uri SystemUrl => new("https://jaomix.ru/");
     public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);
-        var bookId = GetId(url);
-        var uri = new Uri($"https://jaomix.ru/category/{bookId}/");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
+        url = new Uri($"https://jaomix.ru/category/{GetId(url)}/");
+        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
 
-        var book = new Book(uri) {
-            Cover = await GetCover(doc, uri),
-            Chapters = await FillChapters(doc, uri),
+        var book = new Book(url) {
+            Cover = await GetCover(doc, url),
+            Chapters = await FillChapters(doc, url),
             Title = doc.GetTextBySelector("h1"),
             Author = new Author("Jaomix")
         };

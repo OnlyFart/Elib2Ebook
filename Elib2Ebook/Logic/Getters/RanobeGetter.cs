@@ -23,13 +23,13 @@ public class RanobeGetter : GetterBase {
         
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
-        var uri = new Uri($"https://ранобэ.рф/{bookId}");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
+        url = new Uri($"https://ранобэ.рф/{bookId}");
+        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
 
         var ranobeBook = GetNextData<RanobeBook>(doc, "book");
 
-        var book = new Book(uri) {
-            Cover = await GetCover(ranobeBook, uri),
+        var book = new Book(url) {
+            Cover = await GetCover(ranobeBook, url),
             Chapters = await FillChapters(ranobeBook, url),
             Title = ranobeBook.Title,
             Author = new Author(ranobeBook.Author ?? "Ranobe")

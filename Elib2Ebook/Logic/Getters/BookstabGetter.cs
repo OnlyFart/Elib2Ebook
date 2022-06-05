@@ -21,13 +21,13 @@ public class BookstabGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
-        var uri = new Uri($"https://bookstab.ru/book/{bookId}");
+        url = new Uri($"https://bookstab.ru/book/{bookId}");
         var response = await _config.Client.GetWithTriesAsync(new Uri($"https://api.bookstab.ru/api/reader-get/{bookId}"));
         var data = await response.Content.ReadFromJsonAsync<BookstabApiResponse>();
 
-        var book = new Book(uri) {
+        var book = new Book(url) {
             Cover = await GetCover(data),
-            Chapters = await FillChapters(data, uri, bookId),
+            Chapters = await FillChapters(data, url, bookId),
             Title = data?.Book.Title,
             Author = GetAuthor(data),
             Annotation = GetAnnotation(data?.Book)

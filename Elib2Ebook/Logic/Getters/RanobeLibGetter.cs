@@ -48,16 +48,14 @@ public class RanobeLibGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
-        var bookId = GetId(url);
-        
-        var uri = new Uri($"https://{HOST}/{bookId}");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
+        url = new Uri($"https://{HOST}/{GetId(url)}");
+        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
 
         var data = GetData(doc);
 
-        var book = new Book(uri) {
-            Cover = await GetCover(doc, uri),
-            Chapters = await FillChapters(data, uri),
+        var book = new Book(url) {
+            Cover = await GetCover(doc, url),
+            Chapters = await FillChapters(data, url),
             Title = doc.QuerySelector("meta[property=og:title]").Attributes["content"].Value.Trim(),
             Author = new Author("RanobeLib")
         };

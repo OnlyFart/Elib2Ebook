@@ -19,14 +19,14 @@ public class LitgorodGetter : GetterBase {
     public LitgorodGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://litgorod.ru/");
     public override async Task<Book> Get(Uri url) {
-        var uri = new Uri($"https://litgorod.ru/books/view/{GetId(url)}");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
+        url = new Uri($"https://litgorod.ru/books/view/{GetId(url)}");
+        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
 
-        var book = new Book(uri) {
-            Cover = await GetCover(doc, uri),
-            Chapters = await FillChapters(doc, uri),
+        var book = new Book(url) {
+            Cover = await GetCover(doc, url),
+            Chapters = await FillChapters(doc, url),
             Title = doc.GetTextBySelector("p.info_title"),
-            Author = GetAuthor(doc, uri),
+            Author = GetAuthor(doc, url),
             Annotation = doc.QuerySelector("div.annotation_footer--content p.item_info")?.InnerHtml,
             Seria = GetSeria(doc)
         };

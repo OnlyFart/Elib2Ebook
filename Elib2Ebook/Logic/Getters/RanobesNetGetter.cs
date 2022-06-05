@@ -32,14 +32,13 @@ public class RanobesNetGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);
-        var bookId = GetId(url);
+        url = new Uri($"http://{HOST}/novels/{GetId(url)}.html");
         
-        var uri = new Uri($"http://{HOST}/novels/{bookId}.html");
-        var doc = await GetSafety(uri);
+        var doc = await GetSafety(url);
 
-        var book = new Book(uri.ReplaceHost(SystemUrl.Host)) {
-            Cover = await GetCover(doc, uri),
-            Chapters = await FillChapters(doc, uri),
+        var book = new Book(url.ReplaceHost(SystemUrl.Host)) {
+            Cover = await GetCover(doc, url),
+            Chapters = await FillChapters(doc, url),
             Title = doc.QuerySelector("h1.title").FirstChild.InnerText.Trim().HtmlDecode(),
             Author = new Author("Ранобэс")
         };

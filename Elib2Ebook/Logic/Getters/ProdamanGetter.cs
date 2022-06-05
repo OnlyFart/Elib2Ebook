@@ -18,11 +18,11 @@ public class ProdamanGetter : GetterBase {
     }
     protected override Uri SystemUrl => new("https://prodaman.ru/");
     
-    private static readonly Dictionary<int, char> _map = new();
+    private static readonly Dictionary<int, char> Map = new();
 
     private static void Append(string str, int start) {
-        for (int i = 0; i < str.Length; i++) {
-            _map[start + i] = str[i];
+        for (var i = 0; i < str.Length; i++) {
+            Map[start + i] = str[i];
         }
     }
     
@@ -163,7 +163,7 @@ public class ProdamanGetter : GetterBase {
     }
 
     private static string Decode(string encode) {
-        return encode.Aggregate(new StringBuilder(), (sb, c) => sb.Append(_map.GetValueOrDefault(c, c))).ToString();
+        return encode.Aggregate(new StringBuilder(), (sb, c) => sb.Append(Map.GetValueOrDefault(c, c))).ToString();
     }
 
     private async Task<IEnumerable<Chapter>> FillChapter(Uri url, string title) {

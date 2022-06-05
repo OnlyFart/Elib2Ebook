@@ -41,14 +41,14 @@ public class BookriverGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
-        var uri = new Uri($"https://bookriver.ru/book/{bookId}");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
+        url = new Uri($"https://bookriver.ru/book/{bookId}");
+        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
 
-        var book = new Book(uri) {
-            Cover = await GetCover(doc, uri),
-            Chapters = await FillChapters(uri, bookId),
+        var book = new Book(url) {
+            Cover = await GetCover(doc, url),
+            Chapters = await FillChapters(url, bookId),
             Title = doc.GetTextBySelector("h1[itemprop=name]"),
-            Author = GetAuthor(doc, uri),
+            Author = GetAuthor(doc, url),
             Annotation = doc.QuerySelector("span[itemprop=description]")?.InnerHtml,
             Seria = GetSeria(doc)
         };

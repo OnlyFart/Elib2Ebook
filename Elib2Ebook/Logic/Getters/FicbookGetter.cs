@@ -22,12 +22,12 @@ public class FicbookGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
-        var uri = new Uri($"https://ficbook.net/readfic/{bookId}");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
+        url = new Uri($"https://ficbook.net/readfic/{bookId}");
+        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
 
         var title = doc.GetTextBySelector("h1.mb-10");
-        var book = new Book(uri) {
-            Cover = await GetCover(doc, uri),
+        var book = new Book(url) {
+            Cover = await GetCover(doc, url),
             Chapters = await FillChapters(doc, url, title),
             Title = title,
             Author = new Author(doc.GetTextBySelector("a.creator-nickname"))
