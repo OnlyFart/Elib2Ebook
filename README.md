@@ -11,6 +11,7 @@
 * https://ficbook.net/
 * https://ifreedom.su/
 * https://jaomix.ru/
+* https://ladylib.top/
 * https://libbox.ru/
 * https://litexit.ru/
 * https://litgorod.ru/
