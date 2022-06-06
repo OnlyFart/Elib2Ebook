@@ -13,14 +13,18 @@ namespace Elib2Ebook.Logic.Getters;
 
 public class Fb2TopGetter : GetterBase {
     public Fb2TopGetter(BookGetterConfig config) : base(config) { }
-    protected override Uri SystemUrl => new("https://fb2.top/");
+    protected override Uri SystemUrl => null;
+
+    public override bool IsSameUrl(Uri url) {
+        return url.IsSameHost(new Uri("https://fb2.top/")) || url.IsSameHost(new Uri("https://ladylib.top/"));
+    }
 
     protected override string GetId(Uri url) {
         return url.Segments[1].Trim('/');
     }
 
     public override async Task<Book> Get(Uri url) {
-        url = new Uri($"https://fb2.top/{GetId(url)}");
+        url = new Uri($"https://{url.Host}/{GetId(url)}");
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
         
         var book = new Book(url) {

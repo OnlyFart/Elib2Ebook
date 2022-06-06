@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -14,7 +13,6 @@ using Elib2Ebook.Extensions;
 namespace Elib2Ebook.Logic.Getters; 
 
 public abstract class GetterBase : IDisposable {
-    private readonly IdnMapping _idn = new();
     protected readonly BookGetterConfig _config;
 
     protected GetterBase(BookGetterConfig config) {
@@ -28,7 +26,7 @@ public abstract class GetterBase : IDisposable {
     }
 
     public virtual bool IsSameUrl(Uri url) {
-        return string.Equals(_idn.GetAscii(SystemUrl.Host).Replace("www.", ""), _idn.GetAscii(url.Host).Replace("www.", ""), StringComparison.InvariantCultureIgnoreCase);
+        return SystemUrl.IsSameHost(url);
     }
 
     protected virtual HttpRequestMessage GetImageRequestMessage(Uri uri) {
