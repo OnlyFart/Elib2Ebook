@@ -35,12 +35,12 @@ public class LibboxGetter : GetterBase {
     
     private static Seria GetSeria(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("div.product__meta a[href*=/book-series/]");
-        if (string.IsNullOrWhiteSpace(a.GetTextBySelector())) {
+        if (string.IsNullOrWhiteSpace(a.GetText())) {
             return default;
         }
 
         return new Seria {
-            Name = a.GetTextBySelector(),
+            Name = a.GetText(),
             Url = new Uri(url, a.Attributes["href"].Value)
         };
     }
@@ -71,8 +71,8 @@ public class LibboxGetter : GetterBase {
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://libbox.ru/books/{bookId}"));
         return doc
             .QuerySelectorAll("ul.pagination a.page-numbers")
-            .Where(a => int.TryParse(a.GetTextBySelector(), out var _))
-            .Select(a => int.Parse(a.GetTextBySelector()))
+            .Where(a => int.TryParse(a.GetText(), out var _))
+            .Select(a => int.Parse(a.GetText()))
             .Max();
     }
 

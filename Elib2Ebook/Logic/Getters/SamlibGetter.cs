@@ -53,7 +53,7 @@ public class SamlibGetter : GetterBase {
             yield return new UrlChapter(url, title);
         } else {
             foreach (var a in content.AsHtmlDoc().QuerySelectorAll("li > a")) {
-                yield return new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetTextBySelector());
+                yield return new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText());
             }
         }
     }

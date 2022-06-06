@@ -68,6 +68,6 @@ public class OnlineKnigiGetter : GetterBase {
     
     private static Author GetAuthor(HtmlDocument doc, Uri uri) {
         var a = doc.QuerySelector("div[itemprop=author] a");
-        return new Author(a.GetTextBySelector(), new Uri(uri, a.Attributes["href"].Value));
+        return new Author(a.GetText(), new Uri(uri, a.Attributes["href"].Value));
     }
 }

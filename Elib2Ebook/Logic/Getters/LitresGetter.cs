@@ -101,7 +101,7 @@ public class LitresGetter : GetterBase {
     
     private static Author GetAuthor(HtmlDocument doc, Uri url) {
         var author = doc.QuerySelector("a.biblio_book_author__link");
-        return new Author(author.GetTextBySelector(), new Uri(url, author.Attributes["href"]?.Value ?? string.Empty));
+        return new Author(author.GetText(), new Uri(url, author.Attributes["href"]?.Value ?? string.Empty));
     }
     
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {

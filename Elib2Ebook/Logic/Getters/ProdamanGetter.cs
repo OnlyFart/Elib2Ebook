@@ -124,7 +124,7 @@ public class ProdamanGetter : GetterBase {
             Cover = await GetCover(doc, url),
             Chapters = await FillChapter(url, title),
             Title = title,
-            Author = new Author(doc.GetTextBySelector("a[data-widget-feisovet-author]") ?? "Prodaman"),
+            Author = GetAuthor(doc, url),
             Annotation = doc.QuerySelector("div[itemprop=description]")?.InnerHtml,
             Seria = GetSeria(doc, url)
         };
@@ -132,11 +132,20 @@ public class ProdamanGetter : GetterBase {
         return book;
     }
 
+    private static Author GetAuthor(HtmlDocument doc, Uri url) {
+        var a = doc.QuerySelector("a[data-widget-feisovet-author]");
+        if (a == default) {
+            return new Author("Prodaman");
+        }
+
+        return new Author(a.GetText(), new Uri(url, a.Attributes["href"].Value));
+    }
+
     private static Seria GetSeria(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("p.blog-info a[href*=/series/]");
         if (a != default) {
             return new Seria {
-                Name = a.GetTextBySelector(),
+                Name = a.GetText(),
                 Url = new Uri(url, a.Attributes["href"].Value)
             };
         }

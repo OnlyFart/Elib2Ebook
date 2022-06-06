@@ -55,14 +55,14 @@ public class AuthorTodayGetter : GetterBase {
 
     private static Author GetAuthor(HtmlDocument doc, Uri url) {
         var author = doc.QuerySelector("div.book-authors a");
-        return new Author(author.GetTextBySelector(), new Uri(url, author.Attributes["href"]?.Value ?? string.Empty));
+        return new Author(author.GetText(), new Uri(url, author.Attributes["href"]?.Value ?? string.Empty));
     }
 
     private static Seria GetSeria(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("div.book-meta-panel a[href^=/work/series/]");
         if (a != default) {
             var seria = new Seria();
-            seria.Name = a.GetTextBySelector();
+            seria.Name = a.GetText();
             seria.Url = new Uri(url, a.Attributes["href"].Value);
             
             var numberText = a.GetTextBySelector("+ span");

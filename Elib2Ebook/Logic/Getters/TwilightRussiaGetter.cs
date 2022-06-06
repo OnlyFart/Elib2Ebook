@@ -44,7 +44,7 @@ public class TwilightRussiaGetter : GetterBase {
         
         var result = new List<Chapter>();
         foreach (var a in post.QuerySelectorAll("a[href*='/publ/']")) {
-            var title = a.GetTextBySelector();
+            var title = a.GetText();
             if (string.IsNullOrWhiteSpace(title)) {
                 continue;
             }
@@ -70,7 +70,7 @@ public class TwilightRussiaGetter : GetterBase {
                 continue;
             }
             
-            var nodeText = node.GetTextBySelector();
+            var nodeText = node.GetText();
             if (!string.IsNullOrWhiteSpace(nodeText)) {
                 text.Append($"<p>{nodeText}</p>");
             }

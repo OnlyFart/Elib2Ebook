@@ -71,11 +71,11 @@ public class LitmarketGetter : GetterBase {
     
     private static Seria GetSeria(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("div.card-cycle a");
-        if (a == default || !a.GetTextBySelector().Contains('#')) {
+        if (a == default || !a.GetText().Contains('#')) {
             return default;
         }
         
-        var parts = a.GetTextBySelector().Split('#', StringSplitOptions.RemoveEmptyEntries);
+        var parts = a.GetText().Split('#', StringSplitOptions.RemoveEmptyEntries);
 
         return new Seria {
             Name = parts[0].HtmlDecode(),
@@ -88,7 +88,7 @@ public class LitmarketGetter : GetterBase {
         var a = doc.QuerySelector("div.card-author a");
         return a == default ? 
             new Author(doc.GetTextBySelector("div.card-author").Replace("Автор:", "").ReplaceNewLine()): 
-            new Author(a.GetTextBySelector().ReplaceNewLine(), new Uri(url, a.Attributes["href"].Value).ReplaceHost(SystemUrl.Host));
+            new Author(a.GetText().ReplaceNewLine(), new Uri(url, a.Attributes["href"].Value).ReplaceHost(SystemUrl.Host));
     }
     
     /// <summary>

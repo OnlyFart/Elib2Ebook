@@ -68,12 +68,12 @@ public class RoyalRoadGetter : GetterBase {
         return doc
             .QuerySelectorAll("tr.chapter-row")
             .Select(r => r.QuerySelector("a[href^=/fiction/]"))
-            .Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetTextBySelector()));
+            .Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText()));
     }
 
     private static Author GetAuthor(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("h4[property=author] span[property=name] a");
-        return new Author(a.GetTextBySelector(), new Uri(url, a.Attributes["href"].Value));
+        return new Author(a.GetText(), new Uri(url, a.Attributes["href"].Value));
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {

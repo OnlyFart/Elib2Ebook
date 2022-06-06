@@ -41,7 +41,7 @@ public class FreedomGetter : GetterBase{
     private static Task<IEnumerable<UrlChapter>> GetToc(HtmlDocument doc, Uri url) {
         return Task.FromResult(doc
             .QuerySelectorAll("div.li-col1-ranobe a")
-            .Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetTextBySelector()))
+            .Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText()))
             .Reverse());
     }
     
@@ -69,7 +69,7 @@ public class FreedomGetter : GetterBase{
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
         var content = doc.QuerySelector("div.entry-content");
         var notice = content.QuerySelector("div.single-notice");
-        return notice?.GetTextBySelector() == "Для чтения купите главу." ? 
+        return notice?.GetText() == "Для чтения купите главу." ? 
             default : 
             content.InnerHtml.AsHtmlDoc().RemoveNodes("div[class*=adv]");
     }

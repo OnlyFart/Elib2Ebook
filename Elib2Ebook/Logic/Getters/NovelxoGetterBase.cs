@@ -131,7 +131,7 @@ public abstract class NovelxoGetterBase : GetterBase {
         var a = doc.QuerySelector("tr.authors a");
         return a == default ? 
             new Author("Novelxo") : 
-            new Author(a.GetTextBySelector(), new Uri(url, a.Attributes["href"].Value));
+            new Author(a.GetText(), new Uri(url, a.Attributes["href"].Value));
     }
 
     private static byte[] StringToByteArray(string hex) {

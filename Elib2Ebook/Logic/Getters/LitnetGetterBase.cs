@@ -114,7 +114,7 @@ public abstract class LitnetGetterBase : GetterBase {
             var a = doc.QuerySelector("div.book-view-info-coll a[href*='sort=cycles']");
             if (a != default) {
                 return new Seria {
-                    Name = a.GetTextBySelector(),
+                    Name = a.GetText(),
                     Url = new Uri(url, a.Attributes["href"].Value)
                 };
             }

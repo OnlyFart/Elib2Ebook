@@ -80,7 +80,7 @@ public class LitgorodGetter : GetterBase {
 
     private static Author GetAuthor(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("a.info_author");
-        return new Author(a.GetTextBySelector(), new Uri(url, a.Attributes["href"].Value));
+        return new Author(a.GetText(), new Uri(url, a.Attributes["href"].Value));
     }
 
     private static Seria GetSeria(HtmlDocument doc) {
@@ -140,7 +140,7 @@ public class LitgorodGetter : GetterBase {
     private static IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
         return doc
             .QuerySelectorAll("div.item-2 ul a")
-            .Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetTextBySelector()));
+            .Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText()));
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {

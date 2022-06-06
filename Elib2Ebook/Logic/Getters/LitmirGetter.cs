@@ -43,7 +43,7 @@ public class LitmirGetter : GetterBase {
     private static Seria GetSeria(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("td.bd_desc2 a[href^=/books_in_series/]");
         if (a != default) {
-            var text = a.GetTextBySelector();
+            var text = a.GetText();
             if (!string.IsNullOrWhiteSpace(text)) {
                 var seria = new Seria {
                     Url = new Uri(url, a.Attributes["href"].Value)

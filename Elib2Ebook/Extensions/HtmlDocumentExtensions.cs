@@ -21,10 +21,10 @@ public static class HtmlDocumentExtensions {
     }
         
     public static string GetTextBySelector(this HtmlNode node, string selector) {
-        return node.QuerySelector(selector).GetTextBySelector();
+        return node.QuerySelector(selector).GetText();
     }
         
-    public static string GetTextBySelector(this HtmlNode node) {
+    public static string GetText(this HtmlNode node) {
         return node?.InnerText?.HtmlDecode();
     }
 

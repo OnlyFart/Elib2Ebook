@@ -89,7 +89,7 @@ public class BookInBookGetter : GetterBase {
         var links = doc.QuerySelectorAll("a.chapters-form__chapter");
         
         foreach (var a in links) {
-            yield return new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetTextBySelector().ReplaceNewLine());
+            yield return new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText().ReplaceNewLine());
         }
     }
     
@@ -97,7 +97,7 @@ public class BookInBookGetter : GetterBase {
         var a = doc.QuerySelector("span.series-info__name");
         if (a != default) {
             return new Seria {
-                Name = a.GetTextBySelector()
+                Name = a.GetText()
             };
         }
 
@@ -111,6 +111,6 @@ public class BookInBookGetter : GetterBase {
     
     private static Author GetAuthor(HtmlDocument doc, Uri uri) {
         var a = doc.QuerySelector("a.author");
-        return new Author(a.GetTextBySelector(), new Uri(uri, a.Attributes["href"].Value));
+        return new Author(a.GetText(), new Uri(uri, a.Attributes["href"].Value));
     }
 }

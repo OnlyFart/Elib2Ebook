@@ -71,7 +71,7 @@ public class LitexitGetter : GetterBase {
         var a = doc.QuerySelector("div.bk-genre a[href^=/b/cycle/]");
         if (a != default) {
             return new Seria {
-                Name = a.GetTextBySelector(),
+                Name = a.GetText(),
                 Url = new Uri(url, a.Attributes["href"].Value)
             };
         }
@@ -109,7 +109,7 @@ public class LitexitGetter : GetterBase {
 
     private static Author GetAuthor(HtmlDocument doc, Uri uri) {
         var a = doc.QuerySelector("div.bk-author a");
-        return new Author(a.GetTextBySelector(), new Uri(uri, a.Attributes["href"].Value));
+        return new Author(a.GetText(), new Uri(uri, a.Attributes["href"].Value));
     }
 
     private static string GetInternalId(HtmlDocument doc) {

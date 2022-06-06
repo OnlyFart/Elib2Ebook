@@ -43,11 +43,11 @@ public class ReadliGetter : GetterBase {
     
     private static Seria GetSeria(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("div.book-info a.book-info__link[href^=/serie/]");
-        if (string.IsNullOrWhiteSpace(a.GetTextBySelector())) {
+        if (string.IsNullOrWhiteSpace(a.GetText())) {
             return default;
         }
 
-        var text = a.GetTextBySelector();
+        var text = a.GetText();
         var uri = new Uri(url, a.Attributes["href"].Value);
         if (!text.Contains('#')) {
             return new Seria {

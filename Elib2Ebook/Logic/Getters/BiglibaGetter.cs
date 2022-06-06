@@ -42,7 +42,7 @@ public class BiglibaGetter : GetterBase{
     private static Seria GetSeria(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("div.book-series a");
         if (a != default) {
-            var text = a.GetTextBySelector();
+            var text = a.GetText();
             
             if (text.Contains('#')) {
                 var parts = text.Split(':').Last().Split("(#");
@@ -64,7 +64,7 @@ public class BiglibaGetter : GetterBase{
     
     private static Author GetAuthor(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("h2[itemprop=author] a");
-        return new Author(a.GetTextBySelector(), new Uri(url, a.Attributes["href"].Value));
+        return new Author(a.GetText(), new Uri(url, a.Attributes["href"].Value));
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(Uri uri, string bookId, string token, string title) {
