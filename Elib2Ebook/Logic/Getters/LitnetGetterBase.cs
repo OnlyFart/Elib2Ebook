@@ -12,6 +12,7 @@ using Elib2Ebook.Types.Book;
 using HtmlAgilityPack;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Litnet;
+using HtmlAgilityPack.CssSelectors.NetCore;
 
 namespace Elib2Ebook.Logic.Getters;
 
@@ -94,15 +95,34 @@ public abstract class LitnetGetterBase : GetterBase {
 
         var litnetBook = await GetBook(_token, bookId);
 
-        var book = new Book(new Uri(litnetBook.Url)) {
+        var uri = new Uri(litnetBook.Url);
+        var book = new Book(uri) {
             Cover = await GetCover(litnetBook),
             Chapters = await FillChapters(_token, litnetBook, bookId),
             Title = litnetBook.Title.Trim(),
             Author = GetAuthor(litnetBook),
-            Annotation = GetAnnotation(litnetBook)
+            Annotation = GetAnnotation(litnetBook),
+            Seria = await GetSeria(uri)
         };
             
         return book;
+    }
+
+    private async Task<Seria> GetSeria(Uri url) {
+        try {
+            var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+            var a = doc.QuerySelector("div.book-view-info-coll a[href*='sort=cycles']");
+            if (a != default) {
+                return new Seria {
+                    Name = a.GetTextBySelector(),
+                    Url = new Uri(url, a.Attributes["href"].Value)
+                };
+            }
+        } catch (Exception ex) {
+            Console.WriteLine(ex);
+        }
+
+        return default;
     }
 
     private Author GetAuthor(LitnetBookResponse book) {
