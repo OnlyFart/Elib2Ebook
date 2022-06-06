@@ -33,19 +33,29 @@ public class BiglibaGetter : GetterBase{
             Title = doc.GetTextBySelector("h1[itemprop=name]"),
             Author = GetAuthor(doc, url),
             Annotation = doc.QuerySelector("div.description")?.InnerHtml,
-            Seria = GetSeria(doc)
+            Seria = GetSeria(doc, url)
         };
             
         return book;
     }
 
-    private static Seria GetSeria(HtmlDocument doc) {
-        var text = doc.GetTextBySelector("div.book-series");
-        if (!string.IsNullOrWhiteSpace(text) && text.Contains('#')) {
-            var parts = text.Split(':').Last().Split("(#");
+    private static Seria GetSeria(HtmlDocument doc, Uri url) {
+        var a = doc.QuerySelector("div.book-series a");
+        if (a != default) {
+            var text = a.GetTextBySelector();
+            
+            if (text.Contains('#')) {
+                var parts = text.Split(':').Last().Split("(#");
+                return new Seria {
+                    Name = parts[0].Trim(),
+                    Number = parts[1].Trim(')').Trim(),
+                    Url = new Uri(url, a.Attributes["href"].Value)
+                };
+            }
+
             return new Seria {
-                Name = parts[0].Trim(),
-                Number = parts[1].Trim(')').Trim()
+                Name = text,
+                Url = new Uri(url, a.Attributes["href"].Value)
             };
         }
 

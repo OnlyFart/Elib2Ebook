@@ -47,7 +47,7 @@ public class AuthorTodayGetter : GetterBase {
             Title = doc.GetTextBySelector("h1"),
             Author = GetAuthor(doc, url),
             Annotation = doc.QuerySelector("div.rich-content")?.InnerHtml,
-            Seria = GetSeria(doc)
+            Seria = GetSeria(doc, url)
         };
         
         return book;
@@ -58,11 +58,12 @@ public class AuthorTodayGetter : GetterBase {
         return new Author(author.GetTextBySelector(), new Uri(url, author.Attributes["href"]?.Value ?? string.Empty));
     }
 
-    private static Seria GetSeria(HtmlDocument doc) {
+    private static Seria GetSeria(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("div.book-meta-panel a[href^=/work/series/]");
         if (a != default) {
             var seria = new Seria();
             seria.Name = a.GetTextBySelector();
+            seria.Url = new Uri(url, a.Attributes["href"].Value);
             
             var numberText = a.GetTextBySelector("+ span");
             if (!string.IsNullOrWhiteSpace(numberText) && numberText.StartsWith("#")) {

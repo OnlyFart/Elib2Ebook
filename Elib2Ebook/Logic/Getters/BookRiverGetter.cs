@@ -50,7 +50,7 @@ public class BookriverGetter : GetterBase {
             Title = doc.GetTextBySelector("h1[itemprop=name]"),
             Author = GetAuthor(doc, url),
             Annotation = doc.QuerySelector("span[itemprop=description]")?.InnerHtml,
-            Seria = GetSeria(doc)
+            Seria = GetSeria(doc, url)
         };
             
         return book;
@@ -61,7 +61,7 @@ public class BookriverGetter : GetterBase {
         return new Author(a.GetTextBySelector(), new Uri(url, a.Attributes["href"].Value));
     }
 
-    private static Seria GetSeria(HtmlDocument doc) {
+    private static Seria GetSeria(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("a[href^=/series/]");
         if (a == default) {
             return default;
@@ -74,7 +74,8 @@ public class BookriverGetter : GetterBase {
 
         return new Seria {
             Name = a.GetTextBySelector()[5..].Trim(),
-            Number = span.GetTextBySelector().Trim().Trim('#')
+            Number = span.GetTextBySelector().Trim().Trim('#'),
+            Url = new Uri(url, a.Attributes["href"].Value)
         };
     }
 

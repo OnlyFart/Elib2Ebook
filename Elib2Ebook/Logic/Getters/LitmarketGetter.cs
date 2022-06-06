@@ -63,23 +63,24 @@ public class LitmarketGetter : GetterBase {
             Title = title,
             Author = GetAuthor(doc, url),
             Annotation = doc.QuerySelector("div.card-description")?.InnerHtml,
-            Seria = GetSeria(doc)
+            Seria = GetSeria(doc, url)
         };
             
         return book;
     }
     
-    private static Seria GetSeria(HtmlDocument doc) {
-        var a = doc.GetTextBySelector("div.card-cycle a");
-        if (string.IsNullOrWhiteSpace(a) || !a.Contains('#')) {
+    private static Seria GetSeria(HtmlDocument doc, Uri url) {
+        var a = doc.QuerySelector("div.card-cycle a");
+        if (a == default || !a.GetTextBySelector().Contains('#')) {
             return default;
         }
         
-        var parts = a.Split('#', StringSplitOptions.RemoveEmptyEntries);
+        var parts = a.GetTextBySelector().Split('#', StringSplitOptions.RemoveEmptyEntries);
 
         return new Seria {
             Name = parts[0].HtmlDecode(),
-            Number = parts[1].HtmlDecode()
+            Number = parts[1].HtmlDecode(),
+            Url = new Uri(url, a.Attributes["href"].Value)
         };
     }
 

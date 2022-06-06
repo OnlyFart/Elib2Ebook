@@ -27,20 +27,21 @@ public class LibboxGetter : GetterBase {
             Title = title,
             Author = GetAuthor(doc, url),
             Annotation = doc.QuerySelector("div.woocommerce-Tabs-panel--description div.container")?.InnerHtml,
-            Seria = GetSeria(doc)
+            Seria = GetSeria(doc, url)
         };
 
         return book; 
     }
     
-    private static Seria GetSeria(HtmlDocument doc) {
-        var a = doc.GetTextBySelector("div.product__meta a[href*=/book-series/]");
-        if (string.IsNullOrWhiteSpace(a)) {
+    private static Seria GetSeria(HtmlDocument doc, Uri url) {
+        var a = doc.QuerySelector("div.product__meta a[href*=/book-series/]");
+        if (string.IsNullOrWhiteSpace(a.GetTextBySelector())) {
             return default;
         }
 
         return new Seria {
-            Name = a
+            Name = a.GetTextBySelector(),
+            Url = new Uri(url, a.Attributes["href"].Value)
         };
     }
 

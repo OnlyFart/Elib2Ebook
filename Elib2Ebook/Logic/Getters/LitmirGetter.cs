@@ -34,18 +34,21 @@ public class LitmirGetter : GetterBase {
             Title = name,
             Author = new Author(doc.QuerySelector("span[itemprop=author] meta")?.Attributes["content"]?.Value ?? "Litmir"),
             Annotation = doc.QuerySelector("div[itemprop=description]")?.InnerHtml,
-            Seria = GetSeria(doc)
+            Seria = GetSeria(doc, url)
         };
             
         return book; 
     }
     
-    private static Seria GetSeria(HtmlDocument doc) {
+    private static Seria GetSeria(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("td.bd_desc2 a[href^=/books_in_series/]");
         if (a != default) {
             var text = a.GetTextBySelector();
             if (!string.IsNullOrWhiteSpace(text)) {
-                var seria = new Seria();
+                var seria = new Seria {
+                    Url = new Uri(url, a.Attributes["href"].Value)
+                };
+                
                 if (text.Contains('#')) {
                     var split = text.Split("#");
                     if (int.TryParse(split.Last(), out var number)) {

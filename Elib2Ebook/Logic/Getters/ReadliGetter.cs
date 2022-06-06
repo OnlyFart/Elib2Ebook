@@ -30,7 +30,7 @@ public class ReadliGetter : GetterBase {
             Title = title,
             Author = GetAuthor(doc, url),
             Annotation = doc.QuerySelector("article.seo__content")?.RemoveNodes("h2")?.InnerHtml,
-            Seria = GetSeria(doc)
+            Seria = GetSeria(doc, url)
         };
 
         return book; 
@@ -41,23 +41,27 @@ public class ReadliGetter : GetterBase {
         return new Author(author.InnerText.HtmlDecode(), new Uri(url, author.Attributes["href"]?.Value ?? string.Empty));
     }
     
-    private static Seria GetSeria(HtmlDocument doc) {
-        var a = doc.GetTextBySelector("div.book-info a.book-info__link[href^=/serie/]");
-        if (string.IsNullOrWhiteSpace(a)) {
+    private static Seria GetSeria(HtmlDocument doc, Uri url) {
+        var a = doc.QuerySelector("div.book-info a.book-info__link[href^=/serie/]");
+        if (string.IsNullOrWhiteSpace(a.GetTextBySelector())) {
             return default;
         }
 
-        if (!a.Contains('#')) {
+        var text = a.GetTextBySelector();
+        var uri = new Uri(url, a.Attributes["href"].Value);
+        if (!text.Contains('#')) {
             return new Seria {
-                Name = a
+                Name = text,
+                Url = uri
             };
         }
 
-        var parts = a.Split('#', StringSplitOptions.RemoveEmptyEntries);
+        var parts = text.Split('#', StringSplitOptions.RemoveEmptyEntries);
 
         return new Seria {
             Name = parts[0].HtmlDecode(),
-            Number = parts[1].HtmlDecode()
+            Number = parts[1].HtmlDecode(),
+            Url = uri
         };
 
     }

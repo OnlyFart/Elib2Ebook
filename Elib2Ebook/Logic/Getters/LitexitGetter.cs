@@ -61,19 +61,19 @@ public class LitexitGetter : GetterBase {
             Title = doc.GetTextBySelector("h1[itemprop=name]"),
             Author = GetAuthor(doc, url),
             Annotation = doc.QuerySelector("div[itemprop=description] p")?.InnerHtml,
-            Seria = GetSeria(doc)
+            Seria = GetSeria(doc, url)
         };
             
         return book;
     }
 
-    private static Seria GetSeria(HtmlDocument doc) {
+    private static Seria GetSeria(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("div.bk-genre a[href^=/b/cycle/]");
         if (a != default) {
-            var seria = new Seria {
-                Name = a.GetTextBySelector()
+            return new Seria {
+                Name = a.GetTextBySelector(),
+                Url = new Uri(url, a.Attributes["href"].Value)
             };
-            return seria;
         }
 
         return default;

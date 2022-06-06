@@ -1,3 +1,5 @@
+using System;
+
 namespace Elib2Ebook.Types.Book; 
 
 public class Seria {
@@ -10,4 +12,9 @@ public class Seria {
     /// Номер в серии
     /// </summary>
     public string Number { get; set; }
+    
+    /// <summary>
+    /// Ссылка на книги серии
+    /// </summary>
+    public Uri Url { get; set; }
 }
