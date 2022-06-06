@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Types.Book;
@@ -30,11 +31,16 @@ public class RulateGetter : GetterBase {
         var book = new Book(url) {
             Cover = await GetCover(doc, url),
             Chapters = await FillChapters(doc, url, bookId),
-            Title = doc.GetTextBySelector("h1"),
+            Title = GetTitle(doc),
             Author = GetAuthor(doc)
         };
             
         return book;
+    }
+
+    private static string GetTitle(HtmlDocument doc) {
+        var match = Regex.Match(doc.ParsedText, "t_title: '(?<title>.*?)',");
+        return match.Success ? match.Groups["title"].Value : doc.GetTextBySelector("h1");
     }
 
     private static Author GetAuthor(HtmlDocument doc) {
