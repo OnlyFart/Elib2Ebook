@@ -43,7 +43,7 @@ public class WattpadGetter : GetterBase {
             Cover = await GetCover(wattpadInfo),
             Chapters = await FillChapters(wattpadInfo),
             Title = meta.Title,
-            Author = new Author(wattpadInfo?.Author ?? "Wattpad"),
+            Author = new Author(wattpadInfo?.Author, new Uri($"https://www.wattpad.com/user/{wattpadInfo?.Author}")),
             Annotation = wattpadInfo?.Description
         };
             
