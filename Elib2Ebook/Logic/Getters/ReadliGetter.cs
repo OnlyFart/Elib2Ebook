@@ -42,17 +42,24 @@ public class ReadliGetter : GetterBase {
     }
     
     private static Seria GetSeria(HtmlDocument doc) {
-        var a = doc.GetTextBySelector("a.book-info__link[href^=/serie/]");
-        if (string.IsNullOrWhiteSpace(a) || !a.Contains('#')) {
+        var a = doc.GetTextBySelector("div.book-info a.book-info__link[href^=/serie/]");
+        if (string.IsNullOrWhiteSpace(a)) {
             return default;
         }
-        
+
+        if (!a.Contains('#')) {
+            return new Seria {
+                Name = a
+            };
+        }
+
         var parts = a.Split('#', StringSplitOptions.RemoveEmptyEntries);
 
         return new Seria {
             Name = parts[0].HtmlDecode(),
             Number = parts[1].HtmlDecode()
         };
+
     }
 
     private static string GetBookId(Uri uri) {
