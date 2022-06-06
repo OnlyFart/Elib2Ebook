@@ -30,10 +30,16 @@ public class FicbookGetter : GetterBase {
             Cover = await GetCover(doc, url),
             Chapters = await FillChapters(doc, url, title),
             Title = title,
-            Author = new Author(doc.GetTextBySelector("a.creator-nickname"))
+            Author = GetAuthor(doc, url),
+            Annotation = doc.QuerySelector("div[itemprop=description]")?.InnerHtml
         };
             
         return book;
+    }
+
+    private static Author GetAuthor(HtmlDocument doc, Uri url) {
+        var a = doc.QuerySelector("a.creator-nickname");
+        return new Author(a.GetText(), new Uri(url, a.Attributes["href"].Value));
     }
         
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
