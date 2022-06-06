@@ -125,10 +125,23 @@ public class ProdamanGetter : GetterBase {
             Chapters = await FillChapter(url, title),
             Title = title,
             Author = new Author(doc.GetTextBySelector("a[data-widget-feisovet-author]") ?? "Prodaman"),
-            Annotation = doc.QuerySelector("div[itemprop=description]")?.InnerHtml
+            Annotation = doc.QuerySelector("div[itemprop=description]")?.InnerHtml,
+            Seria = GetSeria(doc, url)
         };
 
         return book;
+    }
+
+    private static Seria GetSeria(HtmlDocument doc, Uri url) {
+        var a = doc.QuerySelector("p.blog-info a[href*=/series/]");
+        if (a != default) {
+            return new Seria {
+                Name = a.GetTextBySelector(),
+                Url = new Uri(url, a.Attributes["href"].Value)
+            };
+        }
+
+        return default;
     }
 
     private async Task<int> GetPages(Uri url) {
