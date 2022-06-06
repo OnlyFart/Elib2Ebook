@@ -81,7 +81,7 @@ public class RanobeNovelsGetter : GetterBase {
         await Task.Delay(TimeSpan.FromSeconds(1));
         
         while (response == default || response.StatusCode == HttpStatusCode.ServiceUnavailable) {
-            Console.WriteLine("Получили бан от системы. Жду...");
+            Console.WriteLine("Получен бан от системы. Жду...");
             var errorTimeout = TimeSpan.FromSeconds(30);
             response = await _config.Client.GetWithTriesAsync(url, errorTimeout);
             await Task.Delay(errorTimeout);

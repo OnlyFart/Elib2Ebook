@@ -84,7 +84,7 @@ public class JaomixGetter : GetterBase {
         
         doc = await _config.Client.PostHtmlDocWithTriesAsync(new Uri("https://jaomix.ru/wp-admin/admin-ajax.php"), new FormUrlEncodedContent(data));
 
-        Console.WriteLine("Получаем оглавление");
+        Console.WriteLine("Получаю оглавление");
             
         foreach (var option in doc.QuerySelector("select.sel-toc").ChildNodes) {
             var pageId = option.Attributes["value"].Value;

@@ -37,7 +37,6 @@ public class AuthorTodayGetter : GetterBase {
         var bookId = GetId(url);
         
         url = new Uri($"https://author.today/work/{bookId}");
-        Console.WriteLine($"Загружаю книгу {url.ToString().CoverQuotes()}"); 
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
 
         
@@ -154,7 +153,7 @@ public class AuthorTodayGetter : GetterBase {
         foreach (var chapter in chapters) {
             var chapterUri = new Uri($"https://author.today/reader/{bookId}/chapter?id={chapter.Id}");
                 
-            Console.WriteLine($"Получаем главу {chapter.Title.CoverQuotes()}");
+            Console.WriteLine($"Получаю главу {chapter.Title.CoverQuotes()}");
             using var response = await _config.Client.GetWithTriesAsync(chapterUri);
 
             if (response is not { StatusCode: HttpStatusCode.OK }) {

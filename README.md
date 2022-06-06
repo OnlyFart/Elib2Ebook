@@ -7,6 +7,7 @@
 * https://bookstab.ru/
 * https://bookriver.ru/
 * https://dark-novels.ru/
+* https://fb2.top/
 * https://ficbook.net/
 * https://ifreedom.su/
 * https://jaomix.ru/

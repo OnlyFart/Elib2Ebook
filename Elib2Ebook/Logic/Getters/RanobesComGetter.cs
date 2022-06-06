@@ -103,7 +103,7 @@ public class RanobesComGetter : GetterBase {
         var lastA = doc.QuerySelector("div.pages a:last-child")?.InnerText;
         var pages = string.IsNullOrWhiteSpace(lastA) ? 1 : int.Parse(lastA);
             
-        Console.WriteLine("Получаем оглавление");
+        Console.WriteLine("Получаю оглавление");
         var chapters = new List<UrlChapter>();
         for (var i = 1; i <= pages; i++) {
             doc = await GetHtmlDocument(new Uri(tocUri.AbsoluteUri + "/page/" + i));

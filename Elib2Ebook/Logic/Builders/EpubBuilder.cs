@@ -86,7 +86,7 @@ public class EpubBuilder : BuilderBase {
     /// <returns></returns>
     public override BuilderBase WithFiles(string directory, string searchPattern, EpubContentType type) {
         foreach (var file in Directory.GetFiles(directory, searchPattern)) {
-            Console.WriteLine($"Добавляем файл {file.CoverQuotes()}");
+            Console.WriteLine($"Добавляю файл {file.CoverQuotes()}");
             _writer.AddFile(Path.GetFileName(file), File.ReadAllBytes(file), type);
         }
             
@@ -104,7 +104,7 @@ public class EpubBuilder : BuilderBase {
                 _writer.AddFile(image.Path, image.Content, image.Format.ToEpubContentType());
             }
 
-            Console.WriteLine($"Добавляем часть {chapter.Title.CoverQuotes()}");
+            Console.WriteLine($"Добавляю часть {chapter.Title.CoverQuotes()}");
             _writer.AddChapter(chapter.Title.HtmlDecode().ReplaceNewLine().RemoveInvalidChars(), ApplyPattern(chapter.Title, chapter.Content));
         }
 

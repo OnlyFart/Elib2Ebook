@@ -110,7 +110,7 @@ public class RanobesNetGetter : GetterBase {
         var doc = await GetSafety(tocUri);
         var data = GetData(doc);
             
-        Console.WriteLine("Получаем оглавление");
+        Console.WriteLine("Получаю оглавление");
         var chapters = new List<UrlChapter>();
         for (var i = 1; i <= data.Pages; i++) {
             var url = i == 1 ? tocUri : new Uri($"{tocUri.AbsoluteUri}page/{i}/");

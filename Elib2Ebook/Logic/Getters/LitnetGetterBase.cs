@@ -152,7 +152,7 @@ public abstract class LitnetGetterBase : GetterBase {
 
             Console.WriteLine($"Загружаю главу {content.Title.Trim().CoverQuotes()}");
             if (string.IsNullOrWhiteSpace(litnetChapter.Text)) {
-                Console.WriteLine($"Главу {content.Title.Trim().CoverQuotes()} в платном доступе");
+                Console.WriteLine($"Глава {content.Title.Trim().CoverQuotes()} в платном доступе");
                 continue;
             }
             

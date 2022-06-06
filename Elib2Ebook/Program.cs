@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CommandLine;
 using Elib2Ebook.Configs;
+using Elib2Ebook.Extensions;
 using Elib2Ebook.Logic.Builders;
 using Elib2Ebook.Logic.Getters;
 
@@ -42,6 +43,7 @@ internal static class Program {
                 await getter.Authorize();
 
                 foreach (var url in options.Url) {
+                    Console.WriteLine($"Начинаю генерацию книги {url.CoverQuotes()}");
                     var book = await getter.Get(new Uri(url));
                     foreach (var format in options.Format) {
                         book.Save(GetBuilder(format), options, "Patterns");
