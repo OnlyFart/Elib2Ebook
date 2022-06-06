@@ -32,7 +32,7 @@ public class RanobeHubGetter : GetterBase {
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {
         var result = new List<Chapter>();
 
-        foreach (var ranobeChapter in await GetChapters(doc)) {
+        foreach (var ranobeChapter in await GetToc(doc)) {
             Console.WriteLine($"Загружаю главу {ranobeChapter.Name}");
             var chapter = new Chapter();
             var chapterDoc = await GetChapter(ranobeChapter.Url);
@@ -68,7 +68,7 @@ public class RanobeHubGetter : GetterBase {
         return result;
     }
 
-    private async Task<IEnumerable<RanobeHubChapter>> GetChapters(HtmlDocument doc) {
+    private async Task<IEnumerable<RanobeHubChapter>> GetToc(HtmlDocument doc) {
         var internalId = doc.QuerySelector("html[data-id]").Attributes["data-id"].Value;
         var response = await _config.Client.GetFromJsonAsync<RanobeHubApiResponse>($"https://ranobehub.org/api/ranobe/{internalId}/contents");
         return response?.Volumes.SelectMany(t => t.Chapters);

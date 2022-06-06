@@ -43,7 +43,7 @@ public class JaomixGetter : GetterBase {
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {
         var result = new List<Chapter>();
 
-        foreach (var jaomixChapter in await GetChapters(doc, url)) {
+        foreach (var jaomixChapter in await GetToc(doc, url)) {
             Console.WriteLine($"Загружаю главу {jaomixChapter.Title.CoverQuotes()}");
             var chapter = new Chapter();
             var chapterDoc = await GetChapter(jaomixChapter.Url);
@@ -71,7 +71,7 @@ public class JaomixGetter : GetterBase {
         return sb.AsHtmlDoc();
     }
 
-    private async Task<IEnumerable<UrlChapter>> GetChapters(HtmlDocument doc, Uri url) {
+    private async Task<IEnumerable<UrlChapter>> GetToc(HtmlDocument doc, Uri url) {
         var termId = doc.QuerySelector("div.like-but").Id;
 
         var data = new Dictionary<string, string> {

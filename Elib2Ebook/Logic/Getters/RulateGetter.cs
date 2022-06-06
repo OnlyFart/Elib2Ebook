@@ -64,7 +64,7 @@ public class RulateGetter : GetterBase {
     private async Task<List<Chapter>> FillChapters(HtmlDocument doc, Uri bookUri, string bookId) {
         var result = new List<Chapter>();
             
-        foreach (var (id, name) in GetChapters(doc)) {
+        foreach (var (id, name) in GetToc(doc)) {
             Console.WriteLine($"Загружаю главу {name.CoverQuotes()}");
             var chapter = new Chapter();
                 
@@ -84,7 +84,7 @@ public class RulateGetter : GetterBase {
         return (doc.GetTextBySelector("h1") == "Доступ запрещен" ? string.Empty : doc.QuerySelector("div.content-text")?.InnerHtml ?? string.Empty).AsHtmlDoc();
     }
 
-    private static IEnumerable<IdChapter> GetChapters(HtmlDocument doc) {
+    private static IEnumerable<IdChapter> GetToc(HtmlDocument doc) {
         return doc.QuerySelectorAll("#Chapters tr[data-id]")
             .Select(chapter => new IdChapter(chapter.Attributes["data-id"].Value, chapter.GetTextBySelector("td.t")));
     }

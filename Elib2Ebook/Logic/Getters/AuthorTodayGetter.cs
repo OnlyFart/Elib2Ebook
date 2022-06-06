@@ -131,7 +131,7 @@ public class AuthorTodayGetter : GetterBase {
     /// </summary>
     /// <param name="bookId">Идентификатор книги</param>
     /// <returns></returns>
-    private async Task<List<Chapter>> GetChapters(string bookId) {
+    private async Task<List<Chapter>> GetToc(string bookId) {
         var bookUri = new Uri($"https://author.today/reader/{bookId}");
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(bookUri);
         
@@ -148,7 +148,7 @@ public class AuthorTodayGetter : GetterBase {
     /// <param name="bookId">Идентификатор книги</param>
     /// <param name="userId">Идентификатор пользователя</param>
     private async Task<IEnumerable<Chapter>> FillChapters(string bookId, string userId) {
-        var chapters = await GetChapters(bookId);
+        var chapters = await GetToc(bookId);
             
         foreach (var chapter in chapters) {
             var chapterUri = new Uri($"https://author.today/reader/{bookId}/chapter?id={chapter.Id}");

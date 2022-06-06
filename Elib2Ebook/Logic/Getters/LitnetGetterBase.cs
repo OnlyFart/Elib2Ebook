@@ -83,7 +83,7 @@ public abstract class LitnetGetterBase : GetterBase {
         return response;
     }
 
-    private async Task<LitnetChapterResponse[]> GetChapters(string token, LitnetContentsResponse[] contents) {
+    private async Task<LitnetChapterResponse[]> GetToc(string token, LitnetContentsResponse[] contents) {
         var chapters = string.Join("&", contents.Select(t => $"chapter_ids[]={t.Id}"));
         var url = $"https://api.{SystemUrl.Host}/v1/book/get-chapters-texts/?{chapters}&app=android&device_id={DeviceId}&sign={GetSign(token)}&user_token={token}";
         var response = await _config.Client.GetFromJsonAsync<LitnetChapterResponse[]>(url);
@@ -143,7 +143,7 @@ public abstract class LitnetGetterBase : GetterBase {
         var result = new List<Chapter>();
             
         var contents = await GetBookContents(token, bookId);
-        var chapters = await GetChapters(token, contents);
+        var chapters = await GetToc(token, contents);
 
         var map = chapters.ToDictionary(t => t.Id);
         

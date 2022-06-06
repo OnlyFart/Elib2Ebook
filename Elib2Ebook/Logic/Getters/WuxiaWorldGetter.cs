@@ -30,7 +30,7 @@ public class WuxiaWorldGetter : GetterBase {
         return book;
     }
 
-    private async Task<IEnumerable<UrlChapter>> GetChapters(HtmlDocument doc, Uri url) {
+    private async Task<IEnumerable<UrlChapter>> GetToc(HtmlDocument doc, Uri url) {
         var catId = Regex.Match(doc.ParsedText, @"catID = (?<catId>\d+)").Groups["catId"].Value;
         var slug = url.Segments[1].Trim('/');
         var result = new List<UrlChapter>();
@@ -54,7 +54,7 @@ public class WuxiaWorldGetter : GetterBase {
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {
         var result = new List<Chapter>();
 
-        foreach (var bookChapter in await GetChapters(doc, url)) {
+        foreach (var bookChapter in await GetToc(doc, url)) {
             var chapter = new Chapter();
             Console.WriteLine($"Загружаю главу {bookChapter.Title.CoverQuotes()}");
             

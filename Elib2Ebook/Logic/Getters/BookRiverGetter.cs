@@ -83,7 +83,7 @@ public class BookriverGetter : GetterBase {
         var result = new List<Chapter>();
         var internalId = await GetInternalBookId(bookId);
         
-        foreach (var bookChapter in await GetChapters(internalId)) {
+        foreach (var bookChapter in await GetToc(internalId)) {
             var chapter = new Chapter();
             Console.WriteLine($"Загружаю главу {bookChapter.Name.CoverQuotes()}");
             
@@ -129,7 +129,7 @@ public class BookriverGetter : GetterBase {
         return content.Deserialize<BookRiverApiResponse<BookRiverChapterContent>>().Data.Content.AsHtmlDoc();
     }
 
-    private async Task<BookRiverChapter[]> GetChapters(string bookId) {
+    private async Task<BookRiverChapter[]> GetToc(string bookId) {
         var response = await _config.Client.GetWithTriesAsync(new Uri($"https://api.bookriver.ru/api/v1/books/chapters/text/published?bookId={bookId}"));
         var content = await response.Content.ReadAsStringAsync();
         return content.Deserialize<BookRiverApiResponse<BookRiverChapter[]>>().Data;

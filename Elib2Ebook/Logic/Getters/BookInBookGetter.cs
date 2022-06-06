@@ -40,7 +40,7 @@ public class BookInBookGetter : GetterBase {
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri uri) {
         var result = new List<Chapter>();
 
-        foreach (var bookChapter in GetChapters(doc, uri)) {
+        foreach (var bookChapter in GetToc(doc, uri)) {
             var chapter = new Chapter();
             Console.WriteLine($"Загружаю главу {bookChapter.Title.CoverQuotes()}");
             
@@ -85,7 +85,7 @@ public class BookInBookGetter : GetterBase {
         }
     }
 
-    private static IEnumerable<UrlChapter> GetChapters(HtmlDocument doc, Uri url) {
+    private static IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
         var links = doc.QuerySelectorAll("a.chapters-form__chapter");
         
         foreach (var a in links) {

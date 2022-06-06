@@ -72,7 +72,7 @@ public class DarkNovelsGetter : GetterBase {
     private async Task<IEnumerable<Chapter>> FillChapters(string bookId) {
         var result = new List<Chapter>();
 
-        foreach (var darkNovelsChapter in await GetChapters(bookId)) {
+        foreach (var darkNovelsChapter in await GetToc(bookId)) {
             Console.WriteLine($"Загружаю главу {darkNovelsChapter.Title.CoverQuotes()}");
             if (darkNovelsChapter.Title.StartsWith("Volume:") || darkNovelsChapter.Payed == 1) {
                 continue;
@@ -104,7 +104,7 @@ public class DarkNovelsGetter : GetterBase {
         return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
     }
 
-    private async Task<DarkNovelsChapter[]> GetChapters(string bookId) {
+    private async Task<DarkNovelsChapter[]> GetToc(string bookId) {
         return await _config.Client.GetFromJsonAsync<DarkNovelsData<DarkNovelsChapter[]>>($"https://api.dark-novels.ru/v2/toc/{bookId}").ContinueWith(t => t.Result?.Data);
     }
 

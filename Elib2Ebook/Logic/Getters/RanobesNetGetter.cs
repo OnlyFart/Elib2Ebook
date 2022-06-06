@@ -58,7 +58,7 @@ public class RanobesNetGetter : GetterBase {
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {
         var result = new List<Chapter>();
 
-        foreach (var ranobeChapter in await GetChapters(GetTocLink(doc, url))) {
+        foreach (var ranobeChapter in await GetToc(GetTocLink(doc, url))) {
             Console.WriteLine($"Загружаю главу {ranobeChapter.Title.CoverQuotes()}");
             var chapter = new Chapter();
             var chapterDoc = await GetChapter(url, ranobeChapter.Url);
@@ -106,7 +106,7 @@ public class RanobesNetGetter : GetterBase {
         return windowData;
     }
         
-    private async Task<IEnumerable<UrlChapter>> GetChapters(Uri tocUri) {
+    private async Task<IEnumerable<UrlChapter>> GetToc(Uri tocUri) {
         var doc = await GetSafety(tocUri);
         var data = GetData(doc);
             

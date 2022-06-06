@@ -39,7 +39,7 @@ public class SamlibGetter : GetterBase {
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url, string title) {
         var result = new List<Chapter>();
             
-        foreach (var urlChapter in GetChapters(doc, url, title)) {
+        foreach (var urlChapter in GetToc(doc, url, title)) {
             Console.WriteLine($"Загружаю главу {urlChapter.Title.CoverQuotes()}");
             result.Add(await GetChapter(urlChapter));
         }
@@ -47,7 +47,7 @@ public class SamlibGetter : GetterBase {
         return result;
     }
 
-    private IEnumerable<UrlChapter> GetChapters(HtmlDocument doc, Uri url, string title) {
+    private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url, string title) {
         var content = GetStringBetween(doc.Text, START_LINK_BLOCK_PATTERN, END_LINK_BLOCK_PATTERN);
         if (string.IsNullOrWhiteSpace(content)) {
             yield return new UrlChapter(url, title);

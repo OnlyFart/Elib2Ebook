@@ -44,7 +44,7 @@ public class FicbookGetter : GetterBase {
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url, string title) {
         var result = new List<Chapter>();
             
-        foreach (var ficbookChapter in GetChapters(doc, url, title)) {
+        foreach (var ficbookChapter in GetToc(doc, url, title)) {
             Console.WriteLine($"Загружаю главу {ficbookChapter.Title.CoverQuotes()}");
             var chapter = new Chapter();
             var chapterDoc = await GetChapter(ficbookChapter);
@@ -80,7 +80,7 @@ public class FicbookGetter : GetterBase {
         return text.AsHtmlDoc();
     }
 
-    private static IEnumerable<UrlChapter> GetChapters(HtmlDocument doc, Uri url, string title) {
+    private static IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url, string title) {
         var links = doc.QuerySelectorAll("li.part");
         if (links.Count == 0) {
             yield return new UrlChapter(url, title);

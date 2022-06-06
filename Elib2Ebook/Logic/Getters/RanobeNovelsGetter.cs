@@ -36,7 +36,7 @@ public class RanobeNovelsGetter : GetterBase {
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {
         var result = new List<Chapter>();
             
-        foreach (var ranobeChapter in await GetChapters(doc)) {
+        foreach (var ranobeChapter in await GetToc(doc)) {
             Console.WriteLine($"Загружаю главу {ranobeChapter.Title.CoverQuotes()}");
             var chapter = new Chapter();
             var chapterDoc = await GetChapter(new Uri($"https://ranobe-novels.ru/{ranobeChapter.Name}"));
@@ -57,7 +57,7 @@ public class RanobeNovelsGetter : GetterBase {
             .AsHtmlDoc();
     }
 
-    private async Task<IEnumerable<RanobeNovelsChapter>> GetChapters(HtmlDocument doc) {
+    private async Task<IEnumerable<RanobeNovelsChapter>> GetToc(HtmlDocument doc) {
         var data = new Dictionary<string, string> {
             ["action"] = "select_Ajax",
             ["query"] = "catChapters",

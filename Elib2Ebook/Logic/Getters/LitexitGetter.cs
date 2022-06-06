@@ -82,7 +82,7 @@ public class LitexitGetter : GetterBase {
     private async Task<IEnumerable<Chapter>> FillChapters(Uri uri, HtmlDocument doc) {
         var result = new List<Chapter>();
 
-        foreach (var bookChapter in await GetChapters(doc)) {
+        foreach (var bookChapter in await GetToc(doc)) {
             var chapter = new Chapter();
             Console.WriteLine($"Загружаю главу {bookChapter.Title.CoverQuotes()}");
 
@@ -100,7 +100,7 @@ public class LitexitGetter : GetterBase {
         return result;
     }
 
-    private async Task<IEnumerable<LitexitChapter>> GetChapters(HtmlDocument doc) {
+    private async Task<IEnumerable<LitexitChapter>> GetToc(HtmlDocument doc) {
         var response = await _config.Client.GetAsync(new Uri($"https://litexit.ru/api/v1/book/{GetInternalId(doc)}/chapters"));
 
         var content = await response.Content.ReadAsStringAsync();

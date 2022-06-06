@@ -53,7 +53,7 @@ public class RanobesComGetter : GetterBase {
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {
         var result = new List<Chapter>();
 
-        foreach (var ranobeChapter in await GetChapters(GetTocLink(doc, url))) {
+        foreach (var ranobeChapter in await GetToc(GetTocLink(doc, url))) {
             Console.WriteLine($"Загружаю главу {ranobeChapter.Title.CoverQuotes()}");
             var chapter = new Chapter();
             var chapterDoc = await GetChapter(url, ranobeChapter.Url);
@@ -98,7 +98,7 @@ public class RanobesComGetter : GetterBase {
         return new Uri(uri, new Uri(relativeUri).AbsolutePath.Trim('/'));
     }
         
-    private async Task<IEnumerable<UrlChapter>> GetChapters(Uri tocUri) {
+    private async Task<IEnumerable<UrlChapter>> GetToc(Uri tocUri) {
         var doc = await GetHtmlDocument(tocUri);
         var lastA = doc.QuerySelector("div.pages a:last-child")?.InnerText;
         var pages = string.IsNullOrWhiteSpace(lastA) ? 1 : int.Parse(lastA);
