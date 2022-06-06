@@ -26,7 +26,7 @@ public static class HttpClientExtensions {
 
                 return response;
             } catch (Exception ex) {
-                Console.WriteLine(ex);
+                Console.WriteLine(ex.Message);
                 await Task.Delay(GetTimeout(errorTimeout));
             }
         }
@@ -46,7 +46,7 @@ public static class HttpClientExtensions {
 
                 return response;
             } catch (Exception ex) {
-                Console.WriteLine(ex);
+                Console.WriteLine(ex.Message);
                 await Task.Delay(GetTimeout(errorTimeout));
             }
         }
@@ -70,7 +70,7 @@ public static class HttpClientExtensions {
                     
                 return response;
             } catch (Exception ex) {
-                Console.WriteLine(ex);
+                Console.WriteLine(ex.Message);
                 await Task.Delay(GetTimeout(errorTimeout));
             }
         }
