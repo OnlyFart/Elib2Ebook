@@ -94,9 +94,25 @@ public class LitresGetter : GetterBase {
             Title = title,
             Author = GetAuthor(doc, url),
             Annotation = doc.QuerySelector("div.biblio_book_descr_publishers")?.InnerHtml,
+            Seria = GetSeria(doc, url)
         };
         
         return book;
+    }
+
+    private static Seria GetSeria(HtmlDocument doc, Uri url) {
+        var a = doc.QuerySelector("span.serie_item a");
+        if (a != default) {
+            var number = a.GetTextBySelector("+ span.number");
+            
+            return new Seria {
+                Name = a.GetText(),
+                Url = new Uri(url, a.Attributes["href"].Value),
+                Number = !string.IsNullOrWhiteSpace(number) && number.StartsWith("#") ? number.Trim('#') : string.Empty
+            };
+        }
+
+        return default;
     }
     
     private static Author GetAuthor(HtmlDocument doc, Uri url) {

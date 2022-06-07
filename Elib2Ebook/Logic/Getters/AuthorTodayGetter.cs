@@ -22,13 +22,7 @@ public class AuthorTodayGetter : GetterBase {
     protected override string GetId(Uri url) {
         return url.Segments[2].Trim('/');
     }
-
-    /// <summary>
-    /// Получение книги
-    /// </summary>
-    /// <param name="url">Ссылка на книгу</param>
-    /// <returns></returns>
-    /// <exception cref="Exception"></exception>
+    
     public override async Task<Book> Get(Uri url) { 
         var details = await GetBookDetails(GetId(url));
 
@@ -102,12 +96,13 @@ public class AuthorTodayGetter : GetterBase {
     private async Task<IEnumerable<Chapter>> FillChapters(AuthorTodayBookDetails book) {
         var chapters = new List<Chapter>();
         foreach (var atChapter in await GetChapters(book)) {
-            var atChapterTitle = atChapter.Title.ReplaceNewLine();
-            Console.WriteLine($"Загружаю главу {atChapterTitle.CoverQuotes()}");
+            var title = atChapter.Title.ReplaceNewLine();
+            Console.WriteLine($"Загружаю главу {title.CoverQuotes()}");
+            
             var chapter = new Chapter();
             var chapterDoc = atChapter.Decode(UserId).AsHtmlDoc();
 
-            chapter.Title = atChapterTitle;
+            chapter.Title = title;
             chapter.Images = await GetImages(chapterDoc, new Uri("https://author.today/"));
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;
             
