@@ -2,26 +2,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
-using Elib2Ebook.Types.AuthorToday.Response;
 using Elib2Ebook.Types.Book;
-using HtmlAgilityPack;
-using HtmlAgilityPack.CssSelectors.NetCore;
 using Elib2Ebook.Extensions;
+using Elib2Ebook.Types.AuthorToday;
+using HtmlAgilityPack;
 
 namespace Elib2Ebook.Logic.Getters; 
 
 public class AuthorTodayGetter : GetterBase {
-    private readonly Regex _userIdRgx = new("userId: (?<userId>\\d+),");
-
     public AuthorTodayGetter(BookGetterConfig config) : base(config) { }
 
     protected override Uri SystemUrl => new("https://author.today/");
+
+    private string UserId { get; set; } = string.Empty;
     
     protected override string GetId(Uri url) {
         return url.Segments[2].Trim('/');
@@ -33,63 +31,43 @@ public class AuthorTodayGetter : GetterBase {
     /// <param name="url">Ссылка на книгу</param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    public override async Task<Book> Get(Uri url) {
-        var bookId = GetId(url);
-        
-        url = new Uri($"https://author.today/work/{bookId}");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+    public override async Task<Book> Get(Uri url) { 
+        var details = await GetBookDetails(GetId(url));
 
-        
         var book = new Book(url) {
-            Cover = await GetCover(doc, url),
-            Chapters = await FillChapters(bookId, GetUserId(doc)),
-            Title = doc.GetTextBySelector("h1"),
-            Author = GetAuthor(doc, url),
-            Annotation = doc.QuerySelector("div.rich-content")?.InnerHtml,
-            Seria = GetSeria(doc, url)
+            Cover = await GetCover(details),
+            Chapters = await FillChapters(details),
+            Title = details.Title,
+            Author = GetAuthor(details),
+            Annotation = details.Annotation,
+            Seria = GetSeria(details)
         };
         
         return book;
     }
 
-    private static Author GetAuthor(HtmlDocument doc, Uri url) {
-        var author = doc.QuerySelector("div.book-authors a");
-        return new Author(author.GetText(), new Uri(url, author.Attributes["href"]?.Value ?? string.Empty));
-    }
-
-    private static Seria GetSeria(HtmlDocument doc, Uri url) {
-        var a = doc.QuerySelector("div.book-meta-panel a[href^=/work/series/]");
-        if (a != default) {
-            var seria = new Seria();
-            seria.Name = a.GetText();
-            seria.Url = new Uri(url, a.Attributes["href"].Value);
-            
-            var numberText = a.GetTextBySelector("+ span");
-            if (!string.IsNullOrWhiteSpace(numberText) && numberText.StartsWith("#")) {
-                seria.Number = numberText.Trim('#');
-            }
-
-            return seria;
+    private async Task<AuthorTodayBookDetails> GetBookDetails(string bookId) {
+        var response = await _config.Client.GetWithTriesAsync(new Uri($"https://api.author.today/v1/work/{bookId}/details"));
+        if (response.StatusCode != HttpStatusCode.OK) {
+            throw new Exception("Книга не найдена");
         }
 
-        return default;
+        return await response.Content.ReadFromJsonAsync<AuthorTodayBookDetails>();
     }
 
-    /// <summary>
-    /// Получение идентификатора пользователя из контента
-    /// </summary>
-    /// <param name="doc"></param>
-    /// <returns></returns>
-    private string GetUserId(HtmlDocument doc) {
-        var match = _userIdRgx.Match(doc.ParsedText);
-        return match.Success ? match.Groups["userId"].Value : string.Empty;
+    private static Author GetAuthor(AuthorTodayBookDetails book) {
+        return new Author(book.AuthorFio, new Uri($"https://author.today/u/{book.AuthorUserName}/works"));
     }
 
-    private MultipartFormDataContent GenerateAuthData(string token) {
-        return new() {
-            {new StringContent(token), "__RequestVerificationToken"},
-            {new StringContent(_config.Login), "Login"},
-            {new StringContent(_config.Password), "Password"}
+    private static Seria GetSeria(AuthorTodayBookDetails book) {
+        if (!book.SeriesId.HasValue) {
+            return default;
+        }
+
+        return new Seria {
+            Name = book.SeriesTitle,
+            Number = book.SeriesWorkNumber.HasValue ? book.SeriesWorkNumber.ToString() : string.Empty,
+            Url = new Uri($"https://author.today/work/series/{book.SeriesId}")
         };
     }
 
@@ -97,134 +75,69 @@ public class AuthorTodayGetter : GetterBase {
     /// Авторизация в системе
     /// </summary>
     /// <exception cref="Exception"></exception>
-    public override async Task Authorize(){
+    public override async Task Authorize() {
+        _config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "guest");
         if (!_config.HasCredentials) {
             return;
         }
 
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri("https://author.today/"));
-        var token = doc.QuerySelector("[name=__RequestVerificationToken]")?.Attributes["value"]?.Value;
-
-        using var post = await _config.Client.PostAsync(new Uri("https://author.today/account/login"), GenerateAuthData(token));
-        var response = await post.Content.ReadFromJsonAsync<ApiResponse<object>>();
-            
-        if (response?.IsSuccessful == true) {
+        var response = await _config.Client.PostAsJsonAsync(new Uri("https://api.author.today/v1/account/login-by-password"), new { _config.Login, _config.Password });
+        var data = await response.Content.ReadFromJsonAsync<AuthorTodayAuthResponse>();
+        if (!string.IsNullOrWhiteSpace(data?.Token)) {
             Console.WriteLine("Успешно авторизовались");
+            _config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", data.Token);
+
+            var user = await _config.Client.GetFromJsonAsync<AuthorTodayUser>(new Uri("https://api.author.today/v1/account/current-user"));
+            UserId = user!.Id.ToString();
         } else {
-            throw new Exception($"Не удалось авторизоваться. {response?.Messages?.FirstOrDefault()}");
+            throw new Exception($"Не удалось авторизоваться. {data?.Message}"); 
         }
     }
-
-    /// <summary>
-    /// Получение обложки
-    /// </summary>
-    /// <param name="doc">HtmlDocument</param>
-    /// <param name="bookUri">Адрес страницы с книгой</param>
-    /// <returns></returns>
-    private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
-        var imagePath = doc.QuerySelector("img.cover-image")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
+    
+    private Task<Image> GetCover(AuthorTodayBookDetails book) {
+        return !string.IsNullOrWhiteSpace(book.CoverUrl) ? GetImage(new Uri(book.CoverUrl)) : Task.FromResult(default(Image));
     }
+    
+    private async Task<IEnumerable<Chapter>> FillChapters(AuthorTodayBookDetails book) {
+        var chapters = new List<Chapter>();
+        foreach (var atChapter in await GetChapters(book)) {
+            var atChapterTitle = atChapter.Title.ReplaceNewLine();
+            Console.WriteLine($"Загружаю главу {atChapterTitle.CoverQuotes()}");
+            var chapter = new Chapter();
+            var chapterDoc = Decode(atChapter);
 
-    /// <summary>
-    /// Получение списка частей из кода страницы
-    /// </summary>
-    /// <param name="bookId">Идентификатор книги</param>
-    /// <returns></returns>
-    private async Task<List<Chapter>> GetToc(string bookId) {
-        var bookUri = new Uri($"https://author.today/reader/{bookId}");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(bookUri);
-        
-        const string START_PATTERN = "chapters:";
-        var startIndex = doc.ParsedText.IndexOf(START_PATTERN, StringComparison.Ordinal) + START_PATTERN.Length;
-        var endIndex = doc.ParsedText.IndexOf("}],", startIndex, StringComparison.Ordinal) + 2;
-        var metaContent = doc.ParsedText[startIndex..endIndex].Trim().TrimEnd(';', ')');
-        return metaContent.Deserialize<List<Chapter>>();
-    }
-
-    /// <summary>
-    /// Дозагрузка различных пареметров частей
-    /// </summary>
-    /// <param name="bookId">Идентификатор книги</param>
-    /// <param name="userId">Идентификатор пользователя</param>
-    private async Task<IEnumerable<Chapter>> FillChapters(string bookId, string userId) {
-        var chapters = await GetToc(bookId);
-            
-        foreach (var chapter in chapters) {
-            var chapterUri = new Uri($"https://author.today/reader/{bookId}/chapter?id={chapter.Id}");
-                
-            Console.WriteLine($"Получаю главу {chapter.Title.CoverQuotes()}");
-            using var response = await _config.Client.GetWithTriesAsync(chapterUri);
-
-            if (response is not { StatusCode: HttpStatusCode.OK }) {
-                throw new Exception($"Не удалось получить главу {chapter.Title.CoverQuotes()}");
-            }
-
-            var secret = GetSecret(response, userId);
-            if (string.IsNullOrWhiteSpace(secret)) {
-                Console.WriteLine($"Невозможно расшифровать главу {chapter.Title.CoverQuotes()}. Возможно, платный доступ.");
-                continue;
-            }
-                
-            Console.WriteLine($"Расшифровываем главу {chapter.Title.CoverQuotes()}. Секрет {secret.CoverQuotes()}");
-            var decodeText = Decode(await GetText(response), secret);
-                
-            // Порядок вызова функций важен. В методе GetImages происходит
-            // исправления урлов картинок для их отображения в epub документе
-            var chapterDoc = decodeText.AsHtmlDoc();
-            chapter.Images = await GetImages(chapterDoc, chapterUri);
+            chapter.Title = atChapterTitle;
+            chapter.Images = await GetImages(chapterDoc, new Uri("https://author.today/"));
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;
+            
+            chapters.Add(chapter);
         }
             
         return chapters;
     }
 
-    /// <summary>
-    /// Получение секрета для расшифровки контента книги
-    /// </summary>
-    /// <param name="response">Ответ сервера</param>
-    /// <param name="userId">Идентификатор пользователя</param>
-    /// <returns></returns>
-    /// <exception cref="Exception"></exception>
-    private static string GetSecret(HttpResponseMessage response, string userId) {
-        if (!response.Headers.Contains("Reader-Secret")) {
-            return string.Empty;
-        }
-            
-        foreach (var header in response.Headers.GetValues("Reader-Secret")) {
-            return string.Join("", header.Reverse()) + "@_@" + userId;
+    private async Task<IEnumerable<AuthorTodayChapter>> GetChapters(AuthorTodayBookDetails book) {
+        var result = new List<AuthorTodayChapter>();
+        
+        foreach (var chunk in book.Chapters.OrderBy(c => c.SortOrder).Chunk(100)) {
+            var ids = string.Join("&", chunk.Select((c, i) => $"ids[{i}]={c.Id}"));
+            var uri = new Uri($"https://api.author.today/v1/work/{book.Id}/chapter/many-texts?{ids}");
+            var chapters = await _config.Client.GetFromJsonAsync<AuthorTodayChapter[]>(uri);
+            if (chapters != default) {
+                result.AddRange(chapters.Where(c => c.IsSuccessful));
+            }
         }
 
-        return string.Empty;
+        return result;
     }
 
-    /// <summary>
-    /// Получение зашифрованного текста главы книги
-    /// </summary>
-    /// <param name="response">Ответ сервера</param>
-    /// <returns></returns>
-    /// <exception cref="Exception"></exception>
-    private static async Task<string> GetText(HttpResponseMessage response) {
-        var data = await response.Content.ReadFromJsonAsync<ApiResponse<ChapterData>>();
-        if (data?.IsSuccessful == false) {
-            throw new Exception($"Не удалось получить контент части. {data.Messages.FirstOrDefault()}");
-        }
-
-        return data?.Data.Text ?? string.Empty;
-    }
-
-    /// <summary>
-    /// Расшифровка контента главы книги с использованием ключа
-    /// </summary>
-    /// <param name="secret"></param>
-    /// <param name="encodedText"></param>
-    /// <returns></returns>
-    private static string Decode(string encodedText, string secret) {
+    private HtmlDocument Decode(AuthorTodayChapter chapter) {
+        var secret = string.Join("", chapter.Key.Reverse()) + "@_@" + UserId;
         var sb = new StringBuilder();
-        for (var i = 0; i < encodedText.Length; i++) {
-            sb.Append((char) (encodedText[i] ^ secret[i % secret.Length]));
+        for (var i = 0; i < chapter.Text.Length; i++) {
+            sb.Append((char) (chapter.Text[i] ^ secret[i % secret.Length]));
         }
 
-        return sb.ToString().HtmlDecode();
+        return sb.ToString().AsHtmlDoc();
     }
 }

@@ -36,8 +36,4 @@
       </Reference>
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Types\AuthorToday" />
-    </ItemGroup>
-
 </Project>
