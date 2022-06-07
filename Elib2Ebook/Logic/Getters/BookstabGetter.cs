@@ -43,7 +43,7 @@ public class BookstabGetter : GetterBase {
     private static string GetAnnotation(BookstabBook book) {
         return string.IsNullOrWhiteSpace(book.Excerpt) ? 
             string.Empty : 
-            string.Join("", book.Excerpt.Split("\n", StringSplitOptions.RemoveEmptyEntries).Select(s => $"<p>{s.Trim()}</p>"));
+            string.Join("", book.Excerpt.Split("\n", StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim().CoverTag("p")));
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(BookstabApiResponse response, Uri uri, string bookId) {

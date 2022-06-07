@@ -122,7 +122,7 @@ public class SamlibGetter : GetterBase {
             var htmlDoc = line.AsHtmlDoc();
             foreach (var node in htmlDoc.DocumentNode.ChildNodes) {
                 if (!string.IsNullOrWhiteSpace(node.InnerText) || node.QuerySelector("img") != null) {
-                    text.Append($"<p>{node.InnerHtml.HtmlDecode().Trim()}</p>");
+                    text.Append(node.InnerHtml.HtmlDecode().CoverTag("p"));
                 }
             }
         }

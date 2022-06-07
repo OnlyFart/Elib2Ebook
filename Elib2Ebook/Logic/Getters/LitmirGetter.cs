@@ -134,7 +134,7 @@ public class LitmirGetter : GetterBase {
                         text.Append($"<img src='{node.Attributes["src"].Value}'/>");
                     } else {
                         if (!string.IsNullOrWhiteSpace(node.InnerHtml)) {
-                            text.Append($"<p>{node.InnerHtml.HtmlDecode()}</p>");
+                            text.Append(node.InnerHtml.HtmlDecode().CoverTag("p"));
                         }
                     }
                 } else {

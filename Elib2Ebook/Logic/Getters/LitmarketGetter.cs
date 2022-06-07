@@ -167,7 +167,7 @@ public class LitmarketGetter : GetterBase {
                     }
                 }
 
-                text.Append($"<p>{p}</p>");
+                text.Append(p.ToString().CoverTag("p"));
             }
 
             var chapterDoc = text.AsHtmlDoc();

@@ -206,13 +206,12 @@ public class ProdamanGetter : GetterBase {
             foreach (var node in nodes) {
                 if (singleChapter || node.Name != "h3") {
                     if (!string.IsNullOrWhiteSpace(node.InnerText)) {
-                        text.Append($"<p>{Decode(node.InnerText.HtmlDecode())}</p>");
+                        text.Append(Decode(node.InnerText.HtmlDecode()).CoverTag("p"));
                     }
                 } else {
                     await AddChapter(chapters, chapter, text, url);
                     text.Clear();
                     chapter = CreateChapter(Decode(node.InnerText.HtmlDecode()));
-                    Console.WriteLine(chapter.Title);
                 }
             }
         }

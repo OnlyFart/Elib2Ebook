@@ -53,7 +53,7 @@ public class RanobeNovelsGetter : GetterBase {
     private async Task<HtmlDocument> GetChapter(Uri url) {
         var doc = await GetSafety(url);
         return doc.QuerySelectorAll("div.entry-content > p")
-            .Aggregate(new StringBuilder(), (sb, node) => sb.Append($"<p>{node.InnerHtml}</p>"))
+            .Aggregate(new StringBuilder(), (sb, node) => sb.Append(node.InnerHtml.CoverTag("p")))
             .AsHtmlDoc();
     }
 

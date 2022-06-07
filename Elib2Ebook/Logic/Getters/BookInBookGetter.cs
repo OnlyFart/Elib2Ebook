@@ -80,7 +80,7 @@ public class BookInBookGetter : GetterBase {
                     continue;
                 }
                 
-                sb.Append($"<p>{line}</p>");
+                sb.Append(line.CoverTag("p"));
             }
         }
     }

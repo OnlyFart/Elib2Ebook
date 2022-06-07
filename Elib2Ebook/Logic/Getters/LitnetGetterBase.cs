@@ -132,7 +132,7 @@ public abstract class LitnetGetterBase : GetterBase {
     private static string GetAnnotation(LitnetBookResponse book) {
         return string.IsNullOrWhiteSpace(book.Annotation) ? 
             string.Empty : 
-            string.Join("", book.Annotation.Split("\n", StringSplitOptions.RemoveEmptyEntries).Select(s => $"<p>{s.Trim()}</p>"));
+            string.Join("", book.Annotation.Split("\n", StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim().CoverTag("p")));
     }
     
     private Task<Image> GetCover(LitnetBookResponse book) {

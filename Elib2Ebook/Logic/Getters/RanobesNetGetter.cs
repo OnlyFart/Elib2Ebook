@@ -78,10 +78,10 @@ public class RanobesNetGetter : GetterBase {
         foreach (var node in doc.QuerySelectorAll("#arrticle > :not(.splitnewsnavigation)")) {
             var tag = node.Name == "#text" ? "p" : node.Name;
             if (tag == "img") {
-                sb.Append($"<{tag}>{node.OuterHtml.Trim()}</{tag}>");
+                sb.Append(node.OuterHtml.Trim());
             } else {
                 if (node.InnerHtml?.Contains("window.yaContextCb") == false) {
-                    sb.Append($"<{tag}>{node.InnerHtml.Trim()}</{tag}>");
+                    sb.Append(node.InnerHtml.Trim().CoverTag(tag));
                 }
             }
         }

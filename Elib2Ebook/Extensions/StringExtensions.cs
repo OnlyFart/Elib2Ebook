@@ -86,7 +86,11 @@ public static class StringExtensions {
         
         return self.Trim();
     }
-    
+
+    public static string CoverTag(this string self, string tag) {
+        return $"<{tag}>{self}</{tag}>";
+    }
+
     public static string CleanInvalidXmlChars(this string self) {
         return string.IsNullOrWhiteSpace(self) ? self : Regex.Replace(self, "[\x00-\x08\x0B\x0C\x0E-\x1F\x26]", string.Empty, RegexOptions.Compiled);
     }

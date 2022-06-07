@@ -80,7 +80,7 @@ public class FicbookGetter : GetterBase {
                 continue;
             }
                 
-            text.Append($"<p>{line.HtmlEncode()}</p>");
+            text.Append(line.HtmlEncode().CoverTag("p"));
         }
 
         return text.AsHtmlDoc();

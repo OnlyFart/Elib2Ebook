@@ -72,7 +72,7 @@ public class TwilightRussiaGetter : GetterBase {
             
             var nodeText = node.GetText();
             if (!string.IsNullOrWhiteSpace(nodeText)) {
-                text.Append($"<p>{nodeText}</p>");
+                text.Append(nodeText.CoverTag("p"));
             }
         }
         

@@ -60,7 +60,7 @@ public abstract class NovelxoGetterBase : GetterBase {
             var container = doc.QuerySelector("div.readerbody-wg");
             foreach (var node in container.QuerySelectorAll("p, div.ctp")) {
                 if (node.Name == "p") {
-                    sb.Append($"<p>{node.InnerHtml.HtmlDecode()}</p>");
+                    sb.Append(node.InnerHtml.HtmlDecode().CoverTag(node.Name));
                 } else if (node.Name == "div" && node.Attributes["class"]?.Value?.Contains("ctp") == true) {
                     if (node.Attributes["class"].Value.Contains("protected")) {
                         sb.Append(await GetProtected(doc, node));
