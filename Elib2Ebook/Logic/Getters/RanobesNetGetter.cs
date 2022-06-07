@@ -39,7 +39,7 @@ public class RanobesNetGetter : GetterBase {
         var book = new Book(url.ReplaceHost(SystemUrl.Host)) {
             Cover = await GetCover(doc, url),
             Chapters = await FillChapters(doc, url),
-            Title = doc.QuerySelector("h1.title").FirstChild.InnerText.Trim().HtmlDecode(),
+            Title = doc.QuerySelector("h1.title").FirstChild.InnerText.HtmlDecode(),
             Author = new Author("Ранобэс")
         };
             
@@ -78,10 +78,10 @@ public class RanobesNetGetter : GetterBase {
         foreach (var node in doc.QuerySelectorAll("#arrticle > :not(.splitnewsnavigation)")) {
             var tag = node.Name == "#text" ? "p" : node.Name;
             if (tag == "img") {
-                sb.Append(node.OuterHtml.Trim());
+                sb.Append(node.OuterHtml.HtmlDecode());
             } else {
                 if (node.InnerHtml?.Contains("window.yaContextCb") == false) {
-                    sb.Append(node.InnerHtml.Trim().CoverTag(tag));
+                    sb.Append(node.InnerHtml.HtmlDecode().CoverTag(tag));
                 }
             }
         }
