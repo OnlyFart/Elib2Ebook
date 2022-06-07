@@ -1,3 +1,5 @@
+using System.Linq;
+using System.Text;
 using System.Text.Json.Serialization;
 
 namespace Elib2Ebook.Types.AuthorToday; 
@@ -20,4 +22,14 @@ public class AuthorTodayChapter {
     
     [JsonPropertyName("IsSuccessful")]
     public bool IsSuccessful { get; set; }
+
+    public string Decode(string userId) {
+        var secret = string.Join("", Key.Reverse()) + "@_@" + userId;
+        var sb = new StringBuilder();
+        for (var i = 0; i < Text.Length; i++) {
+            sb.Append((char) (Text[i] ^ secret[i % secret.Length]));
+        }
+
+        return sb.ToString();
+    }
 }

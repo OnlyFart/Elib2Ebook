@@ -42,9 +42,9 @@ public class RanobesComGetter : GetterBase {
     }
 
     private async Task<Uri> GetMainUrl(Uri url) {
-        if (url.Segments[1] == "chapters/") {
+        if (url.Segments[1] == "chapters/" || !url.Segments.Last().EndsWith(".html")) {
             var doc = await GetHtmlDocument(new Uri(new Uri($"https://{IP}/"), url.AbsolutePath));
-            return new Uri(url, doc.QuerySelector("div.category a").Attributes["href"].Value);
+            return new Uri(url, doc.QuerySelector("h5 a").Attributes["href"].Value);
         }
 
         return url;

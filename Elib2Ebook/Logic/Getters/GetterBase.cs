@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -55,29 +56,29 @@ public abstract class GetterBase : IDisposable {
     /// <param name="doc"></param>
     /// <param name="baseUri"></param>
     protected async Task<IEnumerable<Image>> GetImages(HtmlDocument doc, Uri baseUri) {
-        var images = new List<Image>();
-        foreach (var img in doc.QuerySelectorAll("img, image")) {
+        var images = new ConcurrentBag<Image>();
+        await Parallel.ForEachAsync(doc.QuerySelectorAll("img, image"), async (img, _) => {
             var path = img.Attributes["src"]?.Value ?? img.Attributes["data-src"]?.Value;
             if (string.IsNullOrWhiteSpace(path)) {
                 img.Remove();
-                continue;
+                return;
             }
-        
+
             if (!Uri.TryCreate(baseUri, path, out var uri)) {
                 img.Remove();
-                continue;
+                return;
             }
-                
+
             var image = await GetImage(uri);
             if (image?.Content == null || image.Content.Length == 0) {
                 img.Remove();
-                continue;
+                return;
             }
-            
+
             img.Attributes.RemoveAll();
             img.Attributes.Add("src", uri.GetFileName());
             images.Add(image);
-        }
+        });
 
         return images;
     }

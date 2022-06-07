@@ -4,13 +4,11 @@ using System.Linq;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Types.Book;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.AuthorToday;
-using HtmlAgilityPack;
 
 namespace Elib2Ebook.Logic.Getters; 
 
@@ -71,18 +69,21 @@ public class AuthorTodayGetter : GetterBase {
         };
     }
 
-    /// <summary>
-    /// Авторизация в системе
-    /// </summary>
-    /// <exception cref="Exception"></exception>
-    public override async Task Authorize() {
+    public override async Task Init() {
+        await base.Init();
+        
         _config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "guest");
+        _config.Client.Timeout = TimeSpan.FromSeconds(10);
+    }
+
+    public override async Task Authorize() {
         if (!_config.HasCredentials) {
             return;
         }
 
         var response = await _config.Client.PostAsJsonAsync(new Uri("https://api.author.today/v1/account/login-by-password"), new { _config.Login, _config.Password });
         var data = await response.Content.ReadFromJsonAsync<AuthorTodayAuthResponse>();
+        
         if (!string.IsNullOrWhiteSpace(data?.Token)) {
             Console.WriteLine("Успешно авторизовались");
             _config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", data.Token);
@@ -104,7 +105,7 @@ public class AuthorTodayGetter : GetterBase {
             var atChapterTitle = atChapter.Title.ReplaceNewLine();
             Console.WriteLine($"Загружаю главу {atChapterTitle.CoverQuotes()}");
             var chapter = new Chapter();
-            var chapterDoc = Decode(atChapter);
+            var chapterDoc = atChapter.Decode(UserId).AsHtmlDoc();
 
             chapter.Title = atChapterTitle;
             chapter.Images = await GetImages(chapterDoc, new Uri("https://author.today/"));
@@ -122,22 +123,13 @@ public class AuthorTodayGetter : GetterBase {
         foreach (var chunk in book.Chapters.OrderBy(c => c.SortOrder).Chunk(100)) {
             var ids = string.Join("&", chunk.Select((c, i) => $"ids[{i}]={c.Id}"));
             var uri = new Uri($"https://api.author.today/v1/work/{book.Id}/chapter/many-texts?{ids}");
-            var chapters = await _config.Client.GetFromJsonAsync<AuthorTodayChapter[]>(uri);
+            var response = await _config.Client.GetWithTriesAsync(uri);
+            var chapters = await response.Content.ReadFromJsonAsync<AuthorTodayChapter[]>();
             if (chapters != default) {
                 result.AddRange(chapters.Where(c => c.IsSuccessful));
             }
         }
 
         return result;
-    }
-
-    private HtmlDocument Decode(AuthorTodayChapter chapter) {
-        var secret = string.Join("", chapter.Key.Reverse()) + "@_@" + UserId;
-        var sb = new StringBuilder();
-        for (var i = 0; i < chapter.Text.Length; i++) {
-            sb.Append((char) (chapter.Text[i] ^ secret[i % secret.Length]));
-        }
-
-        return sb.ToString().AsHtmlDoc();
     }
 }
