@@ -31,7 +31,14 @@ public abstract class GetterBase : IDisposable {
     }
 
     protected virtual HttpRequestMessage GetImageRequestMessage(Uri uri) {
-        return new HttpRequestMessage(HttpMethod.Get, uri);
+        var message = new HttpRequestMessage(HttpMethod.Get, uri);
+        message.Version = _config.Client.DefaultRequestVersion;
+
+        foreach (var header in _config.Client.DefaultRequestHeaders) {
+            message.Headers.Add(header.Key, header.Value);
+        }
+        
+        return message;
     }
     /// <summary>
     /// Получение изображения
@@ -42,9 +49,13 @@ public abstract class GetterBase : IDisposable {
         Console.WriteLine($"Загружаю картинку {uri.ToString().CoverQuotes()}");
         try {
             using var response = await _config.Client.SendWithTriesAsync(() => GetImageRequestMessage(uri));
-            return response is { StatusCode: HttpStatusCode.OK } ? 
-                new Image(uri.GetFileName(), await response.Content.ReadAsByteArrayAsync()) : 
-                null;
+            if (response is { StatusCode: HttpStatusCode.OK }) {
+                return new Image(await response.Content.ReadAsByteArrayAsync()) {
+                    Path = uri.GetFileName()
+                };
+            }
+
+            return null;
         } catch (Exception) {
             return null;
         }
@@ -76,7 +87,7 @@ public abstract class GetterBase : IDisposable {
             }
 
             img.Attributes.RemoveAll();
-            img.Attributes.Add("src", uri.GetFileName());
+            img.Attributes.Add("src", image.Path);
             images.Add(image);
         });
 
