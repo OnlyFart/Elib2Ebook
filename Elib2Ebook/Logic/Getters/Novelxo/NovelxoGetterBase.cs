@@ -13,7 +13,7 @@ using Elib2Ebook.Types.Book;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 
-namespace Elib2Ebook.Logic.Getters; 
+namespace Elib2Ebook.Logic.Getters.Novelxo; 
 
 public abstract class NovelxoGetterBase : GetterBase {
     private static readonly byte[] Key = StringToByteArray("61626326312a7e235e325e2373305e3d295e5e3725623334");

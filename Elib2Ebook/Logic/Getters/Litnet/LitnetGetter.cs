@@ -1,7 +1,7 @@
 using System;
 using Elib2Ebook.Configs;
 
-namespace Elib2Ebook.Logic.Getters; 
+namespace Elib2Ebook.Logic.Getters.Litnet; 
 
 public class LitnetGetter : LitnetGetterBase {
     public LitnetGetter(BookGetterConfig config) : base(config) { }

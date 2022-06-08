@@ -5,32 +5,34 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
+using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
-using Elib2Ebook.Extensions;
 
-namespace Elib2Ebook.Logic.Getters; 
+namespace Elib2Ebook.Logic.Getters.TopLiba; 
 
-public class BiglibaGetter : GetterBase{
-    public BiglibaGetter(BookGetterConfig config) : base(config) { }
-    protected override Uri SystemUrl => new("https://bigliba.com/");
-    
+public abstract class TopLibaGetterBase : GetterBase {
+    public TopLibaGetterBase(BookGetterConfig config) : base(config) { }
+
     protected override string GetId(Uri url) {
         return url.Segments[2].Trim('/');
     }
     
+    protected abstract Seria GetSeria(HtmlDocument doc, Uri url);
+
+    protected abstract Task<Image> GetCover(HtmlDocument doc, Uri uri);
+    
     public override async Task<Book> Get(Uri url) {
-        var token = await GetToken();
         var bookId = GetId(url);
-        url = new Uri($"https://bigliba.com/books/{bookId}");
+        url = new Uri($"https://{SystemUrl.Host}/books/{bookId}");
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
         var title = doc.GetTextBySelector("h1[itemprop=name]");
 
         var book = new Book(url) {
             Cover = await GetCover(doc, url),
-            Chapters = await FillChapters(url, bookId, token, title),
-            Title = doc.GetTextBySelector("h1[itemprop=name]"),
+            Chapters = await FillChapters(url, bookId, GetToken(doc), title),
+            Title = title,
             Author = GetAuthor(doc, url),
             Annotation = doc.QuerySelector("div.description")?.InnerHtml,
             Seria = GetSeria(doc, url)
@@ -39,29 +41,6 @@ public class BiglibaGetter : GetterBase{
         return book;
     }
 
-    private static Seria GetSeria(HtmlDocument doc, Uri url) {
-        var a = doc.QuerySelector("div.book-series a");
-        if (a != default) {
-            var text = a.GetText();
-            
-            if (text.Contains('#')) {
-                var parts = text.Split(':').Last().Split("(#");
-                return new Seria {
-                    Name = parts[0].Trim(),
-                    Number = parts[1].Trim(')').Trim(),
-                    Url = new Uri(url, a.Attributes["href"].Value)
-                };
-            }
-
-            return new Seria {
-                Name = text,
-                Url = new Uri(url, a.Attributes["href"].Value)
-            };
-        }
-
-        return default;
-    }
-    
     private static Author GetAuthor(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("h2[itemprop=author] a");
         return new Author(a.GetText(), new Uri(url, a.Attributes["href"].Value));
@@ -95,7 +74,7 @@ public class BiglibaGetter : GetterBase{
     }
 
     private async Task<string> GetChapter(string bookId, string id, string token) {
-        var data = await _config.Client.PostWithTriesAsync(new Uri($"https://bigliba.com/reader/{bookId}/chapter"), GetData(id, token));
+        var data = await _config.Client.PostWithTriesAsync(new Uri($"https://{SystemUrl.Host}/reader/{bookId}/chapter"), GetData(id, token));
         return await data.Content.ReadAsStringAsync();
     }
     
@@ -109,17 +88,11 @@ public class BiglibaGetter : GetterBase{
     }
 
     private async Task<IEnumerable<string>> GetChapterIds(string bookId) {
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://bigliba.com/reader/{bookId}"));
+        var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://{SystemUrl.Host}/reader/{bookId}"));
         return new Regex("capters: \\[(?<chapters>.*?)\\]").Match(doc.Text).Groups["chapters"].Value.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim('\"'));
     }
 
-    private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
-        var imagePath = doc.QuerySelector("img[itemprop=image]")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
-    }
-
-    private async Task<string> GetToken() {
-        return await _config.Client.GetHtmlDocWithTriesAsync(new Uri("https://bigliba.com/"))
-            .ContinueWith(t => t.Result.QuerySelector("meta[name=_token]").Attributes["content"].Value);
+    private static string GetToken(HtmlDocument doc) {
+        return doc.QuerySelector("meta[name=_token]").Attributes["content"].Value;
     }
 }

@@ -1,7 +1,7 @@
 using System;
 using Elib2Ebook.Configs;
 
-namespace Elib2Ebook.Logic.Getters; 
+namespace Elib2Ebook.Logic.Getters.Novelxo; 
 
 public class NovelxoGetter : NovelxoGetterBase {
     protected override Uri SystemUrl => new("https://novelxo.com");
