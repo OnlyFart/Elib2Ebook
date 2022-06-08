@@ -84,7 +84,7 @@ public class LitresGetter : GetterBase {
     public override async Task<Book> Get(Uri url) {
         url = GetMainUrl(url);
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
-        var bookId = doc.QuerySelector("input[name=art]").Attributes["value"].Value;
+        var bookId = GetBookId(doc);
 
         var title = doc.GetTextBySelector("h1");
         
@@ -98,6 +98,20 @@ public class LitresGetter : GetterBase {
         };
         
         return book;
+    }
+
+    private static string GetBookId(HtmlDocument doc) {
+        var input = doc.QuerySelector("input[name=art]");
+        if (input != default) {
+            return input.Attributes["value"].Value;
+        }
+
+        var canonical = doc.QuerySelector("meta[property*=canonical_url]");
+        if (canonical != default) {
+            return canonical.Attributes["content"].Value.Split('/', StringSplitOptions.RemoveEmptyEntries).Last();
+        }
+
+        throw new Exception("Не удалось определить artId");
     }
 
     private static Seria GetSeria(HtmlDocument doc, Uri url) {
