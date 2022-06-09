@@ -68,21 +68,22 @@ public abstract class GetterBase : IDisposable {
     /// <param name="baseUri"></param>
     protected async Task<IEnumerable<Image>> GetImages(HtmlDocument doc, Uri baseUri) {
         var images = new ConcurrentBag<Image>();
+        var toRemove = new ConcurrentBag<HtmlNode>();
         await Parallel.ForEachAsync(doc.QuerySelectorAll("img, image"), async (img, _) => {
             var path = img.Attributes["src"]?.Value ?? img.Attributes["data-src"]?.Value;
             if (string.IsNullOrWhiteSpace(path)) {
-                img.Remove();
+                toRemove.Add(img);
                 return;
             }
 
             if (!Uri.TryCreate(baseUri, path, out var uri)) {
-                img.Remove();
+                toRemove.Add(img);
                 return;
             }
 
             var image = await GetImage(uri);
             if (image?.Content == null || image.Content.Length == 0) {
-                img.Remove();
+                toRemove.Add(img);
                 return;
             }
 
@@ -90,6 +91,10 @@ public abstract class GetterBase : IDisposable {
             img.Attributes.Add("src", image.Path);
             images.Add(image);
         });
+
+        foreach (var node in toRemove) {
+            node.Remove();
+        }
 
         return images;
     }
