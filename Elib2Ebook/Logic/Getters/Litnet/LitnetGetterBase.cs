@@ -105,21 +105,22 @@ public abstract class LitnetGetterBase : GetterBase {
             Title = litnetBook.Title.Trim(),
             Author = GetAuthor(litnetBook),
             Annotation = GetAnnotation(litnetBook),
-            Seria = await GetSeria(uri),
+            Seria = await GetSeria(uri, litnetBook),
             Lang = litnetBook.Lang
         };
             
         return book;
     }
 
-    private async Task<Seria> GetSeria(Uri url) {
+    private async Task<Seria> GetSeria(Uri url, LitnetBookResponse book) {
         try {
             var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
             var a = doc.QuerySelector("div.book-view-info-coll a[href*='sort=cycles']");
             if (a != default) {
                 return new Seria {
                     Name = a.GetText(),
-                    Url = new Uri(url, a.Attributes["href"].Value)
+                    Url = new Uri(url, a.Attributes["href"].Value),
+                    Number = book.CyclePriority is > 0 ? book.CyclePriority.Value.ToString() : string.Empty
                 };
             }
         } catch (Exception ex) {

@@ -27,4 +27,7 @@ public class LitnetBookResponse {
     
     [JsonPropertyName("lang")]
     public string Lang { get; set; }
+    
+    [JsonPropertyName("cycle_priority")]
+    public int? CyclePriority { get; set; }
 }
