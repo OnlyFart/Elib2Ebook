@@ -55,6 +55,11 @@ public class JsonBuilder : BuilderBase {
         return this;
     }
 
+    public override BuilderBase WithLang(string lang) {
+        _book.Lang = lang;
+        return this;
+    }
+
     protected override void BuildInternal(string name) {
         using var file = File.Create(name);
         JsonSerializer.Serialize(file, _book);

@@ -67,6 +67,13 @@ public abstract class BuilderBase {
     public abstract BuilderBase WithSeria(Seria seria);
 
     /// <summary>
+    /// Доавления языка книги
+    /// </summary>
+    /// <param name="lang">Язык</param>
+    /// <returns></returns>
+    public abstract BuilderBase WithLang(string lang);
+
+    /// <summary>
     ///  Создание файла
     /// </summary>
     /// <param name="name">Имя файла</param>

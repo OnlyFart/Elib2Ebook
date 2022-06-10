@@ -24,4 +24,7 @@ public class LitnetBookResponse {
     
     [JsonPropertyName("author_id")]
     public long AuthorId { get; set; }
+    
+    [JsonPropertyName("lang")]
+    public string Lang { get; set; }
 }

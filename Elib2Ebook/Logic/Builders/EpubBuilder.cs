@@ -115,6 +115,10 @@ public class EpubBuilder : BuilderBase {
         return this;
     }
 
+    public override BuilderBase WithLang(string lang) {
+        return this;
+    }
+
     protected override void BuildInternal(string name) {
         _writer.Write(name);
     }

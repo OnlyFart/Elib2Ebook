@@ -62,9 +62,9 @@ public class Fb2Builder : BuilderBase {
             lastName.Value = parts[1];
             authorElem.Add(lastName);
         } else {
-            var nicknameElem = CreateXElement("nickname");
-            nicknameElem.Value = author.Name;
-            authorElem.Add(nicknameElem);
+            var firstName = CreateXElement("first-name");
+            firstName.Value = author.Name;
+            authorElem.Add(firstName);
         }
 
         if (author.Url != default) {
@@ -222,6 +222,16 @@ public class Fb2Builder : BuilderBase {
             sequenceElem.SetAttributeValue("name", seria.Name.CleanInvalidXmlChars());
             sequenceElem.SetAttributeValue("number", seria.Number.CleanInvalidXmlChars());
             _titleInfo.Add(sequenceElem);
+        }
+
+        return this;
+    }
+
+    public override BuilderBase WithLang(string lang) {
+        if (!string.IsNullOrWhiteSpace(lang)) {
+            var langElem = CreateXElement("lang");
+            langElem.Value = lang;
+            _titleInfo.Add(langElem);
         }
 
         return this;

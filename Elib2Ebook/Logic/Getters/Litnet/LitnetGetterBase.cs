@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
@@ -79,11 +80,13 @@ public abstract class LitnetGetterBase : GetterBase {
 
     private async Task<LitnetContentsResponse[]> GetBookContents(string token, string bookId) {
         var url = $"https://api.{SystemUrl.Host}/v1/book/contents?bookId={bookId}&app=android&device_id={DeviceId}&user_token={token}&sign={GetSign(token)}";
-        var response = await _config.Client.GetFromJsonAsync<LitnetContentsResponse[]>(url);
-        return response;
+        var response = await _config.Client.GetAsync(new Uri(url));
+        return response.StatusCode == HttpStatusCode.NotFound ? 
+            Array.Empty<LitnetContentsResponse>() : 
+            await response.Content.ReadFromJsonAsync<LitnetContentsResponse[]>();
     }
 
-    private async Task<LitnetChapterResponse[]> GetToc(string token, LitnetContentsResponse[] contents) {
+    private async Task<LitnetChapterResponse[]> GetToc(string token, IEnumerable<LitnetContentsResponse> contents) {
         var chapters = string.Join("&", contents.Select(t => $"chapter_ids[]={t.Id}"));
         var url = $"https://api.{SystemUrl.Host}/v1/book/get-chapters-texts/?{chapters}&app=android&device_id={DeviceId}&sign={GetSign(token)}&user_token={token}";
         var response = await _config.Client.GetFromJsonAsync<LitnetChapterResponse[]>(url);
@@ -102,7 +105,8 @@ public abstract class LitnetGetterBase : GetterBase {
             Title = litnetBook.Title.Trim(),
             Author = GetAuthor(litnetBook),
             Annotation = GetAnnotation(litnetBook),
-            Seria = await GetSeria(uri)
+            Seria = await GetSeria(uri),
+            Lang = litnetBook.Lang
         };
             
         return book;
@@ -143,6 +147,10 @@ public abstract class LitnetGetterBase : GetterBase {
         var result = new List<Chapter>();
             
         var contents = await GetBookContents(token, bookId);
+        if (contents.Length == 0) {
+            return result;
+        }
+        
         var chapters = await GetToc(token, contents);
 
         var map = chapters.ToDictionary(t => t.Id);

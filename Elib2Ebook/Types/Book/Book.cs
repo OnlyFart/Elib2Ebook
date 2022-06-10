@@ -43,6 +43,11 @@ public class Book {
     /// </summary>
     public Uri Url { get; set; }
 
+    /// <summary>
+    /// Язык книги
+    /// </summary>
+    public string Lang { get; set; } = "ru";
+
     public Book(Uri url) {
         Url = url;
     }
@@ -63,6 +68,7 @@ public class Book {
             .WithBookUrl(Url)
             .WithAnnotation(Annotation)
             .WithSeria(Seria)
+            .WithLang(Lang)
             .WithFiles(resourcesPath, "*.ttf", EpubContentType.FontTruetype)
             .WithFiles(resourcesPath, "*.css", EpubContentType.Css)
             .WithChapters(Chapters)
