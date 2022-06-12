@@ -140,7 +140,7 @@ public class LitgorodGetter : GetterBase {
     private static IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
         return doc
             .QuerySelectorAll("div.item-2 ul a")
-            .Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText()));
+            .Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), string.IsNullOrWhiteSpace(a.GetText()) ? "Без названия" : a.GetText()));
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
