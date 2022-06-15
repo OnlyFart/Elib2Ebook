@@ -9,6 +9,7 @@
 * https://dark-novels.ru/
 * https://fb2.top/
 * https://ficbook.net/
+* https://hub-book.com/
 * https://ifreedom.su/
 * https://jaomix.ru/
 * https://ladylib.top/

@@ -44,9 +44,13 @@ internal static class Program {
 
                 foreach (var url in options.Url) {
                     Console.WriteLine($"Начинаю генерацию книги {url.CoverQuotes()}");
-                    var book = await getter.Get(new Uri(url));
-                    foreach (var format in options.Format) {
-                        book.Save(GetBuilder(format), options, "Patterns");
+                    try {
+                        var book = await getter.Get(new Uri(url));
+                        foreach (var format in options.Format) {
+                            book.Save(GetBuilder(format), options, "Patterns");
+                        }
+                    } catch (Exception ex) {
+                        Console.WriteLine($"Генерация книги {url} завершилась с ошибкой. Исключение {ex.Message}");
                     }
                 }
             });
