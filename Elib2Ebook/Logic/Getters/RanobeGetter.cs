@@ -32,7 +32,7 @@ public class RanobeGetter : GetterBase {
             Cover = await GetCover(ranobeBook, url),
             Chapters = await FillChapters(ranobeBook, url),
             Title = ranobeBook.Title,
-            Author = new Author(ranobeBook.Author ?? "Ranobe")
+            Author = new Author(string.IsNullOrWhiteSpace(ranobeBook.Author) ? "Ranobe" : ranobeBook.Author)
         };
             
         return book;
