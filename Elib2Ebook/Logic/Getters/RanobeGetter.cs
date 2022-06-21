@@ -22,8 +22,7 @@ public class RanobeGetter : GetterBase {
     }
         
     public override async Task<Book> Get(Uri url) {
-        var bookId = GetId(url);
-        url = new Uri($"https://ранобэ.рф/{bookId}");
+        url = new Uri($"https://ранобэ.рф/{GetId(url)}");
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
 
         var ranobeBook = GetNextData<RanobeBook>(doc, "book");

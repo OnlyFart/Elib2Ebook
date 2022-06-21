@@ -28,6 +28,7 @@
 * https://ranobelib.me/
 * https://ranobes.com/
 * https://readli.net/
+* https://renovels.org/
 * https://ru.novelxo.com/
 * http://samlib.ru/
 * https://topliba.com/
