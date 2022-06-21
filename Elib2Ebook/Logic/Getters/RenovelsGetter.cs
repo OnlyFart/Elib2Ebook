@@ -22,22 +22,34 @@ public class RenovelsGetter : GetterBase{
     }
 
     public override async Task<Book> Get(Uri url) {
-        url = new Uri($"https://renovels.org/novel/{GetId(url)}");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var bookId = GetId(url);
+        var content = await GetContent(bookId);
 
-        var content = GetNextData<RenovelsContent>(doc, "content");
-
-        var book = new Book(url) {
+        var book = new Book(new Uri($"https://renovels.org/novel/{bookId}")) {
             Cover = await GetCover(content, url),
             Chapters = await FillChapters(content, url),
             Title = content.RusName,
-            Author = new Author("Renovels"),
+            Author = GetAuthor(content),
             Annotation = content.Description
         };
             
         return book;
     }
     
+    private static Author GetAuthor(RenovelsContent content) {
+        if (content.Publishers.Length == 0) {
+            return new Author("Renovels");
+        }
+
+        var author = content.Publishers[0];
+        return new Author(author.Name, new Uri($"https://renovels.org/team/{author.Dir}"));
+    }
+
+    private async Task<RenovelsContent> GetContent(string bookId) {
+        var response = await _config.Client.GetFromJsonAsync<RenovelsApiResponse<RenovelsContent>>($"https://api.renovels.org/api/titles/{bookId}/");
+        return response.Content;
+    }
+
     private async Task<IEnumerable<Chapter>> FillChapters(RenovelsContent content, Uri url) {
         var result = new List<Chapter>();
             
@@ -56,7 +68,7 @@ public class RenovelsGetter : GetterBase{
     }
 
     private async Task<HtmlDocument> GetChapter(RenovelsChapter ranobeChapter) {
-        var response = await _config.Client.GetFromJsonAsync<RenovelsChapterResponse<RenovelsChapter>>($"https://api.renovels.org/api/titles/chapters/{ranobeChapter.Id}/");
+        var response = await _config.Client.GetFromJsonAsync<RenovelsApiResponse<RenovelsChapter>>($"https://api.renovels.org/api/titles/chapters/{ranobeChapter.Id}/");
         return response.Content.Content.AsHtmlDoc();
     }
 
@@ -81,7 +93,7 @@ public class RenovelsGetter : GetterBase{
         
         for (var i = 1;; i++) {
             var uri = $"https://api.renovels.org/api/titles/chapters/?branch_id={content.Branches[0].Id}&ordering=index&user_data=1&count=40&page={i}";
-            var response = await _config.Client.GetFromJsonAsync<RenovelsChapterResponse<RenovelsChapter[]>>(uri);
+            var response = await _config.Client.GetFromJsonAsync<RenovelsApiResponse<RenovelsChapter[]>>(uri);
             result.AddRange(response!.Content);
 
             if (response.Content.Length < 40) {

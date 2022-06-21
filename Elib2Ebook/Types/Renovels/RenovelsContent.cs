@@ -21,4 +21,7 @@ public class RenovelsContent {
     
     [JsonPropertyName("branches")]
     public RenovelsBranch[] Branches { get; set; }
+    
+    [JsonPropertyName("publishers")]
+    public RenovelsPublisher[] Publishers { get; set; }
 }
