@@ -125,6 +125,10 @@ public class LitgorodGetter : GetterBase {
         }
 
         var doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
+        if (doc.QuerySelector("buy-button-inline") != default) {
+            return default;
+        }
+        
         var li = doc.QuerySelectorAll("ul.reader__pagen__ul__wrap li");
         var pages = int.Parse(li.Count > 0 ? li.Last().InnerText : "1");
 
