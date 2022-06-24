@@ -39,7 +39,7 @@ public class AuthorTodayGetter : GetterBase {
     }
 
     private async Task<AuthorTodayBookDetails> GetBookDetails(string bookId) {
-        var response = await _config.Client.GetWithTriesAsync(new Uri($"https://api.author.today/v1/work/{bookId}/details"));
+        var response = await Config.Client.GetWithTriesAsync(new Uri($"https://api.author.today/v1/work/{bookId}/details"));
         if (response.StatusCode != HttpStatusCode.OK) {
             throw new Exception("Книга не найдена");
         }
@@ -66,23 +66,23 @@ public class AuthorTodayGetter : GetterBase {
     public override async Task Init() {
         await base.Init();
         
-        _config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "guest");
-        _config.Client.Timeout = TimeSpan.FromSeconds(10);
+        Config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "guest");
+        Config.Client.Timeout = TimeSpan.FromSeconds(10);
     }
 
     public override async Task Authorize() {
-        if (!_config.HasCredentials) {
+        if (!Config.HasCredentials) {
             return;
         }
 
-        var response = await _config.Client.PostAsJsonAsync(new Uri("https://api.author.today/v1/account/login-by-password"), new { _config.Login, _config.Password });
+        var response = await Config.Client.PostAsJsonAsync(new Uri("https://api.author.today/v1/account/login-by-password"), new { Config.Options.Login, Config.Options.Password });
         var data = await response.Content.ReadFromJsonAsync<AuthorTodayAuthResponse>();
         
         if (!string.IsNullOrWhiteSpace(data?.Token)) {
             Console.WriteLine("Успешно авторизовались");
-            _config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", data.Token);
+            Config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", data.Token);
 
-            var user = await _config.Client.GetFromJsonAsync<AuthorTodayUser>(new Uri("https://api.author.today/v1/account/current-user"));
+            var user = await Config.Client.GetFromJsonAsync<AuthorTodayUser>(new Uri("https://api.author.today/v1/account/current-user"));
             UserId = user!.Id.ToString();
         } else {
             throw new Exception($"Не удалось авторизоваться. {data?.Message}"); 
@@ -118,7 +118,7 @@ public class AuthorTodayGetter : GetterBase {
         foreach (var chunk in book.Chapters.OrderBy(c => c.SortOrder).Chunk(100)) {
             var ids = string.Join("&", chunk.Select((c, i) => $"ids[{i}]={c.Id}"));
             var uri = new Uri($"https://api.author.today/v1/work/{book.Id}/chapter/many-texts?{ids}");
-            var response = await _config.Client.GetWithTriesAsync(uri);
+            var response = await Config.Client.GetWithTriesAsync(uri);
             var chapters = await response.Content.ReadFromJsonAsync<AuthorTodayChapter[]>();
             if (chapters != default) {
                 result.AddRange(chapters.Where(c => c.IsSuccessful));

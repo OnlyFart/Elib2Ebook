@@ -20,7 +20,7 @@ public class LitgorodGetter : GetterBase {
     protected override Uri SystemUrl => new("https://litgorod.ru/");
     public override async Task<Book> Get(Uri url) {
         url = new Uri($"https://litgorod.ru/books/view/{GetId(url)}");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var book = new Book(url) {
             Cover = await GetCover(doc, url),
@@ -35,9 +35,9 @@ public class LitgorodGetter : GetterBase {
     }
 
     public override async Task Init() {
-        _config.Client.Timeout = TimeSpan.FromSeconds(30);
+        Config.Client.Timeout = TimeSpan.FromSeconds(30);
         
-        var response = await _config.Client.GetWithTriesAsync(new Uri("https://litgorod.ru/"));
+        var response = await Config.Client.GetWithTriesAsync(new Uri("https://litgorod.ru/"));
         var doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
         
         var csrf = doc.QuerySelector("[name=csrf-token]")?.Attributes["content"]?.Value;
@@ -53,23 +53,23 @@ public class LitgorodGetter : GetterBase {
             
         var xsrf = HttpUtility.UrlDecode(xsrfCookie.Split(";")[0].Replace("XSRF-TOKEN=", ""));
         
-        _config.Client.DefaultRequestHeaders.Add("Accept", "application/json, text/plain, */*");
-        _config.Client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
-        _config.Client.DefaultRequestHeaders.Add("X-CSRF-TOKEN", csrf);
-        _config.Client.DefaultRequestHeaders.Add("X-XSRF-TOKEN", xsrf);
+        Config.Client.DefaultRequestHeaders.Add("Accept", "application/json, text/plain, */*");
+        Config.Client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+        Config.Client.DefaultRequestHeaders.Add("X-CSRF-TOKEN", csrf);
+        Config.Client.DefaultRequestHeaders.Add("X-XSRF-TOKEN", xsrf);
     }
 
     public override async Task Authorize() {
-        if (!_config.HasCredentials) {
+        if (!Config.HasCredentials) {
             return;
         }
 
         var payload = new {
-            email = _config.Login,
-            password = _config.Password
+            email = Config.Options.Login,
+            password = Config.Options.Password
         };
 
-        var response = await _config.Client.PostAsJsonAsync(new Uri("https://litgorod.ru/login"), payload);
+        var response = await Config.Client.PostAsJsonAsync(new Uri("https://litgorod.ru/login"), payload);
         var data = await response.Content.ReadFromJsonAsync<LitgorodAuthResponse>();
         if (string.IsNullOrWhiteSpace(data?.Message)) {
             Console.WriteLine("Успешно авторизовались");
@@ -119,7 +119,7 @@ public class LitgorodGetter : GetterBase {
     }
     
     private async Task<HtmlDocument> GetChapter(Uri url) {
-        var response = await _config.Client.GetWithTriesAsync(url);
+        var response = await Config.Client.GetWithTriesAsync(url);
         if (response == default) {
             return default;
         }
@@ -134,7 +134,7 @@ public class LitgorodGetter : GetterBase {
 
         var sb = new StringBuilder();
         for (var i = 1; i <= pages; i++) {
-            doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(url + $"&page={i}"));
+            doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(url + $"&page={i}"));
             sb.Append(doc.QuerySelector("div.reader__content__wrap").RemoveNodes("div.reader__content__title").InnerHtml.HtmlDecode());
         }
 

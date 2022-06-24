@@ -42,7 +42,7 @@ public class WuxiaWorldGetter : GetterBase {
                 ["chapter"] = span.Attributes["data-id"].Value
             });
 
-            var data = await _config.Client.PostWithTriesAsync(new Uri("https://wuxiaworld.ru/wp-content/themes/Wuxia/template-parts/post/menu-query.php"), payload);
+            var data = await Config.Client.PostWithTriesAsync(new Uri("https://wuxiaworld.ru/wp-content/themes/Wuxia/template-parts/post/menu-query.php"), payload);
             var tocDoc = await data.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
 
             result.AddRange(tocDoc.QuerySelectorAll("li a").Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.InnerText.HtmlDecode())));
@@ -80,13 +80,13 @@ public class WuxiaWorldGetter : GetterBase {
     }
     
     private async Task<HtmlDocument> GetSafety(Uri url) {
-        var response = await _config.Client.GetWithTriesAsync(url);
+        var response = await Config.Client.GetWithTriesAsync(url);
         await Task.Delay(TimeSpan.FromSeconds(1));
         
         while (response == default || response.StatusCode == HttpStatusCode.ServiceUnavailable) {
             Console.WriteLine("Получен бан от системы. Жду...");
             var errorTimeout = TimeSpan.FromSeconds(30);
-            response = await _config.Client.GetWithTriesAsync(url, errorTimeout);
+            response = await Config.Client.GetWithTriesAsync(url, errorTimeout);
             await Task.Delay(errorTimeout);
         }
         

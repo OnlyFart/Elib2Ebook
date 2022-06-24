@@ -21,7 +21,7 @@ public class RoyalRoadGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         url = new Uri($"https://www.royalroad.com/fiction/{GetId(url)}");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var book = new Book(url) {
             Cover = await GetCover(doc, url),
@@ -54,7 +54,7 @@ public class RoyalRoadGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(Uri url) {
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         var content = doc.QuerySelector("div.chapter-content");
 
         foreach (var node in content.QuerySelectorAll("p, span")) {

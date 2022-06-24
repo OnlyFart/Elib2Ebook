@@ -22,17 +22,17 @@ public class BookriverGetter : GetterBase {
     }
 
     public override async Task Authorize() {
-        if (!_config.HasCredentials) {
+        if (!Config.HasCredentials) {
             return;
         }
 
         var payload = new {
-            email = _config.Login,
-            password = _config.Password,
+            email = Config.Options.Login,
+            password = Config.Options.Password,
             rememberMe = 1
         };
 
-        using var post = await _config.Client.PostAsJsonAsync($"https://api.bookriver.ru/api/v1/auth/login", payload);
+        using var post = await Config.Client.PostAsJsonAsync($"https://api.bookriver.ru/api/v1/auth/login", payload);
         var data = await post.Content.ReadFromJsonAsync<BookRiverAuthResponse>();
         if (string.IsNullOrWhiteSpace(data.Token)) {
             throw new Exception("Не удалось авторизоваться");
@@ -42,7 +42,7 @@ public class BookriverGetter : GetterBase {
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
         url = new Uri($"https://bookriver.ru/book/{bookId}");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var book = new Book(url) {
             Cover = await GetCover(doc, url),
@@ -102,7 +102,7 @@ public class BookriverGetter : GetterBase {
     }
 
     private async Task<string> GetInternalBookId(string bookId) {
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://bookriver.ru/reader/{bookId}"));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://bookriver.ru/reader/{bookId}"));
         return GetNextData<BookRiverBook>(doc, "book").Book.Id.ToString();
     }
 
@@ -120,7 +120,7 @@ public class BookriverGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(long bookChapterId) {
-        var response = await _config.Client.GetAsync(new Uri($"https://api.bookriver.ru/api/v1/books/chapter/text/{bookChapterId}"));
+        var response = await Config.Client.GetAsync(new Uri($"https://api.bookriver.ru/api/v1/books/chapter/text/{bookChapterId}"));
         if (response.StatusCode == HttpStatusCode.Forbidden) {
             return default;
         }
@@ -130,7 +130,7 @@ public class BookriverGetter : GetterBase {
     }
 
     private async Task<BookRiverChapter[]> GetToc(string bookId) {
-        var response = await _config.Client.GetWithTriesAsync(new Uri($"https://api.bookriver.ru/api/v1/books/chapters/text/published?bookId={bookId}"));
+        var response = await Config.Client.GetWithTriesAsync(new Uri($"https://api.bookriver.ru/api/v1/books/chapters/text/published?bookId={bookId}"));
         var content = await response.Content.ReadAsStringAsync();
         return content.Deserialize<BookRiverApiResponse<BookRiverChapter[]>>().Data;
     }

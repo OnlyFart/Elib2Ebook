@@ -21,7 +21,7 @@ public class HubBookGetter : GetterBase {
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
         url = new Uri($"https://hub-book.com/books/{bookId}");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var author = GetAuthor(doc, url);
         var title = doc.GetTextBySelector("h1").Replace(author.Name, string.Empty).Trim('-', ' ');
@@ -43,7 +43,7 @@ public class HubBookGetter : GetterBase {
 
         for (var i = 1; i <= pages; i++) {
             Console.WriteLine($"Получаю страницу {i}/{pages}");
-            doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(url + $"/toread/page-{i}"));
+            doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(url + $"/toread/page-{i}"));
             text.Append(doc.QuerySelector("div.b-reader-text__container").InnerHtml.HtmlDecode());
         }
 

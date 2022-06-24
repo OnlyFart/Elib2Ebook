@@ -5,14 +5,14 @@ namespace Elib2Ebook.Configs;
 
 public class BookGetterConfig : IDisposable {
     public HttpClient Client { get; }
-    public string Login { get; }
-    public string Password { get; }
-    public bool HasCredentials => !string.IsNullOrWhiteSpace(Login) && !string.IsNullOrWhiteSpace(Password);
+
+    public Options Options { get; }
+    
+    public bool HasCredentials => !string.IsNullOrWhiteSpace(Options.Login) && !string.IsNullOrWhiteSpace(Options.Password);
 
     public BookGetterConfig(Options options, HttpClient client){
         Client = client;
-        Login = options.Login;
-        Password = options.Password;
+        Options = options;
     }
 
     public void Dispose() {

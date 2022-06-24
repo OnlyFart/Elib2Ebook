@@ -47,7 +47,7 @@ public class DarkNovelsGetter : GetterBase {
         var bookId = bookFullId.Split(".").Last();
             
         var uri = new Uri($"https://dark-novels.ru/{bookFullId}/");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(uri);
 
         var book = new Book(uri) {
             Cover = await GetCover(doc, uri),
@@ -61,7 +61,7 @@ public class DarkNovelsGetter : GetterBase {
         
     private async Task<Uri> GetMainUrl(Uri url) {
         if (url.Segments[1] == "read/") {
-            var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+            var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
             var id = Regex.Match(doc.DocumentNode.InnerHtml, "slug:\"(?<id>.*?)\"");
             return new Uri($"https://dark-novels.ru/{id.Groups["id"].Value}");
         }
@@ -105,11 +105,11 @@ public class DarkNovelsGetter : GetterBase {
     }
 
     private async Task<DarkNovelsChapter[]> GetToc(string bookId) {
-        return await _config.Client.GetFromJsonAsync<DarkNovelsData<DarkNovelsChapter[]>>($"https://api.dark-novels.ru/v2/toc/{bookId}").ContinueWith(t => t.Result?.Data);
+        return await Config.Client.GetFromJsonAsync<DarkNovelsData<DarkNovelsChapter[]>>($"https://api.dark-novels.ru/v2/toc/{bookId}").ContinueWith(t => t.Result?.Data);
     }
 
     private async Task<HtmlDocument> GetChapter(string bookId, int chapterId) {
-        var data = await _config.Client.PostWithTriesAsync(new Uri("https://api.dark-novels.ru/v2/chapter/"), GetData(bookId, chapterId));
+        var data = await Config.Client.PostWithTriesAsync(new Uri("https://api.dark-novels.ru/v2/chapter/"), GetData(bookId, chapterId));
         if (data.StatusCode == HttpStatusCode.BadRequest) {
             return default;
         }

@@ -49,12 +49,12 @@ public class LitresGetter : GetterBase {
     private LitresAuthResponseData _authData;
 
     public override async Task Authorize() {
-        if (!_config.HasCredentials) {
+        if (!Config.HasCredentials) {
             return;
         }
         
         var payload = LitresPayload.Create(DateTime.Now, string.Empty, SECRET_KEY, APP);
-        payload.Requests.Add(new LitresAuthRequest(_config.Login, _config.Password));
+        payload.Requests.Add(new LitresAuthRequest(Config.Options.Login, Config.Options.Password));
 
         _authData = await GetResponse<LitresAuthResponseData>(payload);
         
@@ -64,7 +64,7 @@ public class LitresGetter : GetterBase {
     }
 
     private async Task<T> GetResponse<T>(LitresPayload payload) {
-        var resp = await _config.Client.PostWithTriesAsync(new Uri("https://catalit.litres.ru/catalitv2"), CreatePayload(payload));
+        var resp = await Config.Client.PostWithTriesAsync(new Uri("https://catalit.litres.ru/catalitv2"), CreatePayload(payload));
         return await resp.Content.ReadAsStringAsync().ContinueWith(t => t.Result.Deserialize<LitresResponse<T>>().Data);
     }
 
@@ -83,7 +83,7 @@ public class LitresGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         url = GetMainUrl(url);
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         var bookId = GetBookId(doc);
 
         var title = doc.GetTextBySelector("h1");
@@ -192,9 +192,9 @@ public class LitresGetter : GetterBase {
 
     private async Task<LitresBook> GetBook(string bookId) {
         var uri = _authData == null ? GetShortUri(bookId) : GetFullUri(bookId);
-        var response = await _config.Client.GetAsync(uri);
+        var response = await Config.Client.GetAsync(uri);
         if (response.StatusCode != HttpStatusCode.OK || !response.Headers.AcceptRanges.Any()) {
-            response = await _config.Client.GetAsync(GetShortUri(bookId));
+            response = await Config.Client.GetAsync(GetShortUri(bookId));
         }
 
         var result = new LitresBook();

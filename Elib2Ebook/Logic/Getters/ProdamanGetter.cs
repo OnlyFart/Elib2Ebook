@@ -31,11 +31,11 @@ public class ProdamanGetter : GetterBase {
     /// </summary>
     /// <exception cref="Exception"></exception>
     public override async Task Authorize(){
-        if (!_config.HasCredentials) {
+        if (!Config.HasCredentials) {
             return;
         }
 
-        using var post = await _config.Client.PostWithTriesAsync(new Uri("https://prodaman.ru/login"), GetAuthData());
+        using var post = await Config.Client.PostWithTriesAsync(new Uri("https://prodaman.ru/login"), GetAuthData());
         var doc = await post.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
         
         if (!string.IsNullOrWhiteSpace(doc.GetTextBySelector("p.error"))) {
@@ -45,8 +45,8 @@ public class ProdamanGetter : GetterBase {
     
     private FormUrlEncodedContent GetAuthData() {
         var data = new Dictionary<string, string> {
-            ["email"] = _config.Login,
-            ["pass"] = _config.Password,
+            ["email"] = Config.Options.Login,
+            ["pass"] = Config.Options.Password,
             ["remember"] = "on",
         };
 
@@ -117,7 +117,7 @@ public class ProdamanGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         url = new Uri(SystemUrl, url.AbsolutePath);
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var title = doc.GetTextBySelector("h1");
         var book = new Book(url) {
@@ -154,7 +154,7 @@ public class ProdamanGetter : GetterBase {
     }
 
     private async Task<int> GetPages(Uri url) {
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(url.AbsoluteUri + "?nav=ok"));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(url.AbsoluteUri + "?nav=ok"));
         var pages = doc.QuerySelectorAll("div.pageList a")
             .Where(a => int.TryParse(a.InnerText, out _))
             .Select(a => int.Parse(a.InnerText))
@@ -198,7 +198,7 @@ public class ProdamanGetter : GetterBase {
         for (var i = 1; i <= pages; i++) {
             Console.WriteLine($"Получаю страницу {i}/{pages}");
             
-            var page = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(url.AbsoluteUri + $"?page={i}"));
+            var page = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(url.AbsoluteUri + $"?page={i}"));
             var content = page.QuerySelector("div.blog-text");
             var nodes = content.ChildNodes;
             singleChapter = i == 1 ? IsSingleChapter(nodes) : singleChapter;

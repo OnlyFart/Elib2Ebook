@@ -17,7 +17,7 @@ public class RanobeHubGetter : GetterBase {
     protected override Uri SystemUrl => new("https://ranobehub.org");
     public override async Task<Book> Get(Uri url) {
         url = new Uri($"https://ranobehub.org/ranobe/{GetId(url)}");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var book = new Book(url) {
             Cover = await GetCover(doc, url),
@@ -47,11 +47,11 @@ public class RanobeHubGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(string url) {
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(url));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(url));
         while (doc.QuerySelector("div[data-callback=correctCaptcha]") != null) {
             Console.WriteLine($"Обнаружена каптча. Перейдите по ссылке {url}, введите каптчу и нажмите Enter...");
             Console.Read();
-            doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(url));
+            doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(url));
         }
         
         var result = doc.QuerySelector("div.container[data-container]").RemoveNodes("div.title-wrapper, div.ads-desktop, div.tablet").InnerHtml.AsHtmlDoc();
@@ -70,7 +70,7 @@ public class RanobeHubGetter : GetterBase {
 
     private async Task<IEnumerable<RanobeHubChapter>> GetToc(HtmlDocument doc) {
         var internalId = doc.QuerySelector("html[data-id]").Attributes["data-id"].Value;
-        var response = await _config.Client.GetFromJsonAsync<RanobeHubApiResponse>($"https://ranobehub.org/api/ranobe/{internalId}/contents");
+        var response = await Config.Client.GetFromJsonAsync<RanobeHubApiResponse>($"https://ranobehub.org/api/ranobe/{internalId}/contents");
         return response?.Volumes.SelectMany(t => t.Chapters);
     }
     

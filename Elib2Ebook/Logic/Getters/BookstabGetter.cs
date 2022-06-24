@@ -22,7 +22,7 @@ public class BookstabGetter : GetterBase {
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
         url = new Uri($"https://bookstab.ru/book/{bookId}");
-        var response = await _config.Client.GetWithTriesAsync(new Uri($"https://api.bookstab.ru/api/reader-get/{bookId}"));
+        var response = await Config.Client.GetWithTriesAsync(new Uri($"https://api.bookstab.ru/api/reader-get/{bookId}"));
         var data = await response.Content.ReadFromJsonAsync<BookstabApiResponse>();
 
         var book = new Book(url) {
@@ -68,7 +68,7 @@ public class BookstabGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(int bookChapterId, string bookId) {
-        var response = await _config.Client.GetFromJsonAsync<BookstabApiResponse>($"https://api.bookstab.ru/api/reader-get/{bookId}/{bookChapterId}");
+        var response = await Config.Client.GetFromJsonAsync<BookstabApiResponse>($"https://api.bookstab.ru/api/reader-get/{bookId}/{bookChapterId}");
         return string.IsNullOrWhiteSpace(response?.Chapter.Body) ? default : response.Chapter.Body.AsHtmlDoc();
     }
 

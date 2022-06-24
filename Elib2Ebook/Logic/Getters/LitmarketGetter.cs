@@ -24,10 +24,10 @@ public class LitmarketGetter : GetterBase {
     public override async Task Init() {
         await base.Init();
         
-        _config.Client.DefaultRequestHeaders.Add("Host", "litmarket.ru");
-        _config.Client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+        Config.Client.DefaultRequestHeaders.Add("Host", "litmarket.ru");
+        Config.Client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
         
-        var response = await _config.Client.GetWithTriesAsync(new Uri($"https://{HOST}/"));
+        var response = await Config.Client.GetWithTriesAsync(new Uri($"https://{HOST}/"));
         var doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
 
         var csrf = doc.QuerySelector("[name=csrf-token]")?.Attributes["content"]?.Value;
@@ -43,15 +43,15 @@ public class LitmarketGetter : GetterBase {
             
         var xsrf = HttpUtility.UrlDecode(xsrfCookie.Split(";")[0].Replace("XSRF-TOKEN=", ""));
             
-        _config.Client.DefaultRequestHeaders.Add("X-CSRF-TOKEN", csrf);
-        _config.Client.DefaultRequestHeaders.Add("X-XSRF-TOKEN", xsrf);
+        Config.Client.DefaultRequestHeaders.Add("X-CSRF-TOKEN", csrf);
+        Config.Client.DefaultRequestHeaders.Add("X-XSRF-TOKEN", xsrf);
     }
 
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
         url = new Uri($"https://{HOST}/books/{bookId}");
 
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         var content = await GetMainData(bookId);
             
         var blocks = await GetBlocks(content.Book.EbookId);
@@ -96,16 +96,16 @@ public class LitmarketGetter : GetterBase {
     /// </summary>
     /// <exception cref="Exception"></exception>
     public override async Task Authorize() {
-        if (!_config.HasCredentials) {
+        if (!Config.HasCredentials) {
             return;
         }
 
         var payload = new {
-            email = _config.Login,
-            password = _config.Password
+            email = Config.Options.Login,
+            password = Config.Options.Password
         };
         
-        using var post = await _config.Client.PostAsJsonAsync($"https://{HOST}/auth/login", payload);
+        using var post = await Config.Client.PostAsJsonAsync($"https://{HOST}/auth/login", payload);
         try {
             var data = await post.Content.ReadFromJsonAsync<AuthResponse>();
             if (data is { Success: false }) {
@@ -182,12 +182,12 @@ public class LitmarketGetter : GetterBase {
     }
 
     private async Task<Response> GetMainData(string bookId) {
-        var data = await _config.Client.GetWithTriesAsync(new Uri($"https://{HOST}/reader/data/{bookId}"));
+        var data = await Config.Client.GetWithTriesAsync(new Uri($"https://{HOST}/reader/data/{bookId}"));
         return await data.Content.ReadFromJsonAsync<Response>();
     }
 
     private async Task<Block[]> GetBlocks(int eBookId) {
-        var resp = await _config.Client.GetWithTriesAsync(new Uri($"https://{HOST}/reader/blocks/{eBookId}"));
+        var resp = await Config.Client.GetWithTriesAsync(new Uri($"https://{HOST}/reader/blocks/{eBookId}"));
         return await resp.Content.ReadFromJsonAsync<Block[]>();
     }
 }

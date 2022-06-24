@@ -23,7 +23,7 @@ public class WattpadGetter : GetterBase {
         if (url.ToString().Contains("/story/")) {
             var result = new WattpadMeta();
             
-            var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+            var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
             result.StoryId = GetId(url);
             result.BookId = doc.QuerySelector("a.read-btn").Attributes["href"].Value.Trim('/');
             result.Title = doc.GetTextBySelector("div.story-info__title");
@@ -31,13 +31,13 @@ public class WattpadGetter : GetterBase {
             return result;
         }
 
-        var info = await _config.Client.GetFromJsonAsync<WattpadInfo>(new Uri($"https://www.wattpad.com/apiv2/info?id={GetId(url)}"));
+        var info = await Config.Client.GetFromJsonAsync<WattpadInfo>(new Uri($"https://www.wattpad.com/apiv2/info?id={GetId(url)}"));
         return await GetMeta(new Uri(url, info?.Url));
     }
 
     public override async Task<Book> Get(Uri url) {
         var meta = await GetMeta(url);
-        var wattpadInfo = await _config.Client.GetFromJsonAsync<WattpadInfo>(new Uri($"https://www.wattpad.com/apiv2/info?id={meta.BookId}"));
+        var wattpadInfo = await Config.Client.GetFromJsonAsync<WattpadInfo>(new Uri($"https://www.wattpad.com/apiv2/info?id={meta.BookId}"));
 
         var book = new Book(url) {
             Cover = await GetCover(wattpadInfo),
@@ -69,7 +69,7 @@ public class WattpadGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(WattpadGroup group) {
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(group.Url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(group.Url);
         foreach (var node in doc.QuerySelectorAll("p")) {
             node.Attributes.RemoveAll();
         }

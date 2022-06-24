@@ -17,7 +17,7 @@ public class TwilightRussiaGetter : GetterBase {
         url = await GetMainUrl(url);
         url = new Uri($"https://twilightrussia.ru/forum/{GetId(url)}");
         
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var book = new Book(url) {
             Cover = null,
@@ -31,7 +31,7 @@ public class TwilightRussiaGetter : GetterBase {
 
     private async Task<Uri> GetMainUrl(Uri url) {
         if (url.ToString().Contains("/publ/")) {
-            var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+            var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
             var a = doc.QuerySelector("#msgd ~ a[href]");
             return new Uri(a.Attributes["href"].Value);
         }
@@ -60,7 +60,7 @@ public class TwilightRussiaGetter : GetterBase {
     private async Task<Chapter> GetChapter(Uri url, string title) {
         var chapter = new Chapter();
 
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         
         var text = new StringBuilder();
         foreach (var node in doc.QuerySelector("#msgd").ChildNodes) {

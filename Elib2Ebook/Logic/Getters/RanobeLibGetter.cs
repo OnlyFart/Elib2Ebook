@@ -28,7 +28,7 @@ public class RanobeLibGetter : GetterBase {
     public override async Task Init() {
         await base.Init();
         
-        var response = await _config.Client.GetAsync("https://ranobelib.me/");
+        var response = await Config.Client.GetAsync("https://ranobelib.me/");
         if (response.StatusCode == HttpStatusCode.OK) {
             Console.WriteLine("Основной домен https://ranobelib.me/ доступен. Работаю через него");
             _host = "ranobelib.me";
@@ -44,27 +44,27 @@ public class RanobeLibGetter : GetterBase {
     /// </summary>
     /// <exception cref="Exception"></exception>
     public override async Task Authorize() {
-        if (!_config.HasCredentials) {
+        if (!Config.HasCredentials) {
             return;
         }
         
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://{_host}/"));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://{_host}/"));
         var token = doc.QuerySelector("meta[name=_token]")?.Attributes["content"]?.Value;
-        using var post = await _config.Client.PostAsync($"https://{_host}/login", GenerateAuthData(token));
+        using var post = await Config.Client.PostAsync($"https://{_host}/login", GenerateAuthData(token));
     }
 
     private MultipartFormDataContent GenerateAuthData(string token) {
         return new() {
             {new StringContent(token), "_token"},
-            {new StringContent(_config.Login), "email"},
-            {new StringContent(_config.Password), "password"},
+            {new StringContent(Config.Options.Login), "email"},
+            {new StringContent(Config.Options.Password), "password"},
             {new StringContent("on"), "remember"}
         };
     }
 
     public override async Task<Book> Get(Uri url) {
         url = new Uri($"https://{_host}/{GetId(url)}");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var data = GetData(doc);
 
@@ -107,7 +107,7 @@ public class RanobeLibGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(Uri url) {
-        var chapterDoc = await _config.Client.GetHtmlDocWithTriesAsync(url.ReplaceHost(_host));
+        var chapterDoc = await Config.Client.GetHtmlDocWithTriesAsync(url.ReplaceHost(_host));
         return chapterDoc.QuerySelector("div.reader-container").InnerHtml.AsHtmlDoc();
     }
 

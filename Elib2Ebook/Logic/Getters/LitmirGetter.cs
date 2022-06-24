@@ -23,7 +23,7 @@ public class LitmirGetter : GetterBase {
         var bookId = GetId(url);
         url = new Uri($"https://www.litmir.me/bd/?b={bookId}");
 
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         var pages = long.Parse(doc.GetTextBySelector("span[itemprop=numberOfPages]"));
 
         var name = doc.GetTextBySelector("div[itemprop=name]");
@@ -102,7 +102,7 @@ public class LitmirGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(string bookId, int page) {
-        var response = await _config.Client.GetWithTriesAsync(new Uri($"https://www.litmir.me/br/?b={bookId}&p={page}"));
+        var response = await Config.Client.GetWithTriesAsync(new Uri($"https://www.litmir.me/br/?b={bookId}&p={page}"));
         if (response == default) {
             return default;
         }

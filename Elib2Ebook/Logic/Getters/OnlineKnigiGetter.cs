@@ -21,7 +21,7 @@ public class OnlineKnigiGetter : GetterBase {
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
         url = new Uri($"https://online-knigi.com.ua/kniga/{bookId}");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var title = doc.GetTextBySelector("h1");
         var book = new Book(url) {
@@ -44,7 +44,7 @@ public class OnlineKnigiGetter : GetterBase {
             Console.WriteLine($"Получаю страницу {i}/{pages}");
 
             var uri = new Uri($"https://online-knigi.com.ua/page/{bookId}?page={i}");
-            var doc = await _config.Client.GetHtmlDocWithTriesAsync(uri);
+            var doc = await Config.Client.GetHtmlDocWithTriesAsync(uri);
             sb.Append(doc.QuerySelector("div.content_book").InnerHtml.HtmlDecode());
         }
 
@@ -57,7 +57,7 @@ public class OnlineKnigiGetter : GetterBase {
     }
 
     private async Task<int> GetPages(string bookId) {
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://online-knigi.com.ua/page/{bookId}"));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://online-knigi.com.ua/page/{bookId}"));
          return int.Parse(new Uri(doc.QuerySelector("li.last a").Attributes["href"].Value).GetQueryParameter("page"));
     }
 

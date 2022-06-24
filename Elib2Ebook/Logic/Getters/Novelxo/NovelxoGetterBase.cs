@@ -27,7 +27,7 @@ public abstract class NovelxoGetterBase : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         
         var book = new Book(url) {
             Cover = await GetCover(doc, url),
@@ -45,7 +45,7 @@ public abstract class NovelxoGetterBase : GetterBase {
             return new Uri($"https://{SystemUrl.Host}/{GetId(url)}");;
         }
 
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         return new Uri(url, doc.QuerySelector("div.readerheader-wg a").Attributes["href"].Value);
     }
 
@@ -55,7 +55,7 @@ public abstract class NovelxoGetterBase : GetterBase {
         
         while (true) {
             var sb = new StringBuilder();
-            doc = await _config.Client.GetHtmlDocWithTriesAsync(start);
+            doc = await Config.Client.GetHtmlDocWithTriesAsync(start);
 
             var container = doc.QuerySelector("div.readerbody-wg");
             foreach (var node in container.QuerySelectorAll("p, div.ctp")) {
@@ -104,7 +104,7 @@ public abstract class NovelxoGetterBase : GetterBase {
         message.Headers.Add(headerName, headerValue);
         message.Headers.Add("referer", $"https://{SystemUrl.Host}/");
 
-        var response = await _config.Client.SendAsync(message);
+        var response = await Config.Client.SendAsync(message);
         var readAsStringAsync = await response.Content.ReadAsStringAsync();
         var result = Encoding.UTF8.GetString(Transform(Convert.FromBase64String(readAsStringAsync.Trim('\"')), Key, IV)).HtmlDecode();
 

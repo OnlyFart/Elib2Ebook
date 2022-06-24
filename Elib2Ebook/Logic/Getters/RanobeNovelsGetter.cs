@@ -65,7 +65,7 @@ public class RanobeNovelsGetter : GetterBase {
             ["security"] = Regex.Match(doc.ParsedText, "\"nonce\":\"(?<id>.*?)\"").Groups["id"].Value
         };
 
-        var response = await _config.Client.PostAsync(new Uri("https://ranobe-novels.ru/wp-admin/admin-ajax.php"), new FormUrlEncodedContent(data));
+        var response = await Config.Client.PostAsync(new Uri("https://ranobe-novels.ru/wp-admin/admin-ajax.php"), new FormUrlEncodedContent(data));
         var result = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.Deserialize<List<RanobeNovelsChapter>>());
         result.Reverse();
         return result;
@@ -77,13 +77,13 @@ public class RanobeNovelsGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetSafety(Uri url) {
-        var response = await _config.Client.GetWithTriesAsync(url);
+        var response = await Config.Client.GetWithTriesAsync(url);
         await Task.Delay(TimeSpan.FromSeconds(1));
         
         while (response == default || response.StatusCode == HttpStatusCode.ServiceUnavailable) {
             Console.WriteLine("Получен бан от системы. Жду...");
             var errorTimeout = TimeSpan.FromSeconds(30);
-            response = await _config.Client.GetWithTriesAsync(url, errorTimeout);
+            response = await Config.Client.GetWithTriesAsync(url, errorTimeout);
             await Task.Delay(errorTimeout);
         }
         

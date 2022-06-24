@@ -23,7 +23,7 @@ public class FicbookGetter : GetterBase {
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
         url = new Uri($"https://ficbook.net/readfic/{bookId}");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var title = doc.GetTextBySelector("h1.mb-10");
         var book = new Book(url) {
@@ -65,7 +65,7 @@ public class FicbookGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(UrlChapter urlChapter) {
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(urlChapter.Url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(urlChapter.Url);
         var content = doc.QuerySelector("#content").RemoveNodes("div");
         using var sr = new StringReader(content.InnerText.HtmlDecode());
 

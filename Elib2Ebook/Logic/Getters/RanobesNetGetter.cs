@@ -27,7 +27,7 @@ public class RanobesNetGetter : GetterBase {
 
     public override async Task Init() {
         await base.Init();
-        _config.Client.DefaultRequestHeaders.Add("Host", "ranobes.net");
+        Config.Client.DefaultRequestHeaders.Add("Host", "ranobes.net");
     }
 
     public override async Task<Book> Get(Uri url) {
@@ -131,11 +131,11 @@ public class RanobesNetGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetSafety(Uri url) {
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         while (doc.GetTextBySelector("h1.title.h2") == "Antibot system") {
             Console.WriteLine($"Обнаружена каптча. Перейдите по ссылке {url}, введите каптчу и нажмите Enter...");
             Console.Read();
-            doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+            doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         }
 
         return doc;

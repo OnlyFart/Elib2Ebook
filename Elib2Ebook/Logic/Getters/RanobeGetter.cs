@@ -23,7 +23,7 @@ public class RanobeGetter : GetterBase {
         
     public override async Task<Book> Get(Uri url) {
         url = new Uri($"https://ранобэ.рф/{GetId(url)}");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var ranobeBook = GetNextData<RanobeBook>(doc, "book");
 
@@ -55,7 +55,7 @@ public class RanobeGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(Uri mainUrl, string url) {
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri(mainUrl, url));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(mainUrl, url));
         return GetNextData<RanobeChapter>(doc, "chapter").Content.Text.AsHtmlDoc();
     }
 

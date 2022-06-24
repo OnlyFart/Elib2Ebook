@@ -25,7 +25,7 @@ public class Fb2TopGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         url = new Uri($"https://{url.Host}/{GetId(url)}");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         
         var book = new Book(url) {
             Cover = await GetCover(doc, url),
@@ -60,7 +60,7 @@ public class Fb2TopGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(Uri url) {
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         return doc.QuerySelector("section").RemoveNodes("h3").InnerHtml.AsHtmlDoc();
     }
 

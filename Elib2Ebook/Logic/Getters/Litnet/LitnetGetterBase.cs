@@ -59,10 +59,10 @@ public abstract class LitnetGetterBase : GetterBase {
     /// </summary>
     /// <exception cref="Exception"></exception>
     public override async Task Authorize() {
-        var path = _config.HasCredentials ? "user/find-by-login" : "registration/registration-by-device";
+        var path = Config.HasCredentials ? "user/find-by-login" : "registration/registration-by-device";
 
-        var url = $"https://api.{SystemUrl.Host}/v1/{path}?login={_config.Login?.TrimStart('+') ?? string.Empty}&password={HttpUtility.UrlEncode(_config.Password)}&app=android&device_id={DeviceId}&sign={GetSign(string.Empty)}";
-        var response = await _config.Client.GetFromJsonAsync<LitnetAuthResponse>(url);
+        var url = $"https://api.{SystemUrl.Host}/v1/{path}?login={Config.Options.Login?.TrimStart('+') ?? string.Empty}&password={HttpUtility.UrlEncode(Config.Options.Password)}&app=android&device_id={DeviceId}&sign={GetSign(string.Empty)}";
+        var response = await Config.Client.GetFromJsonAsync<LitnetAuthResponse>(url);
 
         if (!string.IsNullOrWhiteSpace(response?.Token)) {
             Console.WriteLine("Успешно авторизовались");
@@ -74,13 +74,13 @@ public abstract class LitnetGetterBase : GetterBase {
 
     private async Task<LitnetBookResponse> GetBook(string token, string bookId) {
         var url = $"https://api.{SystemUrl.Host}/v1/book/get/{bookId}?app=android&device_id={DeviceId}&user_token={token}&sign={GetSign(token)}";
-        var response = await _config.Client.GetFromJsonAsync<LitnetBookResponse>(url);
+        var response = await Config.Client.GetFromJsonAsync<LitnetBookResponse>(url);
         return response;
     }
 
     private async Task<LitnetContentsResponse[]> GetBookContents(string token, string bookId) {
         var url = $"https://api.{SystemUrl.Host}/v1/book/contents?bookId={bookId}&app=android&device_id={DeviceId}&user_token={token}&sign={GetSign(token)}";
-        var response = await _config.Client.GetAsync(new Uri(url));
+        var response = await Config.Client.GetAsync(new Uri(url));
         return response.StatusCode == HttpStatusCode.NotFound ? 
             Array.Empty<LitnetContentsResponse>() : 
             await response.Content.ReadFromJsonAsync<LitnetContentsResponse[]>();
@@ -89,7 +89,7 @@ public abstract class LitnetGetterBase : GetterBase {
     private async Task<LitnetChapterResponse[]> GetToc(string token, IEnumerable<LitnetContentsResponse> contents) {
         var chapters = string.Join("&", contents.Select(t => $"chapter_ids[]={t.Id}"));
         var url = $"https://api.{SystemUrl.Host}/v1/book/get-chapters-texts/?{chapters}&app=android&device_id={DeviceId}&sign={GetSign(token)}&user_token={token}";
-        var response = await _config.Client.GetFromJsonAsync<LitnetChapterResponse[]>(url);
+        var response = await Config.Client.GetFromJsonAsync<LitnetChapterResponse[]>(url);
         return response;
     }
     
@@ -114,7 +114,7 @@ public abstract class LitnetGetterBase : GetterBase {
 
     private async Task<Seria> GetSeria(Uri url, LitnetBookResponse book) {
         try {
-            var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+            var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
             var a = doc.QuerySelector("div.book-view-info-coll a[href*='sort=cycles']");
             if (a != default) {
                 return new Seria {

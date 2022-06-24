@@ -23,7 +23,7 @@ public class BookInBookGetter : GetterBase {
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
         url = new Uri($"https://bookinbook.ru/book?id={bookId}");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         
         var book = new Book(url) {
             Cover = await GetCover(doc, url),
@@ -61,7 +61,7 @@ public class BookInBookGetter : GetterBase {
         var sb = new StringBuilder();
         for (var i = 1; ; i++) {
             var uri = new Uri($"https://bookinbook.ru/read?id={url.GetQueryParameter("id")}&chapter={url.GetQueryParameter("chapter")}&page={i}");
-            var response = await _config.Client.GetWithTriesAsync(uri, TimeSpan.FromMilliseconds(100));
+            var response = await Config.Client.GetWithTriesAsync(uri, TimeSpan.FromMilliseconds(100));
             if (response == default) {
                 return sb.AsHtmlDoc();
             }

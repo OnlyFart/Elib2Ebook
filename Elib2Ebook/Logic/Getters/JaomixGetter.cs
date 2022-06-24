@@ -19,7 +19,7 @@ public class JaomixGetter : GetterBase {
     public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);
         url = new Uri($"https://jaomix.ru/category/{GetId(url)}/");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var book = new Book(url) {
             Cover = await GetCover(doc, url),
@@ -33,7 +33,7 @@ public class JaomixGetter : GetterBase {
 
     private async Task<Uri> GetMainUrl(Uri url) {
         if (url.Segments[1] != "category/") {
-            var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+            var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
             return new Uri(url, doc.QuerySelector("span.entry-category a").Attributes["href"].Value);
         }
 
@@ -58,7 +58,7 @@ public class JaomixGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(Uri jaomixChapterUrl) {
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(jaomixChapterUrl);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(jaomixChapterUrl);
         var sb = new StringBuilder();
             
         foreach (var node in doc.QuerySelector("div.themeform").ChildNodes) {
@@ -82,7 +82,7 @@ public class JaomixGetter : GetterBase {
         var chapters = new List<UrlChapter>();
         chapters.AddRange(ParseChapters(doc, url));
         
-        doc = await _config.Client.PostHtmlDocWithTriesAsync(new Uri("https://jaomix.ru/wp-admin/admin-ajax.php"), new FormUrlEncodedContent(data));
+        doc = await Config.Client.PostHtmlDocWithTriesAsync(new Uri("https://jaomix.ru/wp-admin/admin-ajax.php"), new FormUrlEncodedContent(data));
 
         Console.WriteLine("Получаю оглавление");
             
@@ -98,7 +98,7 @@ public class JaomixGetter : GetterBase {
                 { "termid", termId }
             };
 
-            var chapterDoc = await _config.Client.PostHtmlDocWithTriesAsync(new Uri("https://jaomix.ru/wp-admin/admin-ajax.php"), new FormUrlEncodedContent(data));
+            var chapterDoc = await Config.Client.PostHtmlDocWithTriesAsync(new Uri("https://jaomix.ru/wp-admin/admin-ajax.php"), new FormUrlEncodedContent(data));
             chapters.AddRange(ParseChapters(chapterDoc, url));
         }
         

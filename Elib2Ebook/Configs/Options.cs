@@ -18,6 +18,9 @@ public class Options {
     
     [Option("cover", Required = false, HelpText = "Сохранить обложку книги в отдельный файл")]
     public bool Cover { get; set; }
+    
+    [Option("no-image", Required = false, HelpText = "Не загружать картинки")]
+    public bool NoImage { get; set; }
 
     [Option("login", Required = false, HelpText = "Логин от системы")]
     public string Login { get; set; }

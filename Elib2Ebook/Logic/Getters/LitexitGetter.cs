@@ -23,16 +23,16 @@ public class LitexitGetter : GetterBase {
     }
 
     public override async Task Authorize() {
-        if (!_config.HasCredentials) {
+        if (!Config.HasCredentials) {
             return;
         }
 
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri("https://litexit.ru/account/login/"));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri("https://litexit.ru/account/login/"));
         var token = doc.QuerySelector("input[name=csrfmiddlewaretoken]")?.Attributes["value"]?.Value;
         
-        _config.Client.DefaultRequestHeaders.Add("Referer", "https://litexit.ru/account/login/");
-        using var post = await _config.Client.PostAsync(new Uri("https://litexit.ru/account/login/"), GenerateAuthData(token));
-        var checkLogin = await _config.Client.GetFromJsonAsync<LitexitUser>("https://litexit.ru/api/v2/users/current/");
+        Config.Client.DefaultRequestHeaders.Add("Referer", "https://litexit.ru/account/login/");
+        using var post = await Config.Client.PostAsync(new Uri("https://litexit.ru/account/login/"), GenerateAuthData(token));
+        var checkLogin = await Config.Client.GetFromJsonAsync<LitexitUser>("https://litexit.ru/api/v2/users/current/");
         if (checkLogin?.Id > 0) {
             Console.WriteLine("Успешно авторизовались");
         } else {
@@ -44,8 +44,8 @@ public class LitexitGetter : GetterBase {
         var data = new Dictionary<string, string> {
             ["csrfmiddlewaretoken"] = token,
             ["remember"] = "checked",
-            ["login"] = _config.Login,
-            ["password"] = _config.Password
+            ["login"] = Config.Options.Login,
+            ["password"] = Config.Options.Password
         };
 
         return new FormUrlEncodedContent(data);
@@ -53,7 +53,7 @@ public class LitexitGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         url = new Uri($"https://litexit.ru/b/{GetId(url)}");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         
         var book = new Book(url) {
             Cover = await GetCover(doc, url),
@@ -101,7 +101,7 @@ public class LitexitGetter : GetterBase {
     }
 
     private async Task<IEnumerable<LitexitChapter>> GetToc(HtmlDocument doc) {
-        var response = await _config.Client.GetAsync(new Uri($"https://litexit.ru/api/v1/book/{GetInternalId(doc)}/chapters"));
+        var response = await Config.Client.GetAsync(new Uri($"https://litexit.ru/api/v1/book/{GetInternalId(doc)}/chapters"));
 
         var content = await response.Content.ReadAsStringAsync();
         return content.Deserialize<IEnumerable<LitexitChapter>>().OrderBy(c => c.Id);

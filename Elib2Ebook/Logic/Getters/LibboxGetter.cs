@@ -18,7 +18,7 @@ public class LibboxGetter : GetterBase {
         var bookId = GetId(url);
         url = new Uri($"https://libbox.ru/book/{bookId}");
         
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var title = doc.GetTextBySelector("h1.product__title");
         var book = new Book(url) {
@@ -68,7 +68,7 @@ public class LibboxGetter : GetterBase {
     }
 
     private async Task<int> GetPages(string bookId) {
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://libbox.ru/books/{bookId}"));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://libbox.ru/books/{bookId}"));
         return doc
             .QuerySelectorAll("ul.pagination a.page-numbers")
             .Where(a => int.TryParse(a.GetText(), out var _))
@@ -85,7 +85,7 @@ public class LibboxGetter : GetterBase {
         
         for (var i = 1; i <= pages; i++) {
             Console.WriteLine($"Получаю страницу {i}/{pages}");
-            var page = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://libbox.ru/books/{bookId}?page_book={i}"));;
+            var page = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://libbox.ru/books/{bookId}?page_book={i}"));;
 
             var content = page.QuerySelector("div.entry-content");
             var nodes = content.QuerySelectorAll("> h2, > p, > img");

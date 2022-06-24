@@ -46,7 +46,7 @@ public class RenovelsGetter : GetterBase{
     }
 
     private async Task<RenovelsContent> GetContent(string bookId) {
-        var response = await _config.Client.GetFromJsonAsync<RenovelsApiResponse<RenovelsContent>>($"https://api.renovels.org/api/titles/{bookId}/");
+        var response = await Config.Client.GetFromJsonAsync<RenovelsApiResponse<RenovelsContent>>($"https://api.renovels.org/api/titles/{bookId}/");
         return response.Content;
     }
 
@@ -68,7 +68,7 @@ public class RenovelsGetter : GetterBase{
     }
 
     private async Task<HtmlDocument> GetChapter(RenovelsChapter ranobeChapter) {
-        var response = await _config.Client.GetFromJsonAsync<RenovelsApiResponse<RenovelsChapter>>($"https://api.renovels.org/api/titles/chapters/{ranobeChapter.Id}/");
+        var response = await Config.Client.GetFromJsonAsync<RenovelsApiResponse<RenovelsChapter>>($"https://api.renovels.org/api/titles/chapters/{ranobeChapter.Id}/");
         return response.Content.Content.AsHtmlDoc();
     }
 
@@ -93,7 +93,7 @@ public class RenovelsGetter : GetterBase{
         
         for (var i = 1;; i++) {
             var uri = $"https://api.renovels.org/api/titles/chapters/?branch_id={content.Branches[0].Id}&ordering=index&user_data=1&count=40&page={i}";
-            var response = await _config.Client.GetFromJsonAsync<RenovelsApiResponse<RenovelsChapter[]>>(uri);
+            var response = await Config.Client.GetFromJsonAsync<RenovelsApiResponse<RenovelsChapter[]>>(uri);
             result.AddRange(response!.Content);
 
             if (response.Content.Length < 40) {

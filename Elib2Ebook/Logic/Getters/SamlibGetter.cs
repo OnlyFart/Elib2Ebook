@@ -23,7 +23,7 @@ public class SamlibGetter : GetterBase {
     public SamlibGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("http://samlib.ru/");
     public override async Task<Book> Get(Uri url) {
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var title = doc.GetTextBySelector("h2, h3 font");
         var book = new Book(url) {
@@ -104,7 +104,7 @@ public class SamlibGetter : GetterBase {
     private async Task<Chapter> GetChapter(UrlChapter urlChapter) {
         var chapter = new Chapter();
 
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(urlChapter.Url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(urlChapter.Url);
         doc.LoadHtml(GetBookContent(doc.Text));
             
         var sr = new StringReader(doc.DocumentNode.InnerHtml.HtmlDecode());

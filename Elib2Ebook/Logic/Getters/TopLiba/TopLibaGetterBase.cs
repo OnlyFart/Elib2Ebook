@@ -26,7 +26,7 @@ public abstract class TopLibaGetterBase : GetterBase {
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
         url = new Uri($"https://{SystemUrl.Host}/books/{bookId}");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         var title = doc.GetTextBySelector("h1[itemprop=name]");
 
         var book = new Book(url) {
@@ -74,7 +74,7 @@ public abstract class TopLibaGetterBase : GetterBase {
     }
 
     private async Task<string> GetChapter(string bookId, string id, string token) {
-        var data = await _config.Client.PostWithTriesAsync(new Uri($"https://{SystemUrl.Host}/reader/{bookId}/chapter"), GetData(id, token));
+        var data = await Config.Client.PostWithTriesAsync(new Uri($"https://{SystemUrl.Host}/reader/{bookId}/chapter"), GetData(id, token));
         return await data.Content.ReadAsStringAsync();
     }
     
@@ -88,7 +88,7 @@ public abstract class TopLibaGetterBase : GetterBase {
     }
 
     private async Task<IEnumerable<string>> GetChapterIds(string bookId) {
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://{SystemUrl.Host}/reader/{bookId}"));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://{SystemUrl.Host}/reader/{bookId}"));
         return new Regex("capters: \\[(?<chapters>.*?)\\]").Match(doc.Text).Groups["chapters"].Value.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim('\"'));
     }
 

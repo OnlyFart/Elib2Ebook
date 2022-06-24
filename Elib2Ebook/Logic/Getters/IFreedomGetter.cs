@@ -17,7 +17,7 @@ public class FreedomGetter : GetterBase{
     public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);
         url = new Uri($"https://ifreedom.su/ranobe/{GetId(url)}/");
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         
         var book = new Book(url) {
             Cover = await GetCover(doc, url),
@@ -34,7 +34,7 @@ public class FreedomGetter : GetterBase{
             return url;
         }
 
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         return new Uri(url, doc.QuerySelector("div.bun2 a").Attributes["href"].Value);
     }
 
@@ -66,7 +66,7 @@ public class FreedomGetter : GetterBase{
     }
 
     private async Task<HtmlDocument> GetChapter(Uri url) {
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         var content = doc.QuerySelector("div.entry-content");
         var notice = content.QuerySelector("div.single-notice");
         return notice?.GetText() == "Для чтения купите главу." ? 

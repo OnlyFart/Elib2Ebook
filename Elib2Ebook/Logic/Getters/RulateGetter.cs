@@ -26,7 +26,7 @@ public class RulateGetter : GetterBase {
         var bookId = GetId(url);
         url = new Uri($"https://tl.rulate.ru/book/{bookId}");
         await Mature(url);
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var book = new Book(url) {
             Cover = await GetCover(doc, url),
@@ -80,7 +80,7 @@ public class RulateGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(string bookId, string chapterId) {
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://tl.rulate.ru/book/{bookId}/{chapterId}/ready"));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://tl.rulate.ru/book/{bookId}/{chapterId}/ready"));
         return (doc.GetTextBySelector("h1") == "Доступ запрещен" ? string.Empty : doc.QuerySelector("div.content-text")?.InnerHtml ?? string.Empty).AsHtmlDoc();
     }
 
@@ -95,6 +95,6 @@ public class RulateGetter : GetterBase {
             { "ok", "Да" }
         };
 
-        await _config.Client.PostAsync(new Uri($"https://tl.rulate.ru/mature?path={url.LocalPath}"), new FormUrlEncodedContent(data));
+        await Config.Client.PostAsync(new Uri($"https://tl.rulate.ru/mature?path={url.LocalPath}"), new FormUrlEncodedContent(data));
     }
 }

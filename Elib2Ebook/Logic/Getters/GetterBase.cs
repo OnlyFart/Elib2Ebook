@@ -14,10 +14,10 @@ using Elib2Ebook.Extensions;
 namespace Elib2Ebook.Logic.Getters; 
 
 public abstract class GetterBase : IDisposable {
-    protected readonly BookGetterConfig _config;
+    protected readonly BookGetterConfig Config;
 
     protected GetterBase(BookGetterConfig config) {
-        _config = config;
+        Config = config;
     }
 
     protected abstract Uri SystemUrl { get; }
@@ -32,9 +32,9 @@ public abstract class GetterBase : IDisposable {
 
     protected virtual HttpRequestMessage GetImageRequestMessage(Uri uri) {
         var message = new HttpRequestMessage(HttpMethod.Get, uri);
-        message.Version = _config.Client.DefaultRequestVersion;
+        message.Version = Config.Client.DefaultRequestVersion;
 
-        foreach (var header in _config.Client.DefaultRequestHeaders) {
+        foreach (var header in Config.Client.DefaultRequestHeaders) {
             message.Headers.Add(header.Key, header.Value);
         }
         
@@ -48,7 +48,7 @@ public abstract class GetterBase : IDisposable {
     protected async Task<Image> GetImage(Uri uri) {
         Console.WriteLine($"Загружаю картинку {uri.ToString().CoverQuotes()}");
         try {
-            using var response = await _config.Client.SendWithTriesAsync(() => GetImageRequestMessage(uri));
+            using var response = await Config.Client.SendWithTriesAsync(() => GetImageRequestMessage(uri));
             if (response is { StatusCode: HttpStatusCode.OK }) {
                 return new Image(await response.Content.ReadAsByteArrayAsync()) {
                     Path = uri.GetFileName()
@@ -70,6 +70,11 @@ public abstract class GetterBase : IDisposable {
         var images = new ConcurrentBag<Image>();
         var toRemove = new ConcurrentBag<HtmlNode>();
         await Parallel.ForEachAsync(doc.QuerySelectorAll("img, image"), async (img, _) => {
+            if (Config.Options.NoImage) {
+                toRemove.Add(img);
+                return;
+            }
+            
             var path = img.Attributes["src"]?.Value ?? img.Attributes["data-src"]?.Value;
             if (string.IsNullOrWhiteSpace(path)) {
                 toRemove.Add(img);
@@ -106,16 +111,16 @@ public abstract class GetterBase : IDisposable {
     public abstract Task<Book> Get(Uri url);
         
     public virtual Task Init() {
-        _config.Client.DefaultRequestVersion = HttpVersion.Version20;
-        _config.Client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Safari/605.1.15");
-        _config.Client.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
-        _config.Client.DefaultRequestHeaders.Add("Accept-Language", "ru");
-        _config.Client.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br");
+        Config.Client.DefaultRequestVersion = HttpVersion.Version20;
+        Config.Client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Safari/605.1.15");
+        Config.Client.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+        Config.Client.DefaultRequestHeaders.Add("Accept-Language", "ru");
+        Config.Client.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br");
         
         return Task.CompletedTask;
     }
 
     public void Dispose() {
-        _config?.Dispose();
+        Config?.Dispose();
     }
 }

@@ -127,7 +127,7 @@ public class RanobesComGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetHtmlDocument(Uri uri) {
-        var response = await _config.Client.SendWithTriesAsync(() => CreateRequestMessage(uri));
+        var response = await Config.Client.SendWithTriesAsync(() => CreateRequestMessage(uri));
         var content = await response.Content.ReadAsStringAsync();
             
         return content.AsHtmlDoc();
