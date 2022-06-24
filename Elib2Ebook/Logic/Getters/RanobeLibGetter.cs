@@ -72,10 +72,22 @@ public class RanobeLibGetter : GetterBase {
             Cover = await GetCover(doc, url),
             Chapters = await FillChapters(data, url),
             Title = doc.QuerySelector("meta[property=og:title]").Attributes["content"].Value.Trim(),
-            Author = new Author("RanobeLib")
+            Author = GetAuthor(doc, url)
         };
             
         return book;
+    }
+
+    private static Author GetAuthor(HtmlDocument doc, Uri url) {
+        foreach (var div in doc.QuerySelectorAll("div.media-info-list__item")) {
+            var title = div.GetTextBySelector("div.media-info-list__title");
+            var value = div.QuerySelector("div.media-info-list__value a");
+            if (title == "Автор" && value != default) {
+                return new Author(value.GetText(), new Uri(url, value.Attributes["href"].Value));
+            }
+        }
+
+        return new Author("RanobeLib");
     }
 
     private static WindowData GetData(HtmlDocument doc) {
