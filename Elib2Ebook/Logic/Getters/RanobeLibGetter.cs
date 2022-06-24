@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -18,12 +19,26 @@ public class RanobeLibGetter : GetterBase {
     protected override Uri SystemUrl => new("https://ranobelib.me");
     
     // cloudflare :(
-    private const string HOST = "staticlib.me";
+    private string _host;
 
     protected override string GetId(Uri url) {
         return url.Segments[1].Trim('/');
     }
+
+    public override async Task Init() {
+        await base.Init();
         
+        var response = await _config.Client.GetAsync("https://ranobelib.me/");
+        if (response.StatusCode == HttpStatusCode.OK) {
+            Console.WriteLine("Основной домен https://ranobelib.me/ доступен. Работаю через него");
+            _host = "ranobelib.me";
+            return;
+        }
+        
+        Console.WriteLine("Основной домен https://ranobelib.me/ не доступен. Работаю через https://staticlib.me/");
+        _host = "staticlib.me";
+    }
+
     /// <summary>
     /// Авторизация в системе
     /// </summary>
@@ -33,9 +48,9 @@ public class RanobeLibGetter : GetterBase {
             return;
         }
         
-        var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://{HOST}/"));
+        var doc = await _config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://{_host}/"));
         var token = doc.QuerySelector("meta[name=_token]")?.Attributes["content"]?.Value;
-        using var post = await _config.Client.PostAsync($"https://{HOST}/login", GenerateAuthData(token));
+        using var post = await _config.Client.PostAsync($"https://{_host}/login", GenerateAuthData(token));
     }
 
     private MultipartFormDataContent GenerateAuthData(string token) {
@@ -48,7 +63,7 @@ public class RanobeLibGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
-        url = new Uri($"https://{HOST}/{GetId(url)}");
+        url = new Uri($"https://{_host}/{GetId(url)}");
         var doc = await _config.Client.GetHtmlDocWithTriesAsync(url);
 
         var data = GetData(doc);
@@ -92,12 +107,12 @@ public class RanobeLibGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(Uri url) {
-        var chapterDoc = await _config.Client.GetHtmlDocWithTriesAsync(url.ReplaceHost(HOST));
+        var chapterDoc = await _config.Client.GetHtmlDocWithTriesAsync(url.ReplaceHost(_host));
         return chapterDoc.QuerySelector("div.reader-container").InnerHtml.AsHtmlDoc();
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("meta[property=og:image]").Attributes["content"].Value.Trim();
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri($"https://{HOST}" + new Uri(uri, imagePath).AbsolutePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri($"https://{_host}" + new Uri(uri, imagePath).AbsolutePath)) : Task.FromResult(default(Image));
     }
 }
