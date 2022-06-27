@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Elib2Ebook.Types.DakrNovels; 
+namespace Elib2Ebook.Types.DarkNovels; 
 
 public class DarkNovelsChapter {
     [JsonPropertyName("id")]
@@ -8,10 +8,7 @@ public class DarkNovelsChapter {
         
     [JsonPropertyName("title")]
     public string Title { get; set; }
-        
-    [JsonPropertyName("position")]
-    public int Position { get; set; }
-        
+
     [JsonPropertyName("payed")]
     public int Payed { get; set; }
 }

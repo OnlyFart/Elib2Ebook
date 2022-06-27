@@ -2,14 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Json;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
 using Elib2Ebook.Types.Renovels;
 using HtmlAgilityPack;
-using HtmlAgilityPack.CssSelectors.NetCore;
 
 namespace Elib2Ebook.Logic.Getters; 
 
@@ -75,17 +73,6 @@ public class RenovelsGetter : GetterBase{
     private Task<Image> GetCover(RenovelsContent book, Uri bookUri) {
         var imagePath = book.Img.GetValueOrDefault("high", null) ?? book.Img.FirstOrDefault().Value;
         return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
-    }
-    
-    private static T GetNextData<T>(HtmlDocument doc, string node) {
-        var json = doc.QuerySelector("#__NEXT_DATA__").InnerText;
-        return JsonDocument.Parse(json)
-            .RootElement.GetProperty("props")
-            .GetProperty("pageProps")
-            .GetProperty("fallbackData")
-            .GetProperty(node)
-            .GetRawText()
-            .Deserialize<T>();
     }
 
     private async Task<IEnumerable<RenovelsChapter>> GetToc(RenovelsContent content) {

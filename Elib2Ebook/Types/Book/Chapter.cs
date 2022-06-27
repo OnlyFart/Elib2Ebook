@@ -5,12 +5,6 @@ namespace Elib2Ebook.Types.Book;
 
 public class Chapter {
     /// <summary>
-    /// Идентификатор части
-    /// </summary>
-    [JsonPropertyName("id")]
-    public long Id { get; set; }
-        
-    /// <summary>
     /// Название части
     /// </summary>
     [JsonPropertyName("title")]

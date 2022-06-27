@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Elib2Ebook.Types.Litnet; 
@@ -15,10 +14,7 @@ public class LitnetBookResponse {
     
     [JsonPropertyName("annotation")]
     public string Annotation { get; set; }
-    
-    [JsonPropertyName("genres")]
-    public IEnumerable<LitnetGenre> Genres { get; set; }
-    
+
     [JsonPropertyName("url")]
     public string Url { get; set; }
     

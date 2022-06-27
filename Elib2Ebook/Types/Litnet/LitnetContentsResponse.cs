@@ -8,7 +8,4 @@ public class LitnetContentsResponse {
     
     [JsonPropertyName("title")]
     public string Title { get; set; }
-    
-    [JsonPropertyName("pages_count")]
-    public int PagesCount { get; set; }
 }

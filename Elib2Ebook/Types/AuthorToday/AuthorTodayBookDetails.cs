@@ -20,10 +20,7 @@ public class AuthorTodayBookDetails {
     
     [JsonPropertyName("authorFIO")]
     public string AuthorFio { get; set; }
-    
-    [JsonPropertyName("authorId")]
-    public long AuthorId { get; set; }
-    
+
     [JsonPropertyName("coverUrl")]
     public string CoverUrl { get; set; }
     

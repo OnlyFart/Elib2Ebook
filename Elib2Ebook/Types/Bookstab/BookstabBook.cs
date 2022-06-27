@@ -3,9 +3,6 @@ using System.Text.Json.Serialization;
 namespace Elib2Ebook.Types.Bookstab; 
 
 public class BookstabBook {
-    [JsonPropertyName("id")]
-    public int Id { get; set; }
-    
     [JsonPropertyName("image")]
     public string Image { get; set; }
     

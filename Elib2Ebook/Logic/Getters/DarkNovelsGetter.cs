@@ -11,10 +11,10 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Types.Book;
-using Elib2Ebook.Types.DakrNovels;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Elib2Ebook.Extensions;
+using Elib2Ebook.Types.DarkNovels;
 
 namespace Elib2Ebook.Logic.Getters; 
 
