@@ -41,6 +41,34 @@ public abstract class TopLibaGetterBase : GetterBase {
         return book;
     }
 
+    public override async Task Authorize() {
+        if (!Config.HasCredentials) {
+            return;
+        }
+
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://{SystemUrl.Host}/login"));
+        var token = doc.QuerySelector("meta[name=_token]").Attributes["content"].Value;
+        
+        var response = await Config.Client.PostWithTriesAsync(new Uri($"https://{SystemUrl.Host}/login"), GetAuthData(token));
+        doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
+        var helpBlock = doc.QuerySelector("input[type=email] + span.help-block");
+        if (helpBlock == default) {
+            Console.WriteLine("Успешно авторизовались");
+        } else {
+            throw new Exception($"Не удалось авторизоваться. {helpBlock.GetText()}"); 
+        }
+    }
+    
+    private FormUrlEncodedContent GetAuthData(string token) {
+        var data = new Dictionary<string, string> {
+            ["email"] = Config.Options.Login,
+            ["password"] = Config.Options.Password,
+            ["_token"] = token
+        };
+
+        return new FormUrlEncodedContent(data);
+    }
+
     private static Author GetAuthor(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("h2[itemprop=author] a");
         return new Author(a.GetText(), new Uri(url, a.Attributes["href"].Value));
