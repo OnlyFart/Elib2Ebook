@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
+using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
 using Elib2Ebook.Types.Wattpad;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
-using Elib2Ebook.Extensions;
 
 namespace Elib2Ebook.Logic.Getters; 
 

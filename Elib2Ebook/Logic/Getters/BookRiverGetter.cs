@@ -1,22 +1,25 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
+using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
 using Elib2Ebook.Types.Bookriver;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
-using Elib2Ebook.Extensions;
 
 namespace Elib2Ebook.Logic.Getters; 
 
 public class BookriverGetter : GetterBase {
     public BookriverGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://bookriver.ru/");
+
+    private string _token;
     
     protected override string GetId(Uri url) {
         return url.Segments[2].Trim('/');
@@ -33,13 +36,13 @@ public class BookriverGetter : GetterBase {
             rememberMe = 1
         };
 
-        using var post = await Config.Client.PostAsJsonAsync($"https://api.bookriver.ru/api/v1/auth/login", payload);
+        using var post = await Config.Client.PostAsJsonAsync("https://api.bookriver.ru/api/v1/auth/login", payload);
         var data = await post.Content.ReadFromJsonAsync<BookRiverAuthResponse>();
-        if (string.IsNullOrWhiteSpace(data.Token)) {
-            throw new Exception("Не удалось авторизоваться");
-        } else {
+        if (!string.IsNullOrWhiteSpace(data.Token)) {
             Console.WriteLine("Успешно авторизовались");
-            Config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", data.Token);
+            _token = data.Token;
+        } else {
+            throw new Exception("Не удалось авторизоваться");
         }
     }
 
@@ -104,6 +107,20 @@ public class BookriverGetter : GetterBase {
 
         return result;
     }
+    
+    protected virtual HttpRequestMessage GetMessage(Uri uri) {
+        var message = new HttpRequestMessage(HttpMethod.Get, uri);
+        message.Version = Config.Client.DefaultRequestVersion;
+        if (!string.IsNullOrWhiteSpace(_token)) {
+            message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+        }
+
+        foreach (var header in Config.Client.DefaultRequestHeaders) {
+            message.Headers.Add(header.Key, header.Value);
+        }
+        
+        return message;
+    }
 
     private async Task<string> GetInternalBookId(string bookId) {
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://bookriver.ru/reader/{bookId}"));
@@ -124,7 +141,7 @@ public class BookriverGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(long bookChapterId) {
-        var response = await Config.Client.GetAsync(new Uri($"https://api.bookriver.ru/api/v1/books/chapter/text/{bookChapterId}"));
+        var response = await Config.Client.SendAsync(GetMessage(new Uri($"https://api.bookriver.ru/api/v1/books/chapter/text/{bookChapterId}")));
         if (response.StatusCode == HttpStatusCode.Forbidden) {
             return default;
         }

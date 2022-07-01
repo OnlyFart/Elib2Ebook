@@ -6,10 +6,10 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
+using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
-using Elib2Ebook.Extensions;
 
 namespace Elib2Ebook.Logic.Getters; 
 
@@ -40,6 +40,7 @@ public abstract class GetterBase : IDisposable {
         
         return message;
     }
+    
     /// <summary>
     /// Получение изображения
     /// </summary>

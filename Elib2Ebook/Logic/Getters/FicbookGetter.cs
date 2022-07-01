@@ -4,11 +4,11 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
+using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
 using Elib2Ebook.Types.Common;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
-using Elib2Ebook.Extensions;
 
 namespace Elib2Ebook.Logic.Getters; 
 

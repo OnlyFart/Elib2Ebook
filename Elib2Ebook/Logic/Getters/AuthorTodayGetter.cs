@@ -6,9 +6,9 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
-using Elib2Ebook.Types.Book;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.AuthorToday;
+using Elib2Ebook.Types.Book;
 
 namespace Elib2Ebook.Logic.Getters; 
 

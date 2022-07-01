@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Elib2Ebook.Configs;
+using Elib2Ebook.Extensions;
 using Elib2Ebook.Logic.Builders;
 using EpubSharp.Format;
-using Elib2Ebook.Extensions;
 
 namespace Elib2Ebook.Types.Book; 
 
