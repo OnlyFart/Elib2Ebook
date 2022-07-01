@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -36,6 +37,9 @@ public class BookriverGetter : GetterBase {
         var data = await post.Content.ReadFromJsonAsync<BookRiverAuthResponse>();
         if (string.IsNullOrWhiteSpace(data.Token)) {
             throw new Exception("Не удалось авторизоваться");
+        } else {
+            Console.WriteLine("Успешно авторизовались");
+            Config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", data.Token);
         }
     }
 
