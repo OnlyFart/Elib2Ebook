@@ -5,6 +5,8 @@
 
 # Elib2Ebook
 Инструмент для сохранения любой доступной книги со следующих сайтов в форматах epub или fb2:
+<details>
+<pre>
 * https://author.today/
 * https://bigliba.com/
 * https://bookinbook.ru/
@@ -42,6 +44,8 @@
 * https://wattpad.com/
 * https://wuxiaworld.ru/
 * https://ранобэ.рф/
+</pre>
+</details>
 
 ## Пример вызова сервиса
 ```
