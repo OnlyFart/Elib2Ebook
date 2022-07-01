@@ -63,6 +63,7 @@ public class RanobeLibGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
+        var bidId = url.GetQueryParameter("bid");
         url = new Uri($"https://{_host}/{GetId(url)}");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
@@ -70,7 +71,7 @@ public class RanobeLibGetter : GetterBase {
 
         var book = new Book(url) {
             Cover = await GetCover(doc, url),
-            Chapters = await FillChapters(data, url),
+            Chapters = await FillChapters(data, url, bidId),
             Title = doc.QuerySelector("meta[property=og:title]").Attributes["content"].Value.Trim(),
             Author = GetAuthor(doc, url)
         };
@@ -97,12 +98,14 @@ public class RanobeLibGetter : GetterBase {
         return windowData;
     }
 
-    private async Task<IEnumerable<Chapter>> FillChapters(WindowData data, Uri url) {
+    private async Task<IEnumerable<Chapter>> FillChapters(WindowData data, Uri url, string bidId) {
         var result = new List<Chapter>();
-        var branchId = data.RanobeLibChapters.List
-            .GroupBy(c => c.BranchId)
-            .MaxBy(c => c.Count())!
-            .Key;
+        var branchId = string.IsNullOrWhiteSpace(bidId)
+            ? data.RanobeLibChapters.List
+                .GroupBy(c => c.BranchId)
+                .MaxBy(c => c.Count())!
+                .Key
+            : int.Parse(bidId);
 
         foreach (var ranobeChapter in data.RanobeLibChapters.List.Where(c => c.BranchId == branchId)) {
             Console.WriteLine($"Загружаю главу {ranobeChapter.GetName()}");
