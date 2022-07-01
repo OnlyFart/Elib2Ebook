@@ -125,7 +125,7 @@ public class LitgorodGetter : GetterBase {
         }
 
         var doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
-        if (doc.QuerySelector("buy-button-inline") != default) {
+        if (doc.QuerySelector("buy-button, buy-button-inline") != default) {
             return default;
         }
         
