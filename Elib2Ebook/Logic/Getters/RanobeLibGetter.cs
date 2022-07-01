@@ -120,6 +120,12 @@ public class RanobeLibGetter : GetterBase {
 
     private async Task<HtmlDocument> GetChapter(Uri url) {
         var chapterDoc = await Config.Client.GetHtmlDocWithTriesAsync(url.ReplaceHost(_host));
+        var header = chapterDoc.QuerySelector("h2.page__title");
+        if (header != default && header.GetText() == "Регистрация") {
+            throw new Exception("Произведение доступно только зарегистрированным пользователям. Добавьте в параметры вызова свои логин и пароль");
+        }
+        
+        
         return chapterDoc.QuerySelector("div.reader-container").InnerHtml.AsHtmlDoc();
     }
 

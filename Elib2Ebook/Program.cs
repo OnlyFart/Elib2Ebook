@@ -50,7 +50,7 @@ internal static class Program {
                             book.Save(GetBuilder(format), options, "Patterns");
                         }
                     } catch (Exception ex) {
-                        Console.WriteLine($"Генерация книги {url} завершилась с ошибкой. Исключение {ex.Message}");
+                        Console.WriteLine($"Генерация книги {url} завершилась с ошибкой. {ex.Message}");
                     }
                 }
             });
