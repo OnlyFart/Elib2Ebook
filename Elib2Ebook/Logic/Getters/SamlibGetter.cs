@@ -30,10 +30,26 @@ public class SamlibGetter : GetterBase {
             Cover = null,
             Chapters = await FillChapters(doc, url, title),
             Title = title,
-            Author = new Author("Samlib")
+            Author = GetAuthor(doc, url)
         };
             
         return book;
+    }
+    
+    private static Author GetAuthor(HtmlDocument doc, Uri url) {
+        var def = new Author("Samlib");
+        
+        var h3 = doc.QuerySelector("h3");
+        if (h3 == default) {
+            return def;
+        }
+
+        var a = h3.QuerySelector("a[href]");
+        if (a == default) {
+            return def;
+        }
+
+        return new Author(h3.RemoveNodes("small").GetText().Trim(':'), new Uri(url, a.Attributes["href"].Value));
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url, string title) {
