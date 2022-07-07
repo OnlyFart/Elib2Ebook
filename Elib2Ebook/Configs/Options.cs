@@ -7,7 +7,7 @@ public class Options {
     [Option("url", Required = true, HelpText = "Ссылка на книгу", Separator = ',')]
     public IEnumerable<string> Url { get; set; }
         
-    [Option("proxy", Required = false, HelpText = "Прокси в формате <host>:<port>", Default = "")]
+    [Option("proxy", Required = false, HelpText = "Прокси в формате <host>:<port>")]
     public string Proxy { get; set; }
         
     [Option("save", Required = false, HelpText = "Директория для сохранения книги")]

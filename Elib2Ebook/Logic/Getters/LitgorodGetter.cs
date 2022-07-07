@@ -25,7 +25,7 @@ public class LitgorodGetter : GetterBase {
         var book = new Book(url) {
             Cover = await GetCover(doc, url),
             Chapters = await FillChapters(doc, url),
-            Title = doc.GetTextBySelector("p.info_title"),
+            Title = doc.GetTextBySelector("div.b-book_item__name h2"),
             Author = GetAuthor(doc, url),
             Annotation = doc.QuerySelector("div.annotation_footer--content p.item_info")?.InnerHtml,
             Seria = GetSeria(doc)
@@ -79,12 +79,12 @@ public class LitgorodGetter : GetterBase {
     }
 
     private static Author GetAuthor(HtmlDocument doc, Uri url) {
-        var a = doc.QuerySelector("a.info_author");
+        var a = doc.QuerySelector("div.b-book_item__author a");
         return new Author(a.GetText(), new Uri(url, a.Attributes["href"].Value));
     }
 
     private static Seria GetSeria(HtmlDocument doc) {
-        var text = doc.GetTextBySelector("p.info_desciption--circle");
+        var text = doc.GetTextBySelector("div.b-book_item__cycle");
         if (!string.IsNullOrWhiteSpace(text) && text.StartsWith("Цикл")) {
             var circleName = text[4..].Trim();
             if (!string.IsNullOrWhiteSpace(circleName)) {
@@ -129,7 +129,7 @@ public class LitgorodGetter : GetterBase {
             return default;
         }
         
-        var li = doc.QuerySelectorAll("ul.reader__pagen__ul__wrap li");
+        var li = doc.QuerySelectorAll("div.b-paging__numbers li");
         var pages = int.Parse(li.Count > 0 ? li.Last().InnerText : "1");
 
         var sb = new StringBuilder();
@@ -148,7 +148,7 @@ public class LitgorodGetter : GetterBase {
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
-        var imagePath = doc.QuerySelector("div.annotation_main--poster img")?.Attributes["src"]?.Value;
+        var imagePath = doc.QuerySelector("div.b-book_cover img")?.Attributes["src"]?.Value;
         return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
     }
 }
