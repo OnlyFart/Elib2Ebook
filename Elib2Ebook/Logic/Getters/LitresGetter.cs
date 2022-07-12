@@ -36,14 +36,14 @@ public class LitresGetter : GetterBase {
         return ((long)javaSpan.TotalMilliseconds) / 1000;
     }
     
-    private Uri GetFullUri(string bookId) {
+    private Uri GetFullUri(string bookId, string path) {
         var ts = GetCurrentMilli();
         using var md5 = MD5.Create();
 
         var inputBytes = Encoding.ASCII.GetBytes($"{ts}:{bookId}:{SECRET_KEY}");
         var hashBytes = md5.ComputeHash(inputBytes);
-
-        return new($"https://catalit.litres.ru/pages/catalit_download_book/?type=fb3&art={bookId}&sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
+        
+        return new($"https://catalit.litres.ru/pages/{path}/?type=fb3&art={bookId}&sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
     }
 
     private LitresAuthResponseData _authData;
@@ -190,12 +190,24 @@ public class LitresGetter : GetterBase {
         return images;
     }
 
-    private async Task<LitresBook> GetBook(string bookId) {
-        var uri = _authData == null ? GetShortUri(bookId) : GetFullUri(bookId);
-        var response = await Config.Client.GetAsync(uri);
-        if (response.StatusCode != HttpStatusCode.OK || !response.Headers.AcceptRanges.Any()) {
-            response = await Config.Client.GetAsync(GetShortUri(bookId));
+    private async Task<HttpResponseMessage> GetBookResponse(string bookId) {
+        if (_authData != null) {
+            var response = await Config.Client.GetAsync(GetFullUri(bookId, "download_book_subscr"));
+            if (response.StatusCode == HttpStatusCode.OK && response.Headers.AcceptRanges.Any()) {
+                return response;
+            }
+
+            response = await Config.Client.GetAsync(GetFullUri(bookId, "catalit_download_book"));
+            if (response.StatusCode == HttpStatusCode.OK && response.Headers.AcceptRanges.Any()) {
+                return response;
+            }
         }
+        
+        return await Config.Client.GetAsync(GetShortUri(bookId));
+    }
+
+    private async Task<LitresBook> GetBook(string bookId) {
+        var response = await GetBookResponse(bookId);
 
         var result = new LitresBook();
 
