@@ -17,17 +17,13 @@ namespace Elib2Ebook.Logic.Getters;
 public class LitmarketGetter : GetterBase {
     public LitmarketGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://litmarket.ru");
-    
-    // cloudflare :(
-    private const string HOST = "89.108.111.237";
 
     public override async Task Init() {
         await base.Init();
         
-        Config.Client.DefaultRequestHeaders.Add("Host", "litmarket.ru");
         Config.Client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
         
-        var response = await Config.Client.GetWithTriesAsync(new Uri($"https://{HOST}/"));
+        var response = await Config.Client.GetWithTriesAsync(new Uri("https://litmarket.ru/"));
         var doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
 
         var csrf = doc.QuerySelector("[name=csrf-token]")?.Attributes["content"]?.Value;
@@ -49,7 +45,7 @@ public class LitmarketGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
-        url = new Uri($"https://{HOST}/books/{bookId}");
+        url = new Uri($"https://litmarket.ru/books/{bookId}");
 
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         var content = await GetMainData(bookId);
@@ -105,7 +101,7 @@ public class LitmarketGetter : GetterBase {
             password = Config.Options.Password
         };
         
-        using var post = await Config.Client.PostAsJsonAsync($"https://{HOST}/auth/login", payload);
+        using var post = await Config.Client.PostAsJsonAsync("https://litmarket.ru/auth/login", payload);
         try {
             var data = await post.Content.ReadFromJsonAsync<AuthResponse>();
             if (data is { Success: false }) {
@@ -156,7 +152,7 @@ public class LitmarketGetter : GetterBase {
                 foreach (var mod in block.Chunk.Mods) {
                     switch (mod.Type) {
                         case "IMAGE":
-                            p.Append($"<img src='https://{HOST}/uploads/ebook/{eBookId}/{mod.Data.GetProperty("src").GetString()}' />");
+                            p.Append($"<img src='https://litmarket.ru/uploads/ebook/{eBookId}/{mod.Data.GetProperty("src").GetString()}' />");
                             break;
                         case "LINK":
                             p.Append($"<a href='{mod.Data.GetProperty("url").GetString()}'>{mod.Mods?.FirstOrDefault()?.Text ?? string.Empty}</a>");
@@ -182,12 +178,12 @@ public class LitmarketGetter : GetterBase {
     }
 
     private async Task<Response> GetMainData(string bookId) {
-        var data = await Config.Client.GetWithTriesAsync(new Uri($"https://{HOST}/reader/data/{bookId}"));
+        var data = await Config.Client.GetWithTriesAsync(new Uri($"https://litmarket.ru/reader/data/{bookId}"));
         return await data.Content.ReadFromJsonAsync<Response>();
     }
 
     private async Task<Block[]> GetBlocks(int eBookId) {
-        var resp = await Config.Client.GetWithTriesAsync(new Uri($"https://{HOST}/reader/blocks/{eBookId}"));
+        var resp = await Config.Client.GetWithTriesAsync(new Uri($"https://litmarket.ru/reader/blocks/{eBookId}"));
         return await resp.Content.ReadFromJsonAsync<Block[]>();
     }
 }
