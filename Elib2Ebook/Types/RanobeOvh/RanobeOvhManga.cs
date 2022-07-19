@@ -1,0 +1,20 @@
+using System.Text.Json.Serialization;
+
+namespace Elib2Ebook.Types.RanobeOvh; 
+
+public class RanobeOvhManga {
+    [JsonPropertyName("id")]
+    public string Id { get; set; }
+    
+    [JsonPropertyName("name")]
+    public RanobeOvhMangaName Name { get; set; }
+    
+    [JsonPropertyName("poster")]
+    public string Poster { get; set; }
+    
+    [JsonPropertyName("description")]
+    public RanobeOvhMangaName Description { get; set; }
+    
+    [JsonPropertyName("slug")]
+    public string Slug { get; set; }
+}

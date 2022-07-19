@@ -33,6 +33,7 @@
 * https://ranobe-novels.ru/
 * https://ranobehub.org/
 * https://ranobelib.me/
+* https://ranobe.ovh/
 * https://ranobes.com/
 * https://readli.net/
 * https://renovels.org/
