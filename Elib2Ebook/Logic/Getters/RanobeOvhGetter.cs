@@ -54,13 +54,11 @@ public class RanobeOvhGetter : GetterBase {
             Console.WriteLine($"Загружаю главу {ranobeOvhChapter.FullName.CoverQuotes()}");
 
             var chapterDoc = await GetChapter(ranobeOvhChapter);
-            if (chapterDoc != default) {
-                chapter.Title = ranobeOvhChapter.FullName;
-                chapter.Images = await GetImages(chapterDoc, url);
-                chapter.Content = chapterDoc.DocumentNode.InnerHtml;
+            chapter.Title = ranobeOvhChapter.FullName;
+            chapter.Images = await GetImages(chapterDoc, url);
+            chapter.Content = chapterDoc.DocumentNode.InnerHtml;
 
-                result.Add(chapter);
-            }
+            result.Add(chapter);
         }
 
         return result;
