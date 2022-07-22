@@ -28,7 +28,7 @@ public class LitgorodGetter : GetterBase {
             Title = doc.GetTextBySelector("div.b-book_item__name h2"),
             Author = GetAuthor(doc, url),
             Annotation = doc.QuerySelector("div.annotation_footer--content p.item_info")?.InnerHtml,
-            Seria = GetSeria(doc)
+            Seria = GetSeria(doc, url)
         };
             
         return book;
@@ -83,15 +83,13 @@ public class LitgorodGetter : GetterBase {
         return new Author(a.GetText(), new Uri(url, a.Attributes["href"].Value));
     }
 
-    private static Seria GetSeria(HtmlDocument doc) {
-        var text = doc.GetTextBySelector("div.b-book_item__cycle");
-        if (!string.IsNullOrWhiteSpace(text) && text.StartsWith("Цикл")) {
-            var circleName = text[4..].Trim();
-            if (!string.IsNullOrWhiteSpace(circleName)) {
-                return new Seria {
-                    Name = circleName
-                };
-            }
+    private static Seria GetSeria(HtmlDocument doc, Uri url) {
+        var a = doc.QuerySelector("div.b-book_item__cycle a");
+        if (a != default) {
+            return new Seria {
+                Name = a.GetText(),
+                Url = new Uri(url, a.Attributes["href"].Value)
+            };
         }
 
         return default;
@@ -143,7 +141,7 @@ public class LitgorodGetter : GetterBase {
 
     private static IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
         return doc
-            .QuerySelectorAll("div.item-2 ul a")
+            .QuerySelectorAll("div.b-tab__content ul.list-unstyled a")
             .Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), string.IsNullOrWhiteSpace(a.GetText()) ? "Без названия" : a.GetText()));
     }
 
