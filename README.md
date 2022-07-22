@@ -27,6 +27,7 @@
 * https://litmir.me/
 * https://litnet.com/
 * https://litres.ru/
+* https://mangalib.me/
 * https://online-knigi.com.ua/
 * https://novelxo.com/
 * https://prodaman.ru/

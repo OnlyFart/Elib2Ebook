@@ -12,13 +12,12 @@ public class RanobeLibChapter {
 
     [JsonPropertyName("chapter_name")] 
     public string ChapterName { get; set; }
+    
+    [JsonPropertyName("chapter_id")]
+    public int ChapterId { get; set; }
         
     [JsonPropertyName("branch_id")]
     public int? BranchId { get; set; }
-
-    public Uri GetUri(Uri baseUri) {
-        return new Uri(baseUri + $"/v{ChapterVolume}/c{ChapterNumber}?bid={BranchId}");
-    }
 
     public string GetName() {
         return $"Том {ChapterVolume} Глава {ChapterNumber} {ChapterName}".Trim();

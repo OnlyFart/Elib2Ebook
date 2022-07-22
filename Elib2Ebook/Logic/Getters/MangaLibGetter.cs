@@ -1,28 +1,27 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
+using Elib2Ebook.Types.MangaLib;
 using Elib2Ebook.Types.RanobeLib;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 
 namespace Elib2Ebook.Logic.Getters; 
 
-public class RanobeLibGetter : GetterBase {
-    public RanobeLibGetter(BookGetterConfig config) : base(config) { }
-    protected override Uri SystemUrl => new("https://ranobelib.me");
-
+public class MangaLibGetter : GetterBase {
+    public MangaLibGetter(BookGetterConfig config) : base(config) { }
+    protected override Uri SystemUrl => new("https://mangalib.me/");
     protected override string GetId(Uri url) {
         return url.Segments[1].Trim('/');
     }
-
-
+    
     /// <summary>
     /// Авторизация в системе
     /// </summary>
@@ -32,11 +31,11 @@ public class RanobeLibGetter : GetterBase {
             return;
         }
         
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://ranobelib.me/"));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://mangalib.me/"));
         var token = doc.QuerySelector("meta[name=_token]")?.Attributes["content"]?.Value;
-        using var post = await Config.Client.PostAsync($"https://ranobelib.me/login", GenerateAuthData(token));
+        using var post = await Config.Client.PostAsync("https://mangalib.me/login", GenerateAuthData(token));
     }
-
+    
     private MultipartFormDataContent GenerateAuthData(string token) {
         return new() {
             {new StringContent(token), "_token"},
@@ -47,15 +46,14 @@ public class RanobeLibGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
-        var bidId = url.GetQueryParameter("bid");
-        url = new Uri($"https://ranobelib.me/{GetId(url)}");
+        url = new Uri($"https://mangalib.me/{GetId(url)}");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
-
+        
         var data = GetData(doc);
 
         var book = new Book(url) {
             Cover = await GetCover(doc, url),
-            Chapters = await FillChapters(data, url, bidId),
+            Chapters = await FillChapters(data, url),
             Title = doc.QuerySelector("meta[property=og:title]").Attributes["content"].Value.Trim(),
             Author = GetAuthor(doc, url),
             Annotation = doc.QuerySelector("div.media-description__text")?.InnerHtml
@@ -73,9 +71,15 @@ public class RanobeLibGetter : GetterBase {
             }
         }
 
-        return new Author("RanobeLib");
+        return new Author("MangaLib");
     }
 
+    private static IEnumerable<MangaLibPg> GetPg(HtmlDocument doc) {
+        var match = new Regex("window.__pg = (?<data>.*);", RegexOptions.Compiled | RegexOptions.Singleline).Match(doc.QuerySelector("#pg").InnerText).Groups["data"].Value;
+        var pg = match.Deserialize<MangaLibPg[]>();
+        return pg.OrderBy(p => p.P);
+    }
+    
     private static WindowData GetData(HtmlDocument doc) {
         var match = new Regex("window.__DATA__ = (?<data>{.*}).*window._SITE_COLOR_", RegexOptions.Compiled | RegexOptions.Singleline).Match(doc.Text).Groups["data"].Value;
         var windowData = match.Deserialize<WindowData>();
@@ -83,22 +87,15 @@ public class RanobeLibGetter : GetterBase {
         return windowData;
     }
 
-    private async Task<IEnumerable<Chapter>> FillChapters(WindowData data, Uri url, string bidId) {
+    private async Task<IEnumerable<Chapter>> FillChapters(WindowData data, Uri url) {
         var result = new List<Chapter>();
-        var branchId = string.IsNullOrWhiteSpace(bidId)
-            ? data.RanobeLibChapters.List
-                .GroupBy(c => c.BranchId)
-                .MaxBy(c => c.Count())!
-                .Key
-            : int.Parse(bidId);
 
-        foreach (var ranobeChapter in data.RanobeLibChapters.List.Where(c => c.BranchId == branchId)) {
+        foreach (var ranobeChapter in data.RanobeLibChapters.List) {
             Console.WriteLine($"Загружаю главу {ranobeChapter.GetName()}");
             var chapter = new Chapter();
-            
-            var chapterUri = new Uri(url + $"/v{ranobeChapter.ChapterVolume}/c{ranobeChapter.ChapterNumber}?bid={ranobeChapter.BranchId}");
-            var chapterDoc = await GetChapter(chapterUri);
-            chapter.Images = await GetImages(chapterDoc, chapterUri);
+
+            var chapterDoc = await GetChapter(url, ranobeChapter);
+            chapter.Images = await GetImages(chapterDoc, SystemUrl);
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;
             chapter.Title = ranobeChapter.GetName();
 
@@ -108,14 +105,22 @@ public class RanobeLibGetter : GetterBase {
         return result;
     }
 
-    private async Task<HtmlDocument> GetChapter(Uri url) {
-        var chapterDoc = await Config.Client.GetHtmlDocWithTriesAsync(url);
+    private async Task<HtmlDocument> GetChapter(Uri url, RanobeLibChapter ranobeLibChapter) {
+        var chapterDoc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(url + $"/v{ranobeLibChapter.ChapterVolume}/c{ranobeLibChapter.ChapterNumber}"));
         var header = chapterDoc.QuerySelector("h2.page__title");
         if (header != default && header.GetText() == "Регистрация") {
             throw new Exception("Произведение доступно только зарегистрированным пользователям. Добавьте в параметры вызова свои логин и пароль");
         }
+        
+        var pg = GetPg(chapterDoc);
+        var sb = new StringBuilder();
 
-        return chapterDoc.QuerySelector("div.reader-container").InnerHtml.AsHtmlDoc();
+        foreach (var p in pg) {
+            var imageUrl = $"https://img3.cdnlib.link/manga/{GetId(url)}/chapters/{ranobeLibChapter.ChapterId}/{p.U}";
+            sb.Append($"<img src='{imageUrl}'/>");
+        }
+
+        return sb.AsHtmlDoc();
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
