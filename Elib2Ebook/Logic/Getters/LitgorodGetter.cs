@@ -99,18 +99,19 @@ public class LitgorodGetter : GetterBase {
         var result = new List<Chapter>();
 
         foreach (var bookChapter in GetToc(doc, uri)) {
-            var chapter = new Chapter();
+            var chapter = new Chapter {
+                Title = bookChapter.Title
+            };
+
             Console.WriteLine($"Загружаю главу {bookChapter.Title.CoverQuotes()}");
-            
             var chapterDoc = await GetChapter(bookChapter.Url);
 
             if (chapterDoc != default) {
-                chapter.Title = bookChapter.Title;
                 chapter.Images = await GetImages(chapterDoc, uri);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
-
-                result.Add(chapter);
             }
+            
+            result.Add(chapter);
         }
 
         return result;

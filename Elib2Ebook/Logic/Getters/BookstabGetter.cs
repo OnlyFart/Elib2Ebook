@@ -50,18 +50,20 @@ public class BookstabGetter : GetterBase {
         var result = new List<Chapter>();
 
         foreach (var bookChapter in response.Book.ChaptersShow) {
-            var chapter = new Chapter();
+            var chapter = new Chapter {
+                Title = bookChapter.Title
+            };
+
             Console.WriteLine($"Загружаю главу {bookChapter.Title.CoverQuotes()}");
             
             var doc = await GetChapter(bookChapter.Id, bookId);
 
             if (doc != default) {
-                chapter.Title = bookChapter.Title;
                 chapter.Images = await GetImages(doc, uri);
                 chapter.Content = doc.DocumentNode.InnerHtml;
-
-                result.Add(chapter);
             }
+            
+            result.Add(chapter);
         }
 
         return result;

@@ -99,13 +99,16 @@ public class AuthorTodayGetter : GetterBase {
             var title = atChapter.Title.ReplaceNewLine();
             Console.WriteLine($"Загружаю главу {title.CoverQuotes()}");
             
-            var chapter = new Chapter();
-            var chapterDoc = atChapter.Decode(UserId).AsHtmlDoc();
+            var chapter = new Chapter {
+                Title = title
+            };
 
-            chapter.Title = title;
-            chapter.Images = await GetImages(chapterDoc, new Uri("https://author.today/"));
-            chapter.Content = chapterDoc.DocumentNode.InnerHtml;
-            
+            if (atChapter.IsSuccessful) {
+                var chapterDoc = atChapter.Decode(UserId).AsHtmlDoc();
+                chapter.Images = await GetImages(chapterDoc, new Uri("https://author.today/"));
+                chapter.Content = chapterDoc.DocumentNode.InnerHtml;
+            }
+
             chapters.Add(chapter);
         }
             
@@ -121,7 +124,7 @@ public class AuthorTodayGetter : GetterBase {
             var response = await Config.Client.GetWithTriesAsync(uri);
             var chapters = await response.Content.ReadFromJsonAsync<AuthorTodayChapter[]>();
             if (chapters != default) {
-                result.AddRange(chapters.Where(c => c.IsSuccessful));
+                result.AddRange(chapters);
             }
         }
 

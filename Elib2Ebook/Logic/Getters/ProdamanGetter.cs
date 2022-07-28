@@ -159,6 +159,7 @@ public class ProdamanGetter : GetterBase {
             .Where(a => int.TryParse(a.InnerText, out _))
             .Select(a => int.Parse(a.InnerText))
             .ToList();
+        
         return pages.Count > 0 ? pages.Max() : 1;
     }
     

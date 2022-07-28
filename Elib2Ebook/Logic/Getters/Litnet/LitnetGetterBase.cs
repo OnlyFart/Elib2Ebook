@@ -153,24 +153,21 @@ public abstract class LitnetGetterBase : GetterBase {
         }
         
         var chapters = await GetToc(token, contents);
-
         var map = chapters.ToDictionary(t => t.Id);
         
         foreach (var content in contents) {
             var litnetChapter = map[content.Id];
 
             Console.WriteLine($"Загружаю главу {content.Title.Trim().CoverQuotes()}");
-            if (string.IsNullOrWhiteSpace(litnetChapter.Text)) {
-                Console.WriteLine($"Глава {content.Title.Trim().CoverQuotes()} в платном доступе");
-                continue;
-            }
-            
-            var chapter = new Chapter();
+            var chapter = new Chapter {
+                Title = (content.Title ?? book.Title).Trim()
+            };
 
-            var chapterDoc = GetChapter(litnetChapter);
-            chapter.Images = await GetImages(chapterDoc, new Uri("https://litnet.com"));
-            chapter.Content = chapterDoc.DocumentNode.InnerHtml;
-            chapter.Title = (content.Title ?? book.Title).Trim();
+            if (!string.IsNullOrWhiteSpace(litnetChapter.Text)) {
+                var chapterDoc = GetChapter(litnetChapter);
+                chapter.Images = await GetImages(chapterDoc, new Uri("https://litnet.com"));
+                chapter.Content = chapterDoc.DocumentNode.InnerHtml;
+            }
 
             result.Add(chapter);
         }

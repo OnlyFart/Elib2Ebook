@@ -91,18 +91,18 @@ public class BookriverGetter : GetterBase {
         var internalId = await GetInternalBookId(bookId);
         
         foreach (var bookChapter in await GetToc(internalId)) {
-            var chapter = new Chapter();
             Console.WriteLine($"Загружаю главу {bookChapter.Name.CoverQuotes()}");
+            var chapter = new Chapter {
+                Title = bookChapter.Name
+            };
             
             var doc = await GetChapter(bookChapter.Id);
-
             if (doc != default) {
-                chapter.Title = bookChapter.Name;
                 chapter.Images = await GetImages(doc, uri);
                 chapter.Content = doc.DocumentNode.InnerHtml;
-
-                result.Add(chapter);
             }
+            
+            result.Add(chapter);
         }
 
         return result;

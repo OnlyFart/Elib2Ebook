@@ -83,18 +83,18 @@ public class LitexitGetter : GetterBase {
         var result = new List<Chapter>();
 
         foreach (var bookChapter in await GetToc(doc)) {
-            var chapter = new Chapter();
             Console.WriteLine($"Загружаю главу {bookChapter.Title.CoverQuotes()}");
-
+            var chapter = new Chapter {
+                Title = bookChapter.Title
+            };
+            
             if (!string.IsNullOrWhiteSpace(bookChapter.Text)) {
                 var chapterDoc = bookChapter.Text.AsHtmlDoc();
-
-                chapter.Title = bookChapter.Title;
                 chapter.Images = await GetImages(chapterDoc, uri);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
-
-                result.Add(chapter);
             }
+            
+            result.Add(chapter);
         }
 
         return result;

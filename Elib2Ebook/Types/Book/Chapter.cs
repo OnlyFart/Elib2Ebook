@@ -7,7 +7,6 @@ public class Chapter {
     /// <summary>
     /// Название части
     /// </summary>
-    [JsonPropertyName("title")]
     public string Title { get; set; }
         
     /// <summary>

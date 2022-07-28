@@ -46,7 +46,7 @@ public class JsonBuilder : BuilderBase {
     }
 
     public override BuilderBase WithChapters(IEnumerable<Chapter> chapters) {
-        _book.Chapters = chapters.Where(c => c.IsValid);
+        _book.Chapters = chapters;
         return this;
     }
 

@@ -35,6 +35,7 @@ public class RanobeHubGetter : GetterBase {
         foreach (var ranobeChapter in await GetToc(doc)) {
             Console.WriteLine($"Загружаю главу {ranobeChapter.Name}");
             var chapter = new Chapter();
+            
             var chapterDoc = await GetChapter(ranobeChapter.Url);
             chapter.Images = await GetImages(chapterDoc, url);
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;

@@ -74,16 +74,19 @@ public class DarkNovelsGetter : GetterBase {
 
         foreach (var darkNovelsChapter in await GetToc(bookId)) {
             Console.WriteLine($"Загружаю главу {darkNovelsChapter.Title.CoverQuotes()}");
-            if (darkNovelsChapter.Title.StartsWith("Volume:") || darkNovelsChapter.Payed == 1) {
+            if (darkNovelsChapter.Title.StartsWith("Volume:")) {
                 continue;
             }
                 
-            var chapter = new Chapter();
+            var chapter = new Chapter {
+                Title = darkNovelsChapter.Title
+            };
+            
             var chapterDoc = await GetChapter(bookId, darkNovelsChapter.Id);
-            if (chapterDoc != default) {
+            
+            if (chapterDoc != default && darkNovelsChapter.Payed == 0) {
                 chapter.Images = await GetImages(chapterDoc, SystemUrl);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
-                chapter.Title = darkNovelsChapter.Title;
             }
 
             result.Add(chapter);

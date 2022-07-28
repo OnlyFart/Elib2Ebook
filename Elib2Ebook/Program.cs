@@ -26,11 +26,14 @@ internal static class Program {
                                              DecompressionMethods.Deflate |
                                              DecompressionMethods.Brotli,
                     ServerCertificateCustomValidationCallback = (_, _, _, _) => true,
+                    Proxy = null,
+                    UseProxy = false
                 };
 
                 if (!string.IsNullOrEmpty(options.Proxy)) {
                     var split = options.Proxy.Split(":");
                     handler.Proxy = new WebProxy(split[0], int.Parse(split[1]));
+                    handler.UseProxy = true;
                 }
 
                 var client = new HttpClient(handler);

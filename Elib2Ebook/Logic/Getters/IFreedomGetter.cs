@@ -49,17 +49,19 @@ public class FreedomGetter : GetterBase{
         var result = new List<Chapter>();
 
         foreach (var urlChapter in await GetToc(doc, uri)) {
-            var chapter = new Chapter();
+            var chapter = new Chapter {
+                Title = urlChapter.Title
+            };
+
             Console.WriteLine($"Загружаю главу {urlChapter.Title.CoverQuotes()}");
 
             var chapterDoc = await GetChapter(urlChapter.Url);
             if (chapterDoc != default) {
-                chapter.Title = urlChapter.Title;
                 chapter.Images = await GetImages(chapterDoc, urlChapter.Url);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
-
-                result.Add(chapter);
             }
+            
+            result.Add(chapter);
         }
 
         return result;

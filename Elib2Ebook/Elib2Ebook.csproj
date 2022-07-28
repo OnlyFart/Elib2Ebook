@@ -6,7 +6,7 @@
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <LangVersion>10</LangVersion>
         <PackageId>Elib2Ebook</PackageId>
-        <Version>1.12.0</Version>
+        <Version>1.12.1</Version>
     </PropertyGroup>
 
     <ItemGroup>
