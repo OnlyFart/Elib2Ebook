@@ -107,8 +107,8 @@ public class MangaLibGetter : GetterBase {
 
     private async Task<HtmlDocument> GetChapter(Uri url, RanobeLibChapter ranobeLibChapter) {
         var chapterDoc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(url + $"/v{ranobeLibChapter.ChapterVolume}/c{ranobeLibChapter.ChapterNumber}"));
-        var header = chapterDoc.QuerySelector("h2.page__title");
-        if (header != default && header.GetText() == "Регистрация") {
+        var header = chapterDoc.QuerySelector("div.auth-form-title");
+        if (header != default && header.GetText() == "Авторизация") {
             throw new Exception("Произведение доступно только зарегистрированным пользователям. Добавьте в параметры вызова свои логин и пароль");
         }
         

@@ -68,9 +68,12 @@ public abstract class GetterBase : IDisposable {
     /// <param name="doc"></param>
     /// <param name="baseUri"></param>
     protected async Task<IEnumerable<Image>> GetImages(HtmlDocument doc, Uri baseUri) {
-        var images = new ConcurrentBag<Image>();
+        var images = new ConcurrentBag<Tuple<Image, int>>();
         var toRemove = new ConcurrentBag<HtmlNode>();
-        await Parallel.ForEachAsync(doc.QuerySelectorAll("img, image"), async (img, _) => {
+        var tuples = doc.QuerySelectorAll("img, image").Select((img, i) => Tuple.Create(img, i));
+        await Parallel.ForEachAsync(tuples, async (t, _) => {
+            var img = t.Item1;
+            
             if (Config.Options.NoImage) {
                 toRemove.Add(img);
                 return;
@@ -95,14 +98,14 @@ public abstract class GetterBase : IDisposable {
 
             img.Attributes.RemoveAll();
             img.Attributes.Add("src", image.Path);
-            images.Add(image);
+            images.Add(Tuple.Create(image, t.Item2));
         });
 
         foreach (var node in toRemove) {
             node.Remove();
         }
 
-        return images;
+        return images.OrderBy(t => t.Item2).Select(t => t.Item1);
     }
 
     public virtual Task Authorize() {
