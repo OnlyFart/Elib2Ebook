@@ -23,6 +23,9 @@ public class AuthorTodayChapter {
     [JsonPropertyName("IsSuccessful")]
     public bool IsSuccessful { get; set; }
 
+    [JsonPropertyName("IsDraft")]
+    public bool IsDraft { get; set; }
+
     public string Decode(string userId) {
         var secret = string.Join("", Key.Reverse()) + "@_@" + userId;
         var sb = new StringBuilder();
