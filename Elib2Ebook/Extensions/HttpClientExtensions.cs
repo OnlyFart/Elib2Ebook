@@ -13,10 +13,10 @@ public static class HttpClientExtensions {
     private static TimeSpan GetTimeout(TimeSpan errorTimeout) {
         return errorTimeout == default ? DefaultTimeout : errorTimeout;
     }
-    
+
     public static async Task<HttpResponseMessage> GetWithTriesAsync(this HttpClient client, Uri url, TimeSpan errorTimeout = default) {
         for (var i = 0; i < MAX_TRY_COUNT; i++) {
-            try { 
+            try {
                 var response = await client.GetAsync(url);
 
                 if (response.StatusCode != HttpStatusCode.OK) {
@@ -25,6 +25,9 @@ public static class HttpClientExtensions {
                 }
 
                 return response;
+            } catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException) {
+                ProcessTimeout(client);
+                await Task.Delay(GetTimeout(errorTimeout));
             } catch (Exception ex) {
                 Console.WriteLine(ex.Message);
                 await Task.Delay(GetTimeout(errorTimeout));
@@ -45,6 +48,9 @@ public static class HttpClientExtensions {
                 }
 
                 return response;
+            } catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException) {
+                ProcessTimeout(client);
+                await Task.Delay(GetTimeout(errorTimeout));
             } catch (Exception ex) {
                 Console.WriteLine(ex.Message);
                 await Task.Delay(GetTimeout(errorTimeout));
@@ -69,6 +75,9 @@ public static class HttpClientExtensions {
                 }
                     
                 return response;
+            } catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException) {
+                ProcessTimeout(client);
+                await Task.Delay(GetTimeout(errorTimeout));
             } catch (Exception ex) {
                 Console.WriteLine(ex.Message);
                 await Task.Delay(GetTimeout(errorTimeout));
@@ -76,6 +85,10 @@ public static class HttpClientExtensions {
         }
 
         return default;
+    }
+
+    private static void ProcessTimeout(HttpClient client) {
+        Console.WriteLine($"Сервер не успевает ответить за {client.Timeout.Seconds} секунд. Попробуйте увеличить Timeout с помощью параметра -t");
     }
         
     public static async Task<HtmlDocument> GetHtmlDocWithTriesAsync(this HttpClient client, Uri url) {
