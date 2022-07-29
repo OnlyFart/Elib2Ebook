@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;

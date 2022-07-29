@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http.Json;
-using System.Text;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
@@ -12,17 +11,19 @@ using Elib2Ebook.Types.RanobeOvh;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 
-namespace Elib2Ebook.Logic.Getters; 
+namespace Elib2Ebook.Logic.Getters.RanobeOvh; 
 
-public class RanobeOvhGetter : GetterBase {
-    public RanobeOvhGetter(BookGetterConfig config) : base(config) { }
-    protected override Uri SystemUrl => new("https://ranobe.ovh/");
+public abstract class RanobeOvhGetterBase : GetterBase {
+    protected RanobeOvhGetterBase(BookGetterConfig config) : base(config) { }
+    protected abstract string Segment { get; }
+    
+    protected abstract Task<HtmlDocument> GetChapter(RanobeOvhChapter ranobeOvhChapter);
     
     private async Task<Uri> GetMainUrl(Uri url) {
-        if (url.Segments[1] != "ranobe/") {
+        if (url.Segments[1] != $"{Segment}/") {
             var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
             var branch = GetNextData<RanobeOvhBranch>(doc, "branch");
-            return new Uri($"https://ranobe.ovh/ranobe/{branch.Book.Slug}");
+            return new Uri($"https://{SystemUrl.Host}/{Segment}/{branch.Book.Slug}");
         }
 
         return url;
@@ -30,7 +31,7 @@ public class RanobeOvhGetter : GetterBase {
     
     public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://ranobe.ovh/ranobe/{GetId(url)}"));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://{SystemUrl.Host}/{Segment}/{GetId(url)}"));
         
         var manga = GetNextData<RanobeOvhManga>(doc, "manga");
         var branch = GetBranch(doc);
@@ -44,6 +45,12 @@ public class RanobeOvhGetter : GetterBase {
         };
 
         return book;
+    }
+    
+    protected override HttpRequestMessage GetImageRequestMessage(Uri uri) {
+        var message = base.GetImageRequestMessage(uri);
+        message.Headers.Referrer = new Uri($"https://{SystemUrl.Host}/");
+        return message;
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(RanobeOvhBranch branch, Uri url) {
@@ -64,33 +71,8 @@ public class RanobeOvhGetter : GetterBase {
         return result;
     }
 
-    private async Task<HtmlDocument> GetChapter(RanobeOvhChapter ranobeOvhChapter) {
-        var data = await Config.Client.GetFromJsonAsync<RanobeOvhChapter>($"https://api.ranobe.ovh/chapter/{ranobeOvhChapter.Id}");
-        var sb = new StringBuilder();
-
-        foreach (var page in data.Pages) {
-            switch (page.Metadata.Type) {
-                case "paragraph":
-                    sb.Append(page.Text.HtmlDecode().CoverTag("p"));
-                    break;
-                case "image":
-                    sb.Append($"<img src='{page.Image}'/>");
-                    break;
-                case "delimiter":
-                    sb.Append("***".CoverTag("h3"));
-                    break;
-                default:
-                    Console.WriteLine($"Неизвестный тип: {page.Metadata.Type}");
-                    sb.Append(page.Text.HtmlDecode().CoverTag("p"));
-                    break;
-            }
-        }
-
-        return sb.AsHtmlDoc();
-    }
-
     private async Task<IEnumerable<RanobeOvhChapter>> GetToc(RanobeOvhBranch branch) {
-        var data = await Config.Client.GetStringAsync(new Uri($"https://api.ranobe.ovh/branch/{branch.Id}/chapters"));
+        var data = await Config.Client.GetStringAsync(new Uri($"https://api.{SystemUrl.Host}/branch/{branch.Id}/chapters"));
         return data.Deserialize<RanobeOvhChapter[]>().Reverse();
     }
 
@@ -99,9 +81,9 @@ public class RanobeOvhGetter : GetterBase {
         return branches[0];
     }
 
-    private static Author GetAuthor(RanobeOvhBranch branch) {
+    private Author GetAuthor(RanobeOvhBranch branch) {
         var translator = branch.Translators[0];
-        return new Author(translator.Name, new Uri($"https://ranobe.ovh/translator/{translator.Slug}"));
+        return new Author(translator.Name, new Uri($"https://{SystemUrl.Host}/translator/{translator.Slug}"));
     }
 
     private Task<Image> GetCover(RanobeOvhManga manga, Uri uri) {
