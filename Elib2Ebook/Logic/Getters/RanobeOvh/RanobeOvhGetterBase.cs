@@ -18,7 +18,7 @@ public abstract class RanobeOvhGetterBase : GetterBase {
     protected abstract string Segment { get; }
     
     protected abstract Task<HtmlDocument> GetChapter(RanobeOvhChapter ranobeOvhChapter);
-    
+
     private async Task<Uri> GetMainUrl(Uri url) {
         if (url.Segments[1] != $"{Segment}/") {
             var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);

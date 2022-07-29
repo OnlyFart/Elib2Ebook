@@ -37,7 +37,7 @@ internal static class Program {
                 }
 
                 var client = new HttpClient(handler);
-                client.Timeout = TimeSpan.FromSeconds(5);
+                client.Timeout = TimeSpan.FromSeconds(options.Timeout);
 
                 var getterConfig = new BookGetterConfig(options, client);
                 using var getter = GetGetter(getterConfig, new Uri(options.Url.First()));

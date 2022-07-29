@@ -65,9 +65,7 @@ public class AuthorTodayGetter : GetterBase {
 
     public override async Task Init() {
         await base.Init();
-        
         Config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "guest");
-        Config.Client.Timeout = TimeSpan.FromSeconds(10);
     }
 
     public override async Task Authorize() {

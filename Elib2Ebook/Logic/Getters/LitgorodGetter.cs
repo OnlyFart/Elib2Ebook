@@ -35,8 +35,6 @@ public class LitgorodGetter : GetterBase {
     }
 
     public override async Task Init() {
-        Config.Client.Timeout = TimeSpan.FromSeconds(30);
-        
         var response = await Config.Client.GetWithTriesAsync(new Uri("https://litgorod.ru/"));
         var doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
         
