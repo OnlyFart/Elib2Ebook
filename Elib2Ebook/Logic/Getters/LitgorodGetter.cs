@@ -27,7 +27,7 @@ public class LitgorodGetter : GetterBase {
             Chapters = await FillChapters(doc, url),
             Title = doc.GetTextBySelector("div.b-book_item__name h2"),
             Author = GetAuthor(doc, url),
-            Annotation = doc.QuerySelector("div.annotation_footer--content p.item_info")?.InnerHtml,
+            Annotation = doc.QuerySelector("div[data-tab-item=1] > p")?.InnerHtml,
             Seria = GetSeria(doc, url)
         };
             
