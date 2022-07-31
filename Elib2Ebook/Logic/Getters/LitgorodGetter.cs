@@ -122,7 +122,9 @@ public class LitgorodGetter : GetterBase {
         }
 
         var doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
-        if (doc.QuerySelector("buy-button, buy-button-inline") != default) {
+
+        var content = doc.QuerySelector("div.reader__content__wrap");
+        if (content == default) {
             return default;
         }
         
@@ -130,7 +132,9 @@ public class LitgorodGetter : GetterBase {
         var pages = int.Parse(li.Count > 0 ? li.Last().InnerText : "1");
 
         var sb = new StringBuilder();
-        for (var i = 1; i <= pages; i++) {
+        sb.Append(content.RemoveNodes("div.reader__content__title").InnerHtml.HtmlDecode());
+        
+        for (var i = 2; i <= pages; i++) {
             doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(url + $"&page={i}"));
             sb.Append(doc.QuerySelector("div.reader__content__wrap").RemoveNodes("div.reader__content__title").InnerHtml.HtmlDecode());
         }
