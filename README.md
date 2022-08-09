@@ -30,6 +30,7 @@
 * https://manga.ovh/
 * https://mangalib.me/
 * https://online-knigi.com.ua/
+* https://noveltranslate.com/
 * https://novelxo.com/
 * https://prodaman.ru/
 * https://ranobe-novels.ru/
