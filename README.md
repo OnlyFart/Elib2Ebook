@@ -10,6 +10,7 @@
 * https://author.today/
 * https://bigliba.com/
 * https://bookinbook.ru/
+* https://bookinist.pw/
 * https://booknet.com/
 * https://bookstab.ru/
 * https://bookriver.ru/

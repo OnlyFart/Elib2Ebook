@@ -19,8 +19,7 @@ public class HubBookGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
-        var bookId = GetId(url);
-        url = new Uri($"https://hub-book.com/books/{bookId}");
+        url = new Uri($"https://hub-book.com/books/{GetId(url)}");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var author = GetAuthor(doc, url);
