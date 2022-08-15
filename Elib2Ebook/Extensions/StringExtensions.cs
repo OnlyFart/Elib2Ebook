@@ -115,5 +115,4 @@ public static class StringExtensions {
     public static T Deserialize<T>(this string self) {
         return JsonSerializer.Deserialize<T>(self);
     }
-    
 }

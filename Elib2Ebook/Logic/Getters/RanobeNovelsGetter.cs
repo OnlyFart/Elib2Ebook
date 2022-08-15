@@ -18,6 +18,7 @@ namespace Elib2Ebook.Logic.Getters;
 public class RanobeNovelsGetter : GetterBase {
     public RanobeNovelsGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://ranobe-novels.ru/");
+
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
         url = new Uri($"https://ranobe-novels.ru/ranobe/{bookId}/");
@@ -35,8 +36,14 @@ public class RanobeNovelsGetter : GetterBase {
     
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {
         var result = new List<Chapter>();
-            
-        foreach (var ranobeChapter in await GetToc(doc)) {
+
+        var toc = await GetToc(doc);
+        if (toc.Count == 0) {
+            doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://ranobe-novels.ru/{GetId(url)}"));
+            toc = await GetToc(doc);
+        }
+        
+        foreach (var ranobeChapter in toc) {
             Console.WriteLine($"Загружаю главу {ranobeChapter.Title.CoverQuotes()}");
             var chapter = new Chapter();
             var chapterDoc = await GetChapter(new Uri($"https://ranobe-novels.ru/{ranobeChapter.Name}"));
@@ -57,17 +64,25 @@ public class RanobeNovelsGetter : GetterBase {
             .AsHtmlDoc();
     }
 
-    private async Task<IEnumerable<RanobeNovelsChapter>> GetToc(HtmlDocument doc) {
+    private async Task<List<RanobeNovelsChapter>> GetToc(HtmlDocument doc) {
+        var catId = Regex.Match(doc.ParsedText, @"let cat_id = (?<id>\d+);").Groups["id"].Value;
+        var security = Regex.Match(doc.ParsedText, "\"nonce\":\"(?<id>.*?)\"").Groups["id"].Value;
         var data = new Dictionary<string, string> {
             ["action"] = "select_Ajax",
             ["query"] = "catChapters",
-            ["cat_id"] = GetId(new Uri(doc.QuerySelector("link[rel=alternate][type=application/json]").Attributes["href"].Value)),
-            ["security"] = Regex.Match(doc.ParsedText, "\"nonce\":\"(?<id>.*?)\"").Groups["id"].Value
+            ["cat_id"] = catId,
+            ["security"] = security
         };
 
+       
         var response = await Config.Client.PostAsync(new Uri("https://ranobe-novels.ru/wp-admin/admin-ajax.php"), new FormUrlEncodedContent(data));
+        if (response.StatusCode != HttpStatusCode.OK) {
+            return new List<RanobeNovelsChapter>();
+        }
+        
         var result = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.Deserialize<List<RanobeNovelsChapter>>());
         result.Reverse();
+
         return result;
     }
 
