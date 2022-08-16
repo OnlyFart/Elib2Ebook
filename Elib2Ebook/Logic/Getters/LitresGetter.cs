@@ -53,6 +53,8 @@ public class LitresGetter : GetterBase {
             return;
         }
         
+        // Литрес очень не любит много авторизовывать
+        // поэтому пришлось добавить кеширование токенов
         const string directory = "LitresCache";
 
         if (!Directory.Exists(directory)) {
