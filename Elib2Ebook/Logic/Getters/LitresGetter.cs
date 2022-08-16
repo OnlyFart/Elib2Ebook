@@ -53,14 +53,28 @@ public class LitresGetter : GetterBase {
             return;
         }
         
+        const string directory = "LitresCache";
+
+        if (!Directory.Exists(directory)) {
+            Directory.CreateDirectory(directory);
+        }
+
+        var saveCreds = $"{directory}/{Config.Options.Login.RemoveInvalidChars()}";
+        if (File.Exists(saveCreds)) {
+            _authData = await File.ReadAllTextAsync(saveCreds).ContinueWith(t => t.Result.Deserialize<LitresAuthResponseData>());
+            return;
+        }
+
         var payload = LitresPayload.Create(DateTime.Now, string.Empty, SECRET_KEY, APP);
         payload.Requests.Add(new LitresAuthRequest(Config.Options.Login, Config.Options.Password));
-
+     
         _authData = await GetResponse<LitresAuthResponseData>(payload);
-        
+
         if (!_authData.Success) {
             throw new Exception($"Не удалось авторизоваться. {_authData.ErrorMessage}");
         }
+
+        await File.WriteAllTextAsync(saveCreds, JsonSerializer.Serialize(_authData));
     }
 
     private async Task<T> GetResponse<T>(LitresPayload payload) {
