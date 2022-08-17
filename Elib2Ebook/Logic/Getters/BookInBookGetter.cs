@@ -21,8 +21,7 @@ public class BookInBookGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
-        var bookId = GetId(url);
-        url = new Uri($"https://bookinbook.ru/book?id={bookId}");
+        url = new Uri($"https://bookinbook.ru/book?id={GetId(url)}");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         
         var book = new Book(url) {

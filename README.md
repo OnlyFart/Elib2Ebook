@@ -22,6 +22,7 @@
 * https://jaomix.ru/
 * https://ladylib.top/
 * https://libbox.ru/
+* https://libst.ru/
 * https://litexit.ru/
 * https://litgorod.ru/
 * https://litmarket.ru/
