@@ -25,6 +25,8 @@ public class Fb2Builder : BuilderBase {
         {"b", "strong"},
         {"i", "emphasis"},
         {"em", "emphasis"},
+        {"emphasis", "emphasis"},
+        {"del", "strikethrough"},
         {"blockquote", "cite"},
         {"h1", "subtitle"},
         {"h2", "subtitle"},
@@ -286,6 +288,14 @@ public class Fb2Builder : BuilderBase {
         }
 
         var nodeText = node.InnerText.HtmlDecode().CleanInvalidXmlChars();
+        if (node.InnerText.StartsWith(" ")) {
+            nodeText = " " + nodeText;
+        }
+        
+        if (node.InnerText.EndsWith(" ")) {
+            nodeText += " ";
+        }
+        
         if (IsTextNode(node)) {
             if (string.IsNullOrWhiteSpace(textNode)) {
                 parent.Add(new XText(nodeText));
