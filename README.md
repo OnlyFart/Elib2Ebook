@@ -42,6 +42,7 @@
 * https://ranobes.com/
 * https://readli.net/
 * https://readmanga.live/
+* https://remanga.org/
 * https://renovels.org/
 * https://ru.novelxo.com/
 * http://samlib.ru/

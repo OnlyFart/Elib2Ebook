@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Elib2Ebook.Types.Renovels; 
@@ -23,7 +24,10 @@ public class RenovelsChapter {
     
     [JsonPropertyName("is_bought")]
     public bool? IsBought { get; set; }
-
+    
+    [JsonPropertyName("pages")]
+    public List<List<RenovelsPage>> Pages { get; set; }
+    
     public string Title {
         get {
             var name = $"Том {Tome}. Глава {Chapter}";

@@ -9,11 +9,14 @@ using Elib2Ebook.Types.Book;
 using Elib2Ebook.Types.Renovels;
 using HtmlAgilityPack;
 
-namespace Elib2Ebook.Logic.Getters; 
+namespace Elib2Ebook.Logic.Getters.Renovels; 
 
-public class RenovelsGetter : GetterBase{
-    public RenovelsGetter(BookGetterConfig config) : base(config) { }
-    protected override Uri SystemUrl => new("https://renovels.org/");
+public abstract class RenovelsGetterBase : GetterBase {
+    public RenovelsGetterBase(BookGetterConfig config) : base(config) { }
+    
+    protected abstract string Segment { get; }
+    
+    protected abstract HtmlDocument GetChapterAsHtml(RenovelsApiResponse<RenovelsChapter> response);
 
     protected override string GetId(Uri url) {
         return url.Segments[2].Trim('/');
@@ -23,7 +26,7 @@ public class RenovelsGetter : GetterBase{
         var bookId = GetId(url);
         var content = await GetContent(bookId);
 
-        var book = new Book(new Uri($"https://renovels.org/novel/{bookId}")) {
+        var book = new Book(new Uri($"https://{SystemUrl.Host}/{Segment}/{bookId}")) {
             Cover = await GetCover(content, url),
             Chapters = await FillChapters(content, url),
             Title = content.RusName,
@@ -34,17 +37,17 @@ public class RenovelsGetter : GetterBase{
         return book;
     }
     
-    private static Author GetAuthor(RenovelsContent content) {
+    private Author GetAuthor(RenovelsContent content) {
         if (content.Publishers.Length == 0) {
             return new Author("Renovels");
         }
 
         var author = content.Publishers[0];
-        return new Author(author.Name, new Uri($"https://renovels.org/team/{author.Dir}"));
+        return new Author(author.Name, new Uri($"https://{SystemUrl.Host}/team/{author.Dir}"));
     }
 
     private async Task<RenovelsContent> GetContent(string bookId) {
-        var response = await Config.Client.GetFromJsonAsync<RenovelsApiResponse<RenovelsContent>>($"https://api.renovels.org/api/titles/{bookId}/");
+        var response = await Config.Client.GetFromJsonAsync<RenovelsApiResponse<RenovelsContent>>($"https://api.{SystemUrl.Host}/api/titles/{bookId}/");
         return response.Content;
     }
 
@@ -66,8 +69,8 @@ public class RenovelsGetter : GetterBase{
     }
 
     private async Task<HtmlDocument> GetChapter(RenovelsChapter ranobeChapter) {
-        var response = await Config.Client.GetFromJsonAsync<RenovelsApiResponse<RenovelsChapter>>($"https://api.renovels.org/api/titles/chapters/{ranobeChapter.Id}/");
-        return response.Content.Content.AsHtmlDoc();
+        var response = await Config.Client.GetFromJsonAsync<RenovelsApiResponse<RenovelsChapter>>($"https://api.{SystemUrl.Host}/api/titles/chapters/{ranobeChapter.Id}/");
+        return GetChapterAsHtml(response);
     }
 
     private Task<Image> GetCover(RenovelsContent book, Uri bookUri) {
@@ -79,7 +82,7 @@ public class RenovelsGetter : GetterBase{
         var result = new List<RenovelsChapter>();
         
         for (var i = 1;; i++) {
-            var uri = $"https://api.renovels.org/api/titles/chapters/?branch_id={content.Branches[0].Id}&ordering=index&user_data=1&count=40&page={i}";
+            var uri = $"https://api.{SystemUrl.Host}/api/titles/chapters/?branch_id={content.Branches[0].Id}&ordering=index&user_data=1&count=40&page={i}";
             var response = await Config.Client.GetFromJsonAsync<RenovelsApiResponse<RenovelsChapter[]>>(uri);
             result.AddRange(response!.Content);
 
