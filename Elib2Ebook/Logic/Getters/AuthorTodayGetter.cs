@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.AuthorToday;
 using Elib2Ebook.Types.Book;
 
-namespace Elib2Ebook.Logic.Getters; 
+namespace Elib2Ebook.Logic.Getters;
 
 public class AuthorTodayGetter : GetterBase {
     public AuthorTodayGetter(BookGetterConfig config) : base(config) { }
@@ -18,12 +19,12 @@ public class AuthorTodayGetter : GetterBase {
     protected override Uri SystemUrl => new("https://author.today/");
 
     private string UserId { get; set; } = string.Empty;
-    
+
     protected override string GetId(Uri url) {
         return url.Segments[2].Trim('/');
     }
-    
-    public override async Task<Book> Get(Uri url) { 
+
+    public override async Task<Book> Get(Uri url) {
         var details = await GetBookDetails(GetId(url));
 
         var book = new Book(url) {
@@ -34,7 +35,7 @@ public class AuthorTodayGetter : GetterBase {
             Annotation = details.Annotation,
             Seria = GetSeria(details)
         };
-        
+
         return book;
     }
 
@@ -75,7 +76,7 @@ public class AuthorTodayGetter : GetterBase {
 
         var response = await Config.Client.PostAsJsonAsync(new Uri("https://api.author.today/v1/account/login-by-password"), new { Config.Options.Login, Config.Options.Password });
         var data = await response.Content.ReadFromJsonAsync<AuthorTodayAuthResponse>();
-        
+
         if (!string.IsNullOrWhiteSpace(data?.Token)) {
             Console.WriteLine("Успешно авторизовались");
             Config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", data.Token);
@@ -83,14 +84,22 @@ public class AuthorTodayGetter : GetterBase {
             var user = await Config.Client.GetFromJsonAsync<AuthorTodayUser>(new Uri("https://api.author.today/v1/account/current-user"));
             UserId = user!.Id.ToString();
         } else {
-            throw new Exception($"Не удалось авторизоваться. {data?.Message}"); 
+            throw new Exception($"Не удалось авторизоваться. {data?.Message}");
         }
     }
-    
+
     private Task<Image> GetCover(AuthorTodayBookDetails book) {
         return !string.IsNullOrWhiteSpace(book.CoverUrl) ? GetImage(new Uri(book.CoverUrl)) : Task.FromResult(default(Image));
     }
-    
+
+    protected override HttpRequestMessage GetImageRequestMessage(Uri uri) {
+        if (uri.IsSameHost(SystemUrl) || uri.IsSameSubDomain(SystemUrl)) {
+            uri = new Uri(uri, uri.AbsolutePath);
+        }
+
+        return base.GetImageRequestMessage(uri);
+    }
+
     private async Task<IEnumerable<Chapter>> FillChapters(AuthorTodayBookDetails book) {
         var chapters = new List<Chapter>();
         foreach (var atChapter in await GetChapters(book)) {

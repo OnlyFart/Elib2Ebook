@@ -17,12 +17,19 @@ public static class UriExtension {
     }
     
     public static Uri ReplaceHost(this Uri self, string newHost) {
-        var builder = new UriBuilder(self);
-        builder.Host = newHost;
-        return builder.Uri;
+        return new UriBuilder(self) {
+            Host = newHost
+        }.Uri;
     }
 
     public static bool IsSameHost(this Uri self, Uri url) {
         return string.Equals(Idn.GetAscii(self.Host).Replace("www.", ""), Idn.GetAscii(url.Host).Replace("www.", ""), StringComparison.InvariantCultureIgnoreCase);
+    }
+    
+    public static bool IsSameSubDomain(this Uri self, Uri url) {
+        var urlParts = url.Host.Replace("www.", string.Empty).Split(".");
+        var selfParts = self.Host.Replace("www.", string.Empty).Split(".");
+
+        return selfParts.Length >= urlParts.Length && string.Equals(Idn.GetAscii(string.Join(".", selfParts[^urlParts.Length..])), Idn.GetAscii(string.Join(".", urlParts)), StringComparison.InvariantCultureIgnoreCase);
     }
 }
