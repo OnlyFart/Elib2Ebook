@@ -142,10 +142,12 @@ public class LitgorodGetter : GetterBase {
         return sb.AsHtmlDoc();
     }
 
-    private static IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
-        return doc
+    private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
+        var result = doc
             .QuerySelectorAll("div.b-tab__content ul.list-unstyled a")
             .Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), string.IsNullOrWhiteSpace(a.GetText()) ? "Без названия" : a.GetText()));
+        
+        return SliceToc(result);
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {

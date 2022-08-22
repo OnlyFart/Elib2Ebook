@@ -84,9 +84,11 @@ public class RulateGetter : GetterBase {
         return (doc.GetTextBySelector("h1") == "Доступ запрещен" ? string.Empty : doc.QuerySelector("div.content-text")?.InnerHtml ?? string.Empty).AsHtmlDoc();
     }
 
-    private static IEnumerable<IdChapter> GetToc(HtmlDocument doc) {
-        return doc.QuerySelectorAll("#Chapters tr[data-id]")
+    private IEnumerable<IdChapter> GetToc(HtmlDocument doc) {
+        var result = doc.QuerySelectorAll("#Chapters tr[data-id]")
             .Select(chapter => new IdChapter(chapter.Attributes["data-id"].Value, chapter.GetTextBySelector("td.t")));
+        
+        return SliceToc(result);
     }
 
     private async Task Mature(Uri url) {

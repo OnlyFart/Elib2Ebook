@@ -49,7 +49,7 @@ public class BookstabGetter : GetterBase {
     private async Task<IEnumerable<Chapter>> FillChapters(BookstabApiResponse response, Uri uri, string bookId) {
         var result = new List<Chapter>();
 
-        foreach (var bookChapter in response.Book.ChaptersShow) {
+        foreach (var bookChapter in SliceToc(response.Book.ChaptersShow)) {
             var chapter = new Chapter {
                 Title = bookChapter.Title
             };

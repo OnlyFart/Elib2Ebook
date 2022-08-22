@@ -64,11 +64,13 @@ public class RoyalRoadGetter : GetterBase {
         return content.InnerHtml.AsHtmlDoc();
     }
 
-    private static IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
-        return doc
+    private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
+        var result = doc
             .QuerySelectorAll("tr.chapter-row")
             .Select(r => r.QuerySelector("a[href^=/fiction/]"))
             .Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText()));
+        
+        return SliceToc(result);
     }
 
     private static Author GetAuthor(HtmlDocument doc, Uri url) {

@@ -48,7 +48,7 @@ public class WuxiaWorldGetter : GetterBase {
             result.AddRange(tocDoc.QuerySelectorAll("li a").Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.InnerText.HtmlDecode())));
         }
 
-        return result;
+        return SliceToc(result);
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {

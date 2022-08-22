@@ -83,7 +83,7 @@ public class RanobeNovelsGetter : GetterBase {
         var result = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.Deserialize<List<RanobeNovelsChapter>>());
         result.Reverse();
 
-        return result;
+        return SliceToc(result).ToList();
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {

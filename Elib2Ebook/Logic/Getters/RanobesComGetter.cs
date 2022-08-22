@@ -114,10 +114,11 @@ public class RanobesComGetter : GetterBase {
             
             chapters.AddRange(ranobesChapters);
         }
+        
         Console.WriteLine($"Получено {chapters.Count} глав");
 
         chapters.Reverse();
-        return chapters;
+        return SliceToc(chapters);
     }
 
     private HttpRequestMessage CreateRequestMessage(Uri uri) {

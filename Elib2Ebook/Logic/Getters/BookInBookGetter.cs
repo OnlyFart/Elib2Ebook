@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
@@ -84,12 +85,9 @@ public class BookInBookGetter : GetterBase {
         }
     }
 
-    private static IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
-        var links = doc.QuerySelectorAll("a.chapters-form__chapter");
-        
-        foreach (var a in links) {
-            yield return new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText().ReplaceNewLine());
-        }
+    private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
+        var urlChapters = doc.QuerySelectorAll("a.chapters-form__chapter").Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText().ReplaceNewLine()));
+        return SliceToc(urlChapters);
     }
     
     private static Seria GetSeria(HtmlDocument doc) {

@@ -107,7 +107,7 @@ public class LibstGetter : GetterBase {
         return sb.AsHtmlDoc();
     }
 
-    private static IEnumerable<IdChapter> GetToc(HtmlDocument doc) {
+    private IEnumerable<IdChapter> GetToc(HtmlDocument doc) {
         var result = new List<IdChapter>();
 
         foreach (var span in doc.QuerySelectorAll("span.mt-action-author")) {
@@ -120,7 +120,7 @@ public class LibstGetter : GetterBase {
             }
         }
 
-        return result;
+        return SliceToc(result);
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {

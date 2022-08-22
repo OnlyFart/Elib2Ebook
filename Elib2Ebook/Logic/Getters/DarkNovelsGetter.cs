@@ -107,8 +107,8 @@ public class DarkNovelsGetter : GetterBase {
         return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
     }
 
-    private async Task<DarkNovelsChapter[]> GetToc(string bookId) {
-        return await Config.Client.GetFromJsonAsync<DarkNovelsData<DarkNovelsChapter[]>>($"https://api.dark-novels.ru/v2/toc/{bookId}").ContinueWith(t => t.Result?.Data);
+    private async Task<IEnumerable<DarkNovelsChapter>> GetToc(string bookId) {
+        return await Config.Client.GetFromJsonAsync<DarkNovelsData<DarkNovelsChapter[]>>($"https://api.dark-novels.ru/v2/toc/{bookId}").ContinueWith(t => SliceToc(t.Result?.Data));
     }
 
     private async Task<HtmlDocument> GetChapter(string bookId, int chapterId) {

@@ -117,7 +117,7 @@ public class LitmarketGetter : GetterBase {
         return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, new Uri(imagePath).AbsolutePath)) : Task.FromResult(default(Image));
     }
 
-    private static List<Block> GetToc(Response response, string title) {
+    private List<Block> GetToc(Response response, string title) {
         var toc = response.Toc.Deserialize<List<Block>>();
         if (toc?.Count == 0) {
             toc = new List<Block> {
@@ -134,7 +134,7 @@ public class LitmarketGetter : GetterBase {
             };
         }
 
-        return toc;
+        return SliceToc(toc).ToList();
     }
 
     private async Task<List<Chapter>> FillChapters(List<Block> toc, Block[] blocks, Uri bookUri, long eBookId) {

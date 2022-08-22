@@ -53,7 +53,7 @@ public class WattpadGetter : GetterBase {
     private async Task<IEnumerable<Chapter>> FillChapters(WattpadInfo wattpadInfo) {
         var result = new List<Chapter>();
             
-        foreach (var group in wattpadInfo.Group) {
+        foreach (var group in SliceToc(wattpadInfo.Group)) {
             Console.WriteLine($"Загружаю главу {group.GetTitle().CoverQuotes()}");
             var chapter = new Chapter();
                 

@@ -58,6 +58,7 @@ public class BookinistGetter : GetterBase {
 
     private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
         var bookId = GetId(url);
-        return doc.QuerySelectorAll("ul.menu-toc li a").Skip(1).Select((a, i) => new UrlChapter(new Uri($"https://bookinist.pw/bookpage/{bookId}/{i + 1}"), a.GetText()));
+        var result = doc.QuerySelectorAll("ul.menu-toc li a").Skip(1).Select((a, i) => new UrlChapter(new Uri($"https://bookinist.pw/bookpage/{bookId}/{i + 1}"), a.GetText()));
+        return SliceToc(result);
     }
 }

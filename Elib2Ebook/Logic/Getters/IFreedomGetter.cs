@@ -38,17 +38,19 @@ public class FreedomGetter : GetterBase{
         return new Uri(url, doc.QuerySelector("div.bun2 a").Attributes["href"].Value);
     }
 
-    private static Task<IEnumerable<UrlChapter>> GetToc(HtmlDocument doc, Uri url) {
-        return Task.FromResult(doc
+    private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
+        var result = doc
             .QuerySelectorAll("div.li-col1-ranobe a")
             .Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText()))
-            .Reverse());
+            .Reverse();
+        
+        return SliceToc(result);
     }
     
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri uri) {
         var result = new List<Chapter>();
 
-        foreach (var urlChapter in await GetToc(doc, uri)) {
+        foreach (var urlChapter in GetToc(doc, uri)) {
             var chapter = new Chapter {
                 Title = urlChapter.Title
             };

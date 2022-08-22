@@ -86,17 +86,21 @@ public class FicbookGetter : GetterBase {
         return text.AsHtmlDoc();
     }
 
-    private static IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url, string title) {
+    private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url, string title) {
+        var result = new List<UrlChapter>();
+        
         var links = doc.QuerySelectorAll("li.part");
         if (links.Count == 0) {
-            yield return new UrlChapter(url, title);
+            result.Add(new UrlChapter(url, title));
         } else {
             foreach (var li in links) {
                 var a = li.QuerySelector("a.part-link.visit-link");
                 if (a != null) {
-                    yield return new UrlChapter(new Uri(url, a.Attributes["href"].Value), li.GetTextBySelector("h3"));
+                    result.Add(new UrlChapter(new Uri(url, a.Attributes["href"].Value), li.GetTextBySelector("h3")));
                 }
             }
         }
+        
+        return SliceToc(result);
     }
 }

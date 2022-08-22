@@ -73,7 +73,7 @@ public abstract class RanobeOvhGetterBase : GetterBase {
 
     private async Task<IEnumerable<RanobeOvhChapter>> GetToc(RanobeOvhBranch branch) {
         var data = await Config.Client.GetStringAsync(new Uri($"https://api.{SystemUrl.Host}/branch/{branch.Id}/chapters"));
-        return data.Deserialize<RanobeOvhChapter[]>().Reverse();
+        return SliceToc(data.Deserialize<RanobeOvhChapter[]>().Reverse());
     }
 
     private static RanobeOvhBranch GetBranch(HtmlDocument doc) {

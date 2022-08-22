@@ -112,6 +112,25 @@ public abstract class GetterBase : IDisposable {
         return Task.CompletedTask;
     }
 
+    protected IEnumerable<T> SliceToc<T>(IEnumerable<T> toc) {
+        var start = Config.Options.Start;
+        var end = Config.Options.End;
+
+        if (start.HasValue && end.HasValue) {
+            return toc.Skip(start.Value - 1).Take(end.Value - start.Value + 1);
+        }
+        
+        if (start.HasValue) {
+            return toc.Skip(start.Value - 1);
+        }
+        
+        if (end.HasValue) {
+            return toc.Take(end.Value);
+        }
+        
+        return toc;
+    }
+
     public abstract Task<Book> Get(Uri url);
         
     public virtual Task Init() {

@@ -65,8 +65,9 @@ public class Fb2TopGetter : GetterBase {
         return doc.QuerySelector("section").RemoveNodes("h3").InnerHtml.AsHtmlDoc();
     }
 
-    private static IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
-        return doc.QuerySelectorAll("div.card-body li a").Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText()));
+    private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
+        var urlChapters = doc.QuerySelectorAll("div.card-body li a").Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText()));
+        return SliceToc(urlChapters);
     }
 
     private static Seria GetSeria(HtmlDocument doc, Uri url) {

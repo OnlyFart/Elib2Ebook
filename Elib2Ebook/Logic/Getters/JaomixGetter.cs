@@ -105,7 +105,7 @@ public class JaomixGetter : GetterBase {
         Console.WriteLine($"Получено {chapters.Count} глав");
 
         chapters.Reverse();
-        return chapters;
+        return SliceToc(chapters);
     }
         
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {

@@ -90,7 +90,7 @@ public class MangaLibGetter : GetterBase {
     private async Task<IEnumerable<Chapter>> FillChapters(WindowData data, Uri url) {
         var result = new List<Chapter>();
 
-        foreach (var ranobeChapter in data.RanobeLibChapters.List) {
+        foreach (var ranobeChapter in SliceToc(data.RanobeLibChapters.List)) {
             Console.WriteLine($"Загружаю главу {ranobeChapter.GetName()}");
             var chapter = new Chapter();
 

@@ -9,6 +9,7 @@ using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Regex = System.Text.RegularExpressions.Regex;
 
 namespace Elib2Ebook.Logic.Getters.TopLiba; 
 
@@ -77,7 +78,7 @@ public abstract class TopLibaGetterBase : GetterBase {
     private async Task<IEnumerable<Chapter>> FillChapters(Uri uri, string bookId, string token, string title) {
         var result = new List<Chapter>();
             
-        foreach (var id in await GetChapterIds(bookId)) {
+        foreach (var id in await GetToc(bookId)) {
             var chapter = new Chapter();
             var content = await GetChapter(bookId, id, token);
             if (content.StartsWith("{\"status\":\"error\"")) {
@@ -115,9 +116,10 @@ public abstract class TopLibaGetterBase : GetterBase {
         return new FormUrlEncodedContent(data);
     }
 
-    private async Task<IEnumerable<string>> GetChapterIds(string bookId) {
+    private async Task<IEnumerable<string>> GetToc(string bookId) {
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://{SystemUrl.Host}/reader/{bookId}"));
-        return new Regex("capters: \\[(?<chapters>.*?)\\]").Match(doc.Text).Groups["chapters"].Value.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim('\"'));
+        var result = new Regex("capters: \\[(?<chapters>.*?)\\]").Match(doc.Text).Groups["chapters"].Value.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim('\"'));
+        return SliceToc(result);
     }
 
     private static string GetToken(HtmlDocument doc) {

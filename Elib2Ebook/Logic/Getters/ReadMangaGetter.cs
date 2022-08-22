@@ -60,10 +60,11 @@ public class ReadMangaGetter : GetterBase {
     }
 
     private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
-        return doc
+        var result = doc
             .QuerySelectorAll("td.item-title a.chapter-link")
             .Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText().ReplaceNewLine()))
             .Reverse();
+        return SliceToc(result);
     }
 
     private async Task<HtmlDocument> GetChapter(UrlChapter urlChapter) {

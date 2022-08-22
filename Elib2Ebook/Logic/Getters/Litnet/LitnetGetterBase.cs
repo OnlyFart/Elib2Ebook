@@ -86,11 +86,11 @@ public abstract class LitnetGetterBase : GetterBase {
             await response.Content.ReadFromJsonAsync<LitnetContentsResponse[]>();
     }
 
-    private async Task<LitnetChapterResponse[]> GetToc(string token, IEnumerable<LitnetContentsResponse> contents) {
+    private async Task<IEnumerable<LitnetChapterResponse>> GetToc(string token, IEnumerable<LitnetContentsResponse> contents) {
         var chapters = string.Join("&", contents.Select(t => $"chapter_ids[]={t.Id}"));
         var url = $"https://api.{SystemUrl.Host}/v1/book/get-chapters-texts/?{chapters}&app=android&device_id={DeviceId}&sign={GetSign(token)}&user_token={token}";
         var response = await Config.Client.GetFromJsonAsync<LitnetChapterResponse[]>(url);
-        return response;
+        return SliceToc(response);
     }
     
     public override async Task<Book> Get(Uri url) {

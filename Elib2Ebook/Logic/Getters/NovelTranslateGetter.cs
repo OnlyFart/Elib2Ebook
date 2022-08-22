@@ -73,10 +73,10 @@ public class NovelTranslateGetter : GetterBase {
         return doc.QuerySelector("div.reading-content div.text-left").InnerHtml.AsHtmlDoc();
     }
 
-    private static IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
+    private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
         var result = doc.QuerySelectorAll("div.listing-chapters_wrap li.wp-manga-chapter a").Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText())).ToList();
         result.Reverse();
-        return result;
+        return SliceToc(result);
     }
 
     private static string GetAnnotation(HtmlDocument doc) {

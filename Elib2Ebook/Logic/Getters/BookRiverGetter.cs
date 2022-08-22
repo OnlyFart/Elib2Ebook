@@ -150,10 +150,10 @@ public class BookriverGetter : GetterBase {
         return content.Deserialize<BookRiverApiResponse<BookRiverChapterContent>>().Data.Content.AsHtmlDoc();
     }
 
-    private async Task<BookRiverChapter[]> GetToc(string bookId) {
+    private async Task<IEnumerable<BookRiverChapter>> GetToc(string bookId) {
         var response = await Config.Client.GetWithTriesAsync(new Uri($"https://api.bookriver.ru/api/v1/books/chapters/text/published?bookId={bookId}"));
         var content = await response.Content.ReadAsStringAsync();
-        return content.Deserialize<BookRiverApiResponse<BookRiverChapter[]>>().Data;
+        return SliceToc(content.Deserialize<BookRiverApiResponse<BookRiverChapter[]>>().Data);
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {

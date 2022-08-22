@@ -30,4 +30,10 @@ public class Options {
         
     [Option('p', "password", Required = false, HelpText = "Пароль от системы")]
     public string Password { get; set; }
+    
+    [Option("start", Required = false, HelpText = "Стартовый номер главы")]
+    public int? Start { get; set; }
+    
+    [Option("end", Required = false, HelpText = "Конечный номер главы")]
+    public int? End { get; set; }
 }
