@@ -205,9 +205,9 @@ public class ProdamanGetter : GetterBase {
             singleChapter = i == 1 ? IsSingleChapter(nodes) : singleChapter;
 
             foreach (var node in nodes) {
-                if (singleChapter || node.Name != "h3") {
+                if (singleChapter || node.Name != "h3" || (node.Name == "h3" && node.GetText() == "***")) {
                     if (!string.IsNullOrWhiteSpace(node.InnerText)) {
-                        text.Append(Decode(node.InnerText.HtmlDecode()).CoverTag("p"));
+                        text.Append(Decode(node.InnerText.HtmlDecode()).CoverTag(node.Name == "h3" ? "h3" : "p"));
                     }
                 } else {
                     await AddChapter(chapters, chapter, text, url);
