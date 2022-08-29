@@ -63,9 +63,14 @@
 Elib2Ebook.exe -u https://author.today/work/212721 -f epub
 ```
 
+## Пример вызова для генерации книги в нескольких форматах
+```
+Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2
+```
+
 ## Пример вызова c указанием логина и пароля для скачивания платных книг
 ```
-Elib2Ebook.exe -u https://author.today/work/212721 -f epub -l vasya -p pupkin
+Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2 -l vasya -p pupkin
 ```
 
 ## Где 
