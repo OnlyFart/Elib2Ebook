@@ -58,15 +58,22 @@
 </pre>
 </details>
 
-## Пример вызова сервиса
+## Пример вызова
 ```
-Elib2Ebook.exe --url https://litnet.com/ru/book/kniga-7-vladyka-magii-b364041 --format epub
+Elib2Ebook.exe --url https://author.today/work/212721 --format epub
+```
+
+## Пример вызова c указанием логина и пароля для скачивания платных книг
+```
+Elib2Ebook.exe --url https://author.today/work/212721 --format epub --login vasya --password pupkin
 ```
 
 ## Где 
 ```
 --url - ссылка на книгу
 --format - формат для сохранения
+--login - ваш логин
+--password - ваш пароль
 ```
 
 ## Полный список опций 
