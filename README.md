@@ -60,12 +60,12 @@
 
 ## Пример вызова
 ```
-Elib2Ebook.exe --url https://author.today/work/212721 --format epub
+Elib2Ebook.exe -u https://author.today/work/212721 -f epub
 ```
 
 ## Пример вызова c указанием логина и пароля для скачивания платных книг
 ```
-Elib2Ebook.exe --url https://author.today/work/212721 --format epub --login vasya --password pupkin
+Elib2Ebook.exe -u https://author.today/work/212721 -f epub -l vasya -p pupkin
 ```
 
 ## Где 
