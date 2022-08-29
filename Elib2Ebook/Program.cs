@@ -60,7 +60,7 @@ internal static class Program {
     }
 
     private static BuilderBase GetBuilder(string format) {
-        return format switch {
+        return format.Trim().ToLower() switch {
             "fb2" => Fb2Builder.Create(),
             "epub" => EpubBuilder.Create(File.ReadAllText("Patterns/ChapterPattern.xhtml")),
             "json" => JsonBuilder.Create(),

@@ -6,16 +6,22 @@ namespace Elib2Ebook.Configs;
 public class Options {
     [Option('u', "url", Required = true, HelpText = "Ссылка на книгу", Separator = ',')]
     public IEnumerable<string> Url { get; set; }
+    
+    [Option('f', "format", Required = true, HelpText = "Формат для сохранения книги. Допустимые значения: epub, fb2, cbz, json", Separator = ',')]
+    public IEnumerable<string> Format { get; set; }
+    
+    [Option('l', "login", Required = false, HelpText = "Логин от системы")]
+    public string Login { get; set; }
         
-    [Option('p', "proxy", Required = false, HelpText = "Прокси в формате <host>:<port>")]
+    [Option('p', "password", Required = false, HelpText = "Пароль от системы")]
+    public string Password { get; set; }
+        
+    [Option("proxy", Required = false, HelpText = "Прокси в формате <host>:<port>")]
     public string Proxy { get; set; }
         
     [Option('s', "save", Required = false, HelpText = "Директория для сохранения книги")]
     public string SavePath { get; set; }
-        
-    [Option('f', "format", Required = true, HelpText = "Формат для сохранения книги", Separator = ',')]
-    public IEnumerable<string> Format { get; set; }
-    
+
     [Option('c', "cover", Required = false, HelpText = "Сохранить обложку книги в отдельный файл")]
     public bool Cover { get; set; }
     
@@ -25,12 +31,6 @@ public class Options {
     [Option("no-image", Required = false, HelpText = "Не загружать картинки")]
     public bool NoImage { get; set; }
 
-    [Option('l', "login", Required = false, HelpText = "Логин от системы")]
-    public string Login { get; set; }
-        
-    [Option('p', "password", Required = false, HelpText = "Пароль от системы")]
-    public string Password { get; set; }
-    
     [Option("start", Required = false, HelpText = "Стартовый номер главы")]
     public int? Start { get; set; }
     
