@@ -3,6 +3,9 @@
 [![GitHub Stars](https://img.shields.io/github/stars/OnlyFart/Elib2Ebook.svg?style=flat-square)](https://github.com/OnlyFart/Elib2Ebook/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/OnlyFart/Elib2Ebook.svg?style=flat-square)](https://github.com/OnlyFart/Elib2Ebook/network)
 [![GitHub tag](https://img.shields.io/github/v/tag/OnlyFart/Elib2Ebook.svg?style=flat-square)](https://github.com/OnlyFart/Elib2Ebook/releases/latest)
+[![GitHub tag](https://img.shields.io/github/downloads/onlyfart/elib2ebook/total?style=flat-square)]()
+
+
 
 Инструмент для сохранения любой доступной книги со следующих сайтов в форматах epub, fb2, cbz:
 <details>
