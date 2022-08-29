@@ -21,6 +21,32 @@ public class RulateGetter : GetterBase {
         var segments = url.Segments;
         return (segments.Length == 3 ? base.GetId(url) : segments[2]).Trim('/');
     }
+    
+    public override async Task Authorize() {
+        if (!Config.HasCredentials) {
+            return;
+        }
+
+
+        var response = await Config.Client.PostWithTriesAsync(new Uri($"https://tl.rulate.ru/"), GetAuthData());
+        var doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
+        var alertBlock = doc.QuerySelector("div.alert-error");
+        
+        if (alertBlock == default) {
+            Console.WriteLine("Успешно авторизовались");
+        } else {
+            throw new Exception($"Не удалось авторизоваться. {alertBlock.GetText()}"); 
+        }
+    }
+    
+    private FormUrlEncodedContent GetAuthData() {
+        var data = new Dictionary<string, string> {
+            ["login[login]"] = Config.Options.Login,
+            ["login[pass]"] = Config.Options.Password,
+        };
+
+        return new FormUrlEncodedContent(data);
+    }
 
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
