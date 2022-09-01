@@ -33,7 +33,7 @@ public abstract class RanobeOvhGetterBase : GetterBase {
         url = await GetMainUrl(url);
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://{SystemUrl.Host}/{Segment}/{GetId(url)}"));
         
-        var manga = GetNextData<RanobeOvhManga>(doc, "manga");
+        var manga = GetNextData<RanobeOvhManga>(doc, "book");
         var branch = GetBranch(doc);
 
         var book = new Book(url) {
@@ -82,6 +82,10 @@ public abstract class RanobeOvhGetterBase : GetterBase {
     }
 
     private Author GetAuthor(RanobeOvhBranch branch) {
+        if (branch.Translators == null) {
+            return new Author("RanobeOvh");
+        }
+        
         var translator = branch.Translators[0];
         return new Author(translator.Name, new Uri($"https://{SystemUrl.Host}/translator/{translator.Slug}"));
     }
