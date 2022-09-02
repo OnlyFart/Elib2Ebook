@@ -114,6 +114,10 @@ public class EpubBuilder : BuilderBase {
     }
 
     public override BuilderBase WithSeria(Seria seria) {
+        if (seria != default) {
+            _writer.AddCollection(seria.Name, seria.Number);
+        }
+
         return this;
     }
 
