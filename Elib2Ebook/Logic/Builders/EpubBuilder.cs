@@ -74,6 +74,10 @@ public class EpubBuilder : BuilderBase {
     }
 
     public override BuilderBase WithAnnotation(string annotation) {
+        if (!string.IsNullOrWhiteSpace(annotation)) {
+            _writer.AddDescription(annotation.AsHtmlDoc().DocumentNode.GetText());    
+        }
+        
         return this;
     }
 
@@ -114,6 +118,10 @@ public class EpubBuilder : BuilderBase {
     }
 
     public override BuilderBase WithLang(string lang) {
+        if (!string.IsNullOrWhiteSpace(lang)) {
+            _writer.AddLanguage(lang);
+        }
+
         return this;
     }
 
