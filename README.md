@@ -87,7 +87,7 @@ Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2 -l vasya -p pupki
 |  --proxy|           Прокси в формате host:port|
 |  -s, --save|        Директория для сохранения книги|
 |  -c, --cover|       Сохранить обложку книги в отдельный файл|
-|  -t, --timeout|     (Default: 5) Timeout для запросов в секундах|
+|  -t, --timeout|     (По-умолчанию: 5) Timeout для запросов в секундах|
 |  --no-image|        Не загружать картинки
 |  --start|           Стартовый номер главы|
 |  --end|             Конечный номер главы|
