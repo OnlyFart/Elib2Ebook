@@ -62,8 +62,12 @@ public class RanobeHubGetter : GetterBase {
             if (string.IsNullOrWhiteSpace(id)) {
                 continue;
             }
-            
-            img.Attributes["src"].Value = $"/api/media/{id}";
+
+            if (img.Attributes.Contains("src")) {
+                img.Attributes["src"].Value = $"/api/media/{id}";
+            } else {
+                img.Attributes.Add("src", $"/api/media/{id}");
+            }
         }
         
         return result;
