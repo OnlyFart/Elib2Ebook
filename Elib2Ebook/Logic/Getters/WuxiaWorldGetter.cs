@@ -17,7 +17,18 @@ namespace Elib2Ebook.Logic.Getters;
 public class WuxiaWorldGetter : GetterBase {
     public WuxiaWorldGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://wuxiaworld.ru/");
+    
+    private async Task<Uri> GetMainUrl(Uri url) {
+        if (url.Segments[1] == "category/") {
+            var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
+            url = new Uri(doc.QuerySelector("h3[itemprop=name] a").Attributes["href"].Value);
+        }
+
+        return url;
+    }
+    
     public override async Task<Book> Get(Uri url) {
+        url = await GetMainUrl(url);
         var doc = await GetSafety(url);
 
         var book = new Book(url) {
