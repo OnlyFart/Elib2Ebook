@@ -72,6 +72,31 @@ Elib2Ebook.exe -u https://author.today/work/212721 -f epub
 Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2
 ```
 
+## Пример вызова для генерации книги с указанием начальной главы 
+```
+Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2 --start 3
+```
+
+## Пример вызова для генерации книги с указанием конечной главы 
+```
+Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2 --end 10
+```
+
+## Пример вызова для генерации книги с указанием начальной и конечной главы
+```
+Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2 --start 3 --end 10
+```
+
+## Пример вызова для генерации книги с укзанием индекса начиная с конца (в книге будут 3 последних главы)
+```
+Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2 --start -3
+```
+
+## Пример вызова для генерации книги с укзанием индекса начиная с конца (в книге будет только предпоследняя глава)
+```
+Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2 --start -2 --end -1
+```
+
 ## Пример вызова c указанием логина и пароля для скачивания платных книг
 ```
 Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2 -l vasya -p pupkin
