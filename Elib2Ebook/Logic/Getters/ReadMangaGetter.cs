@@ -63,7 +63,8 @@ public class ReadMangaGetter : GetterBase {
         var result = doc
             .QuerySelectorAll("td.item-title a.chapter-link")
             .Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText().ReplaceNewLine()))
-            .Reverse();
+            .Reverse()
+            .ToList();
         return SliceToc(result);
     }
 

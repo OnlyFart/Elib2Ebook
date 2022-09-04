@@ -112,20 +112,25 @@ public abstract class GetterBase : IDisposable {
         return Task.CompletedTask;
     }
 
-    protected IEnumerable<T> SliceToc<T>(IEnumerable<T> toc) {
+    protected IEnumerable<T> SliceToc<T>(ICollection<T> toc) {
         var start = Config.Options.Start;
         var end = Config.Options.End;
 
         if (start.HasValue && end.HasValue) {
-            return toc.Skip(start.Value - 1).Take(end.Value - start.Value + 1);
+            var startIndex = start.Value >= 0 ? start.Value : toc.Count + start.Value + 1; 
+            var endIndex = end.Value >= 0 ? end.Value : toc.Count + end.Value; 
+            
+            return toc.Skip(startIndex - 1).Take(endIndex - startIndex + 1);
         }
         
         if (start.HasValue) {
-            return toc.Skip(start.Value - 1);
+            var startIndex = start.Value >= 0 ? start.Value : toc.Count + start.Value + 1; 
+            return toc.Skip(startIndex - 1);
         }
         
         if (end.HasValue) {
-            return toc.Take(end.Value);
+            var endIndex = end.Value >= 0 ? end.Value : toc.Count + end.Value; 
+            return toc.Take(endIndex);
         }
         
         return toc;

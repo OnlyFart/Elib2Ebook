@@ -104,7 +104,7 @@ public class LitexitGetter : GetterBase {
         var response = await Config.Client.GetAsync(new Uri($"https://litexit.ru/api/v1/book/{GetInternalId(doc)}/chapters"));
 
         var content = await response.Content.ReadAsStringAsync();
-        return SliceToc(content.Deserialize<IEnumerable<LitexitChapter>>().OrderBy(c => c.Id));
+        return SliceToc(content.Deserialize<IEnumerable<LitexitChapter>>().OrderBy(c => c.Id).ToList());
     }
 
     private static Author GetAuthor(HtmlDocument doc, Uri uri) {

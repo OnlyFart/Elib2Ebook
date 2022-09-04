@@ -49,7 +49,7 @@ public abstract class HotNovelPubGetterBase : GetterBase {
         return url;
     }
 
-    private async Task<IEnumerable<Chapter>> FillChapters(IEnumerable<HotNovelPubChapter> toc) {
+    private async Task<IEnumerable<Chapter>> FillChapters(ICollection<HotNovelPubChapter> toc) {
         var chapters = new List<Chapter>();
         foreach (var ezChapter in SliceToc(toc)) {
             var title = ezChapter.Title.Trim();

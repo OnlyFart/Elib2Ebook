@@ -42,7 +42,8 @@ public class FreedomGetter : GetterBase{
         var result = doc
             .QuerySelectorAll("div.li-col1-ranobe a")
             .Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText()))
-            .Reverse();
+            .Reverse()
+            .ToList();
         
         return SliceToc(result);
     }

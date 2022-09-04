@@ -112,7 +112,8 @@ public class RulateGetter : GetterBase {
 
     private IEnumerable<IdChapter> GetToc(HtmlDocument doc) {
         var result = doc.QuerySelectorAll("#Chapters tr[data-id]")
-            .Select(chapter => new IdChapter(chapter.Attributes["data-id"].Value, chapter.GetTextBySelector("td.t")));
+            .Select(chapter => new IdChapter(chapter.Attributes["data-id"].Value, chapter.GetTextBySelector("td.t")))
+            .ToList();
         
         return SliceToc(result);
     }

@@ -91,7 +91,7 @@ public class RanobeLibGetter : GetterBase {
                 .Key
             : int.Parse(bidId);
 
-        foreach (var ranobeChapter in SliceToc(data.RanobeLibChapters.List.Where(c => c.BranchId == branchId))) {
+        foreach (var ranobeChapter in SliceToc(data.RanobeLibChapters.List.Where(c => c.BranchId == branchId).ToList())) {
             Console.WriteLine($"Загружаю главу {ranobeChapter.GetName()}");
             var chapter = new Chapter();
             

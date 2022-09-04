@@ -125,16 +125,16 @@ public class AuthorTodayGetter : GetterBase {
     private async Task<IEnumerable<AuthorTodayChapter>> GetChapters(AuthorTodayBookDetails book) {
         var result = new List<AuthorTodayChapter>();
         
-        foreach (var chunk in SliceToc(book.Chapters.Where(c => !c.IsDraft)).OrderBy(c => c.SortOrder).Chunk(100)) {
+        foreach (var chunk in book.Chapters.Where(c => !c.IsDraft).OrderBy(c => c.SortOrder).Chunk(100)) {
             var ids = string.Join("&", chunk.Select((c, i) => $"ids[{i}]={c.Id}"));
             var uri = new Uri($"https://api.author.today/v1/work/{book.Id}/chapter/many-texts?{ids}");
             var response = await Config.Client.GetWithTriesAsync(uri);
             var chapters = await response.Content.ReadFromJsonAsync<AuthorTodayChapter[]>();
             if (chapters != default) {
-                result.AddRange(chapters);
+                result.AddRange(chapters.Where(c => c.Code != "NotFound"));
             }
         }
 
-        return result;
+        return SliceToc(result);
     }
 }

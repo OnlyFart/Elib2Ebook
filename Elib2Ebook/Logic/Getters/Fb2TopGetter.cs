@@ -66,7 +66,7 @@ public class Fb2TopGetter : GetterBase {
     }
 
     private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
-        var urlChapters = doc.QuerySelectorAll("div.card-body li a").Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText()));
+        var urlChapters = doc.QuerySelectorAll("div.card-body li a").Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText())).ToList();
         return SliceToc(urlChapters);
     }
 

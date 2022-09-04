@@ -86,7 +86,7 @@ public class BookInBookGetter : GetterBase {
     }
 
     private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
-        var urlChapters = doc.QuerySelectorAll("a.chapters-form__chapter").Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText().ReplaceNewLine()));
+        var urlChapters = doc.QuerySelectorAll("a.chapters-form__chapter").Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText().ReplaceNewLine())).ToList();
         return SliceToc(urlChapters);
     }
     

@@ -68,7 +68,8 @@ public class RoyalRoadGetter : GetterBase {
         var result = doc
             .QuerySelectorAll("tr.chapter-row")
             .Select(r => r.QuerySelector("a[href^=/fiction/]"))
-            .Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText()));
+            .Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText()))
+            .ToList();
         
         return SliceToc(result);
     }

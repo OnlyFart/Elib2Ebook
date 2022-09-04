@@ -40,7 +40,7 @@ public class RanobeGetter : GetterBase {
     private async Task<IEnumerable<Chapter>> FillChapters(RanobeBook ranobeBook, Uri url) {
         var result = new List<Chapter>();
             
-        foreach (var ranobeChapter in SliceToc(ranobeBook.Chapters.Reverse())) {
+        foreach (var ranobeChapter in SliceToc(ranobeBook.Chapters.Reverse().ToList())) {
             Console.WriteLine($"Загружаю главу {ranobeChapter.Title.CoverQuotes()}");
             var chapter = new Chapter();
             var doc = await GetChapter(url, ranobeChapter.Url);

@@ -118,7 +118,7 @@ public abstract class TopLibaGetterBase : GetterBase {
 
     private async Task<IEnumerable<string>> GetToc(string bookId) {
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://{SystemUrl.Host}/reader/{bookId}"));
-        var result = new Regex("capters: \\[(?<chapters>.*?)\\]").Match(doc.Text).Groups["chapters"].Value.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim('\"'));
+        var result = new Regex("capters: \\[(?<chapters>.*?)\\]").Match(doc.Text).Groups["chapters"].Value.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim('\"')).ToList();
         return SliceToc(result);
     }
 

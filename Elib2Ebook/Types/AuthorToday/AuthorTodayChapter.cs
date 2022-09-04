@@ -25,6 +25,9 @@ public class AuthorTodayChapter {
 
     [JsonPropertyName("IsDraft")]
     public bool IsDraft { get; set; }
+    
+    [JsonPropertyName("code")]
+    public string Code { get; set; }
 
     public string Decode(string userId) {
         var secret = string.Join("", Key.Reverse()) + "@_@" + userId;
