@@ -10,6 +10,7 @@
 Инструмент для сохранения любой доступной книги со следующих сайтов в форматах epub, fb2, cbz:
 <details>
 <pre>
+* https://acomics.ru/
 * https://author.today/
 * https://bigliba.com/
 * https://bookinbook.ru/
