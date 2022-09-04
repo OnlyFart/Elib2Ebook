@@ -42,7 +42,7 @@ public class AcomicsGetter : GetterBase{
 
     private Task AgeRestict(string id) {
         var data = new Dictionary<string, string> {
-            ["ageRestrict"] = "17",
+            ["ageRestrict"] = "18",
         };
 
 
