@@ -46,6 +46,7 @@ public class MangaLibGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
+        var bidId = url.GetQueryParameter("bid");
         url = new Uri($"https://mangalib.me/{GetId(url)}");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         
@@ -53,7 +54,7 @@ public class MangaLibGetter : GetterBase {
 
         var book = new Book(url) {
             Cover = await GetCover(doc, url),
-            Chapters = await FillChapters(data, url),
+            Chapters = await FillChapters(data, url, bidId),
             Title = doc.QuerySelector("meta[property=og:title]").Attributes["content"].Value.Trim(),
             Author = GetAuthor(doc, url),
             Annotation = doc.QuerySelector("div.media-description__text")?.InnerHtml
@@ -87,10 +88,16 @@ public class MangaLibGetter : GetterBase {
         return windowData;
     }
 
-    private async Task<IEnumerable<Chapter>> FillChapters(WindowData data, Uri url) {
+    private async Task<IEnumerable<Chapter>> FillChapters(WindowData data, Uri url, string bidId) {
         var result = new List<Chapter>();
-
-        foreach (var ranobeChapter in SliceToc(data.RanobeLibChapters.List)) {
+        var branchId = string.IsNullOrWhiteSpace(bidId)
+            ? data.RanobeLibChapters.List
+                .GroupBy(c => c.BranchId)
+                .MaxBy(c => c.Count())!
+                .Key
+            : int.Parse(bidId);
+        
+        foreach (var ranobeChapter in SliceToc(data.RanobeLibChapters.List.Where(c => c.BranchId == branchId).ToList())) {
             Console.WriteLine($"Загружаю главу {ranobeChapter.GetName()}");
             var chapter = new Chapter();
 
@@ -106,7 +113,7 @@ public class MangaLibGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(Uri url, RanobeLibChapter ranobeLibChapter) {
-        var chapterDoc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(url + $"/v{ranobeLibChapter.ChapterVolume}/c{ranobeLibChapter.ChapterNumber}"));
+        var chapterDoc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(url + $"/v{ranobeLibChapter.ChapterVolume}/c{ranobeLibChapter.ChapterNumber}?bid={ranobeLibChapter.BranchId}"));
         var header = chapterDoc.QuerySelector("div.auth-form-title");
         if (header != default && header.GetText() == "Авторизация") {
             throw new Exception("Произведение доступно только зарегистрированным пользователям. Добавьте в параметры вызова свои логин и пароль");
@@ -116,7 +123,7 @@ public class MangaLibGetter : GetterBase {
         var sb = new StringBuilder();
 
         foreach (var p in pg) {
-            var imageUrl = $"https://img3.cdnlib.link/manga/{GetId(url)}/chapters/{ranobeLibChapter.ChapterId}/{p.U}";
+            var imageUrl = $"https://img3.cdnlib.link/manga/{GetId(url)}/chapters/{ranobeLibChapter.ChapterSlug}/{p.U}";
             sb.Append($"<img src='{imageUrl}'/>");
         }
 

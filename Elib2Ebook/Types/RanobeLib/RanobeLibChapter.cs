@@ -12,8 +12,8 @@ public class RanobeLibChapter {
     [JsonPropertyName("chapter_name")] 
     public string ChapterName { get; set; }
     
-    [JsonPropertyName("chapter_id")]
-    public int ChapterId { get; set; }
+    [JsonPropertyName("chapter_slug")]
+    public string ChapterSlug { get; set; }
         
     [JsonPropertyName("branch_id")]
     public int? BranchId { get; set; }

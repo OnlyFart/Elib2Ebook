@@ -12,7 +12,7 @@ using HtmlAgilityPack.CssSelectors.NetCore;
 
 namespace Elib2Ebook.Logic.Getters; 
 
-public class AcomicsGetter : GetterBase{
+public class AcomicsGetter : GetterBase {
     public AcomicsGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://acomics.ru");
 
@@ -23,7 +23,7 @@ public class AcomicsGetter : GetterBase{
     public override async Task<Book> Get(Uri url) {
         var id = GetId(url);
         url = new Uri($"https://acomics.ru/{id}");
-        await AgeRestict(id);
+        await AgeRestrict(id);
         
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(SystemUrl, $"{id}/1"));
 
@@ -40,12 +40,11 @@ public class AcomicsGetter : GetterBase{
         return book;
     }
 
-    private Task AgeRestict(string id) {
+    private Task AgeRestrict(string id) {
         var data = new Dictionary<string, string> {
             ["ageRestrict"] = "18",
         };
-
-
+        
         return Config.Client.PostWithTriesAsync(new Uri(SystemUrl, id), new FormUrlEncodedContent(data));
     }
 
@@ -73,6 +72,6 @@ public class AcomicsGetter : GetterBase{
         chapter.Images = await GetImages(chapterDoc, url);
         chapter.Content = chapterDoc.DocumentNode.InnerHtml;
 
-        return new []{ chapter };
+        return new [] { chapter };
     }
 }
