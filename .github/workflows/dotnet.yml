@@ -79,7 +79,7 @@ jobs:
         if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
         uses: actions/download-artifact@v3
         with:
-          name: Elib2Ebook-windows-latest
+          name: Elib2Ebook-macos-latest
           path: ${{ github.workspace }}/macos
                   
       - name: Install zip
