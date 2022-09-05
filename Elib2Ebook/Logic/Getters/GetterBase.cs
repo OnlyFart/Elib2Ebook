@@ -71,7 +71,7 @@ public abstract class GetterBase : IDisposable {
         var images = new ConcurrentBag<Tuple<Image, int>>();
         var toRemove = new ConcurrentBag<HtmlNode>();
         var tuples = doc.QuerySelectorAll("img, image").Select((img, i) => Tuple.Create(img, i));
-        await Parallel.ForEachAsync(tuples, new ParallelOptions{MaxDegreeOfParallelism = 1} ,async (t, _) => {
+        await Parallel.ForEachAsync(tuples, async (t, _) => {
             var img = t.Item1;
             
             if (Config.Options.NoImage) {

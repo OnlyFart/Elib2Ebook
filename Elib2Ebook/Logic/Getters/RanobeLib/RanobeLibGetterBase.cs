@@ -67,7 +67,7 @@ public abstract class RanobeLibGetterBase : GetterBase {
         return book;
     }
 
-    private static Author GetAuthor(HtmlDocument doc, Uri url) {
+    private Author GetAuthor(HtmlDocument doc, Uri url) {
         foreach (var div in doc.QuerySelectorAll("div.media-info-list__item")) {
             var title = div.GetTextBySelector("div.media-info-list__title");
             var value = div.QuerySelector("div.media-info-list__value a");
@@ -76,7 +76,8 @@ public abstract class RanobeLibGetterBase : GetterBase {
             }
         }
 
-        return new Author("RanobeLib");
+        var logo = doc.QuerySelector("a.header__logo img[alt]");
+        return logo == default ? new Author(SystemUrl.Host) : new Author(logo.Attributes["alt"].Value);
     }
 
     private static WindowData GetData(HtmlDocument doc) {
