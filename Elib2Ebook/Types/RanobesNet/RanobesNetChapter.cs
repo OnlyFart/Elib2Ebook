@@ -8,4 +8,7 @@ public class RanobesNetChapter {
     
     [JsonPropertyName("title")]
     public string Title { get; set; }
+    
+    [JsonPropertyName("link")]
+    public string Link { get; set; }
 }

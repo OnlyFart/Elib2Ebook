@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
@@ -15,10 +14,7 @@ namespace Elib2Ebook.Logic.Getters;
 
 public class RanobesComGetter : GetterBase {
     public RanobesComGetter(BookGetterConfig config) : base(config) { }
-    protected override Uri SystemUrl => new("https://ranobes.com");
-    
-    // cloudflare :(
-    private const string IP = "5.252.195.125";
+    protected override Uri SystemUrl => new("https://ranobes.com/");
 
     protected override string GetId(Uri url) {
         return base.GetId(url).Split(".")[0];
@@ -26,9 +22,9 @@ public class RanobesComGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);
-        url = new Uri($"https://{IP}/ranobe/{GetId(url)}.html");
+        url = new Uri(SystemUrl, $"/ranobe/{GetId(url)}.html");
         
-        var doc = await GetHtmlDocument(url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var book = new Book(url) {
             Cover = await GetCover(doc, url),
@@ -43,7 +39,7 @@ public class RanobesComGetter : GetterBase {
 
     private async Task<Uri> GetMainUrl(Uri url) {
         if (url.Segments[1] == "chapters/" || !url.Segments.Last().EndsWith(".html")) {
-            var doc = await GetHtmlDocument(new Uri(new Uri($"https://{IP}/"), url.AbsolutePath));
+            var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(SystemUrl, url.AbsolutePath));
             return new Uri(url, doc.QuerySelector("h5 a").Attributes["href"].Value);
         }
 
@@ -68,7 +64,7 @@ public class RanobesComGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(Uri mainUrl, Uri url) {
-        var doc = await GetHtmlDocument(new Uri(mainUrl, url));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(mainUrl, url));
         var sb = new StringBuilder();
         foreach (var node in doc.QuerySelectorAll("#arrticle > :not(.splitnewsnavigation)")) {
             var tag = node.Name == "#text" ? "p" : node.Name;
@@ -99,17 +95,17 @@ public class RanobesComGetter : GetterBase {
     }
         
     private async Task<IEnumerable<UrlChapter>> GetToc(Uri tocUri) {
-        var doc = await GetHtmlDocument(tocUri);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(tocUri);
         var lastA = doc.QuerySelector("div.pages a:last-child")?.InnerText;
         var pages = string.IsNullOrWhiteSpace(lastA) ? 1 : int.Parse(lastA);
             
         Console.WriteLine("Получаю оглавление");
         var chapters = new List<UrlChapter>();
         for (var i = 1; i <= pages; i++) {
-            doc = await GetHtmlDocument(new Uri(tocUri.AbsoluteUri + "/page/" + i));
+            doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(tocUri.AbsoluteUri + "/page/" + i));
             var ranobesChapters = doc
                 .QuerySelectorAll("#dle-content > .cat_block.cat_line a")
-                .Select(a => new UrlChapter(new Uri(new Uri($"https://{IP}/"), new Uri(a.Attributes["href"].Value).AbsolutePath), a.Attributes["title"].Value))
+                .Select(a => new UrlChapter(new Uri(a.Attributes["href"].Value), a.Attributes["title"].Value))
                 .ToList();
             
             chapters.AddRange(ranobesChapters);
@@ -119,28 +115,5 @@ public class RanobesComGetter : GetterBase {
 
         chapters.Reverse();
         return SliceToc(chapters);
-    }
-
-    private HttpRequestMessage CreateRequestMessage(Uri uri) {
-        var message = new HttpRequestMessage(HttpMethod.Get, uri);
-        message.Headers.Add("Host", SystemUrl.Host);
-        return message;
-    }
-
-    private async Task<HtmlDocument> GetHtmlDocument(Uri uri) {
-        var response = await Config.Client.SendWithTriesAsync(() => CreateRequestMessage(uri));
-        var content = await response.Content.ReadAsStringAsync();
-            
-        return content.AsHtmlDoc();
-    }
-
-    protected override HttpRequestMessage GetImageRequestMessage(Uri uri) {
-        if (uri.Host != SystemUrl.Host && uri.Host != IP) {
-            return base.GetImageRequestMessage(uri);
-        }
-        
-        var message = new HttpRequestMessage(HttpMethod.Get, uri.ReplaceHost(IP));
-        message.Headers.Add("Host", SystemUrl.Host);
-        return message;
     }
 }

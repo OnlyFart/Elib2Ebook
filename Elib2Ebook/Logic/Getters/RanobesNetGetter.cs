@@ -32,7 +32,7 @@ public class RanobesNetGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);
-        url = new Uri($"http://{HOST}/novels/{GetId(url)}.html");
+        url = new Uri($"https://{HOST}/novels/{GetId(url)}.html");
         
         var doc = await GetSafety(url);
 
@@ -118,7 +118,7 @@ public class RanobesNetGetter : GetterBase {
             data = GetData(doc);
             var ranobesChapters = data
                 .Chapters
-                .Select(a => new UrlChapter(new Uri($"https://ranobes.net/read-{a.Id}.html"), a.Title))
+                .Select(a => new UrlChapter(new Uri(a.Link).ReplaceHost(HOST), a.Title))
                 .ToList();
             
             chapters.AddRange(ranobesChapters);
@@ -133,7 +133,7 @@ public class RanobesNetGetter : GetterBase {
     private async Task<HtmlDocument> GetSafety(Uri url) {
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         while (doc.GetTextBySelector("h1.title.h2") == "Antibot system") {
-            Console.WriteLine($"Обнаружена каптча. Перейдите по ссылке {url}, введите каптчу и нажмите Enter...");
+            Console.WriteLine($"Обнаружена каптча. Перейдите по ссылке {url.ReplaceHost(SystemUrl.Host)}, введите каптчу и нажмите Enter...");
             Console.Read();
             doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         }
