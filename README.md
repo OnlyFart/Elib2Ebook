@@ -22,6 +22,7 @@
 * https://eznovels.com/
 * https://fb2.top/
 * https://ficbook.net/
+* https://hentailib.me/
 * https://hotnovelpub.com/
 * https://hub-book.com/
 * https://ifreedom.su/
@@ -59,6 +60,7 @@
 * https://twilightrussia.ru/
 * https://wattpad.com/
 * https://wuxiaworld.ru/
+* https://yaoilib.me/
 * https://ранобэ.рф/
 </pre>
 </details>
