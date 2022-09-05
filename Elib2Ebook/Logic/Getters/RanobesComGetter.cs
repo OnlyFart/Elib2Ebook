@@ -100,20 +100,20 @@ public class RanobesComGetter : GetterBase {
         var pages = string.IsNullOrWhiteSpace(lastA) ? 1 : int.Parse(lastA);
             
         Console.WriteLine("Получаю оглавление");
-        var chapters = new List<UrlChapter>();
+        var result = new List<UrlChapter>();
         for (var i = 1; i <= pages; i++) {
-            doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(tocUri.AbsoluteUri + "/page/" + i));
-            var ranobesChapters = doc
+            doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"{tocUri.AbsoluteUri}/page/{i}"));
+            var chapters = doc
                 .QuerySelectorAll("#dle-content > .cat_block.cat_line a")
                 .Select(a => new UrlChapter(new Uri(a.Attributes["href"].Value), a.Attributes["title"].Value))
                 .ToList();
             
-            chapters.AddRange(ranobesChapters);
+            result.AddRange(chapters);
         }
         
-        Console.WriteLine($"Получено {chapters.Count} глав");
+        Console.WriteLine($"Получено {result.Count} глав");
 
-        chapters.Reverse();
-        return SliceToc(chapters);
+        result.Reverse();
+        return SliceToc(result);
     }
 }
