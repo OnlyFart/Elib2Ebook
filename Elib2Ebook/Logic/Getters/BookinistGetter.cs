@@ -15,7 +15,7 @@ public class BookinistGetter : GetterBase {
     public BookinistGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://bookinist.pw/");
     public override async Task<Book> Get(Uri url) {
-        url = new Uri($"https://bookinist.pw/book/{GetId(url)}");
+        url = SystemUrl.MakeRelativeUri($"/book/{GetId(url)}");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var book = new Book(url) {
@@ -49,7 +49,7 @@ public class BookinistGetter : GetterBase {
     
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("meta[property='og:image']")?.Attributes["content"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 
     private Task<HtmlDocument> GetChapter(UrlChapter bookChapter) {
@@ -58,7 +58,7 @@ public class BookinistGetter : GetterBase {
 
     private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
         var bookId = GetId(url);
-        var result = doc.QuerySelectorAll("ul.menu-toc li a").Skip(1).Select((a, i) => new UrlChapter(new Uri($"https://bookinist.pw/bookpage/{bookId}/{i + 1}"), a.GetText())).ToList();
+        var result = doc.QuerySelectorAll("ul.menu-toc li a").Skip(1).Select((a, i) => new UrlChapter(SystemUrl.MakeRelativeUri($"/bookpage/{bookId}/{i + 1}"), a.GetText())).ToList();
         return SliceToc(result);
     }
 }

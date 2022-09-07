@@ -19,7 +19,7 @@ public class LitgorodGetter : GetterBase {
     public LitgorodGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://litgorod.ru/");
     public override async Task<Book> Get(Uri url) {
-        url = new Uri($"https://litgorod.ru/books/view/{GetId(url)}");
+        url = SystemUrl.MakeRelativeUri($"/books/view/{GetId(url)}");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var book = new Book(url) {
@@ -35,7 +35,7 @@ public class LitgorodGetter : GetterBase {
     }
 
     public override async Task Init() {
-        var response = await Config.Client.GetWithTriesAsync(new Uri("https://litgorod.ru/"));
+        var response = await Config.Client.GetWithTriesAsync(SystemUrl);
         var doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
         
         var csrf = doc.QuerySelector("[name=csrf-token]")?.Attributes["content"]?.Value;
@@ -67,7 +67,7 @@ public class LitgorodGetter : GetterBase {
             password = Config.Options.Password
         };
 
-        var response = await Config.Client.PostAsJsonAsync(new Uri("https://litgorod.ru/login"), payload);
+        var response = await Config.Client.PostAsJsonAsync(SystemUrl.MakeRelativeUri("login"), payload);
         var data = await response.Content.ReadFromJsonAsync<LitgorodAuthResponse>();
         if (string.IsNullOrWhiteSpace(data?.Message)) {
             Console.WriteLine("Успешно авторизовались");
@@ -78,7 +78,7 @@ public class LitgorodGetter : GetterBase {
 
     private static Author GetAuthor(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("div.b-book_item__author a");
-        return new Author(a.GetText(), new Uri(url, a.Attributes["href"].Value));
+        return new Author(a.GetText(), url.MakeRelativeUri(a.Attributes["href"].Value));
     }
 
     private static Seria GetSeria(HtmlDocument doc, Uri url) {
@@ -86,7 +86,7 @@ public class LitgorodGetter : GetterBase {
         if (a != default) {
             return new Seria {
                 Name = a.GetText(),
-                Url = new Uri(url, a.Attributes["href"].Value)
+                Url = url.MakeRelativeUri(a.Attributes["href"].Value)
             };
         }
 
@@ -136,7 +136,7 @@ public class LitgorodGetter : GetterBase {
         sb.Append(content.RemoveNodes(removeNodeSelector).InnerHtml.HtmlDecode());
         
         for (var i = 2; i <= pages; i++) {
-            doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(url + $"&page={i}"));
+            doc = await Config.Client.GetHtmlDocWithTriesAsync(url.AppendQueryParameter("page", i));
             sb.Append(doc.QuerySelector("div.reader__content__wrap").RemoveNodes(removeNodeSelector).InnerHtml.HtmlDecode());
         }
 
@@ -165,7 +165,7 @@ public class LitgorodGetter : GetterBase {
     private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
         var result = doc
             .QuerySelectorAll("div.b-tab__content ul.list-unstyled a")
-            .Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), string.IsNullOrWhiteSpace(a.GetText()) ? "Без названия" : a.GetText()))
+            .Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), string.IsNullOrWhiteSpace(a.GetText()) ? "Без названия" : a.GetText()))
             .ToList();
         
         return SliceToc(result);
@@ -173,6 +173,6 @@ public class LitgorodGetter : GetterBase {
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("div.b-book_cover img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 }

@@ -21,7 +21,7 @@ public class LitmirGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
-        url = new Uri($"https://www.litmir.me/bd/?b={bookId}");
+        url = SystemUrl.MakeRelativeUri($"/bd/?b={bookId}");
 
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         var pages = long.Parse(doc.GetTextBySelector("span[itemprop=numberOfPages]"));
@@ -46,7 +46,7 @@ public class LitmirGetter : GetterBase {
             var text = a.GetText();
             if (!string.IsNullOrWhiteSpace(text)) {
                 var seria = new Seria {
-                    Url = new Uri(url, a.Attributes["href"].Value)
+                    Url = url.MakeRelativeUri(a.Attributes["href"].Value)
                 };
                 
                 if (text.Contains('#')) {
@@ -72,7 +72,7 @@ public class LitmirGetter : GetterBase {
     
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
         var imagePath = doc.QuerySelector("img[jq=BookCover]")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 
     private async Task AddChapter(ICollection<Chapter> chapters, Chapter chapter, StringBuilder text) {
@@ -81,7 +81,7 @@ public class LitmirGetter : GetterBase {
         }
         
         var chapterDoc = text.AsHtmlDoc();
-        chapter.Images = await GetImages(chapterDoc, new Uri("https://www.litmir.me/br/"));
+        chapter.Images = await GetImages(chapterDoc, SystemUrl.MakeRelativeUri("/br/"));
         chapter.Content = chapterDoc.DocumentNode.InnerHtml;
         chapters.Add(chapter);
     }
@@ -102,7 +102,7 @@ public class LitmirGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(string bookId, int page) {
-        var response = await Config.Client.GetWithTriesAsync(new Uri($"https://www.litmir.me/br/?b={bookId}&p={page}"));
+        var response = await Config.Client.GetWithTriesAsync(SystemUrl.MakeRelativeUri($"/br/?b={bookId}&p={page}"));
         if (response == default) {
             return default;
         }

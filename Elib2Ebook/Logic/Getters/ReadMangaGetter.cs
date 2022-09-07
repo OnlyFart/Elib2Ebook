@@ -23,7 +23,7 @@ public class ReadMangaGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
-        url = new Uri($"https://readmanga.live/{GetId(url)}");
+        url = SystemUrl.MakeRelativeUri(GetId(url));
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var book = new Book(url) {
@@ -62,7 +62,7 @@ public class ReadMangaGetter : GetterBase {
     private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
         var result = doc
             .QuerySelectorAll("td.item-title a.chapter-link")
-            .Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText().ReplaceNewLine()))
+            .Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.GetText().ReplaceNewLine()))
             .Reverse()
             .ToList();
         return SliceToc(result);
@@ -79,7 +79,7 @@ public class ReadMangaGetter : GetterBase {
         var sb = new StringBuilder();
         
         foreach (var elem in json) {
-            sb.Append($"<img src='{new Uri(new Uri(elem[0].GetString()), elem[2].GetString())}'/>");
+            sb.Append($"<img src='{elem[0].GetString().AsUri().MakeRelativeUri(elem[2].GetString())}'/>");
         }
         
         return sb.AsHtmlDoc();
@@ -87,6 +87,6 @@ public class ReadMangaGetter : GetterBase {
 
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
         var imagePath = doc.QuerySelector("div.picture-fotorama img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 }

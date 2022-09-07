@@ -23,13 +23,13 @@ public class BiglibaGetter : TopLibaGetterBase {
                 return new Seria {
                     Name = parts[0].Trim(),
                     Number = parts[1].Trim(')').Trim(),
-                    Url = new Uri(url, a.Attributes["href"].Value)
+                    Url = url.MakeRelativeUri(a.Attributes["href"].Value)
                 };
             }
 
             return new Seria {
                 Name = text,
-                Url = new Uri(url, a.Attributes["href"].Value)
+                Url = url.MakeRelativeUri(a.Attributes["href"].Value)
             };
         }
 
@@ -38,6 +38,6 @@ public class BiglibaGetter : TopLibaGetterBase {
 
     protected override Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("img[itemprop=image]")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 }

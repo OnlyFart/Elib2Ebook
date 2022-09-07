@@ -15,7 +15,7 @@ public class TwilightRussiaGetter : GetterBase {
     protected override Uri SystemUrl => new("https://twilightrussia.ru/");
     public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);
-        url = new Uri($"https://twilightrussia.ru/forum/{GetId(url)}");
+        url = SystemUrl.MakeRelativeUri($"/forum/{GetId(url)}");
         
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
@@ -33,7 +33,7 @@ public class TwilightRussiaGetter : GetterBase {
         if (url.ToString().Contains("/publ/")) {
             var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
             var a = doc.QuerySelector("#msgd ~ a[href]");
-            return new Uri(a.Attributes["href"].Value);
+            return a.Attributes["href"].Value.AsUri();
         }
 
         return url;
@@ -50,7 +50,7 @@ public class TwilightRussiaGetter : GetterBase {
             }
             
             Console.WriteLine($"Загружаю главу {title}");
-            var href = new Uri(url, a.Attributes["href"].Value);
+            var href = url.MakeRelativeUri(a.Attributes["href"].Value);
             result.Add(await GetChapter(href, title));
         }
 

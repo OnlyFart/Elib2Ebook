@@ -21,7 +21,7 @@ public class WuxiaWorldGetter : GetterBase {
     private async Task<Uri> GetMainUrl(Uri url) {
         if (url.Segments[1] == "category/") {
             var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
-            url = new Uri(doc.QuerySelector("h3[itemprop=name] a").Attributes["href"].Value);
+            url = doc.QuerySelector("h3[itemprop=name] a").Attributes["href"].Value.AsUri();
         }
 
         return url;
@@ -53,10 +53,10 @@ public class WuxiaWorldGetter : GetterBase {
                 ["chapter"] = span.Attributes["data-id"].Value
             });
 
-            var data = await Config.Client.PostWithTriesAsync(new Uri("https://wuxiaworld.ru/wp-content/themes/Wuxia/template-parts/post/menu-query.php"), payload);
+            var data = await Config.Client.PostWithTriesAsync(SystemUrl.MakeRelativeUri("/wp-content/themes/Wuxia/template-parts/post/menu-query.php"), payload);
             var tocDoc = await data.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
 
-            result.AddRange(tocDoc.QuerySelectorAll("li a").Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.InnerText.HtmlDecode())));
+            result.AddRange(tocDoc.QuerySelectorAll("li a").Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.InnerText.HtmlDecode())));
         }
 
         return SliceToc(result);
@@ -87,7 +87,7 @@ public class WuxiaWorldGetter : GetterBase {
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("meta[property=og:image]")?.Attributes["content"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
     
     private async Task<HtmlDocument> GetSafety(Uri url) {

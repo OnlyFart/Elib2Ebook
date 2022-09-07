@@ -18,6 +18,8 @@ public class AuthorTodayGetter : GetterBase {
 
     protected override Uri SystemUrl => new("https://author.today/");
 
+    private Uri _apiUrl => new($"https://api.{SystemUrl.Host}/");
+
     private string UserId { get; set; } = string.Empty;
 
     protected override string GetId(Uri url) {
@@ -40,7 +42,7 @@ public class AuthorTodayGetter : GetterBase {
     }
 
     private async Task<AuthorTodayBookDetails> GetBookDetails(string bookId) {
-        var response = await Config.Client.GetWithTriesAsync(new Uri($"https://api.author.today/v1/work/{bookId}/details"));
+        var response = await Config.Client.GetWithTriesAsync(_apiUrl.MakeRelativeUri($"/v1/work/{bookId}/details"));
         if (response.StatusCode != HttpStatusCode.OK) {
             throw new Exception("Книга не найдена");
         }
@@ -48,11 +50,11 @@ public class AuthorTodayGetter : GetterBase {
         return await response.Content.ReadFromJsonAsync<AuthorTodayBookDetails>();
     }
 
-    private static Author GetAuthor(AuthorTodayBookDetails book) {
-        return new Author(book.AuthorFio, new Uri($"https://author.today/u/{book.AuthorUserName}/works"));
+    private Author GetAuthor(AuthorTodayBookDetails book) {
+        return new Author(book.AuthorFio, SystemUrl.MakeRelativeUri($"/u/{book.AuthorUserName}/works"));
     }
 
-    private static Seria GetSeria(AuthorTodayBookDetails book) {
+    private Seria GetSeria(AuthorTodayBookDetails book) {
         if (!book.SeriesId.HasValue) {
             return default;
         }
@@ -60,7 +62,7 @@ public class AuthorTodayGetter : GetterBase {
         return new Seria {
             Name = book.SeriesTitle,
             Number = book.SeriesWorkNumber.HasValue ? book.SeriesWorkNumber.ToString() : string.Empty,
-            Url = new Uri($"https://author.today/work/series/{book.SeriesId}")
+            Url = SystemUrl.MakeRelativeUri($"/work/series/{book.SeriesId}")
         };
     }
 
@@ -74,14 +76,14 @@ public class AuthorTodayGetter : GetterBase {
             return;
         }
 
-        var response = await Config.Client.PostAsJsonAsync(new Uri("https://api.author.today/v1/account/login-by-password"), new { Config.Options.Login, Config.Options.Password });
+        var response = await Config.Client.PostAsJsonAsync(_apiUrl.MakeRelativeUri("/v1/account/login-by-password"), new { Config.Options.Login, Config.Options.Password });
         var data = await response.Content.ReadFromJsonAsync<AuthorTodayAuthResponse>();
 
         if (!string.IsNullOrWhiteSpace(data?.Token)) {
             Console.WriteLine("Успешно авторизовались");
             Config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", data.Token);
 
-            var user = await Config.Client.GetFromJsonAsync<AuthorTodayUser>(new Uri("https://api.author.today/v1/account/current-user"));
+            var user = await Config.Client.GetFromJsonAsync<AuthorTodayUser>(_apiUrl.MakeRelativeUri("/v1/account/current-user"));
             UserId = user!.Id.ToString();
         } else {
             throw new Exception($"Не удалось авторизоваться. {data?.Message}");
@@ -89,12 +91,12 @@ public class AuthorTodayGetter : GetterBase {
     }
 
     private Task<Image> GetCover(AuthorTodayBookDetails book) {
-        return !string.IsNullOrWhiteSpace(book.CoverUrl) ? GetImage(new Uri(book.CoverUrl)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(book.CoverUrl) ? GetImage(book.CoverUrl.AsUri()) : Task.FromResult(default(Image));
     }
 
     protected override HttpRequestMessage GetImageRequestMessage(Uri uri) {
         if (uri.IsSameHost(SystemUrl) || uri.IsSameSubDomain(SystemUrl)) {
-            uri = new Uri(uri, uri.AbsolutePath);
+            uri = uri.MakeRelativeUri(uri.AbsolutePath);
         }
 
         return base.GetImageRequestMessage(uri);
@@ -112,7 +114,7 @@ public class AuthorTodayGetter : GetterBase {
 
             if (atChapter.IsSuccessful) {
                 var chapterDoc = atChapter.Decode(UserId).AsHtmlDoc();
-                chapter.Images = await GetImages(chapterDoc, new Uri("https://author.today/"));
+                chapter.Images = await GetImages(chapterDoc, SystemUrl);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
             }
 
@@ -127,7 +129,7 @@ public class AuthorTodayGetter : GetterBase {
         
         foreach (var chunk in book.Chapters.Where(c => !c.IsDraft).OrderBy(c => c.SortOrder).Chunk(100)) {
             var ids = string.Join("&", chunk.Select((c, i) => $"ids[{i}]={c.Id}"));
-            var uri = new Uri($"https://api.author.today/v1/work/{book.Id}/chapter/many-texts?{ids}");
+            var uri = _apiUrl.MakeRelativeUri($"/v1/work/{book.Id}/chapter/many-texts?{ids}");
             var response = await Config.Client.GetWithTriesAsync(uri);
             var chapters = await response.Content.ReadFromJsonAsync<AuthorTodayChapter[]>();
             if (chapters != default) {

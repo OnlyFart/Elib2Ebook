@@ -28,6 +28,8 @@ public class DarkNovelsGetter : GetterBase {
         
     protected override Uri SystemUrl => new("https://dark-novels.ru/");
 
+    private Uri _apiUrl => new($"https://api.{SystemUrl.Host}/");
+
     public override async Task Authorize() {
         if (!Config.HasCredentials) {
             return;
@@ -38,7 +40,7 @@ public class DarkNovelsGetter : GetterBase {
             password = Config.Options.Password
         };
         
-        var response = await Config.Client.PostAsJsonAsync(new Uri("https://api.dark-novels.ru/v1/users/login"), payload);
+        var response = await Config.Client.PostAsJsonAsync(_apiUrl.MakeRelativeUri("/v1/users/login"), payload);
         var data = await response.Content.ReadFromJsonAsync<DarkNovelsData<DarkNovelsAuthResponse>>();
         if (data!.Status == "success") {
             Config.Client.DefaultRequestHeaders.Add("Token", data.Data.Token.AccessToken);
@@ -66,7 +68,7 @@ public class DarkNovelsGetter : GetterBase {
         var bookFullId = GetId(url);
         var bookId = bookFullId.Split(".").Last();
             
-        var uri = new Uri(SystemUrl, $"/{bookFullId}/");
+        var uri = SystemUrl.MakeRelativeUri($"/{bookFullId}/");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(uri);
 
         var book = new Book(uri) {
@@ -84,7 +86,7 @@ public class DarkNovelsGetter : GetterBase {
         if (url.Segments[1] == "read/") {
             var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
             var id = Regex.Match(doc.DocumentNode.InnerHtml, "slug:\"(?<id>.*?)\"");
-            return new Uri(SystemUrl, $"/{id.Groups["id"].Value}");
+            return SystemUrl.MakeRelativeUri($"/{id.Groups["id"].Value}");
         }
 
         return url;
@@ -128,15 +130,15 @@ public class DarkNovelsGetter : GetterBase {
             }
         }
             
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 
     private async Task<IEnumerable<DarkNovelsChapter>> GetToc(string bookId) {
-        return await Config.Client.GetFromJsonAsync<DarkNovelsData<DarkNovelsChapter[]>>($"https://api.dark-novels.ru/v2/toc/{bookId}").ContinueWith(t => SliceToc(t.Result?.Data));
+        return await Config.Client.GetFromJsonAsync<DarkNovelsData<DarkNovelsChapter[]>>(_apiUrl.MakeRelativeUri($"/v2/toc/{bookId}")).ContinueWith(t => SliceToc(t.Result?.Data));
     }
 
     private async Task<HtmlDocument> GetChapter(string bookId, int chapterId) {
-        var data = await Config.Client.PostWithTriesAsync(new Uri("https://api.dark-novels.ru/v2/chapter/"), GetData(bookId, chapterId));
+        var data = await Config.Client.PostWithTriesAsync(_apiUrl.MakeRelativeUri("/v2/chapter/"), GetData(bookId, chapterId));
         if (data.StatusCode == HttpStatusCode.BadRequest) {
             return default;
         }

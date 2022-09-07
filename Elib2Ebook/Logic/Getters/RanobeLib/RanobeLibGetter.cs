@@ -13,7 +13,7 @@ public class RanobeLibGetter : RanobeLibGetterBase {
     protected override Uri SystemUrl => new("https://ranobelib.me");
 
     protected override async Task<HtmlDocument> GetChapter(Uri url, RanobeLibChapter chapter) {
-        var chapterDoc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(url + $"/v{chapter.ChapterVolume}/c{chapter.ChapterNumber}?bid={chapter.BranchId}"));
+        var chapterDoc = await Config.Client.GetHtmlDocWithTriesAsync(url.AppendSegment($"/v{chapter.ChapterVolume}/c{chapter.ChapterNumber}?bid={chapter.BranchId}"));
         var header = chapterDoc.QuerySelector("h2.page__title");
         if (header != default && header.GetText() == "Регистрация") {
             throw new Exception("Произведение доступно только зарегистрированным пользователям. Добавьте в параметры вызова свои логин и пароль");

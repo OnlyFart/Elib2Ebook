@@ -18,7 +18,7 @@ public class JaomixGetter : GetterBase {
     protected override Uri SystemUrl => new("https://jaomix.ru/");
     public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);
-        url = new Uri($"https://jaomix.ru/category/{GetId(url)}/");
+        url = SystemUrl.MakeRelativeUri($"/category/{GetId(url)}/");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var book = new Book(url) {
@@ -34,7 +34,7 @@ public class JaomixGetter : GetterBase {
     private async Task<Uri> GetMainUrl(Uri url) {
         if (url.Segments[1] != "category/") {
             var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
-            return new Uri(url, doc.QuerySelector("span.entry-category a").Attributes["href"].Value);
+            return url.MakeRelativeUri(doc.QuerySelector("span.entry-category a").Attributes["href"].Value);
         }
 
         return url;
@@ -82,7 +82,7 @@ public class JaomixGetter : GetterBase {
         var chapters = new List<UrlChapter>();
         chapters.AddRange(ParseChapters(doc, url));
         
-        doc = await Config.Client.PostHtmlDocWithTriesAsync(new Uri("https://jaomix.ru/wp-admin/admin-ajax.php"), new FormUrlEncodedContent(data));
+        doc = await Config.Client.PostHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri("/wp-admin/admin-ajax.php"), new FormUrlEncodedContent(data));
 
         Console.WriteLine("Получаю оглавление");
             
@@ -98,7 +98,7 @@ public class JaomixGetter : GetterBase {
                 { "termid", termId }
             };
 
-            var chapterDoc = await Config.Client.PostHtmlDocWithTriesAsync(new Uri("https://jaomix.ru/wp-admin/admin-ajax.php"), new FormUrlEncodedContent(data));
+            var chapterDoc = await Config.Client.PostHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri("/wp-admin/admin-ajax.php"), new FormUrlEncodedContent(data));
             chapters.AddRange(ParseChapters(chapterDoc, url));
         }
         
@@ -110,10 +110,10 @@ public class JaomixGetter : GetterBase {
         
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
         var imagePath = doc.QuerySelector("div.img-book img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 
     private static IEnumerable<UrlChapter> ParseChapters(HtmlDocument doc, Uri url) {
-        return doc.QuerySelectorAll("div.hiddenstab a").Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.InnerText.Trim()));
+        return doc.QuerySelectorAll("div.hiddenstab a").Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.InnerText.Trim()));
     }
 }

@@ -37,7 +37,7 @@ public abstract class RanobeLibGetterBase : GetterBase {
         
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl);
         var token = doc.QuerySelector("meta[name=_token]")?.Attributes["content"]?.Value;
-        using var post = await Config.Client.PostAsync(new Uri(SystemUrl, "login"), GenerateAuthData(token));
+        using var post = await Config.Client.PostAsync(SystemUrl.MakeRelativeUri("login"), GenerateAuthData(token));
     }
 
     private MultipartFormDataContent GenerateAuthData(string token) {
@@ -51,7 +51,7 @@ public abstract class RanobeLibGetterBase : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         var bidId = url.GetQueryParameter("bid");
-        url = new Uri(SystemUrl, GetId(url));
+        url = SystemUrl.MakeRelativeUri(GetId(url));
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var data = GetData(doc);
@@ -72,7 +72,7 @@ public abstract class RanobeLibGetterBase : GetterBase {
             var title = div.GetTextBySelector("div.media-info-list__title");
             var value = div.QuerySelector("div.media-info-list__value a");
             if (title == "Автор" && value != default) {
-                return new Author(value.GetText(), new Uri(url, value.Attributes["href"].Value));
+                return new Author(value.GetText(), url.MakeRelativeUri(value.Attributes["href"].Value));
             }
         }
 
@@ -115,6 +115,6 @@ public abstract class RanobeLibGetterBase : GetterBase {
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("meta[property=og:image]").Attributes["content"].Value.Trim();
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 }

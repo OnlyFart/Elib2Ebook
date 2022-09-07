@@ -35,7 +35,7 @@ public class ProdamanGetter : GetterBase {
             return;
         }
 
-        using var post = await Config.Client.PostWithTriesAsync(new Uri("https://prodaman.ru/login"), GetAuthData());
+        using var post = await Config.Client.PostWithTriesAsync(SystemUrl.MakeRelativeUri("/login"), GetAuthData());
         var doc = await post.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
         
         if (!string.IsNullOrWhiteSpace(doc.GetTextBySelector("p.error"))) {
@@ -116,7 +116,7 @@ public class ProdamanGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
-        url = new Uri(SystemUrl, url.AbsolutePath);
+        url = SystemUrl.MakeRelativeUri(url.AbsolutePath);
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var title = doc.GetTextBySelector("h1");
@@ -138,7 +138,7 @@ public class ProdamanGetter : GetterBase {
             return new Author("Prodaman");
         }
 
-        return new Author(a.GetText(), new Uri(url, a.Attributes["href"].Value));
+        return new Author(a.GetText(), url.MakeRelativeUri(a.Attributes["href"].Value));
     }
 
     private static Seria GetSeria(HtmlDocument doc, Uri url) {
@@ -146,7 +146,7 @@ public class ProdamanGetter : GetterBase {
         if (a != default) {
             return new Seria {
                 Name = a.GetText(),
-                Url = new Uri(url, a.Attributes["href"].Value)
+                Url = url.MakeRelativeUri(a.Attributes["href"].Value)
             };
         }
 
@@ -154,7 +154,7 @@ public class ProdamanGetter : GetterBase {
     }
 
     private async Task<int> GetPages(Uri url) {
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(url.AbsoluteUri + "?nav=ok"));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url.AppendQueryParameter("nav", "ok"));
         var pages = doc.QuerySelectorAll("div.pageList a")
             .Where(a => int.TryParse(a.InnerText, out _))
             .Select(a => int.Parse(a.InnerText))
@@ -198,8 +198,9 @@ public class ProdamanGetter : GetterBase {
         var pages = await GetPages(url);
         for (var i = 1; i <= pages; i++) {
             Console.WriteLine($"Получаю страницу {i}/{pages}");
-            
-            var page = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(url.AbsoluteUri + $"?page={i}"));
+
+            var appendSegment = url.AppendQueryParameter("page", i);
+            var page = await Config.Client.GetHtmlDocWithTriesAsync(appendSegment);
             var content = page.QuerySelector("div.blog-text");
             var nodes = content.ChildNodes;
             singleChapter = i == 1 ? IsSingleChapter(nodes) : singleChapter;
@@ -223,6 +224,6 @@ public class ProdamanGetter : GetterBase {
 
     private Task<Image> GetCover(HtmlDocument doc, Uri url) {
         var imagePath = doc.QuerySelector("div[itemprop=aggregateRating] img[itemprop=image]")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(url, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(url.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 }

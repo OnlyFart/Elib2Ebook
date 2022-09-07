@@ -34,7 +34,7 @@ public class RulateGetter : GetterBase {
         }
 
 
-        var response = await Config.Client.PostWithTriesAsync(new Uri($"https://tl.rulate.ru/"), GetAuthData());
+        var response = await Config.Client.PostWithTriesAsync(SystemUrl, GetAuthData());
         var doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
         var alertBlock = doc.QuerySelector("div.alert-error");
         
@@ -56,7 +56,7 @@ public class RulateGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
-        url = new Uri($"https://tl.rulate.ru/book/{bookId}");
+        url = SystemUrl.MakeRelativeUri($"/book/{bookId}");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var book = new Book(url) {
@@ -89,7 +89,7 @@ public class RulateGetter : GetterBase {
         
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
         var imagePath = doc.QuerySelector("div.slick img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
         
     private async Task<List<Chapter>> FillChapters(HtmlDocument doc, Uri bookUri, string bookId) {
@@ -111,7 +111,7 @@ public class RulateGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(string bookId, string chapterId) {
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://tl.rulate.ru/book/{bookId}/{chapterId}/ready"));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"/book/{bookId}/{chapterId}/ready"));
         return (doc.GetTextBySelector("h1") == "Доступ запрещен" ? string.Empty : doc.QuerySelector("div.content-text")?.InnerHtml ?? string.Empty).AsHtmlDoc();
     }
 

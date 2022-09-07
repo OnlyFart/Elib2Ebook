@@ -22,13 +22,13 @@ public class TopLibaGetter : TopLibaGetterBase {
                 return new Seria {
                     Name = text,
                     Number = number.GetText().Replace("(", "").Replace(")", "").Replace("#", ""),
-                    Url = new Uri(url, a.Attributes["href"].Value)
+                    Url = url.MakeRelativeUri(a.Attributes["href"].Value)
                 };
             }
 
             return new Seria {
                 Name = text,
-                Url = new Uri(url, a.Attributes["href"].Value)
+                Url = url.MakeRelativeUri(a.Attributes["href"].Value)
             };
         }
 
@@ -37,6 +37,6 @@ public class TopLibaGetter : TopLibaGetterBase {
 
     protected override Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("img[itemprop=contentUrl]")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 }

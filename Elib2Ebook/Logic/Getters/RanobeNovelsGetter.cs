@@ -21,7 +21,7 @@ public class RanobeNovelsGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
-        url = new Uri($"https://ranobe-novels.ru/ranobe/{bookId}/");
+        url = SystemUrl.MakeRelativeUri($"/ranobe/{bookId}/");
         var doc = await GetSafety(url);
 
         var book = new Book(url) {
@@ -39,14 +39,14 @@ public class RanobeNovelsGetter : GetterBase {
 
         var toc = await GetToc(doc);
         if (toc.Count == 0) {
-            doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://ranobe-novels.ru/{GetId(url)}"));
+            doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"/{GetId(url)}"));
             toc = await GetToc(doc);
         }
         
         foreach (var ranobeChapter in toc) {
             Console.WriteLine($"Загружаю главу {ranobeChapter.Title.CoverQuotes()}");
             var chapter = new Chapter();
-            var chapterDoc = await GetChapter(new Uri($"https://ranobe-novels.ru/{ranobeChapter.Name}"));
+            var chapterDoc = await GetChapter(SystemUrl.MakeRelativeUri($"/{ranobeChapter.Name}"));
             chapter.Images = await GetImages(chapterDoc, url);
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;
             chapter.Title = ranobeChapter.Title;
@@ -75,7 +75,7 @@ public class RanobeNovelsGetter : GetterBase {
         };
 
        
-        var response = await Config.Client.PostAsync(new Uri("https://ranobe-novels.ru/wp-admin/admin-ajax.php"), new FormUrlEncodedContent(data));
+        var response = await Config.Client.PostAsync(SystemUrl.MakeRelativeUri("/wp-admin/admin-ajax.php"), new FormUrlEncodedContent(data));
         if (response.StatusCode != HttpStatusCode.OK) {
             return new List<RanobeNovelsChapter>();
         }
@@ -88,7 +88,7 @@ public class RanobeNovelsGetter : GetterBase {
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("meta[property=og:image]")?.Attributes["content"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 
     private async Task<HtmlDocument> GetSafety(Uri url) {

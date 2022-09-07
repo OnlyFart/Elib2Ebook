@@ -20,7 +20,7 @@ public class RoyalRoadGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
-        url = new Uri($"https://www.royalroad.com/fiction/{GetId(url)}");
+        url = SystemUrl.MakeRelativeUri($"/fiction/{GetId(url)}");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var book = new Book(url) {
@@ -68,7 +68,7 @@ public class RoyalRoadGetter : GetterBase {
         var result = doc
             .QuerySelectorAll("tr.chapter-row")
             .Select(r => r.QuerySelector("a[href^=/fiction/]"))
-            .Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText()))
+            .Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.GetText()))
             .ToList();
         
         return SliceToc(result);
@@ -76,11 +76,11 @@ public class RoyalRoadGetter : GetterBase {
 
     private static Author GetAuthor(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("h4[property=author] span[property=name] a");
-        return new Author(a.GetText(), new Uri(url, a.Attributes["href"].Value));
+        return new Author(a.GetText(), url.MakeRelativeUri(a.Attributes["href"].Value));
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("div.cover-art-container img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 }

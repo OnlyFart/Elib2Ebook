@@ -19,6 +19,8 @@ namespace Elib2Ebook.Logic.Getters.Litnet;
 
 public abstract class LitnetGetterBase : GetterBase {
     public LitnetGetterBase(BookGetterConfig config) : base(config) { }
+
+    private Uri _apiUrl => new($"https://api.{SystemUrl.Host}/");
     
     private static readonly string DeviceId = Guid.NewGuid().ToString().ToUpper();
     private const string SECRET = "14a6579a984b3c6abecda6c2dfa83a64";
@@ -61,7 +63,7 @@ public abstract class LitnetGetterBase : GetterBase {
     public override async Task Authorize() {
         var path = Config.HasCredentials ? "user/find-by-login" : "registration/registration-by-device";
 
-        var url = $"https://api.{SystemUrl.Host}/v1/{path}?login={Config.Options.Login?.TrimStart('+') ?? string.Empty}&password={HttpUtility.UrlEncode(Config.Options.Password)}&app=android&device_id={DeviceId}&sign={GetSign(string.Empty)}";
+        var url = _apiUrl.MakeRelativeUri($"v1/{path}?login={Config.Options.Login?.TrimStart('+') ?? string.Empty}&password={HttpUtility.UrlEncode(Config.Options.Password)}&app=android&device_id={DeviceId}&sign={GetSign(string.Empty)}");
         var response = await Config.Client.GetFromJsonAsync<LitnetAuthResponse>(url);
 
         if (!string.IsNullOrWhiteSpace(response?.Token)) {
@@ -73,14 +75,14 @@ public abstract class LitnetGetterBase : GetterBase {
     }
 
     private async Task<LitnetBookResponse> GetBook(string token, string bookId) {
-        var url = $"https://api.{SystemUrl.Host}/v1/book/get/{bookId}?app=android&device_id={DeviceId}&user_token={token}&sign={GetSign(token)}";
+        var url = _apiUrl.MakeRelativeUri($"/v1/book/get/{bookId}?app=android&device_id={DeviceId}&user_token={token}&sign={GetSign(token)}");
         var response = await Config.Client.GetFromJsonAsync<LitnetBookResponse>(url);
         return response;
     }
 
     private async Task<LitnetContentsResponse[]> GetBookContents(string token, string bookId) {
-        var url = $"https://api.{SystemUrl.Host}/v1/book/contents?bookId={bookId}&app=android&device_id={DeviceId}&user_token={token}&sign={GetSign(token)}";
-        var response = await Config.Client.GetAsync(new Uri(url));
+        var url = _apiUrl.MakeRelativeUri($"/v1/book/contents?bookId={bookId}&app=android&device_id={DeviceId}&user_token={token}&sign={GetSign(token)}");
+        var response = await Config.Client.GetAsync(url);
         return response.StatusCode == HttpStatusCode.NotFound ? 
             Array.Empty<LitnetContentsResponse>() : 
             await response.Content.ReadFromJsonAsync<LitnetContentsResponse[]>();
@@ -88,7 +90,7 @@ public abstract class LitnetGetterBase : GetterBase {
 
     private async Task<IEnumerable<LitnetChapterResponse>> GetToc(string token, IEnumerable<LitnetContentsResponse> contents) {
         var chapters = string.Join("&", contents.Select(t => $"chapter_ids[]={t.Id}"));
-        var url = $"https://api.{SystemUrl.Host}/v1/book/get-chapters-texts/?{chapters}&app=android&device_id={DeviceId}&sign={GetSign(token)}&user_token={token}";
+        var url = _apiUrl.MakeRelativeUri($"/v1/book/get-chapters-texts/?{chapters}&app=android&device_id={DeviceId}&sign={GetSign(token)}&user_token={token}");
         var response = await Config.Client.GetFromJsonAsync<LitnetChapterResponse[]>(url);
         return SliceToc(response);
     }
@@ -98,7 +100,7 @@ public abstract class LitnetGetterBase : GetterBase {
 
         var litnetBook = await GetBook(_token, bookId);
 
-        var uri = new Uri(litnetBook.Url);
+        var uri = litnetBook.Url.AsUri();
         var book = new Book(uri) {
             Cover = await GetCover(litnetBook),
             Chapters = await FillChapters(_token, litnetBook, bookId),
@@ -119,7 +121,7 @@ public abstract class LitnetGetterBase : GetterBase {
             if (a != default) {
                 return new Seria {
                     Name = a.GetText(),
-                    Url = new Uri(url, a.Attributes["href"].Value),
+                    Url = url.MakeRelativeUri(a.Attributes["href"].Value),
                     Number = book.CyclePriority is > 0 ? book.CyclePriority.Value.ToString() : string.Empty
                 };
             }
@@ -131,7 +133,7 @@ public abstract class LitnetGetterBase : GetterBase {
     }
 
     private Author GetAuthor(LitnetBookResponse book) {
-        return new Author((book.AuthorName ?? SystemUrl.Host).Trim(), new Uri($"https://{SystemUrl.Host}/ru/{book.AuthorId}"));
+        return new Author((book.AuthorName ?? SystemUrl.Host).Trim(), SystemUrl.MakeRelativeUri($"/ru/{book.AuthorId}"));
     }
 
     private static string GetAnnotation(LitnetBookResponse book) {
@@ -141,7 +143,7 @@ public abstract class LitnetGetterBase : GetterBase {
     }
     
     private Task<Image> GetCover(LitnetBookResponse book) {
-        return !string.IsNullOrWhiteSpace(book.Cover) ? GetImage(new Uri(book.Cover)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(book.Cover) ? GetImage(book.Cover.AsUri()) : Task.FromResult(default(Image));
     }
 
     private async Task<List<Chapter>> FillChapters(string token, LitnetBookResponse book, string bookId) {
@@ -165,7 +167,7 @@ public abstract class LitnetGetterBase : GetterBase {
 
             if (!string.IsNullOrWhiteSpace(litnetChapter.Text)) {
                 var chapterDoc = GetChapter(litnetChapter);
-                chapter.Images = await GetImages(chapterDoc, new Uri("https://litnet.com"));
+                chapter.Images = await GetImages(chapterDoc, SystemUrl);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
             }
 

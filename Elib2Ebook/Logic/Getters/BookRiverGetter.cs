@@ -19,6 +19,8 @@ public class BookriverGetter : GetterBase {
     public BookriverGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://bookriver.ru/");
 
+    private Uri _apiUrl => new($"https://api.{SystemUrl.Host}/");
+
     private string _token;
     
     protected override string GetId(Uri url) {
@@ -36,7 +38,7 @@ public class BookriverGetter : GetterBase {
             rememberMe = 1
         };
 
-        using var post = await Config.Client.PostAsJsonAsync("https://api.bookriver.ru/api/v1/auth/login", payload);
+        using var post = await Config.Client.PostAsJsonAsync(_apiUrl.MakeRelativeUri("/api/v1/auth/login"), payload);
         var data = await post.Content.ReadFromJsonAsync<BookRiverAuthResponse>();
         if (!string.IsNullOrWhiteSpace(data.Token)) {
             Console.WriteLine("Успешно авторизовались");
@@ -48,7 +50,7 @@ public class BookriverGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
-        url = new Uri($"https://bookriver.ru/book/{bookId}");
+        url = SystemUrl.MakeRelativeUri($"/book/{bookId}");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var book = new Book(url) {
@@ -65,7 +67,7 @@ public class BookriverGetter : GetterBase {
 
     private static Author GetAuthor(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("span[itemprop=author] a");
-        return new Author(a.GetText(), new Uri(url, a.Attributes["href"].Value));
+        return new Author(a.GetText(), url.MakeRelativeUri(a.Attributes["href"].Value));
     }
 
     private static Seria GetSeria(HtmlDocument doc, Uri url) {
@@ -82,7 +84,7 @@ public class BookriverGetter : GetterBase {
         return new Seria {
             Name = a.GetText()[5..].Trim(),
             Number = span.GetText().Trim().Trim('#'),
-            Url = new Uri(url, a.Attributes["href"].Value)
+            Url = url.MakeRelativeUri(a.Attributes["href"].Value)
         };
     }
 
@@ -123,7 +125,7 @@ public class BookriverGetter : GetterBase {
     }
 
     private async Task<string> GetInternalBookId(string bookId) {
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://bookriver.ru/reader/{bookId}"));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"/reader/{bookId}"));
         return GetNextData<BookRiverBook>(doc, "book").Book.Id.ToString();
     }
 
@@ -141,7 +143,7 @@ public class BookriverGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(long bookChapterId) {
-        var response = await Config.Client.SendAsync(GetMessage(new Uri($"https://api.bookriver.ru/api/v1/books/chapter/text/{bookChapterId}")));
+        var response = await Config.Client.SendAsync(GetMessage(_apiUrl.MakeRelativeUri($"/api/v1/books/chapter/text/{bookChapterId}")));
         if (response.StatusCode == HttpStatusCode.Forbidden) {
             return default;
         }
@@ -151,13 +153,13 @@ public class BookriverGetter : GetterBase {
     }
 
     private async Task<IEnumerable<BookRiverChapter>> GetToc(string bookId) {
-        var response = await Config.Client.GetWithTriesAsync(new Uri($"https://api.bookriver.ru/api/v1/books/chapters/text/published?bookId={bookId}"));
+        var response = await Config.Client.GetWithTriesAsync(_apiUrl.MakeRelativeUri($"/api/v1/books/chapters/text/published?bookId={bookId}"));
         var content = await response.Content.ReadAsStringAsync();
         return SliceToc(content.Deserialize<BookRiverApiResponse<BookRiverChapter[]>>().Data);
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("img[itemprop=contentUrl]")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 }

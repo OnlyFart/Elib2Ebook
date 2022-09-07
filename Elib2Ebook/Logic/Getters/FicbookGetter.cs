@@ -21,7 +21,7 @@ public class FicbookGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
-        url = new Uri($"https://ficbook.net/readfic/{GetId(url)}");
+        url = SystemUrl.MakeRelativeUri($"/readfic/{GetId(url)}");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var title = doc.GetTextBySelector("h1.mb-10");
@@ -38,12 +38,12 @@ public class FicbookGetter : GetterBase {
 
     private static Author GetAuthor(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("a.creator-nickname");
-        return new Author(a.GetText(), new Uri(url, a.Attributes["href"].Value));
+        return new Author(a.GetText(), url.MakeRelativeUri(a.Attributes["href"].Value));
     }
         
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
         var imagePath = doc.QuerySelector("fanfic-cover")?.Attributes["src-original"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url, string title) {
@@ -96,7 +96,7 @@ public class FicbookGetter : GetterBase {
             foreach (var li in links) {
                 var a = li.QuerySelector("a.part-link.visit-link");
                 if (a != null) {
-                    result.Add(new UrlChapter(new Uri(url, a.Attributes["href"].Value), li.GetTextBySelector("h3")));
+                    result.Add(new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), li.GetTextBySelector("h3")));
                 }
             }
         }

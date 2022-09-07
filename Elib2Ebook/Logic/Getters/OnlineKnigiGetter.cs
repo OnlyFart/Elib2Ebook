@@ -20,7 +20,7 @@ public class OnlineKnigiGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
-        url = new Uri($"https://online-knigi.com.ua/kniga/{bookId}");
+        url = SystemUrl.MakeRelativeUri($"/kniga/{bookId}");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var title = doc.GetTextBySelector("h1");
@@ -43,7 +43,7 @@ public class OnlineKnigiGetter : GetterBase {
         for (var i = 1; i <= pages; i++) {
             Console.WriteLine($"Получаю страницу {i}/{pages}");
 
-            var uri = new Uri($"https://online-knigi.com.ua/page/{bookId}?page={i}");
+            var uri = SystemUrl.MakeRelativeUri($"/page/{bookId}?page={i}");
             var doc = await Config.Client.GetHtmlDocWithTriesAsync(uri);
             sb.Append(doc.QuerySelector("div.content_book").InnerHtml.HtmlDecode());
         }
@@ -57,17 +57,17 @@ public class OnlineKnigiGetter : GetterBase {
     }
 
     private async Task<int> GetPages(string bookId) {
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://online-knigi.com.ua/page/{bookId}"));
-         return int.Parse(new Uri(doc.QuerySelector("li.last a").Attributes["href"].Value).GetQueryParameter("page"));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"/page/{bookId}"));
+         return int.Parse(doc.QuerySelector("li.last a").Attributes["href"].Value.AsUri().GetQueryParameter("page"));
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("meta[property=og:image]")?.Attributes["content"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(SystemUrl.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
     
     private static Author GetAuthor(HtmlDocument doc, Uri uri) {
         var a = doc.QuerySelector("div[itemprop=author] a");
-        return new Author(a.GetText(), new Uri(uri, a.Attributes["href"].Value));
+        return new Author(a.GetText(), uri.MakeRelativeUri(a.Attributes["href"].Value));
     }
 }

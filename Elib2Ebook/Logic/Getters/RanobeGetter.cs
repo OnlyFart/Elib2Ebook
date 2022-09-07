@@ -22,7 +22,7 @@ public class RanobeGetter : GetterBase {
     }
         
     public override async Task<Book> Get(Uri url) {
-        url = new Uri($"https://ранобэ.рф/{GetId(url)}");
+        url = SystemUrl.MakeRelativeUri(GetId(url));
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var ranobeBook = GetNextData<RanobeBook>(doc, "book");
@@ -55,7 +55,7 @@ public class RanobeGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(Uri mainUrl, string url) {
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(mainUrl, url));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(mainUrl.MakeRelativeUri(url));
         return GetNextData<RanobeChapter>(doc, "chapter").Content.Text.AsHtmlDoc();
     }
 
@@ -71,6 +71,6 @@ public class RanobeGetter : GetterBase {
         
     private Task<Image> GetCover(RanobeBook book, Uri bookUri) {
         var imagePath = book.Image?.Url ?? book.Images.MaxBy(t => t.Height)?.Url;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 }

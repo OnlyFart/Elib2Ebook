@@ -43,7 +43,7 @@ internal static class Program {
                 client.Timeout = TimeSpan.FromSeconds(options.Timeout);
 
                 var getterConfig = new BookGetterConfig(options, client, cookieContainer);
-                using var getter = GetGetter(getterConfig, new Uri(options.Url.First()));
+                using var getter = GetGetter(getterConfig, options.Url.First().AsUri());
                 
                 await getter.Init();
                 await getter.Authorize();
@@ -51,7 +51,7 @@ internal static class Program {
                 foreach (var url in options.Url) {
                     Console.WriteLine($"Начинаю генерацию книги {url.CoverQuotes()}");
                     try {
-                        var book = await getter.Get(new Uri(url));
+                        var book = await getter.Get(url.AsUri());
                         foreach (var format in options.Format) {
                             book.Save(GetBuilder(format), options, "Patterns");
                         }

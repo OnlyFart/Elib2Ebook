@@ -15,14 +15,16 @@ public class BookstabGetter : GetterBase {
     public BookstabGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://bookstab.ru/");
 
+    private Uri _apiUrl => new($"https://api.{SystemUrl.Host}/");
+
     protected override string GetId(Uri url) {
         return url.Segments[2].Trim('/');
     }
 
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
-        url = new Uri($"https://bookstab.ru/book/{bookId}");
-        var response = await Config.Client.GetWithTriesAsync(new Uri($"https://api.bookstab.ru/api/reader-get/{bookId}"));
+        url = SystemUrl.MakeRelativeUri($"/book/{bookId}");
+        var response = await Config.Client.GetWithTriesAsync(_apiUrl.MakeRelativeUri($"/api/reader-get/{bookId}"));
         var data = await response.Content.ReadFromJsonAsync<BookstabApiResponse>();
 
         var book = new Book(url) {
@@ -36,8 +38,8 @@ public class BookstabGetter : GetterBase {
         return book;
     }
 
-    private static Author GetAuthor(BookstabApiResponse book) {
-        return new Author(book.Book.User.Pseudonym, new Uri($"https://bookstab.ru/user/{book.Book.User.Name}"));
+    private Author GetAuthor(BookstabApiResponse book) {
+        return new Author(book.Book.User.Pseudonym, SystemUrl.MakeRelativeUri($"/user/{book.Book.User.Name}"));
     }
     
     private static string GetAnnotation(BookstabBook book) {
@@ -70,12 +72,12 @@ public class BookstabGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(int bookChapterId, string bookId) {
-        var response = await Config.Client.GetFromJsonAsync<BookstabApiResponse>($"https://api.bookstab.ru/api/reader-get/{bookId}/{bookChapterId}");
+        var response = await Config.Client.GetFromJsonAsync<BookstabApiResponse>(_apiUrl.MakeRelativeUri($"/api/reader-get/{bookId}/{bookChapterId}"));
         return string.IsNullOrWhiteSpace(response?.Chapter.Body) ? default : response.Chapter.Body.AsHtmlDoc();
     }
 
     private Task<Image> GetCover(BookstabApiResponse response) {
         var imagePath = response.Book.Image;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri($"https://api.bookstab.ru/storage/{imagePath}")) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(_apiUrl.MakeRelativeUri($"/storage/{imagePath}")) : Task.FromResult(default(Image));
     }
 }

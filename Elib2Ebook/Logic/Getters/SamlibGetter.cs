@@ -49,7 +49,7 @@ public class SamlibGetter : GetterBase {
             return def;
         }
 
-        return new Author(h3.RemoveNodes("small").GetText().Trim(':'), new Uri(url, a.Attributes["href"].Value));
+        return new Author(h3.RemoveNodes("small").GetText().Trim(':'), url.MakeRelativeUri(a.Attributes["href"].Value));
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url, string title) {
@@ -69,7 +69,7 @@ public class SamlibGetter : GetterBase {
             yield return new UrlChapter(url, title);
         } else {
             foreach (var a in content.AsHtmlDoc().QuerySelectorAll("li > a")) {
-                yield return new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText());
+                yield return new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.GetText());
             }
         }
     }

@@ -22,7 +22,7 @@ public class MirKnigGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
-        url = new Uri($"https://mir-knig.com/view_{bookId}");
+        url = SystemUrl.MakeRelativeUri($"/view_{bookId}");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var title = doc.GetTextBySelector("h1.heading");
@@ -38,20 +38,20 @@ public class MirKnigGetter : GetterBase {
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(string bookId, string title) {
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://mir-knig.com/read_{bookId}-1"));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"/read_{bookId}-1"));
         var pages = int.Parse(doc.QuerySelectorAll("select.allp option").Last().Attributes["value"].Value);
 
         var sb = new StringBuilder();
         for (var i = 1; i <= pages; i++) {
             Console.WriteLine($"Получаю страницу {i}/{pages}");
-            doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://mir-knig.com/read_{bookId}-{i}"));
+            doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"/read_{bookId}-{i}"));
             sb.Append(doc.QuerySelector("div.text-block").InnerHtml.HtmlDecode());
         }
 
         doc = sb.AsHtmlDoc();
         var chapter = new Chapter {
             Title = title,
-            Images = await GetImages(doc, new Uri("https://mir-knig.com/")),
+            Images = await GetImages(doc, SystemUrl),
             Content = doc.DocumentNode.InnerHtml
         };
 
@@ -60,7 +60,7 @@ public class MirKnigGetter : GetterBase {
 
     private static Author GetAuthor(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("a.owner");
-        return new Author(a.GetText(), new Uri(url, a.Attributes["href"].Value));
+        return new Author(a.GetText(), url.MakeRelativeUri(a.Attributes["href"].Value));
     }
         
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
@@ -76,7 +76,7 @@ public class MirKnigGetter : GetterBase {
             }
         }
         
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
     
     

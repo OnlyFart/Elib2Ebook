@@ -19,7 +19,7 @@ public class HubBookGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
-        url = new Uri($"https://hub-book.com/books/{GetId(url)}");
+        url = SystemUrl.MakeRelativeUri($"/books/{GetId(url)}");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var author = GetAuthor(doc, url);
@@ -42,7 +42,7 @@ public class HubBookGetter : GetterBase {
 
         for (var i = 1; i <= pages; i++) {
             Console.WriteLine($"Получаю страницу {i}/{pages}");
-            doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(url + $"/toread/page-{i}"));
+            doc = await Config.Client.GetHtmlDocWithTriesAsync(url.AppendSegment($"/toread/page-{i}"));
             text.Append(doc.QuerySelector("div.b-reader-text__container").InnerHtml.HtmlDecode());
         }
 
@@ -58,11 +58,11 @@ public class HubBookGetter : GetterBase {
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("div.b-book-image img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
     
     private static Author GetAuthor(HtmlDocument doc, Uri uri) {
         var a = doc.QuerySelector("a.b-book-user__name");
-        return new Author(a.GetText(), new Uri(uri, a.Attributes["href"].Value));
+        return new Author(a.GetText(), uri.MakeRelativeUri(a.Attributes["href"].Value));
     }
 }

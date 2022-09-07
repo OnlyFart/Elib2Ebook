@@ -16,7 +16,7 @@ public class FreedomGetter : GetterBase{
     protected override Uri SystemUrl => new("https://ifreedom.su/");
     public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);
-        url = new Uri($"https://ifreedom.su/ranobe/{GetId(url)}/");
+        url = SystemUrl.MakeRelativeUri($"/ranobe/{GetId(url)}/");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         
         var book = new Book(url) {
@@ -35,13 +35,13 @@ public class FreedomGetter : GetterBase{
         }
 
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
-        return new Uri(url, doc.QuerySelector("div.bun2 a").Attributes["href"].Value);
+        return url.MakeRelativeUri(doc.QuerySelector("div.bun2 a").Attributes["href"].Value);
     }
 
     private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
         var result = doc
             .QuerySelectorAll("div.li-col1-ranobe a")
-            .Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText()))
+            .Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.GetText()))
             .Reverse()
             .ToList();
         
@@ -85,6 +85,6 @@ public class FreedomGetter : GetterBase{
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("div.img-ranobe img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 }

@@ -32,7 +32,7 @@ public class NovelTranslateGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         var lang = GetLang(url);
-        url = new Uri($"https://noveltranslate.com/{lang}/novel/{GetId(url)}/");
+        url = SystemUrl.MakeRelativeUri($"/{lang}/novel/{GetId(url)}/");
         
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
@@ -74,7 +74,7 @@ public class NovelTranslateGetter : GetterBase {
     }
 
     private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
-        var result = doc.QuerySelectorAll("div.listing-chapters_wrap li.wp-manga-chapter a").Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText())).ToList();
+        var result = doc.QuerySelectorAll("div.listing-chapters_wrap li.wp-manga-chapter a").Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.GetText())).ToList();
         result.Reverse();
         return SliceToc(result);
     }
@@ -85,11 +85,11 @@ public class NovelTranslateGetter : GetterBase {
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("div.summary_image img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
     
     private static Author GetAuthor(HtmlDocument doc, Uri uri) {
         var a = doc.QuerySelector("div.summary-content div.author-content a");
-        return a != default ? new Author(a.GetText(), new Uri(uri, a.Attributes["href"].Value)) : new Author("NovelTranslate");
+        return a != default ? new Author(a.GetText(), uri.MakeRelativeUri(a.Attributes["href"].Value)) : new Author("NovelTranslate");
     }
 }

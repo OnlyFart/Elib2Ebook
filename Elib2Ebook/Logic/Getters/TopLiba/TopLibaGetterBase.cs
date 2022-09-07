@@ -25,7 +25,7 @@ public abstract class TopLibaGetterBase : GetterBase {
     
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
-        url = new Uri($"https://{SystemUrl.Host}/books/{bookId}");
+        url = SystemUrl.MakeRelativeUri($"/books/{bookId}");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         var title = doc.GetTextBySelector("h1[itemprop=name]");
 
@@ -46,10 +46,10 @@ public abstract class TopLibaGetterBase : GetterBase {
             return;
         }
 
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://{SystemUrl.Host}/login"));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri("/login"));
         var token = doc.QuerySelector("meta[name=_token]").Attributes["content"].Value;
         
-        var response = await Config.Client.PostWithTriesAsync(new Uri($"https://{SystemUrl.Host}/login"), GetAuthData(token));
+        var response = await Config.Client.PostWithTriesAsync(SystemUrl.MakeRelativeUri("/login"), GetAuthData(token));
         doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
         var helpBlock = doc.QuerySelector("input[type=email] + span.help-block");
         if (helpBlock == default) {
@@ -71,7 +71,7 @@ public abstract class TopLibaGetterBase : GetterBase {
 
     private static Author GetAuthor(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("h2[itemprop=author] a");
-        return new Author(a.GetText(), new Uri(url, a.Attributes["href"].Value));
+        return new Author(a.GetText(), url.MakeRelativeUri(a.Attributes["href"].Value));
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(Uri uri, string bookId, string token, string title) {
@@ -102,7 +102,7 @@ public abstract class TopLibaGetterBase : GetterBase {
     }
 
     private async Task<string> GetChapter(string bookId, string id, string token) {
-        var data = await Config.Client.PostWithTriesAsync(new Uri($"https://{SystemUrl.Host}/reader/{bookId}/chapter"), GetData(id, token));
+        var data = await Config.Client.PostWithTriesAsync(SystemUrl.MakeRelativeUri($"/reader/{bookId}/chapter"), GetData(id, token));
         return await data.Content.ReadAsStringAsync();
     }
     
@@ -116,7 +116,7 @@ public abstract class TopLibaGetterBase : GetterBase {
     }
 
     private async Task<IEnumerable<string>> GetToc(string bookId) {
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://{SystemUrl.Host}/reader/{bookId}"));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"/reader/{bookId}"));
         var result = new Regex("capters: \\[(?<chapters>.*?)\\]").Match(doc.Text).Groups["chapters"].Value.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim('\"')).ToList();
         return SliceToc(result);
     }

@@ -80,7 +80,7 @@ public class LitresGetter : GetterBase {
     }
 
     private async Task<T> GetResponse<T>(LitresPayload payload) {
-        var resp = await Config.Client.PostWithTriesAsync(new Uri("https://catalit.litres.ru/catalitv2"), CreatePayload(payload));
+        var resp = await Config.Client.PostWithTriesAsync("https://catalit.litres.ru/catalitv2".AsUri(), CreatePayload(payload));
         return await resp.Content.ReadAsStringAsync().ContinueWith(t => t.Result.Deserialize<LitresResponse<T>>().Data);
     }
 
@@ -92,9 +92,9 @@ public class LitresGetter : GetterBase {
         return new FormUrlEncodedContent(d);
     }
 
-    private static Uri GetMainUrl(Uri url) {
+    private Uri GetMainUrl(Uri url) {
         var art = url.GetQueryParameter("art");
-        return string.IsNullOrWhiteSpace(art) ? url : new Uri($"https://www.litres.ru/{art}");
+        return string.IsNullOrWhiteSpace(art) ? url : SystemUrl.MakeRelativeUri(art);
     }
 
     public override async Task<Book> Get(Uri url) {
@@ -137,7 +137,7 @@ public class LitresGetter : GetterBase {
             
             return new Seria {
                 Name = a.GetText(),
-                Url = new Uri(url, a.Attributes["href"].Value),
+                Url = url.MakeRelativeUri(a.Attributes["href"].Value),
                 Number = !string.IsNullOrWhiteSpace(number) && number.StartsWith("#") ? number.Trim('#') : string.Empty
             };
         }
@@ -149,12 +149,12 @@ public class LitresGetter : GetterBase {
         var author = doc.QuerySelector("a.biblio_book_author__link");
         return author == default ? 
             new Author("Litres") : 
-            new Author(author.GetText(), new Uri(url, author.Attributes["href"]?.Value ?? string.Empty));
+            new Author(author.GetText(), url.MakeRelativeUri(author.Attributes["href"]?.Value ?? string.Empty));
     }
     
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
         var imagePath = (doc.QuerySelector("meta[property=og:image]")?.Attributes["content"] ?? doc.QuerySelector("img[itemprop=image]")?.Attributes["data-src"])?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(string bookId, string title) {

@@ -22,7 +22,7 @@ public class RanobesComGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);
-        url = new Uri(SystemUrl, $"/ranobe/{GetId(url)}.html");
+        url = SystemUrl.MakeRelativeUri($"/ranobe/{GetId(url)}.html");
         
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
@@ -39,8 +39,8 @@ public class RanobesComGetter : GetterBase {
 
     private async Task<Uri> GetMainUrl(Uri url) {
         if (url.Segments[1] == "chapters/" || !url.Segments.Last().EndsWith(".html")) {
-            var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(SystemUrl, url.AbsolutePath));
-            return new Uri(url, doc.QuerySelector("h5 a").Attributes["href"].Value);
+            var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri(url.AbsolutePath));
+            return url.MakeRelativeUri(doc.QuerySelector("h5 a").Attributes["href"].Value);
         }
 
         return url;
@@ -52,7 +52,7 @@ public class RanobesComGetter : GetterBase {
         foreach (var ranobeChapter in await GetToc(GetTocLink(doc, url))) {
             Console.WriteLine($"Загружаю главу {ranobeChapter.Title.CoverQuotes()}");
             var chapter = new Chapter();
-            var chapterDoc = await GetChapter(url, ranobeChapter.Url);
+            var chapterDoc = await GetChapter(ranobeChapter);
             chapter.Images = await GetImages(chapterDoc, url);
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;
             chapter.Title = ranobeChapter.Title;
@@ -63,8 +63,8 @@ public class RanobesComGetter : GetterBase {
         return result;
     }
 
-    private async Task<HtmlDocument> GetChapter(Uri mainUrl, Uri url) {
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(mainUrl, url));
+    private async Task<HtmlDocument> GetChapter(UrlChapter chapter) {
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(chapter.Url);
         var sb = new StringBuilder();
         foreach (var node in doc.QuerySelectorAll("#arrticle > :not(.splitnewsnavigation)")) {
             var tag = node.Name == "#text" ? "p" : node.Name;
@@ -82,7 +82,7 @@ public class RanobesComGetter : GetterBase {
 
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
         var imagePath = doc.QuerySelector("div.poster img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 
     private Uri GetTocLink(HtmlDocument doc, Uri uri) {
@@ -91,7 +91,7 @@ public class RanobesComGetter : GetterBase {
             relativeUri = $"/chapters/{string.Join("-", GetId(uri).Split(".")[0].Split("-").Skip(1))}";
         }
         
-        return new Uri(uri, new Uri(relativeUri).AbsolutePath.Trim('/'));
+        return uri.MakeRelativeUri(relativeUri.AsUri().AbsolutePath.Trim('/'));
     }
         
     private async Task<IEnumerable<UrlChapter>> GetToc(Uri tocUri) {
@@ -102,10 +102,10 @@ public class RanobesComGetter : GetterBase {
         Console.WriteLine("Получаю оглавление");
         var result = new List<UrlChapter>();
         for (var i = 1; i <= pages; i++) {
-            doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"{tocUri.AbsoluteUri}/page/{i}"));
+            doc = await Config.Client.GetHtmlDocWithTriesAsync(tocUri.AppendSegment($"/page/{i}"));
             var chapters = doc
                 .QuerySelectorAll("#dle-content > .cat_block.cat_line a")
-                .Select(a => new UrlChapter(new Uri(a.Attributes["href"].Value), a.Attributes["title"].Value))
+                .Select(a => new UrlChapter(a.Attributes["href"].Value.AsUri(), a.Attributes["title"].Value))
                 .ToList();
             
             result.AddRange(chapters);

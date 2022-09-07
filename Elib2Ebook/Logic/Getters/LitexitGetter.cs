@@ -27,12 +27,12 @@ public class LitexitGetter : GetterBase {
             return;
         }
 
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri("https://litexit.ru/account/login/"));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri("/account/login/"));
         var token = doc.QuerySelector("input[name=csrfmiddlewaretoken]")?.Attributes["value"]?.Value;
         
-        Config.Client.DefaultRequestHeaders.Add("Referer", "https://litexit.ru/account/login/");
-        using var post = await Config.Client.PostAsync(new Uri("https://litexit.ru/account/login/"), GenerateAuthData(token));
-        var checkLogin = await Config.Client.GetFromJsonAsync<LitexitUser>("https://litexit.ru/api/v2/users/current/");
+        Config.Client.DefaultRequestHeaders.Add("Referer", SystemUrl.MakeRelativeUri("/account/login/").ToString());
+        using var post = await Config.Client.PostAsync(SystemUrl.MakeRelativeUri("/account/login/"), GenerateAuthData(token));
+        var checkLogin = await Config.Client.GetFromJsonAsync<LitexitUser>(SystemUrl.MakeRelativeUri("/api/v2/users/current/"));
         if (checkLogin?.Id > 0) {
             Console.WriteLine("Успешно авторизовались");
         } else {
@@ -52,7 +52,7 @@ public class LitexitGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
-        url = new Uri($"https://litexit.ru/b/{GetId(url)}");
+        url = SystemUrl.MakeRelativeUri($"/b/{GetId(url)}");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         
         var book = new Book(url) {
@@ -72,7 +72,7 @@ public class LitexitGetter : GetterBase {
         if (a != default) {
             return new Seria {
                 Name = a.GetText(),
-                Url = new Uri(url, a.Attributes["href"].Value)
+                Url = url.MakeRelativeUri(a.Attributes["href"].Value)
             };
         }
 
@@ -101,7 +101,7 @@ public class LitexitGetter : GetterBase {
     }
 
     private async Task<IEnumerable<LitexitChapter>> GetToc(HtmlDocument doc) {
-        var response = await Config.Client.GetAsync(new Uri($"https://litexit.ru/api/v1/book/{GetInternalId(doc)}/chapters"));
+        var response = await Config.Client.GetAsync(SystemUrl.MakeRelativeUri($"/api/v1/book/{GetInternalId(doc)}/chapters"));
 
         var content = await response.Content.ReadAsStringAsync();
         return SliceToc(content.Deserialize<IEnumerable<LitexitChapter>>().OrderBy(c => c.Id).ToList());
@@ -109,7 +109,7 @@ public class LitexitGetter : GetterBase {
 
     private static Author GetAuthor(HtmlDocument doc, Uri uri) {
         var a = doc.QuerySelector("div.bk-author a");
-        return new Author(a.GetText(), new Uri(uri, a.Attributes["href"].Value));
+        return new Author(a.GetText(), uri.MakeRelativeUri(a.Attributes["href"].Value));
     }
 
     private static string GetInternalId(HtmlDocument doc) {
@@ -118,6 +118,6 @@ public class LitexitGetter : GetterBase {
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("div.bk-img img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 }

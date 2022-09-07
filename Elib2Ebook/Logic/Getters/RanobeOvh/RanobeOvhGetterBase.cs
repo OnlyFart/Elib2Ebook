@@ -15,6 +15,9 @@ namespace Elib2Ebook.Logic.Getters.RanobeOvh;
 
 public abstract class RanobeOvhGetterBase : GetterBase {
     protected RanobeOvhGetterBase(BookGetterConfig config) : base(config) { }
+
+    private Uri _apiUrl => new($"https://api.{SystemUrl.Host}/");
+    
     protected abstract string Segment { get; }
     
     protected abstract Task<HtmlDocument> GetChapter(RanobeOvhChapter ranobeOvhChapter);
@@ -23,7 +26,7 @@ public abstract class RanobeOvhGetterBase : GetterBase {
         if (url.Segments[1] != $"{Segment}/") {
             var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
             var branch = GetNextData<RanobeOvhBranch>(doc, "branch");
-            return new Uri($"https://{SystemUrl.Host}/{Segment}/{branch.Book.Slug}");
+            return SystemUrl.MakeRelativeUri($"/{Segment}/{branch.Book.Slug}");
         }
 
         return url;
@@ -31,7 +34,7 @@ public abstract class RanobeOvhGetterBase : GetterBase {
     
     public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://{SystemUrl.Host}/{Segment}/{GetId(url)}"));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"/{Segment}/{GetId(url)}"));
         
         var manga = GetNextData<RanobeOvhManga>(doc, "book");
         var branch = GetBranch(doc);
@@ -49,7 +52,7 @@ public abstract class RanobeOvhGetterBase : GetterBase {
     
     protected override HttpRequestMessage GetImageRequestMessage(Uri uri) {
         var message = base.GetImageRequestMessage(uri);
-        message.Headers.Referrer = new Uri($"https://{SystemUrl.Host}/");
+        message.Headers.Referrer = SystemUrl;
         return message;
     }
 
@@ -72,7 +75,7 @@ public abstract class RanobeOvhGetterBase : GetterBase {
     }
 
     private async Task<IEnumerable<RanobeOvhChapter>> GetToc(RanobeOvhBranch branch) {
-        var data = await Config.Client.GetStringAsync(new Uri($"https://api.{SystemUrl.Host}/branch/{branch.Id}/chapters"));
+        var data = await Config.Client.GetStringAsync(_apiUrl.MakeRelativeUri($"/branch/{branch.Id}/chapters"));
         return SliceToc(data.Deserialize<RanobeOvhChapter[]>().Reverse().ToList());
     }
 
@@ -87,11 +90,11 @@ public abstract class RanobeOvhGetterBase : GetterBase {
         }
         
         var translator = branch.Translators[0];
-        return new Author(translator.Name, new Uri($"https://{SystemUrl.Host}/translator/{translator.Slug}"));
+        return new Author(translator.Name, SystemUrl.MakeRelativeUri($"/translator/{translator.Slug}"));
     }
 
     private Task<Image> GetCover(RanobeOvhManga manga, Uri uri) {
-        return !string.IsNullOrWhiteSpace(manga.Poster) ? GetImage(new Uri(uri, manga.Poster)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(manga.Poster) ? GetImage(uri.MakeRelativeUri(manga.Poster)) : Task.FromResult(default(Image));
     }
     
     private static T GetNextData<T>(HtmlDocument doc, string node) {

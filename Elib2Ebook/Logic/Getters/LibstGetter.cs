@@ -25,7 +25,7 @@ public class LibstGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
-        url = new Uri($"https://libst.ru/Detail/BookView/{bookId}");
+        url = SystemUrl.MakeRelativeUri($"/Detail/BookView/{bookId}");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         
         var book = new Book(url) {
@@ -43,10 +43,10 @@ public class LibstGetter : GetterBase {
             return;
         }
 
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri("https://libst.ru/"));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl);
         var token = doc.QuerySelector("input[name=__RequestVerificationToken]").Attributes["value"].Value;
 
-        var response = await Config.Client.PostAsync("https://libst.ru/Account/Login?ReturnUrl=/", GenerateAuthData(token));
+        var response = await Config.Client.PostAsync(SystemUrl.MakeRelativeUri("/Account/Login?ReturnUrl=/"), GenerateAuthData(token));
         doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
         var error = doc.GetTextBySelector("div.validation-summary-errors");
         if (string.IsNullOrEmpty(error)) {
@@ -95,7 +95,7 @@ public class LibstGetter : GetterBase {
         var sb = new StringBuilder();
         
         for (var i = 1;; i++) {
-            var response = await Config.Client.GetAsync(new Uri($"https://libst.ru/Detail/GetChapterTextForCanvas?ChapID={bookChapter.Id}&k=0&page={i}"));
+            var response = await Config.Client.GetAsync(SystemUrl.MakeRelativeUri($"/Detail/GetChapterTextForCanvas?ChapID={bookChapter.Id}&k=0&page={i}"));
             if (response.StatusCode != HttpStatusCode.OK) {
                 break;
             }
@@ -125,11 +125,11 @@ public class LibstGetter : GetterBase {
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("img.coverBook")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
     
     private static Author GetAuthor(HtmlDocument doc, Uri uri) {
         var a = doc.QuerySelector("h2.author_name a");
-        return new Author(a.GetText(), new Uri(uri, a.Attributes["href"].Value));
+        return new Author(a.GetText(), uri.MakeRelativeUri(a.Attributes["href"].Value));
     }
 }

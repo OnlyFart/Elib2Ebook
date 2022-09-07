@@ -23,7 +23,7 @@ public class LitmarketGetter : GetterBase {
         
         Config.Client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
         
-        var response = await Config.Client.GetWithTriesAsync(new Uri("https://litmarket.ru/"));
+        var response = await Config.Client.GetWithTriesAsync(SystemUrl);
         var doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
 
         var csrf = doc.QuerySelector("[name=csrf-token]")?.Attributes["content"]?.Value;
@@ -45,7 +45,7 @@ public class LitmarketGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
-        url = new Uri($"https://litmarket.ru/books/{bookId}");
+        url = SystemUrl.MakeRelativeUri($"/books/{bookId}");
 
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         var content = await GetMainData(bookId);
@@ -76,7 +76,7 @@ public class LitmarketGetter : GetterBase {
         return new Seria {
             Name = parts[0].HtmlDecode(),
             Number = parts[1].HtmlDecode(),
-            Url = new Uri(url, a.Attributes["href"].Value)
+            Url = url.MakeRelativeUri(a.Attributes["href"].Value)
         };
     }
 
@@ -84,7 +84,7 @@ public class LitmarketGetter : GetterBase {
         var a = doc.QuerySelector("div.card-author a");
         return a == default ? 
             new Author(doc.GetTextBySelector("div.card-author").Replace("Автор:", "").ReplaceNewLine()): 
-            new Author(a.GetText().ReplaceNewLine(), new Uri(url, a.Attributes["href"].Value).ReplaceHost(SystemUrl.Host));
+            new Author(a.GetText().ReplaceNewLine(), url.MakeRelativeUri(a.Attributes["href"].Value));
     }
     
     /// <summary>
@@ -101,7 +101,7 @@ public class LitmarketGetter : GetterBase {
             password = Config.Options.Password
         };
         
-        using var post = await Config.Client.PostAsJsonAsync("https://litmarket.ru/auth/login", payload);
+        using var post = await Config.Client.PostAsJsonAsync(SystemUrl.MakeRelativeUri("/auth/login"), payload);
         try {
             var data = await post.Content.ReadFromJsonAsync<AuthResponse>();
             if (data is { Success: false }) {
@@ -114,7 +114,7 @@ public class LitmarketGetter : GetterBase {
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("div.front img")?.Attributes["data-src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, new Uri(imagePath).AbsolutePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(uri.MakeRelativeUri(imagePath.AsUri().AbsolutePath)) : Task.FromResult(default(Image));
     }
 
     private List<Block> GetToc(Response response, string title) {
@@ -178,12 +178,12 @@ public class LitmarketGetter : GetterBase {
     }
 
     private async Task<Response> GetMainData(string bookId) {
-        var data = await Config.Client.GetWithTriesAsync(new Uri($"https://litmarket.ru/reader/data/{bookId}"));
+        var data = await Config.Client.GetWithTriesAsync(SystemUrl.MakeRelativeUri($"/reader/data/{bookId}"));
         return await data.Content.ReadFromJsonAsync<Response>();
     }
 
     private async Task<Block[]> GetBlocks(int eBookId) {
-        var resp = await Config.Client.GetWithTriesAsync(new Uri($"https://litmarket.ru/reader/blocks/{eBookId}"));
+        var resp = await Config.Client.GetWithTriesAsync(SystemUrl.MakeRelativeUri($"/reader/blocks/{eBookId}"));
         return await resp.Content.ReadFromJsonAsync<Block[]>();
     }
 }

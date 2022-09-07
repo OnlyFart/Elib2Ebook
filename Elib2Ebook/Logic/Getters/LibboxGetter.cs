@@ -16,7 +16,7 @@ public class LibboxGetter : GetterBase {
     protected override Uri SystemUrl => new("https://libbox.ru/");
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
-        url = new Uri($"https://libbox.ru/book/{bookId}");
+        url = SystemUrl.MakeRelativeUri($"/book/{bookId}");
         
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
@@ -41,7 +41,7 @@ public class LibboxGetter : GetterBase {
 
         return new Seria {
             Name = a.GetText(),
-            Url = new Uri(url, a.Attributes["href"].Value)
+            Url = url.MakeRelativeUri(a.Attributes["href"].Value)
         };
     }
 
@@ -51,7 +51,7 @@ public class LibboxGetter : GetterBase {
         }
         
         var chapterDoc = text.AsHtmlDoc();
-        chapter.Images = await GetImages(chapterDoc, new Uri("https://libbox.ru/"));
+        chapter.Images = await GetImages(chapterDoc, SystemUrl);
         chapter.Content = chapterDoc.DocumentNode.InnerHtml;
         chapters.Add(chapter);
     }
@@ -68,7 +68,7 @@ public class LibboxGetter : GetterBase {
     }
 
     private async Task<int> GetPages(string bookId) {
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://libbox.ru/books/{bookId}"));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"/books/{bookId}"));
         return doc
             .QuerySelectorAll("ul.pagination a.page-numbers")
             .Where(a => int.TryParse(a.GetText(), out var _))
@@ -85,7 +85,7 @@ public class LibboxGetter : GetterBase {
         
         for (var i = 1; i <= pages; i++) {
             Console.WriteLine($"Получаю страницу {i}/{pages}");
-            var page = await Config.Client.GetHtmlDocWithTriesAsync(new Uri($"https://libbox.ru/books/{bookId}?page_book={i}"));;
+            var page = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"/books/{bookId}?page_book={i}"));;
 
             var content = page.QuerySelector("div.entry-content");
             var nodes = content.QuerySelectorAll("> h2, > p, > img");
@@ -115,11 +115,11 @@ public class LibboxGetter : GetterBase {
 
     private static Author GetAuthor(HtmlDocument doc, Uri url) {
         var author = doc.QuerySelector("div.author a");
-        return new Author(author.InnerText.HtmlDecode(), new Uri(url, author.Attributes["href"]?.Value ?? string.Empty));
+        return new Author(author.InnerText.HtmlDecode(), url.MakeRelativeUri(author.Attributes["href"]?.Value ?? string.Empty));
     }
     
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
         var imagePath = doc.QuerySelector("div.book-images img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 }

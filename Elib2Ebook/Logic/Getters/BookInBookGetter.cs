@@ -22,7 +22,7 @@ public class BookInBookGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
-        url = new Uri($"https://bookinbook.ru/book?id={GetId(url)}");
+        url = SystemUrl.MakeRelativeUri($"book?id={GetId(url)}");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         
         var book = new Book(url) {
@@ -60,7 +60,7 @@ public class BookInBookGetter : GetterBase {
 
         var sb = new StringBuilder();
         for (var i = 1; ; i++) {
-            var uri = new Uri($"https://bookinbook.ru/read?id={url.GetQueryParameter("id")}&chapter={url.GetQueryParameter("chapter")}&page={i}");
+            var uri = SystemUrl.MakeRelativeUri($"read?id={url.GetQueryParameter("id")}&chapter={url.GetQueryParameter("chapter")}&page={i}");
             var response = await Config.Client.GetWithTriesAsync(uri, TimeSpan.FromMilliseconds(100));
             if (response == default) {
                 return sb.AsHtmlDoc();
@@ -86,7 +86,7 @@ public class BookInBookGetter : GetterBase {
     }
 
     private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
-        var urlChapters = doc.QuerySelectorAll("a.chapters-form__chapter").Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText().ReplaceNewLine())).ToList();
+        var urlChapters = doc.QuerySelectorAll("a.chapters-form__chapter").Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.GetText().ReplaceNewLine())).ToList();
         return SliceToc(urlChapters);
     }
     
@@ -103,11 +103,11 @@ public class BookInBookGetter : GetterBase {
     
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("img.book-cover__image")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
     
     private static Author GetAuthor(HtmlDocument doc, Uri uri) {
         var a = doc.QuerySelector("a.author");
-        return new Author(a.GetText(), new Uri(uri, a.Attributes["href"].Value));
+        return new Author(a.GetText(), uri.MakeRelativeUri(a.Attributes["href"].Value));
     }
 }

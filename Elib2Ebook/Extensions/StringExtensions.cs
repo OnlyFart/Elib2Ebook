@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.IO.Pipes;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -114,5 +116,9 @@ public static class StringExtensions {
 
     public static T Deserialize<T>(this string self) {
         return JsonSerializer.Deserialize<T>(self);
+    }
+
+    public static Uri AsUri(this string self) {
+        return new(self);
     }
 }

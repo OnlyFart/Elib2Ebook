@@ -31,19 +31,19 @@ public class WattpadGetter : GetterBase {
             return result;
         }
 
-        var info = await Config.Client.GetFromJsonAsync<WattpadInfo>(new Uri($"https://www.wattpad.com/apiv2/info?id={GetId(url)}"));
-        return await GetMeta(new Uri(url, info?.Url));
+        var info = await Config.Client.GetFromJsonAsync<WattpadInfo>(SystemUrl.MakeRelativeUri($"/apiv2/info?id={GetId(url)}"));
+        return await GetMeta(url.MakeRelativeUri(info?.Url));
     }
 
     public override async Task<Book> Get(Uri url) {
         var meta = await GetMeta(url);
-        var wattpadInfo = await Config.Client.GetFromJsonAsync<WattpadInfo>(new Uri($"https://www.wattpad.com/apiv2/info?id={meta.BookId}"));
+        var wattpadInfo = await Config.Client.GetFromJsonAsync<WattpadInfo>(SystemUrl.MakeRelativeUri($"/apiv2/info?id={meta.BookId}"));
 
         var book = new Book(url) {
             Cover = await GetCover(wattpadInfo),
             Chapters = await FillChapters(wattpadInfo),
             Title = meta.Title,
-            Author = new Author(wattpadInfo?.Author, new Uri($"https://www.wattpad.com/user/{wattpadInfo?.Author}")),
+            Author = new Author(wattpadInfo?.Author, SystemUrl.MakeRelativeUri($"/user/{wattpadInfo?.Author}")),
             Annotation = wattpadInfo?.Description
         };
             
@@ -78,6 +78,6 @@ public class WattpadGetter : GetterBase {
     }
 
     private Task<Image> GetCover(WattpadInfo wattpadInfo) {
-        return !string.IsNullOrWhiteSpace(wattpadInfo.Cover) ? GetImage(new Uri(wattpadInfo.Cover)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(wattpadInfo.Cover) ? GetImage(wattpadInfo.Cover.AsUri()) : Task.FromResult(default(Image));
     }
 }

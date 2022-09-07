@@ -16,7 +16,7 @@ public class Fb2TopGetter : GetterBase {
     protected override Uri SystemUrl => null;
 
     public override bool IsSameUrl(Uri url) {
-        return url.IsSameHost(new Uri("https://fb2.top/")) || url.IsSameHost(new Uri("https://ladylib.top/"));
+        return url.IsSameHost("https://fb2.top/".AsUri()) || url.IsSameHost("https://ladylib.top/".AsUri());
     }
 
     protected override string GetId(Uri url) {
@@ -24,7 +24,7 @@ public class Fb2TopGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
-        url = new Uri($"https://{url.Host}/{GetId(url)}");
+        url = url.MakeRelativeUri(GetId(url));
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         
         var book = new Book(url) {
@@ -66,7 +66,7 @@ public class Fb2TopGetter : GetterBase {
     }
 
     private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
-        var urlChapters = doc.QuerySelectorAll("div.card-body li a").Select(a => new UrlChapter(new Uri(url, a.Attributes["href"].Value), a.GetText())).ToList();
+        var urlChapters = doc.QuerySelectorAll("div.card-body li a").Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.GetText())).ToList();
         return SliceToc(urlChapters);
     }
 
@@ -75,7 +75,7 @@ public class Fb2TopGetter : GetterBase {
         if (a != default) {
             return new Seria {
                 Name = a.GetText(),
-                Url = new Uri(url, a.Attributes["href"].Value)
+                Url = url.MakeRelativeUri(a.Attributes["href"].Value)
             };
         }
 
@@ -85,12 +85,12 @@ public class Fb2TopGetter : GetterBase {
     private static Author GetAuthor(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("div.book-info-body a[href*=/authors/]");
         return a != default ? 
-            new Author(a.GetText().ReplaceNewLine(), new Uri(url, a.Attributes["href"].Value)) : 
+            new Author(a.GetText().ReplaceNewLine(), url.MakeRelativeUri(a.Attributes["href"].Value)) : 
             new Author("Fb2Top");
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri url) {
         var imagePath = doc.QuerySelector("img.book-info-poster-img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(url, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(url.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 }

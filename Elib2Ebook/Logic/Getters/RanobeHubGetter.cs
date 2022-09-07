@@ -16,7 +16,7 @@ public class RanobeHubGetter : GetterBase {
     public RanobeHubGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://ranobehub.org");
     public override async Task<Book> Get(Uri url) {
-        url = new Uri($"https://ranobehub.org/ranobe/{GetId(url)}");
+        url = SystemUrl.MakeRelativeUri($"/ranobe/{GetId(url)}");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var book = new Book(url) {
@@ -48,11 +48,11 @@ public class RanobeHubGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(string url) {
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(url));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url.AsUri());
         while (doc.QuerySelector("div[data-callback=correctCaptcha]") != null) {
             Console.WriteLine($"Обнаружена каптча. Перейдите по ссылке {url}, введите каптчу и нажмите Enter...");
             Console.Read();
-            doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(url));
+            doc = await Config.Client.GetHtmlDocWithTriesAsync(url.AsUri());
         }
         
         var result = doc.QuerySelector("div.container[data-container]").RemoveNodes("div.title-wrapper, div.ads-desktop, div.tablet").InnerHtml.AsHtmlDoc();
@@ -75,12 +75,12 @@ public class RanobeHubGetter : GetterBase {
 
     private async Task<IEnumerable<RanobeHubChapter>> GetToc(HtmlDocument doc) {
         var internalId = doc.QuerySelector("html[data-id]").Attributes["data-id"].Value;
-        var response = await Config.Client.GetFromJsonAsync<RanobeHubApiResponse>($"https://ranobehub.org/api/ranobe/{internalId}/contents");
+        var response = await Config.Client.GetFromJsonAsync<RanobeHubApiResponse>(SystemUrl.MakeRelativeUri($"/api/ranobe/{internalId}/contents"));
         return SliceToc(response?.Volumes.SelectMany(t => t.Chapters).ToList());
     }
     
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
         var imagePath = doc.QuerySelector("div.poster-slider img")?.Attributes["data-src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(bookUri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 }

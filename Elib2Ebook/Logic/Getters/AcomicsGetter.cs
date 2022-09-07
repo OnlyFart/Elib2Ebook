@@ -27,9 +27,9 @@ public class AcomicsGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         var id = GetId(url);
-        url = new Uri($"https://acomics.ru/{id}");
+        url = SystemUrl.MakeRelativeUri(id);
 
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(SystemUrl, $"{id}/1"));
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"{id}/1"));
 
         var title = doc.QuerySelector("meta[property=og:title]").Attributes["content"].Value;
         var book = new Book(url) {
@@ -46,7 +46,7 @@ public class AcomicsGetter : GetterBase {
 
     private static Author GetAuthor(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("article.authors a.username");
-        return new Author(a.GetText(), new Uri(url, a.Attributes["href"].Value));
+        return new Author(a.GetText(), url.MakeRelativeUri(a.Attributes["href"].Value));
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, string bookId, string title, Uri url) {
@@ -58,9 +58,9 @@ public class AcomicsGetter : GetterBase {
         var sb = new StringBuilder();
         for (var i = 1; i <= pages; i++) {
             Console.WriteLine($"Получаю страницу {i}/{pages}");
-            var response = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(SystemUrl, $"{bookId}/{i}"));
+            var response = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"{bookId}/{i}"));
             var img = response.QuerySelector("#mainImage");
-            var src = new Uri(url, img.Attributes["src"].Value);
+            var src = url.MakeRelativeUri(img.Attributes["src"].Value);
             sb.Append($"<img src='{src}'/>");
         }
 

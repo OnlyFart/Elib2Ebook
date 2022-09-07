@@ -11,6 +11,22 @@ public static class UriExtension {
     public static string GetFileName(this Uri self) {
         return self.Segments.Last().Split(":")[0].TrimEnd('/');
     }
+
+    public static Uri MakeRelativeUri(this Uri self, string relative) {
+        return new(self, relative);
+    }
+
+    public static Uri AppendSegment(this Uri self, string segment) {
+        return new(self.ToString().TrimEnd('/') + "/" + segment.TrimStart('/'));
+    }
+
+    public static Uri AppendQueryParameter(this Uri self, string name, object value) {
+        var query = HttpUtility.ParseQueryString(self.Query);
+        query.Add(name, value.ToString());
+        return new UriBuilder(self) {
+            Query = query.ToString()!
+        }.Uri;
+    }
     
     public static string GetQueryParameter(this Uri self, string name) {
         return HttpUtility.ParseQueryString(self.Query)[name];

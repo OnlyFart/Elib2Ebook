@@ -16,6 +16,8 @@ public abstract class HotNovelPubGetterBase : GetterBase {
     public HotNovelPubGetterBase(BookGetterConfig config) : base(config) { }
     protected abstract string Lang { get; }
 
+    private Uri _apiUrl => new($"https://api.{SystemUrl.Host}/");
+
     public override Task Init() {
         base.Init();
         Config.Client.DefaultRequestHeaders.Add("lang", Lang);
@@ -43,7 +45,7 @@ public abstract class HotNovelPubGetterBase : GetterBase {
         if (GetId(url).StartsWith("chapter-")) {
             var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
             var a = doc.QuerySelectorAll("li.breadcrumb-item")[1].QuerySelector("a[href]");
-            url = new Uri(SystemUrl, a.Attributes["href"].Value);
+            url = SystemUrl.MakeRelativeUri(a.Attributes["href"].Value);
         }
         
         return url;
@@ -70,8 +72,8 @@ public abstract class HotNovelPubGetterBase : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(HotNovelPubChapter ezChapter) {
-        var doc = Config.Client.GetHtmlDocWithTriesAsync(new Uri(SystemUrl, ezChapter.Slug));
-        var additional = Config.Client.GetFromJsonAsync<HotNovelPubApiResponse<string[]>>(new Uri($"https://{SystemUrl.Host}/server/getContent?slug={ezChapter.Slug}"));
+        var doc = Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri(ezChapter.Slug));
+        var additional = Config.Client.GetFromJsonAsync<HotNovelPubApiResponse<string[]>>(SystemUrl.MakeRelativeUri($"/server/getContent?slug={ezChapter.Slug}"));
         
         const string watermark = ".copy right hot novel pub";
         var sb = new StringBuilder((await doc).QuerySelector("#content-item").InnerHtml.HtmlDecode().CleanInvalidXmlChars().Replace(watermark, string.Empty));
@@ -87,15 +89,15 @@ public abstract class HotNovelPubGetterBase : GetterBase {
     }
 
     private Author GetAuthor(HotNovelPubBook book) {
-        return new Author(book.Authorize.Name, new Uri(SystemUrl, book.Authorize.Slug));
+        return new Author(book.Authorize.Name, SystemUrl.MakeRelativeUri(book.Authorize.Slug));
     }
 
     private Task<Image> GetCover(HotNovelPubBook book) {
-        return !string.IsNullOrWhiteSpace(book.Image) ? GetImage(new Uri(SystemUrl, book.Image)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(book.Image) ? GetImage(SystemUrl.MakeRelativeUri(book.Image)) : Task.FromResult(default(Image));
     }
 
     private async Task<HotNovelPubBookResponse> GetBook(string id) {
-        var response = await Config.Client.GetFromJsonAsync<HotNovelPubApiResponse<HotNovelPubBookResponse>>(new Uri($"https://api.{SystemUrl.Host}/book/{id}"));
+        var response = await Config.Client.GetFromJsonAsync<HotNovelPubApiResponse<HotNovelPubBookResponse>>(_apiUrl.MakeRelativeUri($"/book/{id}"));
         return response!.Data;
     }
 }

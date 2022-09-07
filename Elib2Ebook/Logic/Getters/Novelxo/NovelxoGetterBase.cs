@@ -42,16 +42,16 @@ public abstract class NovelxoGetterBase : GetterBase {
 
     private async Task<Uri> GetMainUrl(Uri url) {
         if (url.Segments.Length == 2) {
-            return new Uri($"https://{SystemUrl.Host}/{GetId(url)}");;
+            return SystemUrl.MakeRelativeUri(GetId(url));
         }
 
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
-        return new Uri(url, doc.QuerySelector("div.readerheader-wg a").Attributes["href"].Value);
+        return url.MakeRelativeUri(doc.QuerySelector("div.readerheader-wg a").Attributes["href"].Value);
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {
         var result = new List<Chapter>();
-        var start = new Uri(url, doc.QuerySelector("div.actions a.read").Attributes["href"].Value);
+        var start = url.MakeRelativeUri(doc.QuerySelector("div.actions a.read").Attributes["href"].Value);
         
         while (true) {
             var sb = new StringBuilder();
@@ -85,7 +85,7 @@ public abstract class NovelxoGetterBase : GetterBase {
                 return result;
             }
 
-            start = new Uri(start, next.Attributes["href"].Value);
+            start = start.MakeRelativeUri(next.Attributes["href"].Value);
         }
     }
     
@@ -102,7 +102,7 @@ public abstract class NovelxoGetterBase : GetterBase {
         var url = new Uri($"https://a.novelxo.com/v1/chapters/{id}/ctp?width=1140&sign=932870{Atob(Convert.ToBase64String(encode))}182906");
         var message = new HttpRequestMessage(HttpMethod.Get, url);
         message.Headers.Add(headerName, headerValue);
-        message.Headers.Add("referer", $"https://{SystemUrl.Host}/");
+        message.Headers.Add("referer", SystemUrl.ToString());
 
         var response = await Config.Client.SendAsync(message);
         var readAsStringAsync = await response.Content.ReadAsStringAsync();
@@ -124,14 +124,14 @@ public abstract class NovelxoGetterBase : GetterBase {
     
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("div.cover img")?.Attributes["data-src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(new Uri(uri, imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
     
     private static Author GetAuthor(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("tr.authors a");
         return a == default ? 
             new Author("Novelxo") : 
-            new Author(a.GetText(), new Uri(url, a.Attributes["href"].Value));
+            new Author(a.GetText(), url.MakeRelativeUri(a.Attributes["href"].Value));
     }
 
     private static byte[] StringToByteArray(string hex) {
