@@ -28,6 +28,26 @@ public class DarkNovelsGetter : GetterBase {
         
     protected override Uri SystemUrl => new("https://dark-novels.ru/");
 
+    public override async Task Authorize() {
+        if (!Config.HasCredentials) {
+            return;
+        }
+
+        var payload = new {
+            email = Config.Options.Login, 
+            password = Config.Options.Password
+        };
+        
+        var response = await Config.Client.PostAsJsonAsync(new Uri("https://api.dark-novels.ru/v1/users/login"), payload);
+        var data = await response.Content.ReadFromJsonAsync<DarkNovelsData<DarkNovelsAuthResponse>>();
+        if (data!.Status == "success") {
+            Config.Client.DefaultRequestHeaders.Add("Token", data.Data.Token.AccessToken);
+            Console.WriteLine("Успешно авторизовались");
+        } else {
+            throw new Exception($"Не удалось авторизоваться. {data.Message}");
+        }
+    }
+
     private static void InitMap() {
         var start = 13338;
         const int shift = 38;
@@ -46,14 +66,15 @@ public class DarkNovelsGetter : GetterBase {
         var bookFullId = GetId(url);
         var bookId = bookFullId.Split(".").Last();
             
-        var uri = new Uri($"https://dark-novels.ru/{bookFullId}/");
+        var uri = new Uri(SystemUrl, $"/{bookFullId}/");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(uri);
 
         var book = new Book(uri) {
             Cover = await GetCover(doc, uri),
             Chapters = await FillChapters(bookId),
             Title = doc.GetTextBySelector("h2.display-1"),
-            Author = new Author("DarkNovels")
+            Author = new Author("DarkNovels"),
+            Annotation = doc.QuerySelector("div.description")?.InnerHtml
         };
             
         return book;
@@ -63,7 +84,7 @@ public class DarkNovelsGetter : GetterBase {
         if (url.Segments[1] == "read/") {
             var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
             var id = Regex.Match(doc.DocumentNode.InnerHtml, "slug:\"(?<id>.*?)\"");
-            return new Uri($"https://dark-novels.ru/{id.Groups["id"].Value}");
+            return new Uri(SystemUrl, $"/{id.Groups["id"].Value}");
         }
 
         return url;
@@ -73,20 +94,23 @@ public class DarkNovelsGetter : GetterBase {
         var result = new List<Chapter>();
 
         foreach (var darkNovelsChapter in await GetToc(bookId)) {
-            Console.WriteLine($"Загружаю главу {darkNovelsChapter.Title.CoverQuotes()}");
             if (darkNovelsChapter.Title.StartsWith("Volume:")) {
                 continue;
             }
+            
+            Console.WriteLine($"Загружаю главу {darkNovelsChapter.Title.CoverQuotes()}");
                 
             var chapter = new Chapter {
                 Title = darkNovelsChapter.Title
             };
-            
-            var chapterDoc = await GetChapter(bookId, darkNovelsChapter.Id);
-            
-            if (chapterDoc != default && darkNovelsChapter.Payed == 0) {
-                chapter.Images = await GetImages(chapterDoc, SystemUrl);
-                chapter.Content = chapterDoc.DocumentNode.InnerHtml;
+
+            if (darkNovelsChapter.Payed == 0) {
+                var chapterDoc = await GetChapter(bookId, darkNovelsChapter.Id);
+
+                if (chapterDoc != default) {
+                    chapter.Images = await GetImages(chapterDoc, SystemUrl);
+                    chapter.Content = chapterDoc.DocumentNode.InnerHtml;
+                }
             }
 
             result.Add(chapter);

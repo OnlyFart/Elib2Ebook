@@ -21,11 +21,14 @@ internal static class Program {
 
         await Parser.Default.ParseArguments<Options>(args)
             .WithParsedAsync(async options => {
+                var cookieContainer = new CookieContainer();
+
                 var handler = new HttpClientHandler {
                     AutomaticDecompression = DecompressionMethods.GZip | 
                                              DecompressionMethods.Deflate |
                                              DecompressionMethods.Brotli,
                     ServerCertificateCustomValidationCallback = (_, _, _, _) => true,
+                    CookieContainer = cookieContainer,
                     Proxy = null,
                     UseProxy = false
                 };
@@ -39,7 +42,7 @@ internal static class Program {
                 var client = new HttpClient(handler);
                 client.Timeout = TimeSpan.FromSeconds(options.Timeout);
 
-                var getterConfig = new BookGetterConfig(options, client);
+                var getterConfig = new BookGetterConfig(options, client, cookieContainer);
                 using var getter = GetGetter(getterConfig, new Uri(options.Url.First()));
                 
                 await getter.Init();

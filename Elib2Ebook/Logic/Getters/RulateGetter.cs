@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -21,7 +22,12 @@ public class RulateGetter : GetterBase {
         var segments = url.Segments;
         return (segments.Length == 3 ? base.GetId(url) : segments[2]).Trim('/');
     }
-    
+
+    public override async Task Init() {
+        await base.Init();
+        Config.CookieContainer.Add(SystemUrl, new Cookie("mature", "c3a2ed4b199a1a15f5a5483504c7a75a7030dc4bi%3A1%3B"));
+    }
+
     public override async Task Authorize() {
         if (!Config.HasCredentials) {
             return;
@@ -51,7 +57,6 @@ public class RulateGetter : GetterBase {
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
         url = new Uri($"https://tl.rulate.ru/book/{bookId}");
-        await Mature(url);
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var book = new Book(url) {
@@ -116,14 +121,5 @@ public class RulateGetter : GetterBase {
             .ToList();
         
         return SliceToc(result);
-    }
-
-    private async Task Mature(Uri url) {
-        var data = new Dictionary<string, string> {
-            { "path", url.LocalPath },
-            { "ok", "Да" }
-        };
-
-        await Config.Client.PostAsync(new Uri($"https://tl.rulate.ru/mature?path={url.LocalPath}"), new FormUrlEncodedContent(data));
     }
 }

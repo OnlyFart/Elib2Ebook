@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
@@ -20,11 +20,15 @@ public class AcomicsGetter : GetterBase {
         return url.Segments[1].Trim('/');
     }
 
+    public override async Task Init() {
+        await base.Init();
+        Config.CookieContainer.Add(SystemUrl, new Cookie("ageRestrict", "18"));
+    }
+
     public override async Task<Book> Get(Uri url) {
         var id = GetId(url);
         url = new Uri($"https://acomics.ru/{id}");
-        await AgeRestrict(id);
-        
+
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(SystemUrl, $"{id}/1"));
 
         var title = doc.QuerySelector("meta[property=og:title]").Attributes["content"].Value;
@@ -38,14 +42,6 @@ public class AcomicsGetter : GetterBase {
         book.Cover = book.Chapters.FirstOrDefault()?.Images.FirstOrDefault();
             
         return book;
-    }
-
-    private Task AgeRestrict(string id) {
-        var data = new Dictionary<string, string> {
-            ["ageRestrict"] = "18",
-        };
-        
-        return Config.Client.PostWithTriesAsync(new Uri(SystemUrl, id), new FormUrlEncodedContent(data));
     }
 
     private static Author GetAuthor(HtmlDocument doc, Uri url) {

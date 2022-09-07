@@ -132,11 +132,31 @@ public class LitgorodGetter : GetterBase {
         var pages = int.Parse(li.Count > 0 ? li.Last().InnerText : "1");
 
         var sb = new StringBuilder();
-        sb.Append(content.RemoveNodes("div.reader__content__title").InnerHtml.HtmlDecode());
+        const string removeNodeSelector = "div.reader__content__title, div._content, div.b-book_item";
+        sb.Append(content.RemoveNodes(removeNodeSelector).InnerHtml.HtmlDecode());
         
         for (var i = 2; i <= pages; i++) {
             doc = await Config.Client.GetHtmlDocWithTriesAsync(new Uri(url + $"&page={i}"));
-            sb.Append(doc.QuerySelector("div.reader__content__wrap").RemoveNodes("div.reader__content__title").InnerHtml.HtmlDecode());
+            sb.Append(doc.QuerySelector("div.reader__content__wrap").RemoveNodes(removeNodeSelector).InnerHtml.HtmlDecode());
+        }
+
+        return Decode(sb.AsHtmlDoc());
+    }
+
+    private static HtmlDocument Decode(HtmlDocument encode) {
+        var sb = new StringBuilder();
+
+        foreach (var node in encode.DocumentNode.ChildNodes) {
+            if (node.Name == "read-book-part") {
+                var text = node.Attributes[":text"].Value.Deserialize<LitgorodBookPart>();
+                if (!string.IsNullOrWhiteSpace(text.Text)) {
+                    sb.Append(text.Text.HtmlDecode().CoverTag("p"));
+                }
+            } else {
+                if (!string.IsNullOrWhiteSpace(node.OuterHtml)) {
+                    sb.Append(node.OuterHtml.HtmlDecode());
+                }
+            }
         }
 
         return sb.AsHtmlDoc();

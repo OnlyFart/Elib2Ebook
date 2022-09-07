@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
 
 namespace Elib2Ebook.Configs; 
@@ -8,10 +9,13 @@ public class BookGetterConfig : IDisposable {
 
     public Options Options { get; }
     
+    public CookieContainer CookieContainer { get; }
+    
     public bool HasCredentials => !string.IsNullOrWhiteSpace(Options.Login) && !string.IsNullOrWhiteSpace(Options.Password);
 
-    public BookGetterConfig(Options options, HttpClient client){
+    public BookGetterConfig(Options options, HttpClient client, CookieContainer cookieContainer){
         Client = client;
+        CookieContainer = cookieContainer;
         Options = options;
     }
 
