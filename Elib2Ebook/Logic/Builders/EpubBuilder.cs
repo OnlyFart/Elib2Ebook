@@ -122,10 +122,6 @@ public class EpubBuilder : BuilderBase {
     }
 
     public override BuilderBase WithLang(string lang) {
-        if (!string.IsNullOrWhiteSpace(lang)) {
-            _writer.AddLanguage(lang);
-        }
-
         return this;
     }
 
