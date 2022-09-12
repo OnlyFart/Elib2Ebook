@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
@@ -24,7 +25,7 @@ public class BookstabGetter : GetterBase {
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
         url = SystemUrl.MakeRelativeUri($"/book/{bookId}");
-        var response = await Config.Client.GetWithTriesAsync(_apiUrl.MakeRelativeUri($"/api/reader-get/{bookId}"));
+        using var response = await Config.Client.GetWithTriesAsync(_apiUrl.MakeRelativeUri($"/api/reader-get/{bookId}"));
         var data = await response.Content.ReadFromJsonAsync<BookstabApiResponse>();
 
         var book = new Book(url) {
@@ -71,9 +72,18 @@ public class BookstabGetter : GetterBase {
         return result;
     }
 
-    private async Task<HtmlDocument> GetChapter(int bookChapterId, string bookId) {
-        var response = await Config.Client.GetFromJsonAsync<BookstabApiResponse>(_apiUrl.MakeRelativeUri($"/api/reader-get/{bookId}/{bookChapterId}"));
-        return string.IsNullOrWhiteSpace(response?.Chapter.Body) ? default : response.Chapter.Body.AsHtmlDoc();
+    private async Task<HtmlDocument> GetChapter(int chapterId, string bookId) {
+        while (true) {
+            using var response = await Config.Client.GetAsync(_apiUrl.MakeRelativeUri($"/api/reader-get/{bookId}/{chapterId}"));
+            if (response.StatusCode == HttpStatusCode.TooManyRequests) {
+                Console.WriteLine("Очень много запросов. Подождем...");
+                await Task.Delay(TimeSpan.FromSeconds(10));
+                continue;
+            }
+
+            var data = await response.Content.ReadFromJsonAsync<BookstabApiResponse>();
+            return string.IsNullOrWhiteSpace(data?.Chapter.Body) ? default : data.Chapter.Body.AsHtmlDoc();
+        }
     }
 
     private Task<Image> GetCover(BookstabApiResponse response) {

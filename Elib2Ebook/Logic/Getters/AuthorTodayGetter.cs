@@ -17,13 +17,44 @@ public class AuthorTodayGetter : GetterBase {
     public AuthorTodayGetter(BookGetterConfig config) : base(config) { }
 
     protected override Uri SystemUrl => new("https://author.today/");
+    
+    private Uri _apiUrl => new($"https://api.author.today/");
+    
+    /// <summary>
+    ///  IP сайта author.today
+    /// </summary>
+    private Uri _systemIp => new("https://185.26.98.227/");
 
-    private Uri _apiUrl => new($"https://api.{SystemUrl.Host}/");
+    /// <summary>
+    /// IP сайта api.author.today
+    /// </summary>
+    private Uri _apiIp => new("https://212.224.112.32/");
+    
+    private bool _bypass;
+
+    private Uri ApiUrl => _bypass ? _apiIp : _apiUrl;
+
+    private Uri SiteUrl => _bypass ? _systemIp : SystemUrl;
 
     private string UserId { get; set; } = string.Empty;
 
     protected override string GetId(Uri url) {
         return url.Segments[2].Trim('/');
+    }
+    
+    public override async Task Init() {
+        await base.Init();
+
+        var response = await Config.Client.GetAsync(_apiUrl);
+        if (response.StatusCode == HttpStatusCode.OK) {
+            Console.WriteLine($"Сайт {_apiUrl} доступен. Работаю через него");
+            _bypass = false;
+        } else {
+            Console.WriteLine($"Сайт {_apiUrl} не доступен. Работаю через {_apiIp}");
+            _bypass = true;
+        }
+
+        Config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "guest");
     }
 
     public override async Task<Book> Get(Uri url) {
@@ -41,8 +72,22 @@ public class AuthorTodayGetter : GetterBase {
         return book;
     }
 
+    private HttpRequestMessage GetDefaultMessage(Uri uri, Uri host, HttpContent content = null) {
+        var message = new HttpRequestMessage(content == default ? HttpMethod.Get : HttpMethod.Post, uri);
+        message.Content = content;
+        message.Version = Config.Client.DefaultRequestVersion;
+        
+        foreach (var header in Config.Client.DefaultRequestHeaders) {
+            message.Headers.Add(header.Key, header.Value);
+        }
+
+        message.Headers.Host = host.Host;
+
+        return message;
+    }
+
     private async Task<AuthorTodayBookDetails> GetBookDetails(string bookId) {
-        var response = await Config.Client.GetWithTriesAsync(_apiUrl.MakeRelativeUri($"/v1/work/{bookId}/details"));
+        var response = await Config.Client.SendWithTriesAsync(() => GetDefaultMessage(ApiUrl.MakeRelativeUri($"/v1/work/{bookId}/details"), _apiUrl));
         if (response.StatusCode != HttpStatusCode.OK) {
             throw new Exception("Книга не найдена");
         }
@@ -65,25 +110,21 @@ public class AuthorTodayGetter : GetterBase {
             Url = SystemUrl.MakeRelativeUri($"/work/series/{book.SeriesId}")
         };
     }
-
-    public override async Task Init() {
-        await base.Init();
-        Config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "guest");
-    }
-
+    
     public override async Task Authorize() {
         if (!Config.HasCredentials) {
             return;
         }
-
-        var response = await Config.Client.PostAsJsonAsync(_apiUrl.MakeRelativeUri("/v1/account/login-by-password"), new { Config.Options.Login, Config.Options.Password });
+        
+        var response = await Config.Client.SendWithTriesAsync(() => GetDefaultMessage(ApiUrl.MakeRelativeUri("/v1/account/login-by-password"), _apiUrl, JsonContent.Create(new { Config.Options.Login, Config.Options.Password })));
         var data = await response.Content.ReadFromJsonAsync<AuthorTodayAuthResponse>();
 
         if (!string.IsNullOrWhiteSpace(data?.Token)) {
             Console.WriteLine("Успешно авторизовались");
             Config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", data.Token);
 
-            var user = await Config.Client.GetFromJsonAsync<AuthorTodayUser>(_apiUrl.MakeRelativeUri("/v1/account/current-user"));
+            response = await Config.Client.SendWithTriesAsync(() => GetDefaultMessage(ApiUrl.MakeRelativeUri("/v1/account/current-user"), _apiUrl));
+            var user = await response.Content.ReadFromJsonAsync<AuthorTodayUser>();
             UserId = user!.Id.ToString();
         } else {
             throw new Exception($"Не удалось авторизоваться. {data?.Message}");
@@ -96,7 +137,7 @@ public class AuthorTodayGetter : GetterBase {
 
     protected override HttpRequestMessage GetImageRequestMessage(Uri uri) {
         if (uri.IsSameHost(SystemUrl) || uri.IsSameSubDomain(SystemUrl)) {
-            uri = uri.MakeRelativeUri(uri.AbsolutePath);
+            return GetDefaultMessage(SiteUrl.MakeRelativeUri(uri.AbsolutePath), uri);
         }
 
         return base.GetImageRequestMessage(uri);
@@ -129,8 +170,8 @@ public class AuthorTodayGetter : GetterBase {
         
         foreach (var chunk in book.Chapters.Where(c => !c.IsDraft).OrderBy(c => c.SortOrder).Chunk(100)) {
             var ids = string.Join("&", chunk.Select((c, i) => $"ids[{i}]={c.Id}"));
-            var uri = _apiUrl.MakeRelativeUri($"/v1/work/{book.Id}/chapter/many-texts?{ids}");
-            var response = await Config.Client.GetWithTriesAsync(uri);
+            var uri = _apiIp.MakeRelativeUri($"/v1/work/{book.Id}/chapter/many-texts?{ids}");
+            var response = await Config.Client.SendWithTriesAsync(() => GetDefaultMessage(uri, _apiUrl));
             var chapters = await response.Content.ReadFromJsonAsync<AuthorTodayChapter[]>();
             if (chapters != default) {
                 result.AddRange(chapters.Where(c => c.Code != "NotFound"));
