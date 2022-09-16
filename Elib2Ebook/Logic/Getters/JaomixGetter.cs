@@ -32,7 +32,7 @@ public class JaomixGetter : GetterBase {
     }
 
     private async Task<Uri> GetMainUrl(Uri url) {
-        if (url.Segments[1] != "category/") {
+        if (url.GetSegment(1) != "category") {
             var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
             return url.MakeRelativeUri(doc.QuerySelector("span.entry-category a").Attributes["href"].Value);
         }

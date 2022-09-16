@@ -83,7 +83,7 @@ public class DarkNovelsGetter : GetterBase {
     }
 
     private async Task<Uri> GetMainUrl(Uri url) {
-        if (url.Segments[1] == "read/") {
+        if (url.GetSegment(1) == "read") {
             var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
             var id = Regex.Match(doc.DocumentNode.InnerHtml, "slug:\"(?<id>.*?)\"");
             return SystemUrl.MakeRelativeUri($"/{id.Groups["id"].Value}");

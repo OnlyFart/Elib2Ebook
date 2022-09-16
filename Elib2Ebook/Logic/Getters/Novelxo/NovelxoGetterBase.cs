@@ -22,7 +22,7 @@ public abstract class NovelxoGetterBase : GetterBase {
     protected NovelxoGetterBase(BookGetterConfig config) : base(config) { }
 
     protected override string GetId(Uri url) {
-        return url.Segments[1].Trim('/');
+        return url.GetSegment(1);
     }
 
     public override async Task<Book> Get(Uri url) {

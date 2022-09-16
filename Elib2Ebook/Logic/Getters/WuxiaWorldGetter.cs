@@ -19,7 +19,7 @@ public class WuxiaWorldGetter : GetterBase {
     protected override Uri SystemUrl => new("https://wuxiaworld.ru/");
     
     private async Task<Uri> GetMainUrl(Uri url) {
-        if (url.Segments[1] == "category/") {
+        if (url.GetSegment(1) == "category") {
             var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
             url = doc.QuerySelector("h3[itemprop=name] a").Attributes["href"].Value.AsUri();
         }
@@ -43,7 +43,7 @@ public class WuxiaWorldGetter : GetterBase {
 
     private async Task<IEnumerable<UrlChapter>> GetToc(HtmlDocument doc, Uri url) {
         var catId = Regex.Match(doc.ParsedText, @"catID = (?<catId>\d+)").Groups["catId"].Value;
-        var slug = url.Segments[1].Trim('/');
+        var slug = url.GetSegment(1);
         var result = new List<UrlChapter>();
         
         foreach (var span in doc.QuerySelectorAll("ul.myUL span.caret[data-id]")) {

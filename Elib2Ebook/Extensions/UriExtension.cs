@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Web;
 
 namespace Elib2Ebook.Extensions; 
@@ -18,6 +19,16 @@ public static class UriExtension {
 
     public static Uri AppendSegment(this Uri self, string segment) {
         return new(self.ToString().TrimEnd('/') + "/" + segment.TrimStart('/'));
+    }
+
+    public static string GetSegment(this Uri self, int index) {
+        var builder = new UriBuilder {
+            Scheme = self.Scheme,
+            Host = self.Host,
+            Path = Regex.Replace(self.AbsolutePath, "/+", "/")
+        };
+        
+        return builder.Uri.Segments[index].Trim('/');
     }
 
     public static Uri AppendQueryParameter(this Uri self, string name, object value) {

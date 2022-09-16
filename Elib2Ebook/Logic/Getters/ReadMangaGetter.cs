@@ -19,7 +19,7 @@ public class ReadMangaGetter : GetterBase {
     protected override Uri SystemUrl => new("https://readmanga.live/");
 
     protected override string GetId(Uri url) {
-        return url.Segments[1].Trim('/');
+        return url.GetSegment(1);
     }
 
     public override async Task<Book> Get(Uri url) {

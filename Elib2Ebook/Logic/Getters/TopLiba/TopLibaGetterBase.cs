@@ -16,7 +16,7 @@ public abstract class TopLibaGetterBase : GetterBase {
     public TopLibaGetterBase(BookGetterConfig config) : base(config) { }
 
     protected override string GetId(Uri url) {
-        return url.Segments[2].Trim('/');
+        return url.GetSegment(2);
     }
     
     protected abstract Seria GetSeria(HtmlDocument doc, Uri url);

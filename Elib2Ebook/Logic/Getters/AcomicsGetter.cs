@@ -17,7 +17,7 @@ public class AcomicsGetter : GetterBase {
     protected override Uri SystemUrl => new("https://acomics.ru");
 
     protected override string GetId(Uri url) {
-        return url.Segments[1].Trim('/');
+        return url.GetSegment(1);
     }
 
     public override async Task Init() {

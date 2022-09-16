@@ -22,6 +22,7 @@
 * https://eznovels.com/
 * https://fb2.top/
 * https://ficbook.net/
+* https://fictionbook.ru/
 * https://hentailib.me/
 * https://hotnovelpub.com/
 * https://hub-book.com/

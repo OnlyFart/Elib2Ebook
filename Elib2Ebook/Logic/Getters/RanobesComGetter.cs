@@ -38,7 +38,7 @@ public class RanobesComGetter : GetterBase {
     }
 
     private async Task<Uri> GetMainUrl(Uri url) {
-        if (url.Segments[1] == "chapters/" || !url.Segments.Last().EndsWith(".html")) {
+        if (url.GetSegment(1) == "chapters" || !url.Segments.Last().EndsWith(".html")) {
             var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri(url.AbsolutePath));
             return url.MakeRelativeUri(doc.QuerySelector("h5 a").Attributes["href"].Value);
         }

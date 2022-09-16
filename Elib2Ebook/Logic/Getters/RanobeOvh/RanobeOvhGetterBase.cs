@@ -23,7 +23,7 @@ public abstract class RanobeOvhGetterBase : GetterBase {
     protected abstract Task<HtmlDocument> GetChapter(RanobeOvhChapter ranobeOvhChapter);
 
     private async Task<Uri> GetMainUrl(Uri url) {
-        if (url.Segments[1] != $"{Segment}/") {
+        if (url.GetSegment(1) != Segment) {
             var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
             var branch = GetNextData<RanobeOvhBranch>(doc, "branch");
             return SystemUrl.MakeRelativeUri($"/{Segment}/{branch.Book.Slug}");

@@ -39,7 +39,7 @@ public class AuthorTodayGetter : GetterBase {
     private string UserId { get; set; } = string.Empty;
 
     protected override string GetId(Uri url) {
-        return url.Segments[2].Trim('/');
+        return url.GetSegment(2);
     }
     
     public override async Task Init() {

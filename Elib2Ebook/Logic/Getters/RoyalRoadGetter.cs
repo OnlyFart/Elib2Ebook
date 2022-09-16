@@ -16,7 +16,7 @@ public class RoyalRoadGetter : GetterBase {
     protected override Uri SystemUrl => new("https://royalroad.com/");
 
     protected override string GetId(Uri url) {
-        return url.Segments[2].Trim('/');
+        return url.GetSegment(2);
     }
 
     public override async Task<Book> Get(Uri url) {

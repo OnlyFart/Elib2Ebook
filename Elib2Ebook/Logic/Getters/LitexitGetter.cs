@@ -19,7 +19,7 @@ public class LitexitGetter : GetterBase {
     protected override Uri SystemUrl => new("https://litexit.ru/");
 
     protected override string GetId(Uri url) {
-        return url.Segments[2].Trim('/');
+        return url.GetSegment(2);
     }
 
     public override async Task Authorize() {

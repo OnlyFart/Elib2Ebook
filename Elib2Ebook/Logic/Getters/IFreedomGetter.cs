@@ -30,7 +30,7 @@ public class FreedomGetter : GetterBase{
     }
 
     private async Task<Uri> GetMainUrl(Uri url) {
-        if (url.Segments[1].Trim('/') == "ranobe") {
+        if (url.GetSegment(1) == "ranobe") {
             return url;
         }
 

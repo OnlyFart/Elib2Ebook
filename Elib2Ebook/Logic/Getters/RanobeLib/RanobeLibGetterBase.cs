@@ -17,7 +17,7 @@ public abstract class RanobeLibGetterBase : GetterBase {
     public RanobeLibGetterBase(BookGetterConfig config) : base(config) { }
 
     protected override string GetId(Uri url) {
-        return url.Segments[1].Trim('/');
+        return url.GetSegment(1);
     }
 
     public override Task Init() {
