@@ -130,9 +130,9 @@ public class ReadliGetter : GetterBase {
                 break;
             }
             
-            var content = page.QuerySelector("div.reading__text");
+            var content = page.QuerySelector("div.reading__text").RemoveNodes("script, ins, div[id*=adfox]");
             var nodes = content.QuerySelectorAll("> h3, > p, > img");
-            nodes = nodes.Count == 0 ? content.RemoveNodes("script, ins").ChildNodes : nodes;
+            nodes = nodes.Count == 0 ? content.ChildNodes : nodes;
             singleChapter = i == 1 ? IsSingleChapter(nodes) : singleChapter;
 
             foreach (var node in nodes) {
