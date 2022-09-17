@@ -66,6 +66,8 @@
 </pre>
 </details>
 
+Последняя версия доступна по [ссылке](https://github.com/OnlyFart/Elib2Ebook/releases/latest)
+
 ## Пример вызова
 ```
 Elib2Ebook.exe -u https://author.today/work/212721 -f epub
