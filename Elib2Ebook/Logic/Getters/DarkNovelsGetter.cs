@@ -81,11 +81,16 @@ public class DarkNovelsGetter : GetterBase {
             Cover = await GetCover(doc, uri),
             Chapters = await FillChapters(bookId),
             Title = doc.GetTextBySelector("h2.display-1"),
-            Author = new Author("DarkNovels"),
+            Author = GetAuthor(doc),
             Annotation = doc.QuerySelector("div.description")?.InnerHtml
         };
 
         return book;
+    }
+
+    private static Author GetAuthor(HtmlDocument doc) {
+        var match = Regex.Match(doc.ParsedText, "authors:\"(?<author>.*?)\"");
+        return new Author(match.Success ? match.Groups["author"].Value : "DarkNovels");
     }
 
     private async Task<Uri> GetMainUrl(Uri url) {
@@ -137,7 +142,7 @@ public class DarkNovelsGetter : GetterBase {
     }
 
     private async Task FillChapter(string bookId, DarkNovelsChapter darkNovelsChapter, Chapter chapter) {
-        var data = await Config.Client.PostWithTriesAsync(_apiUrl.MakeRelativeUri("/v2/chapter/"), GetData(bookId, darkNovelsChapter.Id, "html"));
+        var data = await Config.Client.PostWithTriesAsync(_apiUrl.MakeRelativeUri("/v2/chapter/"), GetData(bookId, darkNovelsChapter.Id, "html"), TimeSpan.FromMilliseconds(200));
         if (data.StatusCode == HttpStatusCode.BadRequest) {
             return;
         }
