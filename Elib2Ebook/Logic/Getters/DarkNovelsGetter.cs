@@ -30,6 +30,12 @@ public class DarkNovelsGetter : GetterBase {
 
     private Uri _apiUrl => new($"https://api.{SystemUrl.Host}/");
 
+    public override Task Init() {
+        Config.Client.DefaultRequestVersion = HttpVersion.Version20;
+        Config.Client.DefaultRequestHeaders.Add("User-Agent", "novels");
+        return Task.CompletedTask;
+    }
+
     public override async Task Authorize() {
         if (!Config.HasCredentials) {
             return;
@@ -135,7 +141,7 @@ public class DarkNovelsGetter : GetterBase {
     }
 
     private async Task FillChapter(string bookId, DarkNovelsChapter darkNovelsChapter, Chapter chapter) {
-        var data = await Config.Client.PostWithTriesAsync(_apiUrl.MakeRelativeUri("/v2/chapter/"), GetData(bookId, darkNovelsChapter.Id, darkNovelsChapter.Payed == 0 ? "html" : "png"));
+        var data = await Config.Client.PostWithTriesAsync(_apiUrl.MakeRelativeUri("/v2/chapter/"), GetData(bookId, darkNovelsChapter.Id, "html"));
         if (data.StatusCode == HttpStatusCode.BadRequest) {
             return;
         }
@@ -143,26 +149,14 @@ public class DarkNovelsGetter : GetterBase {
         var images = new List<Image>();
         using var zip = new ZipArchive(await data.Content.ReadAsStreamAsync());
         var sb = new StringBuilder();
-        if (darkNovelsChapter.Payed == 0) {
-            foreach (var entry in zip.Entries) {
-                using var sr = new StreamReader(entry.Open());
-                foreach (var c in await sr.ReadToEndAsync()) {
-                    sb.Append(_map.GetValueOrDefault(c, c));
-                }
-            }
-        } else {
-            foreach (var entry in zip.Entries.OrderBy(GetEntryNumber)) {
-                using var ms = new MemoryStream();
-                await entry.Open().CopyToAsync(ms);
-                var image = new Image(ms.ToArray()) {
-                    Path = entry.Name
-                };
-                
-                images.Add(image);
-                sb.Append($"<img src='{image.Path}' />");
+
+        foreach (var entry in zip.Entries) {
+            using var sr = new StreamReader(entry.Open());
+            foreach (var c in await sr.ReadToEndAsync()) {
+                sb.Append(_map.GetValueOrDefault(c, c));
             }
         }
-
+        
         var chapterDoc = sb.AsHtmlDoc().RemoveNodes("h1");
         chapter.Content = chapterDoc.DocumentNode.InnerHtml;
         chapter.Images = images;
