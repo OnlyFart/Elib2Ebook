@@ -136,10 +136,6 @@ public class DarkNovelsGetter : GetterBase {
         return await Config.Client.GetFromJsonAsync<DarkNovelsData<DarkNovelsChapter[]>>(_apiUrl.MakeRelativeUri($"/v2/toc/{bookId}")).ContinueWith(t => SliceToc(t.Result?.Data));
     }
 
-    private static int GetEntryNumber(ZipArchiveEntry entry) {
-        return int.Parse(entry.Name.Split(".").First().Split('_').Last());
-    }
-
     private async Task FillChapter(string bookId, DarkNovelsChapter darkNovelsChapter, Chapter chapter) {
         var data = await Config.Client.PostWithTriesAsync(_apiUrl.MakeRelativeUri("/v2/chapter/"), GetData(bookId, darkNovelsChapter.Id, "html"));
         if (data.StatusCode == HttpStatusCode.BadRequest) {
