@@ -107,10 +107,6 @@ public class DarkNovelsGetter : GetterBase {
         var result = new List<Chapter>();
 
         foreach (var darkNovelsChapter in await GetToc(bookId)) {
-            if (darkNovelsChapter.Title.StartsWith("Volume:")) {
-                continue;
-            }
-
             Console.WriteLine($"Загружаю главу {darkNovelsChapter.Title.CoverQuotes()}");
 
             var chapter = new Chapter {
@@ -138,7 +134,8 @@ public class DarkNovelsGetter : GetterBase {
     }
 
     private async Task<IEnumerable<DarkNovelsChapter>> GetToc(string bookId) {
-        return await Config.Client.GetFromJsonAsync<DarkNovelsData<DarkNovelsChapter[]>>(_apiUrl.MakeRelativeUri($"/v2/toc/{bookId}")).ContinueWith(t => SliceToc(t.Result?.Data));
+        return await Config.Client.GetFromJsonAsync<DarkNovelsData<DarkNovelsChapter[]>>(_apiUrl.MakeRelativeUri($"/v2/toc/{bookId}"))
+            .ContinueWith(t => SliceToc(t.Result?.Data.Where(c => !c.Title.StartsWith("Volume:")).ToList()));
     }
 
     private async Task FillChapter(string bookId, DarkNovelsChapter darkNovelsChapter, Chapter chapter) {
