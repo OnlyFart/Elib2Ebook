@@ -63,7 +63,7 @@ public class EpubBuilder : BuilderBase {
     /// <returns></returns>
     public override BuilderBase WithCover(Image cover) {
         if (cover != null) {
-            _writer.SetCover(cover.Content, cover.Format);
+            _writer.SetCover(cover.Content, GetImageFormat(cover.Name));
         }
 
         return this;
@@ -86,11 +86,17 @@ public class EpubBuilder : BuilderBase {
     /// </summary>
     /// <param name="directory">Путь к директории с файлами</param>
     /// <param name="searchPattern">Шаблон поиска файлов</param>
-    /// <param name="type">Тип файла</param>
     /// <returns></returns>
-    public override BuilderBase WithFiles(string directory, string searchPattern, EpubContentType type) {
+    public override BuilderBase WithFiles(string directory, string searchPattern) {
         foreach (var file in Directory.GetFiles(directory, searchPattern)) {
-            _writer.AddFile(Path.GetFileName(file), File.ReadAllBytes(file), type);
+            var fileName = Path.GetFileName(file);
+            var type = file.EndsWith(".ttf") ? 
+                EpubContentType.FontTruetype : 
+                file.EndsWith(".css") ? 
+                    EpubContentType.Css : 
+                    throw new Exception($"Неизвестный тип файла {fileName}");
+            
+            _writer.AddFile(fileName, File.ReadAllBytes(file), type);
         }
             
         return this;
@@ -104,13 +110,29 @@ public class EpubBuilder : BuilderBase {
     public override BuilderBase WithChapters(IEnumerable<Chapter> chapters) {
         foreach (var chapter in chapters.Where(c => c.IsValid)) {
             foreach (var image in chapter.Images) {
-                _writer.AddFile(image.Path, image.Content, image.Format.ToEpubContentType());
+                _writer.AddFile(image.Name, image.Content, GetImageFormat(image.Name).ToEpubContentType());
             }
             
             _writer.AddChapter(chapter.Title.HtmlDecode().ReplaceNewLine().RemoveInvalidChars(), ApplyPattern(chapter.Title, chapter.Content));
         }
 
         return this;
+    }
+    
+    private static ImageFormat GetImageFormat(string path) {
+        if (path.EndsWith(".jpg", StringComparison.InvariantCultureIgnoreCase)) {
+            return ImageFormat.Jpeg;
+        }
+
+        if (path.EndsWith(".gif", StringComparison.InvariantCultureIgnoreCase)) {
+            return ImageFormat.Gif;
+        }
+
+        if (path.EndsWith(".png", StringComparison.InvariantCultureIgnoreCase)) {
+            return ImageFormat.Png;
+        }
+
+        return path.EndsWith(".svg", StringComparison.InvariantCultureIgnoreCase) ? ImageFormat.Svg : ImageFormat.Jpeg;
     }
 
     public override BuilderBase WithSeria(Seria seria) {

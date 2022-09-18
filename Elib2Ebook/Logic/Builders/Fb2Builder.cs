@@ -4,7 +4,6 @@ using System.Linq;
 using System.Xml.Linq;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
-using EpubSharp.Format;
 using HtmlAgilityPack;
 
 namespace Elib2Ebook.Logic.Builders; 
@@ -91,7 +90,7 @@ public class Fb2Builder : BuilderBase {
     private XElement GetBinary(Image image) {
         var binaryElem = new XElement(_ns + "binary");
         binaryElem.Value = Convert.ToBase64String(image.Content);
-        binaryElem.SetAttributeValue("id", image.Path);
+        binaryElem.SetAttributeValue("id", image.Name);
         binaryElem.SetAttributeValue("content-type", "image/" + image.Extension);
 
         return binaryElem;
@@ -141,7 +140,7 @@ public class Fb2Builder : BuilderBase {
             var coverPage = CreateXElement("coverpage");
             
             var imageElem = CreateXElement("image");
-            imageElem.SetAttributeValue(_xlink + "href", "#" + cover.Path);
+            imageElem.SetAttributeValue(_xlink + "href", "#" + cover.Name);
             
             coverPage.Add(imageElem);
             _titleInfo.Add(coverPage);
@@ -189,7 +188,7 @@ public class Fb2Builder : BuilderBase {
     /// <param name="searchPattern">Шаблон поиска файлов</param>
     /// <param name="type">Тип файла</param>
     /// <returns></returns>
-    public override BuilderBase WithFiles(string directory, string searchPattern, EpubContentType type) {
+    public override BuilderBase WithFiles(string directory, string searchPattern) {
         return this;
     }
 

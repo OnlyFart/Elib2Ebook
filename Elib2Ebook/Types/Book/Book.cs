@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Logic.Builders;
-using EpubSharp.Format;
 
 namespace Elib2Ebook.Types.Book; 
 
@@ -69,8 +68,8 @@ public class Book {
             .WithAnnotation(Annotation)
             .WithSeria(Seria)
             .WithLang(Lang)
-            .WithFiles(resourcesPath, "*.ttf", EpubContentType.FontTruetype)
-            .WithFiles(resourcesPath, "*.css", EpubContentType.Css)
+            .WithFiles(resourcesPath, "*.ttf")
+            .WithFiles(resourcesPath, "*.css")
             .WithChapters(Chapters)
             .Build(options.SavePath, title);
 

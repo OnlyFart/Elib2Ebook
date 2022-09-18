@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
-using EpubSharp.Format;
 
 namespace Elib2Ebook.Logic.Builders; 
 
@@ -50,7 +49,7 @@ public abstract class BuilderBase {
     /// <param name="searchPattern">Шаблон поиска файлов</param>
     /// <param name="type">Тип файла</param>
     /// <returns></returns>
-    public abstract BuilderBase WithFiles(string directory, string searchPattern, EpubContentType type);
+    public abstract BuilderBase WithFiles(string directory, string searchPattern);
 
     /// <summary>
     /// Добавление списка частей книги

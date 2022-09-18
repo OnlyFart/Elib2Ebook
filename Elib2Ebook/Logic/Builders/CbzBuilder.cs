@@ -4,7 +4,6 @@ using System.IO;
 using System.IO.Compression;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
-using EpubSharp.Format;
 
 namespace Elib2Ebook.Logic.Builders; 
 
@@ -35,7 +34,7 @@ public class CbzBuilder : BuilderBase {
         return this;
     }
 
-    public override BuilderBase WithFiles(string directory, string searchPattern, EpubContentType type) {
+    public override BuilderBase WithFiles(string directory, string searchPattern) {
         return this;
     }
 

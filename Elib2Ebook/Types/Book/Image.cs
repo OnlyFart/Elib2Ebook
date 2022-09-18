@@ -1,49 +1,30 @@
 using System;
-using EpubSharp;
 
 namespace Elib2Ebook.Types.Book; 
 
 public record Image(byte[] Content) {
-    public ImageFormat Format => GetImageFormat(Path);
+    private readonly string _name;
 
-    private string _path;
-
-    public string Path {
-        get => _path;
-        set {
+    public string Name {
+        get => _name;
+        init {
             if (string.IsNullOrWhiteSpace(value)) {
-                _path = Guid.NewGuid() + ".jpg";
+                _name = Guid.NewGuid() + ".jpg";
             } else {
-                _path = Guid.NewGuid() + "." + GetExtension(value);
+                _name = Guid.NewGuid() + "." + GetExtension(value);
             }
         }
     }
-    
-    private static ImageFormat GetImageFormat(string path) {
-        if (path.EndsWith(".jpg", StringComparison.InvariantCultureIgnoreCase)) {
-            return ImageFormat.Jpeg;
+
+    private static string GetExtension(string name) {
+        foreach (var ext in new[] { "jpg", "png", "jpg", "svg" }) {
+            if (name.EndsWith(ext)) {
+                return ext;
+            }
         }
 
-        if (path.EndsWith(".gif", StringComparison.InvariantCultureIgnoreCase)) {
-            return ImageFormat.Gif;
-        }
-
-        if (path.EndsWith(".png", StringComparison.InvariantCultureIgnoreCase)) {
-            return ImageFormat.Png;
-        }
-
-        return path.EndsWith(".svg", StringComparison.InvariantCultureIgnoreCase) ? ImageFormat.Svg : ImageFormat.Jpeg;
+        return "jpg";
     }
 
-    private static string GetExtension(string path) {
-        return GetImageFormat(path) switch {
-            ImageFormat.Gif => "jpg",
-            ImageFormat.Png => "png",
-            ImageFormat.Jpeg => "jpg",
-            ImageFormat.Svg => "jpg",
-            _ => "jpg"
-        };
-    }
-
-    public string Extension => GetExtension(Path);
+    public string Extension => GetExtension(Name);
 }

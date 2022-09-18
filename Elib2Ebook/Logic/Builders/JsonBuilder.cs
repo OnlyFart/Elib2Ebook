@@ -4,7 +4,6 @@ using System.IO;
 using System.Text.Json;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
-using EpubSharp.Format;
 
 namespace Elib2Ebook.Logic.Builders; 
 
@@ -40,7 +39,7 @@ public class JsonBuilder : BuilderBase {
         return this;
     }
 
-    public override BuilderBase WithFiles(string directory, string searchPattern, EpubContentType type) {
+    public override BuilderBase WithFiles(string directory, string searchPattern) {
         return this;
     }
 

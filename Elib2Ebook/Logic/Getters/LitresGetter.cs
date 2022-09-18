@@ -201,7 +201,7 @@ public class LitresGetter : GetterBase {
             var fileName = t.Target.Split("/").Last().Trim('/');
             img.Attributes["src"].Value = fileName;
             images.Add(new Image(t.Content) {
-                Path = fileName
+                Name = fileName
             });
         }
 

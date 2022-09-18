@@ -52,7 +52,7 @@ public abstract class GetterBase : IDisposable {
             Console.WriteLine($"Загружена картинка {response.RequestMessage!.RequestUri}");
             if (response is { StatusCode: HttpStatusCode.OK }) {
                 return new Image(await response.Content.ReadAsByteArrayAsync()) {
-                    Path = uri.GetFileName()
+                    Name = uri.GetFileName()
                 };
             }
 
@@ -97,7 +97,7 @@ public abstract class GetterBase : IDisposable {
             }
 
             img.Attributes.RemoveAll();
-            img.Attributes.Add("src", image.Path);
+            img.Attributes.Add("src", image.Name);
             images.Add(Tuple.Create(image, t.Item2));
         });
 
