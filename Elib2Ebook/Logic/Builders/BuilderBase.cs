@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
 
@@ -76,7 +77,7 @@ public abstract class BuilderBase {
     ///  Создание файла
     /// </summary>
     /// <param name="name">Имя файла</param>
-    protected abstract void BuildInternal(string name);
+    protected abstract Task BuildInternal(string name);
 
     /// <summary>
     /// Получение имени файла
@@ -90,7 +91,7 @@ public abstract class BuilderBase {
     /// </summary>
     /// <param name="directory">Директоия для сохранения</param>
     /// <param name="name">Имя файла</param>
-    public void Build(string directory, string name) {
+    public async Task Build(string directory, string name) {
         var fileName = GetFileName(name);
             
         if (!string.IsNullOrWhiteSpace(directory)) {
@@ -101,7 +102,7 @@ public abstract class BuilderBase {
             fileName = Path.Combine(directory, fileName);
         }
             
-        BuildInternal(fileName);
+        await BuildInternal(fileName);
 
         Console.WriteLine($"Книга {fileName.CoverQuotes()} успешно сохранена");
     }
@@ -112,9 +113,9 @@ public abstract class BuilderBase {
     /// <param name="directory"></param>
     /// <param name="cover"></param>
     /// <param name="name"></param>
-    public void SaveCover(string directory, Image cover, string name) {
+    public Task SaveCover(string directory, Image cover, string name) {
         if (cover == null) {
-            return;
+            return Task.CompletedTask;
         }
         
         var fileName = $"{name}_cover.{cover.Extension}".RemoveInvalidChars();
@@ -127,6 +128,6 @@ public abstract class BuilderBase {
             fileName = Path.Combine(directory, fileName);
         }
 
-        File.WriteAllBytes(fileName, cover.Content);
+        return File.WriteAllBytesAsync(fileName, cover.Content);
     }
 }

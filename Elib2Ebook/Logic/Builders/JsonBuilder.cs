@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
 
@@ -58,9 +59,9 @@ public class JsonBuilder : BuilderBase {
         return this;
     }
 
-    protected override void BuildInternal(string name) {
-        using var file = File.Create(name);
-        JsonSerializer.Serialize(file, _book);
+    protected override async Task BuildInternal(string name) {
+        await using var file = File.Create(name);
+        await JsonSerializer.SerializeAsync(file, _book);
     }
 
     protected override string GetFileName(string name) {

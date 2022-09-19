@@ -116,7 +116,7 @@ public class AuthorTodayGetter : GetterBase {
             return;
         }
         
-        var response = await Config.Client.SendWithTriesAsync(() => GetDefaultMessage(ApiUrl.MakeRelativeUri("/v1/account/login-by-password"), _apiUrl, JsonContent.Create(new { Config.Options.Login, Config.Options.Password })));
+        var response = await Config.Client.SendAsync(GetDefaultMessage(ApiUrl.MakeRelativeUri("/v1/account/login-by-password"), _apiUrl, JsonContent.Create(new { Config.Options.Login, Config.Options.Password })));
         var data = await response.Content.ReadFromJsonAsync<AuthorTodayAuthResponse>();
 
         if (!string.IsNullOrWhiteSpace(data?.Token)) {

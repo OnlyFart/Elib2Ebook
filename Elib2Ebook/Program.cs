@@ -53,7 +53,7 @@ internal static class Program {
                     try {
                         var book = await getter.Get(url.AsUri());
                         foreach (var format in options.Format) {
-                            book.Save(GetBuilder(format), options, "Patterns");
+                            await book.Save(GetBuilder(format), options, "Patterns");
                         }
                     } catch (Exception ex) {
                         Console.WriteLine($"Генерация книги {url} завершилась с ошибкой. {ex.Message}");

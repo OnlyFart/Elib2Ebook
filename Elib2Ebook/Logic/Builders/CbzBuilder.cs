@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Threading.Tasks;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
 
@@ -51,13 +52,13 @@ public class CbzBuilder : BuilderBase {
         return this;
     }
 
-    protected override void BuildInternal(string name) {
+    protected override async Task BuildInternal(string name) {
         if (File.Exists(name)) {
             File.Delete(name);
         }
-
+        
         using var archive = ZipFile.Open(name, ZipArchiveMode.Create);
-
+        
         var c = 0;
         foreach (var chapter in _chapters) {
             if (chapter.Images == default) {
@@ -66,8 +67,8 @@ public class CbzBuilder : BuilderBase {
 
             foreach (var image in chapter.Images) {
                 var zipArchiveEntry = archive.CreateEntry($"{++c}.{image.Extension}", CompressionLevel.Optimal);
-                using var zipStream = zipArchiveEntry.Open();
-                zipStream.Write(image.Content);
+                await using var zipStream = zipArchiveEntry.Open();
+                await zipStream.WriteAsync(image.Content);
             }
         }
     }

@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
@@ -327,7 +330,7 @@ public class Fb2Builder : BuilderBase {
         return dateElem;
     }
 
-    protected override void BuildInternal(string name) {
+    protected override async Task BuildInternal(string name) {
         _documentInfo.Add(GetDateElement(DateTime.Today));
         
         _description.Add(_titleInfo);
@@ -338,8 +341,9 @@ public class Fb2Builder : BuilderBase {
         foreach (var image in _images) {
             _book.Add(image);
         }
-            
-        _book.Save(name);
+
+        await using var file = File.Create(name);
+        await _book.SaveAsync(file, SaveOptions.None, new CancellationToken());
     }
 
     protected override string GetFileName(string name) {

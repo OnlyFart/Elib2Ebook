@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Logic.Builders;
@@ -57,10 +58,10 @@ public class Book {
     /// <param name="builder"></param>
     /// <param name="options"></param>
     /// <param name="resourcesPath">Путь к папке с ресурсами</param>
-    public void Save(BuilderBase builder, Options options, string resourcesPath) {
+    public async Task Save(BuilderBase builder, Options options, string resourcesPath) {
         var title = $"{Author.Name} - {Title}".Crop(100);
         
-        builder
+        await builder
             .AddAuthor(Author)
             .WithTitle(Title)
             .WithCover(Cover)
@@ -74,7 +75,7 @@ public class Book {
             .Build(options.SavePath, title);
 
         if (options.Cover) {
-            builder.SaveCover(options.SavePath, Cover, title);
+            await builder.SaveCover(options.SavePath, Cover, title);
         }
     }
 }

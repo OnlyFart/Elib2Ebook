@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
 using EpubSharp;
@@ -147,8 +148,8 @@ public class EpubBuilder : BuilderBase {
         return this;
     }
 
-    protected override void BuildInternal(string name) {
-        _writer.Write(name);
+    protected override async Task BuildInternal(string name) {
+        await _writer.Write(name);
     }
 
     protected override string GetFileName(string name) {
