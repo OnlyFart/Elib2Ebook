@@ -7,7 +7,7 @@
 
 
 @font-face {
-  font-family: Roboto;
+  font-family: Roboto-Italic !important;
   font-weight: normal;
   font-style: italic;
   src: url(Roboto-Italic.ttf);
@@ -23,6 +23,10 @@ body {
 h1 {
     font-size: 2em;
     margin: .67em 0;
+}
+
+em, i {
+    font-family: Roboto-Italic, serif !important;
 }
 
 h1, h2, h3, h4, h5, h6 {
