@@ -27,9 +27,7 @@ public abstract class LitnetGetterBase : GetterBase {
 
     private string _token { get; set; }
 
-    protected override string GetId(Uri url) {
-        return base.GetId(url).Split('-').Last().Replace("b", string.Empty);
-    }
+    protected override string GetId(Uri url) => base.GetId(url).Split('-').Last().Replace("b", string.Empty);
 
     private static string Decrypt(string text) {
         using var aes = Aes.Create();

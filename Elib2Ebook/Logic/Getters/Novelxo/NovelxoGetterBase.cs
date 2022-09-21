@@ -21,9 +21,7 @@ public abstract class NovelxoGetterBase : GetterBase {
     
     protected NovelxoGetterBase(BookGetterConfig config) : base(config) { }
 
-    protected override string GetId(Uri url) {
-        return url.GetSegment(1);
-    }
+    protected override string GetId(Uri url) => url.GetSegment(1);
 
     public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);

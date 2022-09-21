@@ -14,9 +14,7 @@ public class OnlineKnigiGetter : GetterBase {
     public OnlineKnigiGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://online-knigi.com.ua/");
 
-    protected override string GetId(Uri url) {
-        return url.GetSegment(2);
-    }
+    protected override string GetId(Uri url) => url.GetSegment(2);
 
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);

@@ -16,9 +16,7 @@ public class RanobesComGetter : GetterBase {
     public RanobesComGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://ranobes.com/");
 
-    protected override string GetId(Uri url) {
-        return base.GetId(url).Split(".")[0];
-    }
+    protected override string GetId(Uri url) => base.GetId(url).Split(".")[0];
 
     public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);

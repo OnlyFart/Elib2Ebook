@@ -15,9 +15,7 @@ public class LitmirGetter : GetterBase {
     public LitmirGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://litmir.me/");
 
-    protected override string GetId(Uri url) {
-        return url.GetQueryParameter("b");
-    }
+    protected override string GetId(Uri url) => url.GetQueryParameter("b");
 
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);

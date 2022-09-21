@@ -20,10 +20,7 @@ public class RulateGetter : GetterBase {
     public RulateGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://tl.rulate.ru");
 
-    protected override string GetId(Uri url) {
-        var segments = url.Segments;
-        return (segments.Length == 3 ? base.GetId(url) : segments[2]).Trim('/');
-    }
+    protected override string GetId(Uri url) => url.Segments.Length == 3 ? base.GetId(url) : url.GetSegment(2);
 
     public override async Task Init() {
         await base.Init();
@@ -123,7 +120,7 @@ public class RulateGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(string bookId, string chapterId) {
-        var s = await Config.Client.GetFromJsonAsync<RulateChapter>(SystemUrl.MakeRelativeUri($"/book/{bookId}/{chapterId}/readyajax?is_new=true"));
+        var s = await Config.Client.GetFromJsonAsync<RulateChapter>(SystemUrl.MakeRelativeUri($"/book/{bookId}/{chapterId}/readyajax"));
         return (s.CanRead ? s.Content.AsHtmlDoc().QuerySelector("div.content-text")?.InnerHtml ?? string.Empty : string.Empty).AsHtmlDoc();
     }
 

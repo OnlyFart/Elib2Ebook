@@ -38,23 +38,38 @@ public class AuthorTodayGetter : GetterBase {
 
     private string UserId { get; set; } = string.Empty;
 
-    protected override string GetId(Uri url) {
-        return url.GetSegment(2);
-    }
-    
+    protected override string GetId(Uri url) => url.GetSegment(2);
+
     public override async Task Init() {
         await base.Init();
 
         var response = await Config.Client.GetAsync(_apiUrl);
-        if (response.StatusCode == HttpStatusCode.OK) {
-            Console.WriteLine($"Сайт {_apiUrl} доступен. Работаю через него");
-            _bypass = false;
-        } else {
-            Console.WriteLine($"Сайт {_apiUrl} не доступен. Работаю через {_apiIp}");
-            _bypass = true;
-        }
+        _bypass = response.StatusCode != HttpStatusCode.OK;
+        Console.WriteLine(_bypass ? 
+            $"Сайт {_apiUrl} не доступен. Работаю через {_apiIp}" : 
+            $"Сайт {_apiUrl} доступен. Работаю через него");
 
         Config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "guest");
+    }
+    
+    public override async Task Authorize() {
+        if (!Config.HasCredentials) {
+            return;
+        }
+        
+        var response = await Config.Client.SendAsync(GetDefaultMessage(ApiUrl.MakeRelativeUri("/v1/account/login-by-password"), _apiUrl, JsonContent.Create(new { Config.Options.Login, Config.Options.Password })));
+        var data = await response.Content.ReadFromJsonAsync<AuthorTodayAuthResponse>();
+
+        if (!string.IsNullOrWhiteSpace(data?.Token)) {
+            Console.WriteLine("Успешно авторизовались");
+            Config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", data.Token);
+
+            response = await Config.Client.SendWithTriesAsync(() => GetDefaultMessage(ApiUrl.MakeRelativeUri("/v1/account/current-user"), _apiUrl));
+            var user = await response.Content.ReadFromJsonAsync<AuthorTodayUser>();
+            UserId = user!.Id.ToString();
+        } else {
+            throw new Exception($"Не удалось авторизоваться. {data?.Message}");
+        }
     }
 
     public override async Task<Book> Get(Uri url) {
@@ -109,26 +124,6 @@ public class AuthorTodayGetter : GetterBase {
             Number = book.SeriesWorkNumber.HasValue ? book.SeriesWorkNumber.ToString() : string.Empty,
             Url = SystemUrl.MakeRelativeUri($"/work/series/{book.SeriesId}")
         };
-    }
-    
-    public override async Task Authorize() {
-        if (!Config.HasCredentials) {
-            return;
-        }
-        
-        var response = await Config.Client.SendAsync(GetDefaultMessage(ApiUrl.MakeRelativeUri("/v1/account/login-by-password"), _apiUrl, JsonContent.Create(new { Config.Options.Login, Config.Options.Password })));
-        var data = await response.Content.ReadFromJsonAsync<AuthorTodayAuthResponse>();
-
-        if (!string.IsNullOrWhiteSpace(data?.Token)) {
-            Console.WriteLine("Успешно авторизовались");
-            Config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", data.Token);
-
-            response = await Config.Client.SendWithTriesAsync(() => GetDefaultMessage(ApiUrl.MakeRelativeUri("/v1/account/current-user"), _apiUrl));
-            var user = await response.Content.ReadFromJsonAsync<AuthorTodayUser>();
-            UserId = user!.Id.ToString();
-        } else {
-            throw new Exception($"Не удалось авторизоваться. {data?.Message}");
-        }
     }
 
     private Task<Image> GetCover(AuthorTodayBookDetails book) {

@@ -16,9 +16,7 @@ public class FicbookGetter : GetterBase {
     public FicbookGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://ficbook.net/");
 
-    protected override string GetId(Uri url) {
-        return url.GetSegment(2);
-    }
+    protected override string GetId(Uri url) => url.GetSegment(2);
 
     public override async Task<Book> Get(Uri url) {
         url = SystemUrl.MakeRelativeUri($"/readfic/{GetId(url)}");

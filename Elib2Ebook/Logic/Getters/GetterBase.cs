@@ -22,9 +22,7 @@ public abstract class GetterBase : IDisposable {
 
     protected abstract Uri SystemUrl { get; }
 
-    protected virtual string GetId(Uri url) {
-        return url.Segments.Last().Trim('/');
-    }
+    protected virtual string GetId(Uri url) => url.Segments.Last().Trim('/');
 
     public virtual bool IsSameUrl(Uri url) {
         return SystemUrl.IsSameHost(url);

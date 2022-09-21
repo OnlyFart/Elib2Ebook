@@ -16,9 +16,7 @@ public class AcomicsGetter : GetterBase {
     public AcomicsGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://acomics.ru");
 
-    protected override string GetId(Uri url) {
-        return url.GetSegment(1);
-    }
+    protected override string GetId(Uri url) => url.GetSegment(1);
 
     public override async Task Init() {
         await base.Init();

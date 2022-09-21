@@ -17,9 +17,7 @@ public class BookInBookGetter : GetterBase {
     public BookInBookGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://bookinbook.ru/");
 
-    protected override string GetId(Uri url) {
-        return url.GetQueryParameter("id");
-    }
+    protected override string GetId(Uri url) => url.GetQueryParameter("id");
 
     public override async Task<Book> Get(Uri url) {
         url = SystemUrl.MakeRelativeUri($"book?id={GetId(url)}");

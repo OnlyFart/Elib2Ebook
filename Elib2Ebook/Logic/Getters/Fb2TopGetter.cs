@@ -19,9 +19,7 @@ public class Fb2TopGetter : GetterBase {
         return url.IsSameHost("https://fb2.top/".AsUri()) || url.IsSameHost("https://ladylib.top/".AsUri());
     }
 
-    protected override string GetId(Uri url) {
-        return url.GetSegment(1);
-    }
+    protected override string GetId(Uri url) => url.GetSegment(1);
 
     public override async Task<Book> Get(Uri url) {
         url = url.MakeRelativeUri(GetId(url));

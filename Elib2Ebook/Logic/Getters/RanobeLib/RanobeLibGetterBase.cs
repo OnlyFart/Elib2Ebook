@@ -16,9 +16,7 @@ namespace Elib2Ebook.Logic.Getters.RanobeLib;
 public abstract class RanobeLibGetterBase : GetterBase {
     public RanobeLibGetterBase(BookGetterConfig config) : base(config) { }
 
-    protected override string GetId(Uri url) {
-        return url.GetSegment(1);
-    }
+    protected override string GetId(Uri url) => url.GetSegment(1);
 
     public override Task Init() {
         base.Init();

@@ -18,9 +18,7 @@ public class BookstabGetter : GetterBase {
 
     private Uri _apiUrl => new($"https://api.{SystemUrl.Host}/");
 
-    protected override string GetId(Uri url) {
-        return url.GetSegment(2);
-    }
+    protected override string GetId(Uri url) => url.GetSegment(2);
 
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);

@@ -15,9 +15,7 @@ public class WattpadGetter : GetterBase {
     public WattpadGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://wattpad.com/");
 
-    protected override string GetId(Uri url) {
-        return base.GetId(url).Split('-')[0];
-    }
+    protected override string GetId(Uri url) => base.GetId(url).Split('-')[0];
 
     private async Task<WattpadMeta> GetMeta(Uri url) {
         if (url.ToString().Contains("/story/")) {

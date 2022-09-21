@@ -23,9 +23,7 @@ public class BookriverGetter : GetterBase {
 
     private string _token;
     
-    protected override string GetId(Uri url) {
-        return url.GetSegment(2);
-    }
+    protected override string GetId(Uri url) => url.GetSegment(2);
 
     public override async Task Authorize() {
         if (!Config.HasCredentials) {

@@ -14,9 +14,7 @@ public class HubBookGetter : GetterBase {
     public HubBookGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://hub-book.com/");
 
-    protected override string GetId(Uri url) {
-        return url.GetSegment(2);
-    }
+    protected override string GetId(Uri url) => url.GetSegment(2);
 
     public override async Task<Book> Get(Uri url) {
         url = SystemUrl.MakeRelativeUri($"/books/{GetId(url)}");

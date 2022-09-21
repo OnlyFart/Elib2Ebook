@@ -19,9 +19,7 @@ public class LibstGetter : GetterBase {
     public LibstGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://libst.ru/");
 
-    protected override string GetId(Uri url) {
-        return url.GetQueryParameter("BookID") ?? base.GetId(url);
-    }
+    protected override string GetId(Uri url) => url.GetQueryParameter("BookID") ?? base.GetId(url);
 
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);

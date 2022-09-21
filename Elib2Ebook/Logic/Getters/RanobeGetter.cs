@@ -16,11 +16,8 @@ public class RanobeGetter : GetterBase {
     public RanobeGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://ранобэ.рф/");
         
-    protected override string GetId(Uri url) {
-        var segments = url.Segments;
-        return (segments.Length == 2 ? base.GetId(url) : segments[1]).Trim('/');
-    }
-        
+    protected override string GetId(Uri url) => url.Segments.Length == 2 ? base.GetId(url) : url.GetSegment(1);
+
     public override async Task<Book> Get(Uri url) {
         url = SystemUrl.MakeRelativeUri(GetId(url));
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);

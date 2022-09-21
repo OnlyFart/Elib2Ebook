@@ -15,10 +15,8 @@ namespace Elib2Ebook.Logic.Getters.TopLiba;
 public abstract class TopLibaGetterBase : GetterBase {
     public TopLibaGetterBase(BookGetterConfig config) : base(config) { }
 
-    protected override string GetId(Uri url) {
-        return url.GetSegment(2);
-    }
-    
+    protected override string GetId(Uri url) => url.GetSegment(2);
+
     protected abstract Seria GetSeria(HtmlDocument doc, Uri url);
 
     protected abstract Task<Image> GetCover(HtmlDocument doc, Uri uri);

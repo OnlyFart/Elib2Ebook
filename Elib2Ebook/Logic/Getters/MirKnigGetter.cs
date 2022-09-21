@@ -16,9 +16,7 @@ public class MirKnigGetter : GetterBase {
     public MirKnigGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://mir-knig.com/");
 
-    protected override string GetId(Uri url) {
-        return base.GetId(url).Split('_').Last().Split('-').First();
-    }
+    protected override string GetId(Uri url) => base.GetId(url).Split('_').Last().Split('-').First();
 
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
