@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
 using Elib2Ebook.Types.Common;
+using Elib2Ebook.Types.Rulate;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 
@@ -25,6 +27,7 @@ public class RulateGetter : GetterBase {
 
     public override async Task Init() {
         await base.Init();
+        Config.Client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
         Config.CookieContainer.Add(SystemUrl, new Cookie("mature", "c3a2ed4b199a1a15f5a5483504c7a75a7030dc4bi%3A1%3B"));
     }
 
@@ -63,7 +66,8 @@ public class RulateGetter : GetterBase {
             Cover = await GetCover(doc, url),
             Chapters = await FillChapters(doc, url, bookId),
             Title = GetTitle(doc),
-            Author = GetAuthor(doc)
+            Author = GetAuthor(doc),
+            Annotation = doc.QuerySelector("#Info div.btn-toolbar + div")?.InnerHtml
         };
             
         return book;
@@ -74,13 +78,21 @@ public class RulateGetter : GetterBase {
         return match.Success ? match.Groups["title"].Value : doc.GetTextBySelector("h1");
     }
 
-    private static Author GetAuthor(HtmlDocument doc) {
+    private Author GetAuthor(HtmlDocument doc) {
         var def = new Author("rulate");
         foreach (var p in doc.QuerySelectorAll("#Info p")) {
             var strong = p.QuerySelector("strong");
             if (strong != null && strong.InnerText.Contains("Автор")) {
-                var author = p.GetTextBySelector("em");
-                return author == null ? def : new Author(author);
+                var em = p.QuerySelector("em");
+                if (em == default) {
+                    return def;
+                }
+                
+                var a = em.QuerySelector("a[href]");
+                return a == default ? 
+                    new Author(em.GetText()) : 
+                    new Author(a.GetText(), SystemUrl.MakeRelativeUri(a.Attributes["href"].Value));
+
             }
         }
 
@@ -111,8 +123,8 @@ public class RulateGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(string bookId, string chapterId) {
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"/book/{bookId}/{chapterId}/ready"));
-        return (doc.GetTextBySelector("h1") == "Доступ запрещен" ? string.Empty : doc.QuerySelector("div.content-text")?.InnerHtml ?? string.Empty).AsHtmlDoc();
+        var s = await Config.Client.GetFromJsonAsync<RulateChapter>(SystemUrl.MakeRelativeUri($"/book/{bookId}/{chapterId}/readyajax?is_new=true"));
+        return (s.CanRead ? s.Content.AsHtmlDoc().QuerySelector("div.content-text")?.InnerHtml ?? string.Empty : string.Empty).AsHtmlDoc();
     }
 
     private IEnumerable<IdChapter> GetToc(HtmlDocument doc) {
