@@ -1,25 +1,33 @@
 {
   "runtimeTarget": {
-    "name": ".NETCoreApp,Version=v6.0",
+    "name": ".NETStandard,Version=v2.0/",
     "signature": ""
   },
   "compilationOptions": {},
   "targets": {
-    ".NETCoreApp,Version=v6.0": {
+    ".NETStandard,Version=v2.0": {},
+    ".NETStandard,Version=v2.0/": {
       "EpubSharp/1.1.5.13": {
         "dependencies": {
-          "Microsoft.NETFramework.ReferenceAssemblies": "1.0.2"
+          "Microsoft.NETFramework.ReferenceAssemblies": "1.0.2",
+          "NETStandard.Library": "2.0.3"
         },
         "runtime": {
           "EpubSharp.dll": {}
         }
       },
+      "Microsoft.NETCore.Platforms/1.1.0": {},
       "Microsoft.NETFramework.ReferenceAssemblies/1.0.2": {
         "dependencies": {
           "Microsoft.NETFramework.ReferenceAssemblies.net461": "1.0.2"
         }
       },
-      "Microsoft.NETFramework.ReferenceAssemblies.net461/1.0.2": {}
+      "Microsoft.NETFramework.ReferenceAssemblies.net461/1.0.2": {},
+      "NETStandard.Library/2.0.3": {
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "1.1.0"
+        }
+      }
     }
   },
   "libraries": {
@@ -27,6 +35,13 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
+    },
+    "Microsoft.NETCore.Platforms/1.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-kz0PEW2lhqygehI/d6XsPCQzD7ff7gUJaVGPVETX611eadGsA3A877GdSlU0LRVMCTH/+P3o2iDTak+S08V2+A==",
+      "path": "microsoft.netcore.platforms/1.1.0",
+      "hashPath": "microsoft.netcore.platforms.1.1.0.nupkg.sha512"
     },
     "Microsoft.NETFramework.ReferenceAssemblies/1.0.2": {
       "type": "package",
@@ -41,6 +56,13 @@
       "sha512": "sha512-8shzGaD5pZi4npuJYCM3de6pl0zlefcbyTIvXIiCdsTqauZ7lAhdaJVtJSqlhYid9VosFAOygBykoJ1SEOlGWA==",
       "path": "microsoft.netframework.referenceassemblies.net461/1.0.2",
       "hashPath": "microsoft.netframework.referenceassemblies.net461.1.0.2.nupkg.sha512"
+    },
+    "NETStandard.Library/2.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-st47PosZSHrjECdjeIzZQbzivYBJFv6P2nv4cj2ypdI204DO+vZ7l5raGMiX4eXMJ53RfOIg+/s4DHVZ54Nu2A==",
+      "path": "netstandard.library/2.0.3",
+      "hashPath": "netstandard.library.2.0.3.nupkg.sha512"
     }
   }
 }
