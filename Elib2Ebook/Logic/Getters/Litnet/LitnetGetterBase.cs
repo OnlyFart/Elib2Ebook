@@ -141,7 +141,7 @@ public abstract class LitnetGetterBase : GetterBase {
     }
     
     private Task<Image> GetCover(LitnetBookResponse book) {
-        return !string.IsNullOrWhiteSpace(book.Cover) ? GetImage(book.Cover.AsUri()) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(book.Cover) ? SaveImage(book.Cover.AsUri()) : Task.FromResult(default(Image));
     }
 
     private async Task<List<Chapter>> FillChapters(string token, LitnetBookResponse book, string bookId) {

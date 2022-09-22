@@ -93,7 +93,7 @@ public abstract class HotNovelPubGetterBase : GetterBase {
     }
 
     private Task<Image> GetCover(HotNovelPubBook book) {
-        return !string.IsNullOrWhiteSpace(book.Image) ? GetImage(SystemUrl.MakeRelativeUri(book.Image)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(book.Image) ? SaveImage(SystemUrl.MakeRelativeUri(book.Image)) : Task.FromResult(default(Image));
     }
 
     private async Task<HotNovelPubBookResponse> GetBook(string id) {

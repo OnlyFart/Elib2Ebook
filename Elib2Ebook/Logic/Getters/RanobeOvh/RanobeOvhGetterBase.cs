@@ -94,7 +94,7 @@ public abstract class RanobeOvhGetterBase : GetterBase {
     }
 
     private Task<Image> GetCover(RanobeOvhManga manga, Uri uri) {
-        return !string.IsNullOrWhiteSpace(manga.Poster) ? GetImage(uri.MakeRelativeUri(manga.Poster)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(manga.Poster) ? SaveImage(uri.MakeRelativeUri(manga.Poster)) : Task.FromResult(default(Image));
     }
     
     private static T GetNextData<T>(HtmlDocument doc, string node) {

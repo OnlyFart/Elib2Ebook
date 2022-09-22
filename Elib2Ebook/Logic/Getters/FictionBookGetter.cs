@@ -50,7 +50,7 @@ public class FictionBookGetter : GetterBase{
 
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
         var imagePath = doc.QuerySelector("div.cover_float img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 
     private async Task AddChapter(ICollection<Chapter> chapters, Chapter chapter, StringBuilder text) {

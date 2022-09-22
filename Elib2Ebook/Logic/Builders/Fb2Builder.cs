@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using System.Xml.Linq;
+using System.Xml.XPath;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
 using HtmlAgilityPack;
@@ -20,7 +23,7 @@ public class Fb2Builder : BuilderBase {
     private readonly XElement _titleInfo;
     private readonly XElement _body;
     private readonly XElement _documentInfo;
-    private readonly List<XElement> _images = new();
+    private readonly List<Image> _images = new();
 
     private readonly Dictionary<string, string> _map = new() {
         {"strong", "strong"},
@@ -92,7 +95,7 @@ public class Fb2Builder : BuilderBase {
 
     private XElement GetBinary(Image image) {
         var binaryElem = new XElement(_ns + "binary");
-        binaryElem.Value = Convert.ToBase64String(image.Content);
+        binaryElem.Value = Convert.ToBase64String(image.GetContent().Result);
         binaryElem.SetAttributeValue("id", image.Name);
         binaryElem.SetAttributeValue("content-type", "image/" + image.Extension);
 
@@ -147,7 +150,7 @@ public class Fb2Builder : BuilderBase {
             
             coverPage.Add(imageElem);
             _titleInfo.Add(coverPage);
-            _images.Add(GetBinary(cover));
+            _images.Add(cover);
         }
 
         return this;
@@ -213,7 +216,7 @@ public class Fb2Builder : BuilderBase {
             _body.Add(section);
 
             foreach (var image in chapter.Images) {
-                _images.Add(GetBinary(image));
+                _images.Add(image);
             }
         }
 
@@ -335,15 +338,29 @@ public class Fb2Builder : BuilderBase {
         
         _description.Add(_titleInfo);
         _description.Add(_documentInfo);
-        _book.Add(_description);
-        _book.Add(_body);
-
-        foreach (var image in _images) {
-            _book.Add(image);
-        }
 
         await using var file = File.Create(name);
-        await _book.SaveAsync(file, SaveOptions.None, new CancellationToken());
+        var xws = new XmlWriterSettings {
+            Async = true,
+            Encoding = Encoding.UTF8,
+            Indent = true,
+            NewLineHandling = NewLineHandling.Replace
+        };
+
+        await using var writer = XmlWriter.Create(file, xws);
+        var cancellationToken = new CancellationToken();
+        
+        await writer.WriteStartElementAsync(string.Empty, "FictionBook", _ns.NamespaceName);
+        await writer.WriteAttributeStringAsync("xmlns", "xlink", null, _xlink.NamespaceName);
+
+        await _description.WriteToAsync(writer, cancellationToken);
+        await _body.WriteToAsync(writer, cancellationToken);
+        foreach (var image in _images) {
+            await GetBinary(image).WriteToAsync(writer, cancellationToken);
+        }
+
+        await writer.WriteEndElementAsync();
+        await writer.FlushAsync();
     }
 
     protected override string GetFileName(string name) {

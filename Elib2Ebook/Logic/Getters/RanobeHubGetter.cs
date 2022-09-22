@@ -81,6 +81,6 @@ public class RanobeHubGetter : GetterBase {
     
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
         var imagePath = doc.QuerySelector("div.poster-slider img")?.Attributes["data-src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 }

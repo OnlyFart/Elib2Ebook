@@ -12,6 +12,7 @@ using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Logic.Builders;
 using Elib2Ebook.Logic.Getters;
+using TempFolder;
 
 namespace Elib2Ebook; 
 
@@ -43,9 +44,8 @@ internal static class Program {
                 var client = new HttpClient(handler);
                 client.Timeout = TimeSpan.FromSeconds(options.Timeout);
 
-                var getterConfig = new BookGetterConfig(options, client, cookieContainer);
-                using var getter = GetGetter(getterConfig, options.Url.First().AsUri());
-                
+                using var getterConfig = new BookGetterConfig(options, client, cookieContainer, TempFolderFactory.Create()); 
+                var getter = GetGetter(getterConfig, options.Url.First().AsUri());
                 await getter.Init();
                 await getter.Authorize();
 

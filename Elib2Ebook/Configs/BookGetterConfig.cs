@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
+using TempFolder;
 
 namespace Elib2Ebook.Configs; 
 
@@ -13,13 +14,17 @@ public class BookGetterConfig : IDisposable {
     
     public bool HasCredentials => !string.IsNullOrWhiteSpace(Options.Login) && !string.IsNullOrWhiteSpace(Options.Password);
 
-    public BookGetterConfig(Options options, HttpClient client, CookieContainer cookieContainer){
+    public TempFolder.TempFolder TempFolder { get; }
+
+    public BookGetterConfig(Options options, HttpClient client, CookieContainer cookieContainer, TempFolder.TempFolder tempFolder){
         Client = client;
         CookieContainer = cookieContainer;
         Options = options;
+        TempFolder = tempFolder;
     }
 
     public void Dispose() {
         Client?.Dispose();
+        TempFolder?.Dispose();
     }
 }

@@ -76,6 +76,6 @@ public class WattpadGetter : GetterBase {
     }
 
     private Task<Image> GetCover(WattpadInfo wattpadInfo) {
-        return !string.IsNullOrWhiteSpace(wattpadInfo.Cover) ? GetImage(wattpadInfo.Cover.AsUri()) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(wattpadInfo.Cover) ? SaveImage(wattpadInfo.Cover.AsUri()) : Task.FromResult(default(Image));
     }
 }

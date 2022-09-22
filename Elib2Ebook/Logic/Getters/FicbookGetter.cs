@@ -41,7 +41,7 @@ public class FicbookGetter : GetterBase {
         
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
         var imagePath = doc.QuerySelector("fanfic-cover")?.Attributes["src-original"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url, string title) {

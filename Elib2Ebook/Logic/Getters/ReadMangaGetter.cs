@@ -85,6 +85,6 @@ public class ReadMangaGetter : GetterBase {
 
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
         var imagePath = doc.QuerySelector("div.picture-fotorama img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 }

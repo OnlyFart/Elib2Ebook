@@ -113,9 +113,9 @@ public abstract class BuilderBase {
     /// <param name="directory"></param>
     /// <param name="cover"></param>
     /// <param name="name"></param>
-    public Task SaveCover(string directory, Image cover, string name) {
+    public async Task SaveCover(string directory, Image cover, string name) {
         if (cover == null) {
-            return Task.CompletedTask;
+            return;
         }
         
         var fileName = $"{name}_cover.{cover.Extension}".RemoveInvalidChars();
@@ -128,6 +128,6 @@ public abstract class BuilderBase {
             fileName = Path.Combine(directory, fileName);
         }
 
-        return File.WriteAllBytesAsync(fileName, cover.Content);
+        await File.WriteAllBytesAsync(fileName, await cover.GetContent());
     }
 }

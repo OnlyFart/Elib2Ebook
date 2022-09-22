@@ -154,7 +154,7 @@ public class LitresGetter : GetterBase {
     
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
         var imagePath = (doc.QuerySelector("meta[property=og:image]")?.Attributes["content"] ?? doc.QuerySelector("img[itemprop=image]")?.Attributes["data-src"])?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(string bookId, string title) {
@@ -179,7 +179,7 @@ public class LitresGetter : GetterBase {
         return result;
     }
 
-    private static IEnumerable<Image> GetImages(HtmlNode doc, LitresBook book) {
+    private IEnumerable<Image> GetImages(HtmlNode doc, LitresBook book) {
         var images = new List<Image>();
         foreach (var img in doc.QuerySelectorAll("img")) {
             var path = img.Attributes["src"]?.Value;
@@ -200,9 +200,7 @@ public class LitresGetter : GetterBase {
 
             var fileName = t.Target.Split("/").Last().Trim('/');
             img.Attributes["src"].Value = fileName;
-            images.Add(new Image(t.Content) {
-                Name = fileName
-            });
+            images.Add(new Image(null, Config.TempFolder.Path, fileName, t.Content));
         }
 
         return images;

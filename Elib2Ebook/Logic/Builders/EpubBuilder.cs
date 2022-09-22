@@ -14,6 +14,8 @@ public class EpubBuilder : BuilderBase {
     private readonly EpubWriter _writer;
     private readonly string _pattern;
 
+    private List<Image> Images { get; set; } = new();
+
     private EpubBuilder(string pattern) {
         _writer = new EpubWriter();
         _pattern = pattern;
@@ -64,7 +66,7 @@ public class EpubBuilder : BuilderBase {
     /// <returns></returns>
     public override BuilderBase WithCover(Image cover) {
         if (cover != null) {
-            _writer.SetCover(cover.Content, GetImageFormat(cover.Name));
+            _writer.SetCover(cover.GetContent().Result, GetImageFormat(cover.Name));
         }
 
         return this;
@@ -111,7 +113,8 @@ public class EpubBuilder : BuilderBase {
     public override BuilderBase WithChapters(IEnumerable<Chapter> chapters) {
         foreach (var chapter in chapters.Where(c => c.IsValid)) {
             foreach (var image in chapter.Images) {
-                _writer.AddFile(image.Name, image.Content, GetImageFormat(image.Name).ToEpubContentType());
+                _writer.AddFile(image.Name, image.GetContent().Result, GetImageFormat(image.Name).ToEpubContentType());
+                Images.Add(image);
             }
             
             _writer.AddChapter(chapter.Title.HtmlDecode().ReplaceNewLine().RemoveInvalidChars(), ApplyPattern(chapter.Title, chapter.Content));
@@ -149,7 +152,7 @@ public class EpubBuilder : BuilderBase {
     }
 
     protected override async Task BuildInternal(string name) {
-        await _writer.Write(name);
+        await _writer.Write(name, Images.Select(image => new FileMeta(image.Name, image.FilePath)));
     }
 
     protected override string GetFileName(string name) {

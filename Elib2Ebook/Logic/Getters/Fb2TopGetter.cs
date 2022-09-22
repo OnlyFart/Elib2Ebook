@@ -89,6 +89,6 @@ public class Fb2TopGetter : GetterBase {
 
     private Task<Image> GetCover(HtmlDocument doc, Uri url) {
         var imagePath = doc.QuerySelector("img.book-info-poster-img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(url.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(url.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 }

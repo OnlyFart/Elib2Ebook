@@ -85,6 +85,6 @@ public class FreedomGetter : GetterBase{
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("div.img-ranobe img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 }

@@ -80,7 +80,7 @@ public class RanobesComGetter : GetterBase {
 
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
         var imagePath = doc.QuerySelector("div.poster img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 
     private Uri GetTocLink(HtmlDocument doc, Uri uri) {

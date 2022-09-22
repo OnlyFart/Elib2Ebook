@@ -123,7 +123,7 @@ public class LibstGetter : GetterBase {
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("img.coverBook")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
     
     private static Author GetAuthor(HtmlDocument doc, Uri uri) {

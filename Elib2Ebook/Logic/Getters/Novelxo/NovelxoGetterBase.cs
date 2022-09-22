@@ -122,7 +122,7 @@ public abstract class NovelxoGetterBase : GetterBase {
     
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("div.cover img")?.Attributes["data-src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
     
     private static Author GetAuthor(HtmlDocument doc, Uri url) {

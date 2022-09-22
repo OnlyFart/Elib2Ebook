@@ -224,6 +224,6 @@ public class ProdamanGetter : GetterBase {
 
     private Task<Image> GetCover(HtmlDocument doc, Uri url) {
         var imagePath = doc.QuerySelector("div[itemprop=aggregateRating] img[itemprop=image]")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(url.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(url.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 }

@@ -75,7 +75,7 @@ public abstract class RenovelsGetterBase : GetterBase {
 
     private Task<Image> GetCover(RenovelsContent book, Uri bookUri) {
         var imagePath = book.Img.GetValueOrDefault("high", null) ?? book.Img.FirstOrDefault().Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 
     private async Task<IEnumerable<RenovelsChapter>> GetToc(RenovelsContent content) {

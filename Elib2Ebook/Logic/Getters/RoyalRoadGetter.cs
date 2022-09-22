@@ -79,6 +79,6 @@ public class RoyalRoadGetter : GetterBase {
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("div.cover-art-container img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 }

@@ -127,7 +127,7 @@ public class AuthorTodayGetter : GetterBase {
     }
 
     private Task<Image> GetCover(AuthorTodayBookDetails book) {
-        return !string.IsNullOrWhiteSpace(book.CoverUrl) ? GetImage(book.CoverUrl.AsUri()) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(book.CoverUrl) ? SaveImage(book.CoverUrl.AsUri()) : Task.FromResult(default(Image));
     }
 
     protected override HttpRequestMessage GetImageRequestMessage(Uri uri) {

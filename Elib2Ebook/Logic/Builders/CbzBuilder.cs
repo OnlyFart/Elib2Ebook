@@ -68,7 +68,7 @@ public class CbzBuilder : BuilderBase {
             foreach (var image in chapter.Images) {
                 var zipArchiveEntry = archive.CreateEntry($"{++c}.{image.Extension}", CompressionLevel.Optimal);
                 await using var zipStream = zipArchiveEntry.Open();
-                await zipStream.WriteAsync(image.Content);
+                await zipStream.WriteAsync(await image.GetContent());
             }
         }
     }

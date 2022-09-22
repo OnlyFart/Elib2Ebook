@@ -130,7 +130,7 @@ public class DarkNovelsGetter : GetterBase {
             }
         }
 
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 
     private async Task<IEnumerable<DarkNovelsChapter>> GetToc(string bookId) {

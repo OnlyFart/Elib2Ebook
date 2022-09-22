@@ -61,7 +61,11 @@ public class JsonBuilder : BuilderBase {
 
     protected override async Task BuildInternal(string name) {
         await using var file = File.Create(name);
-        await JsonSerializer.SerializeAsync(file, _book);
+        var jsonSerializerOptions = new JsonSerializerOptions {
+            WriteIndented = true
+        };
+        
+        await JsonSerializer.SerializeAsync(file, _book, jsonSerializerOptions);
     }
 
     protected override string GetFileName(string name) {

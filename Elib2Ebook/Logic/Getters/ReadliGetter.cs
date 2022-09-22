@@ -82,7 +82,7 @@ public class ReadliGetter : GetterBase {
 
     private Task<Image> GetCover(HtmlNode doc, Uri bookUri) {
         var imagePath = doc.QuerySelector("img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? GetImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 
     private async Task AddChapter(ICollection<Chapter> chapters, Chapter chapter, StringBuilder text) {

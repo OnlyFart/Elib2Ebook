@@ -44,19 +44,22 @@ public abstract class GetterBase : IDisposable {
     /// </summary>
     /// <param name="uri"></param>
     /// <returns></returns>
-    protected async Task<Image> GetImage(Uri uri) {
+    protected async Task<Image> SaveImage(Uri uri) {
         try {
             using var response = await Config.Client.SendWithTriesAsync(() => GetImageRequestMessage(uri));
             Console.WriteLine($"Загружена картинка {response.RequestMessage!.RequestUri}");
             if (response is { StatusCode: HttpStatusCode.OK }) {
-                return new Image(await response.Content.ReadAsByteArrayAsync()) {
-                    Name = uri.GetFileName()
-                };
+                var content = await response.Content.ReadAsByteArrayAsync();
+                if (content.Length == 0) {
+                    return default;
+                }
+
+                return new Image(uri, Config.TempFolder.Path, uri.GetFileName(), content);
             }
 
-            return null;
+            return default;
         } catch (Exception) {
-            return null;
+            return default;
         }
     }
         
@@ -88,8 +91,8 @@ public abstract class GetterBase : IDisposable {
                 return;
             }
 
-            var image = await GetImage(uri);
-            if (image?.Content == null || image.Content.Length == 0) {
+            var image = await SaveImage(uri);
+            if (image == default) {
                 toRemove.Add(img);
                 return;
             }
