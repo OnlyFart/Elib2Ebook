@@ -25,7 +25,7 @@ internal static class Program {
             .WithParsedAsync(async options => {
                 var cookieContainer = new CookieContainer();
 
-                var handler = new HttpClientHandler {
+                using var handler = new HttpClientHandler {
                     AutomaticDecompression = DecompressionMethods.GZip | 
                                              DecompressionMethods.Deflate |
                                              DecompressionMethods.Brotli,
@@ -41,11 +41,11 @@ internal static class Program {
                     handler.UseProxy = true;
                 }
 
-                var client = new HttpClient(handler);
+                using var client = new HttpClient(handler);
                 client.Timeout = TimeSpan.FromSeconds(options.Timeout);
 
                 using var getterConfig = new BookGetterConfig(options, client, cookieContainer, TempFolderFactory.Create()); 
-                var getter = GetGetter(getterConfig, options.Url.First().AsUri());
+                using var getter = GetGetter(getterConfig, options.Url.First().AsUri());
                 await getter.Init();
                 await getter.Authorize();
 

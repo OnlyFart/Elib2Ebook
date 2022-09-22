@@ -93,9 +93,9 @@ public class Fb2Builder : BuilderBase {
         return title;
     }
 
-    private XElement GetBinary(Image image) {
+    private async Task<XElement> GetBinary(Image image) {
         var binaryElem = new XElement(_ns + "binary");
-        binaryElem.Value = Convert.ToBase64String(image.Content);
+        binaryElem.Value = Convert.ToBase64String(await image.GetContent());
         binaryElem.SetAttributeValue("id", image.Name);
         binaryElem.SetAttributeValue("content-type", "image/" + image.Extension);
 
@@ -356,7 +356,8 @@ public class Fb2Builder : BuilderBase {
         await _description.WriteToAsync(writer, cancellationToken);
         await _body.WriteToAsync(writer, cancellationToken);
         foreach (var image in _images) {
-            await GetBinary(image).WriteToAsync(writer, cancellationToken);
+            var binary = await GetBinary(image);
+            await binary.WriteToAsync(writer, cancellationToken);
         }
 
         await writer.WriteEndElementAsync();

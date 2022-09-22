@@ -113,7 +113,7 @@ public class EpubBuilder : BuilderBase {
     public override BuilderBase WithChapters(IEnumerable<Chapter> chapters) {
         foreach (var chapter in chapters.Where(c => c.IsValid)) {
             foreach (var image in chapter.Images) {
-                _writer.AddFile(image.Name, image.GetContent().Result, GetImageFormat(image.Name).ToEpubContentType());
+                _writer.AddFile(image.Name, Array.Empty<byte>(), GetImageFormat(image.Name).ToEpubContentType());
                 Images.Add(image);
             }
             
