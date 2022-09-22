@@ -95,7 +95,7 @@ public class Fb2Builder : BuilderBase {
 
     private XElement GetBinary(Image image) {
         var binaryElem = new XElement(_ns + "binary");
-        binaryElem.Value = Convert.ToBase64String(image.GetContent().Result);
+        binaryElem.Value = Convert.ToBase64String(image.Content);
         binaryElem.SetAttributeValue("id", image.Name);
         binaryElem.SetAttributeValue("content-type", "image/" + image.Extension);
 
@@ -344,7 +344,7 @@ public class Fb2Builder : BuilderBase {
             Async = true,
             Encoding = Encoding.UTF8,
             Indent = true,
-            NewLineHandling = NewLineHandling.Replace
+            NewLineHandling = NewLineHandling.Replace,
         };
 
         await using var writer = XmlWriter.Create(file, xws);

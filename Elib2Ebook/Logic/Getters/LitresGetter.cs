@@ -171,7 +171,7 @@ public class LitresGetter : GetterBase {
             };
             
             section.RemoveNodes("title, note, clipped");
-            chapter.Images = GetImages(section, book);
+            chapter.Images = await GetImages(section, book);
             chapter.Content = section.InnerHtml;
             result.Add(chapter);
         }
@@ -179,7 +179,7 @@ public class LitresGetter : GetterBase {
         return result;
     }
 
-    private IEnumerable<Image> GetImages(HtmlNode doc, LitresBook book) {
+    private async Task<IEnumerable<Image>> GetImages(HtmlNode doc, LitresBook book) {
         var images = new List<Image>();
         foreach (var img in doc.QuerySelectorAll("img")) {
             var path = img.Attributes["src"]?.Value;
@@ -200,7 +200,7 @@ public class LitresGetter : GetterBase {
 
             var fileName = t.Target.Split("/").Last().Trim('/');
             img.Attributes["src"].Value = fileName;
-            images.Add(new Image(null, Config.TempFolder.Path, fileName, t.Content));
+            images.Add(await Image.Create(null, Config.TempFolder.Path, fileName, t.Content));
         }
 
         return images;

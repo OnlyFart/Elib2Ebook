@@ -54,7 +54,7 @@ public abstract class GetterBase : IDisposable {
                     return default;
                 }
 
-                return new Image(uri, Config.TempFolder.Path, uri.GetFileName(), content);
+                return await Image.Create(uri, Config.TempFolder.Path, uri.GetFileName(), content);
             }
 
             return default;

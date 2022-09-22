@@ -6,32 +6,35 @@ namespace Elib2Ebook.Types.Book;
 
 public class Image {
     private readonly string _name;
-    public string FilePath => Path.Combine(Directory, Name);
     
-    public string Directory;
+    public Uri Url { get; set; }
+    
+    public string Directory { get; set; }
 
-    public Uri Url;
+    public byte[] Content => GetContent().Result;
+    
+    public string Extension => GetExtension(Name);
+    
+    public string FilePath => Path.Combine(Directory, Name);
 
-    public Image(Uri url, string directory, string name, byte[] content) {
-        Directory = directory;
-        Url = url;
-        Name = name;
-        File.WriteAllBytes(FilePath, content);
+    public static async Task<Image> Create(Uri url, string directory, string name, byte[] content) {
+        var image = new Image {
+            Directory = directory,
+            Url = url,
+            Name = name
+        };
+
+        await File.WriteAllBytesAsync(image.FilePath, content);
+        return image;
     }
-
+    
     public Task<byte[]> GetContent() {
         return File.ReadAllBytesAsync(FilePath);
     }
 
     public string Name {
         get => _name;
-        private init {
-            if (string.IsNullOrWhiteSpace(value)) {
-                _name = Guid.NewGuid() + ".jpg";
-            } else {
-                _name = Guid.NewGuid() + "." + GetExtension(value);
-            }
-        }
+        private init => _name = string.IsNullOrWhiteSpace(value) ? Guid.NewGuid() + ".jpg" : Guid.NewGuid() + "." + GetExtension(value);
     }
 
     private static string GetExtension(string name) {
@@ -43,6 +46,4 @@ public class Image {
 
         return "jpg";
     }
-
-    public string Extension => GetExtension(Name);
 }
