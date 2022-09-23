@@ -128,6 +128,8 @@ public abstract class BuilderBase {
             fileName = Path.Combine(directory, fileName);
         }
 
-        await File.WriteAllBytesAsync(fileName, await cover.GetContent());
+        await using var file = File.OpenWrite(fileName);
+        await using var coverStream = cover.GetStream();
+        await coverStream.CopyToAsync(file);
     }
 }

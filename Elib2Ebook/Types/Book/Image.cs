@@ -17,19 +17,37 @@ public class Image {
     
     public string FilePath => Path.Combine(Directory, Name);
 
-    public static async Task<Image> Create(Uri url, string directory, string name, byte[] content) {
-        var image = new Image {
-            Directory = directory,
-            Url = url,
-            Name = name
-        };
+    private Image(Uri url, string directory, string name) {
+        Directory = directory;
+        Url = url;
+        Name = name;
+    }
 
+    public static async Task<Image> Create(Uri url, string directory, string name, byte[] content) {
+        var image = new Image(url, directory, name);
         await File.WriteAllBytesAsync(image.FilePath, content);
+        return image;
+    }
+    
+    public static async Task<Image> Create(Uri url, string directory, string name, Stream stream) {
+        if (stream.Length == 0) {
+            return default;
+        }
+        
+        var image = new Image(url, directory, name);
+
+        await using var file = File.OpenWrite(image.FilePath);
+        await stream.CopyToAsync(file);
+
         return image;
     }
     
     public Task<byte[]> GetContent() {
         return File.ReadAllBytesAsync(FilePath);
+    }
+    
+    public Stream GetStream() {
+        return File.OpenRead(FilePath);
     }
 
     public string Name {

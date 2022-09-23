@@ -93,13 +93,23 @@ public class Fb2Builder : BuilderBase {
         return title;
     }
 
-    private async Task<XElement> GetBinary(Image image) {
-        var binaryElem = new XElement(_ns + "binary");
-        binaryElem.Value = Convert.ToBase64String(await image.GetContent());
-        binaryElem.SetAttributeValue("id", image.Name);
-        binaryElem.SetAttributeValue("content-type", "image/" + image.Extension);
+    private static async Task WriteBinary(XmlWriter writer, Image image) {
+        const int bufferSize = 1000;
+        var buffer = new byte[bufferSize];
+        int readBytes;
 
-        return binaryElem;
+        await using var inputFile = image.GetStream();
+        await writer.WriteStartElementAsync(null, "binary", null);
+        await writer.WriteAttributeStringAsync(null, "id", null, image.Name);
+        await writer.WriteAttributeStringAsync(null, "content-type", null, "image/" + image.Extension);
+        using var br = new BinaryReader(inputFile);
+
+        do {
+            readBytes = br.Read(buffer, 0, bufferSize);
+            await writer.WriteBase64Async(buffer, 0, readBytes);
+        } while (bufferSize <= readBytes);
+
+        await writer.WriteEndElementAsync();
     }
 
     /// <summary>
@@ -356,8 +366,7 @@ public class Fb2Builder : BuilderBase {
         await _description.WriteToAsync(writer, cancellationToken);
         await _body.WriteToAsync(writer, cancellationToken);
         foreach (var image in _images) {
-            var binary = await GetBinary(image);
-            await binary.WriteToAsync(writer, cancellationToken);
+            await WriteBinary(writer, image);
         }
 
         await writer.WriteEndElementAsync();
