@@ -66,7 +66,7 @@ public class EpubBuilder : BuilderBase {
     /// <returns></returns>
     public override BuilderBase WithCover(Image cover) {
         if (cover != null) {
-            _writer.SetCover(cover.GetContent().Result, GetImageFormat(cover.Name));
+            _writer.SetCover(cover.Content, GetImageFormat(cover.Name));
         }
 
         return this;

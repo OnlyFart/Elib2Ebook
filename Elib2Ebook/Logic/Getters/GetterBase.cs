@@ -48,12 +48,13 @@ public abstract class GetterBase : IDisposable {
         try {
             using var response = await Config.Client.SendWithTriesAsync(() => GetImageRequestMessage(uri));
             Console.WriteLine($"Загружена картинка {response.RequestMessage!.RequestUri}");
-            if (response is { StatusCode: HttpStatusCode.OK }) {
-                await using var stream = await response.Content.ReadAsStreamAsync();
-                return await Image.Create(uri, Config.TempFolder.Path, uri.GetFileName(), stream);
+            if (response is not { StatusCode: HttpStatusCode.OK }) {
+                return default;
             }
+            
+            await using var stream = await response.Content.ReadAsStreamAsync();
+            return await Image.Create(uri, Config.TempFolder.Path, uri.GetFileName(), stream);
 
-            return default;
         } catch (Exception) {
             return default;
         }

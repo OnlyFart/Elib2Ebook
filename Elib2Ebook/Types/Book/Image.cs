@@ -11,7 +11,7 @@ public class Image {
     
     public string Directory { get; set; }
 
-    public byte[] Content => GetContent().Result;
+    public byte[] Content => File.ReadAllBytes(FilePath);
     
     public string Extension => GetExtension(Name);
     
@@ -41,11 +41,7 @@ public class Image {
 
         return image;
     }
-    
-    public Task<byte[]> GetContent() {
-        return File.ReadAllBytesAsync(FilePath);
-    }
-    
+
     public Stream GetStream() {
         return File.OpenRead(FilePath);
     }
