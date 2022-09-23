@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
-using System.Xml.XPath;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
 using HtmlAgilityPack;

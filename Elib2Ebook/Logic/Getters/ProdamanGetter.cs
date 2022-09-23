@@ -35,9 +35,8 @@ public class ProdamanGetter : GetterBase {
             return;
         }
 
-        using var post = await Config.Client.PostWithTriesAsync(SystemUrl.MakeRelativeUri("/login"), GetAuthData());
-        var doc = await post.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
-        
+        var doc = await Config.Client.PostHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri("/login"), GetAuthData());
+
         if (!string.IsNullOrWhiteSpace(doc.GetTextBySelector("p.error"))) {
             throw new Exception("Не удалось авторизоваться");
         }

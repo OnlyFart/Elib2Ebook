@@ -24,7 +24,7 @@ public class LitmarketGetter : GetterBase {
         Config.Client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
         
         var response = await Config.Client.GetWithTriesAsync(SystemUrl);
-        var doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
+        var doc = await response.Content.ReadAsStreamAsync().ContinueWith(t => t.Result.AsHtmlDoc());
 
         var csrf = doc.QuerySelector("[name=csrf-token]")?.Attributes["content"]?.Value;
         if (string.IsNullOrWhiteSpace(csrf)) {

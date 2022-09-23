@@ -48,7 +48,7 @@ public abstract class TopLibaGetterBase : GetterBase {
         var token = doc.QuerySelector("meta[name=_token]").Attributes["content"].Value;
         
         var response = await Config.Client.PostWithTriesAsync(SystemUrl.MakeRelativeUri("/login"), GetAuthData(token));
-        doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
+        doc = await response.Content.ReadAsStreamAsync().ContinueWith(t => t.Result.AsHtmlDoc());
         var helpBlock = doc.QuerySelector("input[type=email] + span.help-block");
         if (helpBlock == default) {
             Console.WriteLine("Успешно авторизовались");

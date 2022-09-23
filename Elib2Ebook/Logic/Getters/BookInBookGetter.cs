@@ -64,7 +64,7 @@ public class BookInBookGetter : GetterBase {
                 return sb.AsHtmlDoc();
             }
 
-            var doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
+            var doc = await response.Content.ReadAsStreamAsync().ContinueWith(t => t.Result.AsHtmlDoc());
             var text = doc.GetTextBySelector("#PAGE_TEXT").Deserialize<string>().HtmlDecode();
             using var sr = new StringReader(text);
             

@@ -121,7 +121,7 @@ public class LitgorodGetter : GetterBase {
             return default;
         }
 
-        var doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
+        var doc = await response.Content.ReadAsStreamAsync().ContinueWith(t => t.Result.AsHtmlDoc());
 
         var content = doc.QuerySelector("div.reader__content__wrap");
         if (content == default) {

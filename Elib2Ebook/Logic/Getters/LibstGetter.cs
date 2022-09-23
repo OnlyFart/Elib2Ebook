@@ -44,8 +44,7 @@ public class LibstGetter : GetterBase {
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl);
         var token = doc.QuerySelector("input[name=__RequestVerificationToken]").Attributes["value"].Value;
 
-        var response = await Config.Client.PostAsync(SystemUrl.MakeRelativeUri("/Account/Login?ReturnUrl=/"), GenerateAuthData(token));
-        doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
+        doc = await Config.Client.PostHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri("/Account/Login?ReturnUrl=/"), GenerateAuthData(token));
         var error = doc.GetTextBySelector("div.validation-summary-errors");
         if (string.IsNullOrEmpty(error)) {
             Console.WriteLine("Авторизация прошла успешно");

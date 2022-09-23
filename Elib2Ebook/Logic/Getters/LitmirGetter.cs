@@ -105,7 +105,7 @@ public class LitmirGetter : GetterBase {
             return default;
         }
 
-        var doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
+        var doc = await response.Content.ReadAsStreamAsync().ContinueWith(t => t.Result.AsHtmlDoc());
         foreach (var node in doc.QuerySelectorAll("p")) {
             node.Attributes.RemoveAll();
         }

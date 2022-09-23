@@ -34,8 +34,7 @@ public class RulateGetter : GetterBase {
         }
 
 
-        var response = await Config.Client.PostWithTriesAsync(SystemUrl, GetAuthData());
-        var doc = await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
+        var doc = await Config.Client.PostHtmlDocWithTriesAsync(SystemUrl, GetAuthData());
         var alertBlock = doc.QuerySelector("div.alert-error");
         
         if (alertBlock == default) {

@@ -102,6 +102,6 @@ public class RanobeNovelsGetter : GetterBase {
             await Task.Delay(errorTimeout);
         }
         
-        return await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
+        return await response.Content.ReadAsStreamAsync().ContinueWith(t => t.Result.AsHtmlDoc());
     }
 }

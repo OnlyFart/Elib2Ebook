@@ -92,16 +92,12 @@ public static class HttpClientExtensions {
     }
         
     public static async Task<HtmlDocument> GetHtmlDocWithTriesAsync(this HttpClient client, Uri url) {
-        var response = await client.GetWithTriesAsync(url);
-        var content = await response.Content.ReadAsStringAsync();
-            
-        return content.AsHtmlDoc();
+        using var response = await client.GetWithTriesAsync(url); 
+        return await response.Content.ReadAsStreamAsync().ContinueWith(t => t.Result.AsHtmlDoc());
     }
     
     public static async Task<HtmlDocument> PostHtmlDocWithTriesAsync(this HttpClient client, Uri url, HttpContent content) {
-        var response = await client.PostWithTriesAsync(url, content);
-        var data = await response.Content.ReadAsStringAsync();
-            
-        return data.AsHtmlDoc();
+        using var response = await client.PostWithTriesAsync(url, content);
+        return await response.Content.ReadAsStreamAsync().ContinueWith(t => t.Result.AsHtmlDoc());
     }
 }

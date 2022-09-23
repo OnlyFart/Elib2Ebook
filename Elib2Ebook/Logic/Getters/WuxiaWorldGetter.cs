@@ -53,9 +53,7 @@ public class WuxiaWorldGetter : GetterBase {
                 ["chapter"] = span.Attributes["data-id"].Value
             });
 
-            var data = await Config.Client.PostWithTriesAsync(SystemUrl.MakeRelativeUri("/wp-content/themes/Wuxia/template-parts/post/menu-query.php"), payload);
-            var tocDoc = await data.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
-
+            var tocDoc = await Config.Client.PostHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri("/wp-content/themes/Wuxia/template-parts/post/menu-query.php"), payload);
             result.AddRange(tocDoc.QuerySelectorAll("li a").Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.InnerText.HtmlDecode())));
         }
 

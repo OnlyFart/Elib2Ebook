@@ -113,7 +113,7 @@ public class ReadliGetter : GetterBase {
             return default;
         }
 
-        return await response.Content.ReadAsStringAsync().ContinueWith(t => t.Result.AsHtmlDoc());
+        return await response.Content.ReadAsStreamAsync().ContinueWith(t => t.Result.AsHtmlDoc());
     }
 
     private async Task<List<Chapter>> FillChapters(string bookId, long pages, string name) {
