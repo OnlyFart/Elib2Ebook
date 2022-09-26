@@ -75,6 +75,10 @@ public abstract class LitnetGetterBase : GetterBase {
     private async Task<LitnetBookResponse> GetBook(string token, string bookId) {
         var url = _apiUrl.MakeRelativeUri($"/v1/book/get/{bookId}?app=android&device_id={DeviceId}&user_token={token}&sign={GetSign(token)}");
         var response = await Config.Client.GetFromJsonAsync<LitnetBookResponse>(url);
+        if (!Config.HasCredentials && response!.AdultOnly) {
+            throw new Exception("Произведение 18+. Необходимо добавить логин и пароль.");
+        }
+        
         return response;
     }
 

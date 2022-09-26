@@ -26,4 +26,7 @@ public class LitnetBookResponse {
     
     [JsonPropertyName("cycle_priority")]
     public int? CyclePriority { get; set; }
+    
+    [JsonPropertyName("adult_only")]
+    public bool AdultOnly { get; set; }
 }
