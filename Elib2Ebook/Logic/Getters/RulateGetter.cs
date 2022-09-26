@@ -119,7 +119,7 @@ public class RulateGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(string bookId, string chapterId) {
-        var s = await Config.Client.GetFromJsonAsync<RulateChapter>(SystemUrl.MakeRelativeUri($"/book/{bookId}/{chapterId}/readyajax"));
+        var s = await Config.Client.GetFromJsonWithTriesAsync<RulateChapter>(SystemUrl.MakeRelativeUri($"/book/{bookId}/{chapterId}/readyajax"));
         return (s.CanRead ? s.Content.AsHtmlDoc().QuerySelector("div.content-text")?.InnerHtml ?? string.Empty : string.Empty).AsHtmlDoc();
     }
 

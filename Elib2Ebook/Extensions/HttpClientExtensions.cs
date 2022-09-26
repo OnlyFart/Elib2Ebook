@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 
@@ -94,6 +95,11 @@ public static class HttpClientExtensions {
     public static async Task<HtmlDocument> GetHtmlDocWithTriesAsync(this HttpClient client, Uri url) {
         using var response = await client.GetWithTriesAsync(url); 
         return await response.Content.ReadAsStreamAsync().ContinueWith(t => t.Result.AsHtmlDoc());
+    }
+    
+    public static async Task<T> GetFromJsonWithTriesAsync<T>(this HttpClient client, Uri url) {
+        using var response = await client.GetWithTriesAsync(url);
+        return await response.Content.ReadFromJsonAsync<T>();
     }
     
     public static async Task<HtmlDocument> PostHtmlDocWithTriesAsync(this HttpClient client, Uri url, HttpContent content) {
