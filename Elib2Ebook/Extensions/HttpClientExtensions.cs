@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 
@@ -92,9 +93,9 @@ public static class HttpClientExtensions {
         Console.WriteLine($"Сервер не успевает ответить за {client.Timeout.Seconds} секунд. Попробуйте увеличить Timeout с помощью параметра -t");
     }
         
-    public static async Task<HtmlDocument> GetHtmlDocWithTriesAsync(this HttpClient client, Uri url) {
+    public static async Task<HtmlDocument> GetHtmlDocWithTriesAsync(this HttpClient client, Uri url, Encoding encoding = null) {
         using var response = await client.GetWithTriesAsync(url); 
-        return await response.Content.ReadAsStreamAsync().ContinueWith(t => t.Result.AsHtmlDoc());
+        return await response.Content.ReadAsStreamAsync().ContinueWith(t => t.Result.AsHtmlDoc(encoding));
     }
     
     public static async Task<T> GetFromJsonWithTriesAsync<T>(this HttpClient client, Uri url) {
@@ -102,8 +103,8 @@ public static class HttpClientExtensions {
         return await response.Content.ReadFromJsonAsync<T>();
     }
     
-    public static async Task<HtmlDocument> PostHtmlDocWithTriesAsync(this HttpClient client, Uri url, HttpContent content) {
+    public static async Task<HtmlDocument> PostHtmlDocWithTriesAsync(this HttpClient client, Uri url, HttpContent content, Encoding encoding = null) {
         using var response = await client.PostWithTriesAsync(url, content);
-        return await response.Content.ReadAsStreamAsync().ContinueWith(t => t.Result.AsHtmlDoc());
+        return await response.Content.ReadAsStreamAsync().ContinueWith(t => t.Result.AsHtmlDoc(encoding));
     }
 }

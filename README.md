@@ -24,6 +24,7 @@
 * https://ficbook.net/
 * https://fictionbook.ru/
 * https://hentailib.me/
+* https://hogwartsnet.ru/
 * https://hotnovelpub.com/
 * https://hub-book.com/
 * https://ifreedom.su/
