@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,9 +19,7 @@ public class HogwartsNetGetter : GetterBase {
     
     private static Encoding _encoding = Encoding.GetEncoding(1251);
 
-    protected override string GetId(Uri url) {
-        return url.GetQueryParameter("fid");
-    }
+    protected override string GetId(Uri url) => url.GetQueryParameter("fid");
 
     public override async Task Authorize() {
         if (!Config.HasCredentials) {

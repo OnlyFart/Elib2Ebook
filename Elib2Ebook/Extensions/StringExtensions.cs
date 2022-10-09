@@ -5,7 +5,6 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Web;
-using System.Xml;
 using HtmlAgilityPack;
 
 namespace Elib2Ebook.Extensions; 
