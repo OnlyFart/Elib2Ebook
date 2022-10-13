@@ -162,9 +162,9 @@ public class ProdamanGetter : GetterBase {
         return pages.Count > 0 ? pages.Max() : 1;
     }
     
-    private static bool IsSingleChapter(IEnumerable<HtmlNode> nodes) {
+    private static bool IsHeaderStart(IEnumerable<HtmlNode> nodes) {
         var firstNode = nodes.First();
-        return firstNode.Name != "h3" || string.IsNullOrWhiteSpace(firstNode.InnerText);
+        return firstNode.Name == "h3" && !string.IsNullOrWhiteSpace(firstNode.InnerText);
     }
     
     private static Chapter CreateChapter(string title) {
@@ -191,7 +191,6 @@ public class ProdamanGetter : GetterBase {
     private async Task<IEnumerable<Chapter>> FillChapter(Uri url, string title) {
         var chapters = new List<Chapter>();
         Chapter chapter = null;
-        var singleChapter = true;
         var text = new StringBuilder();
 
         var pages = await GetPages(url);
@@ -202,12 +201,16 @@ public class ProdamanGetter : GetterBase {
             var page = await Config.Client.GetHtmlDocWithTriesAsync(appendSegment);
             var content = page.QuerySelector("div.blog-text");
             var nodes = content.ChildNodes;
-            singleChapter = i == 1 ? IsSingleChapter(nodes) : singleChapter;
+            if (i == 1 && !IsHeaderStart(nodes)) {
+                chapter = CreateChapter(title);
+            }
 
             foreach (var node in nodes) {
-                if (singleChapter || node.Name != "h3" || (node.Name == "h3" && node.GetText() == "***")) {
-                    if (!string.IsNullOrWhiteSpace(node.InnerText)) {
-                        text.Append(Decode(node.InnerText.HtmlDecode()).CoverTag(node.Name == "h3" ? "h3" : "p"));
+                if (node.Name != "h3" || (node.Name == "h3" && node.GetText() == "***")) {
+                    if (node.Name == "img" && node.Attributes["src"] != null) {
+                        text.Append($"<img src='{node.Attributes["src"].Value}'/>");
+                    } else if (!string.IsNullOrWhiteSpace(node.InnerText)) {
+                        text.Append(Decode(node.InnerText.HtmlDecode()).CoverTag(node.Name == "#text" ? "p" : node.Name));
                     }
                 } else {
                     await AddChapter(chapters, chapter, text, url);

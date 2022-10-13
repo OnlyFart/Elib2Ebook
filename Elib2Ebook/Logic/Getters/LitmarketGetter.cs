@@ -143,7 +143,7 @@ public class LitmarketGetter : GetterBase {
         for (var i = 0; i < toc.Count; i++) {
             var chapterTitle = string.IsNullOrWhiteSpace(toc[i].Chunk.Mods[0].Text.Trim()) ? "Без названия" : toc[i].Chunk.Mods[0].Text.Trim();
             Console.WriteLine($"Загружаю главу {chapterTitle.CoverQuotes()}");
-            var text = new StringBuilder();
+            var sb = new StringBuilder();
             var chapter = new Chapter();
 
             foreach (var block in blocks.Where(b => b.Index >= toc[i].Index && (i == toc.Count -1 || b.Index < toc[i + 1].Index))) {
@@ -158,15 +158,32 @@ public class LitmarketGetter : GetterBase {
                             p.Append($"<a href='{mod.Data.GetProperty("url").GetString()}'>{mod.Mods?.FirstOrDefault()?.Text ?? string.Empty}</a>");
                             break;
                         default:
-                            p.Append($"{(mod.Text ?? string.Empty).Trim()} ");
+                            var text = $"{mod.Text ?? string.Empty}";
+                            if (mod.Styles?.Length > 0) {
+                                foreach (var style in mod.Styles) {
+                                    switch (style) {
+                                        case "ITALIC":
+                                            text = text.CoverTag("em");
+                                            break;
+                                        case "BOLD":
+                                            text = text.CoverTag("b");
+                                            break;
+                                        default:
+                                            Console.WriteLine(style);
+                                            break;
+                                    }
+                                }
+                            }
+
+                            p.Append(text);
                             break;
                     }
                 }
 
-                text.Append(p.ToString().CoverTag("p"));
+                sb.Append(p.ToString().CoverTag("p"));
             }
 
-            var chapterDoc = text.AsHtmlDoc();
+            var chapterDoc = sb.AsHtmlDoc();
             chapter.Images = await GetImages(chapterDoc, bookUri);
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;
             chapter.Title = chapterTitle;

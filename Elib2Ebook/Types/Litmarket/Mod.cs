@@ -6,6 +6,9 @@ namespace Elib2Ebook.Types.Litmarket;
 public class Mod {
     [JsonPropertyName("type")] 
     public string Type { get; set; }
+    
+    [JsonPropertyName("styles")]
+    public string[] Styles { get; set; }
 
     [JsonPropertyName("text")] 
     public string Text { get; set; }
