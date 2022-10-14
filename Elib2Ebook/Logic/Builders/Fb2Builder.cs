@@ -347,7 +347,7 @@ public class Fb2Builder : BuilderBase {
         
         var programUsed = CreateXElement("program-used");
         programUsed.Value = "Elib2Ebook";
-        _titleInfo.Add(programUsed);
+        _documentInfo.Add(programUsed);
         
         _description.Add(_titleInfo);
         _description.Add(_documentInfo);
