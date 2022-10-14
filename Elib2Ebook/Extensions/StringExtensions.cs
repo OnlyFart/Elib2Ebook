@@ -89,7 +89,7 @@ public static class StringExtensions {
     }
 
     public static string CoverTag(this string self, string tag) {
-        return $"<{tag}>{self}</{tag}>";
+        return string.IsNullOrEmpty(tag) ? self : $"<{tag}>{self}</{tag}>";
     }
 
     public static string CleanInvalidXmlChars(this string self) {

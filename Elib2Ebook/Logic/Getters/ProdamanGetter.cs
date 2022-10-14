@@ -178,7 +178,7 @@ public class ProdamanGetter : GetterBase {
             return;
         }
         
-        var chapterDoc = text.AsHtmlDoc();
+        var chapterDoc = text.ToString().AsHtmlDoc();
         chapter.Images = await GetImages(chapterDoc, url);
         chapter.Content = chapterDoc.DocumentNode.InnerHtml;
         chapters.Add(chapter);
@@ -194,12 +194,13 @@ public class ProdamanGetter : GetterBase {
         var text = new StringBuilder();
 
         var pages = await GetPages(url);
+        var firstBr = true;
         for (var i = 1; i <= pages; i++) {
             Console.WriteLine($"Получаю страницу {i}/{pages}");
 
             var appendSegment = url.AppendQueryParameter("page", i);
             var page = await Config.Client.GetHtmlDocWithTriesAsync(appendSegment);
-            var content = page.QuerySelector("div.blog-text");
+            var content = page.QuerySelector("div.blog-text").RemoveNodes("a[href*=snoska], div[id*=snoska]");
             var nodes = content.ChildNodes;
             if (i == 1 && !IsHeaderStart(nodes)) {
                 chapter = CreateChapter(title);
@@ -207,19 +208,42 @@ public class ProdamanGetter : GetterBase {
 
             foreach (var node in nodes) {
                 if (node.Name != "h3" || (node.Name == "h3" && node.GetText() == "***")) {
+                    if (node.Name == "br") {
+                        if (firstBr) {
+                            firstBr = false;
+                            text.Append("<p>");
+                        } else {
+                            text.Append("</p><p>");
+                        }
+                        
+                        continue;
+                    }
+                    
                     if (node.Name == "img" && node.Attributes["src"] != null) {
                         text.Append($"<img src='{node.Attributes["src"].Value}'/>");
-                    } else if (!string.IsNullOrWhiteSpace(node.InnerText)) {
-                        text.Append(Decode(node.InnerText.HtmlDecode()).CoverTag(node.Name == "#text" ? "p" : node.Name));
+                    } else if (!string.IsNullOrWhiteSpace(node.InnerHtml)) {
+                        var pText = Decode(node.InnerHtml.HtmlDecode());
+                        
+                        if (node.InnerHtml.StartsWith(" ")) {
+                            pText = " " + pText;
+                        }
+
+                        if (node.InnerHtml.EndsWith(" ")) {
+                            pText += " ";
+                        }
+                        
+                        text.Append(pText.CoverTag(node.Name == "#text" ? string.Empty : node.Name));
                     }
                 } else {
+                    text.Append("</p>");
                     await AddChapter(chapters, chapter, text, url);
                     text.Clear();
                     chapter = CreateChapter(Decode(node.InnerText.HtmlDecode()));
                 }
             }
         }
-
+        
+        text.Append("</p>");
         await AddChapter(chapters, chapter ?? CreateChapter(title), text, url);
         return chapters;
     }

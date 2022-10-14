@@ -345,6 +345,10 @@ public class Fb2Builder : BuilderBase {
     protected override async Task BuildInternal(string name) {
         _documentInfo.Add(GetDateElement(DateTime.Today));
         
+        var programUsed = CreateXElement("program-used");
+        programUsed.Value = "Elib2Ebook";
+        _titleInfo.Add(programUsed);
+        
         _description.Add(_titleInfo);
         _description.Add(_documentInfo);
 
