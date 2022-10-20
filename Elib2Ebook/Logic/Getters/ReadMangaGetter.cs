@@ -19,7 +19,6 @@ public class ReadMangaGetter : GetterBase {
     protected override Uri SystemUrl => new("https://readmanga.live/");
 
     protected override string GetId(Uri url) => url.GetSegment(1);
-
     public override async Task<Book> Get(Uri url) {
         url = SystemUrl.MakeRelativeUri(GetId(url));
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
@@ -67,7 +66,7 @@ public class ReadMangaGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(UrlChapter urlChapter) {
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(urlChapter.Url);
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(urlChapter.Url.AppendQueryParameter("mtr", "1"));
         if (doc.QuerySelector("div.buy-button") != default) {
             return default;
         }
