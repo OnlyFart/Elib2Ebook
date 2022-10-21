@@ -18,7 +18,7 @@ public class DreameGetter : GetterBase {
     
     private Uri _apiUrl => new($"https://wap-api.{SystemUrl.Host}/");
 
-    protected override string GetId(Uri url) => url.GetSegment(2).Split("-")[0];
+    protected override string GetId(Uri url) => url.GetSegment(2).Split(".")[0].Split("-")[0];
 
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
