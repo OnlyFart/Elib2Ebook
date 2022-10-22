@@ -23,14 +23,15 @@ public class MyBookGetter : GetterBase {
     public MyBookGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://mybook.ru/");
 
-    private Uri AuthUrl => SystemUrl.MakeRelativeUri("/api/auth/");
-
     private const string CONSUMER_KEY = "830968793b2a44c688400319f4a77231";
     private const string CONSUMER_SECRET = "HhaxXsMryrLz49R4";
     private const string IDENTIFIER = "47b17a4c8231a28f06c6c836d0b5f6f2134cb74d";
 
     private HttpClient _apiClient;
-    private MyBookAuth _token;
+    private MyBookAuth _token = new() {
+        Secret = "fYFPndYhOTW6YxIJ",
+        Token = "f8d32ef906664ed3a1525b7298aac461"
+    };
 
     private Uri GetMainUrl(Uri uri) {
         return SystemUrl.MakeRelativeUri($"{uri.GetSegment(1)}/{uri.GetSegment(2)}/{uri.GetSegment(3)}");
@@ -40,9 +41,6 @@ public class MyBookGetter : GetterBase {
         _apiClient = new HttpClient();
         _apiClient.DefaultRequestHeaders.Add("User-Agent", "MyBook/6.6.0 (iPhone; iOS 16.0.3; Scale/3.00)");
         _apiClient.DefaultRequestHeaders.Add("Accept", "application/json; version=4");
-        
-        using var response = await _apiClient.PostAsJsonAsync(AuthUrl, new { identifier = IDENTIFIER });
-        _token = await response.Content.ReadFromJsonAsync<MyBookAuth>();
     }
 
     private void SetAuthHeader(string method, Uri uri) {
@@ -64,8 +62,9 @@ public class MyBookGetter : GetterBase {
         if (!Config.HasCredentials) {
             return;
         }
-
-        SetAuthHeader("POST", AuthUrl);
+        
+        var authUrl = SystemUrl.MakeRelativeUri("/api/auth/");
+        SetAuthHeader("POST", authUrl);
 
         var payload = new {
             identifier = IDENTIFIER,
@@ -73,7 +72,7 @@ public class MyBookGetter : GetterBase {
             password = Config.Options.Password
         };
         
-        using var response = await _apiClient.PostAsJsonAsync(AuthUrl, payload);
+        using var response = await _apiClient.PostAsJsonAsync(authUrl, payload);
         if (response.StatusCode == HttpStatusCode.OK) {
             Console.WriteLine("Успешно авторизовались");
         } else {
@@ -122,17 +121,28 @@ public class MyBookGetter : GetterBase {
             throw new Exception("Не удалось получить книгу");
         }
         
-        var book = EpubReader.Read(await response.Content.ReadAsStreamAsync(), false, Encoding.UTF8);
-        var current = book.TableOfContents.First();
+        var epubBook = EpubReader.Read(await response.Content.ReadAsStreamAsync(), false, Encoding.UTF8);
+        var docBook = new HtmlDocument();
+
+        foreach (var chapter in epubBook.Resources.Html.Select(h => h.TextContent.AsHtmlDoc())) {
+            foreach (var node in chapter.QuerySelector("body").ChildNodes) {
+                docBook.DocumentNode.AppendChild(node);
+            }
+        }
+        
+        var current = epubBook.TableOfContents.First();
         
         do {
             Console.WriteLine($"Загружаю главу {current.Title.CoverQuotes()}");
+            if (string.IsNullOrWhiteSpace(current.HashLocation)) {
+                continue;
+            }
             
             var chapter = new Chapter {
                 Title = current.Title
             };
 
-            var content = GetContent(book, current);
+            var content = GetContent(docBook, current);
             chapter.Content = content.DocumentNode.RemoveNodes("h1, h2, h3").InnerHtml;
             chapters.Add(chapter);
         } while ((current = current.Next) != default);
@@ -140,27 +150,63 @@ public class MyBookGetter : GetterBase {
         return chapters;
     }
 
-    private static HtmlDocument GetContent(EpubBook book, EpubChapter epubChapter) {
-        var nextHash = epubChapter.Next?.HashLocation;
-        var sb = new StringBuilder();
+    private static HtmlDocument GetContent(HtmlDocument book, EpubChapter epubChapter) {
+        var chapter = new HtmlDocument();
 
-        var content = book.Resources.Html.First(t => t.Href == epubChapter.RelativePath).TextContent.AsHtmlDoc();
-        var start = content.QuerySelector($"#{epubChapter.HashLocation}");
-        while (true) {
-            if (start == default || start.Id == nextHash) {
-                break;
+        var startNode = book.QuerySelector($"#{epubChapter.HashLocation}");
+        var needStop = false;
+
+        var layer = startNode.ParentNode.CloneNode(false);
+        do {
+            var clone = CloneNode(startNode, epubChapter.Next?.HashLocation, ref needStop);
+            if (clone != default) {
+                layer.AppendChild(clone);
             }
-            
-            sb.Append(start.OuterHtml.HtmlDecode());
-            start = start.NextSibling;
-        }
 
-        var doc = sb.AsHtmlDoc();
-        foreach (var node in doc.QuerySelectorAll("p")) {
-            node.Attributes.RemoveAll();
+            do {
+                if (startNode.NextSibling == default) {
+                    if (startNode.ParentNode == default || startNode.ParentNode.Name == "#document") {
+                        startNode = default;
+                    } else {
+                        var layerClone = layer.CloneNode(true);
+                        layer = startNode.ParentNode.CloneNode(false);
+                        layer.AppendChild(layerClone);
+                        startNode = startNode.ParentNode;
+                    }
+                } else {
+                    startNode = startNode.NextSibling;
+                    break;
+                }
+            } while (startNode != default);
+        } while (startNode != default && !needStop);
+        
+        chapter.DocumentNode.AppendChild(layer);
+
+        return chapter;
+    }
+
+    private static HtmlNode CloneNode(HtmlNode node, string stopId, ref bool needStop) {
+        if (!string.IsNullOrWhiteSpace(stopId) && node.Id == stopId) {
+            needStop = true;
+            return default;
         }
         
-        return doc;
+        if (node.HasChildNodes) {
+            var parent = node.CloneNode(false);
+            
+            foreach (var child in node.ChildNodes) {
+                var clone = CloneNode(child, stopId, ref needStop);
+                if (needStop || clone == default) {
+                    return parent;
+                }
+                
+                parent.ChildNodes.Add(clone);    
+            }
+
+            return parent;
+        }
+
+        return node.CloneNode(true);
     }
 
     private Task<Image> GetCover(MyBookBook book) {
