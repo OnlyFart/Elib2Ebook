@@ -37,10 +37,11 @@ public class MyBookGetter : GetterBase {
         return SystemUrl.MakeRelativeUri($"{uri.GetSegment(1)}/{uri.GetSegment(2)}/{uri.GetSegment(3)}");
     }
 
-    public override async Task Init() {
+    public override Task Init() {
         _apiClient = new HttpClient();
         _apiClient.DefaultRequestHeaders.Add("User-Agent", "MyBook/6.6.0 (iPhone; iOS 16.0.3; Scale/3.00)");
         _apiClient.DefaultRequestHeaders.Add("Accept", "application/json; version=4");
+        return Task.CompletedTask;
     }
 
     private void SetAuthHeader(string method, Uri uri) {
@@ -110,6 +111,32 @@ public class MyBookGetter : GetterBase {
         return book;
     }
 
+    private static HtmlDocument SliceBook(EpubBook epubBook, EpubChapter epubChapter) {
+        var doc = new HtmlDocument();
+
+        var startChapter = epubBook.Resources.Html.First(h => h.AbsolutePath == epubChapter.AbsolutePath);
+        var startIndex = epubBook.Resources.Html.IndexOf(startChapter);
+        
+        var chapter = epubBook.Resources.Html[startIndex].TextContent.AsHtmlDoc();
+        foreach (var node in chapter.QuerySelector("body").ChildNodes) {
+            doc.DocumentNode.AppendChild(node);
+        }
+        
+        for (var i = startIndex + 1; i < epubBook.Resources.Html.Count; i++) {
+            var chapterContent = epubBook.Resources.Html[i];
+            if (chapterContent.AbsolutePath == epubChapter.Next?.AbsolutePath) {
+                break;
+            }
+            
+            chapter = chapterContent.TextContent.AsHtmlDoc();
+            foreach (var node in chapter.QuerySelector("body").ChildNodes) {
+                doc.DocumentNode.AppendChild(node);
+            }
+        }
+        
+        return doc;
+    }
+
     private async Task<IEnumerable<Chapter>> FillChapters(MyBookBook details) {
         var chapters = new List<Chapter>();
         
@@ -122,27 +149,16 @@ public class MyBookGetter : GetterBase {
         }
         
         var epubBook = EpubReader.Read(await response.Content.ReadAsStreamAsync(), false, Encoding.UTF8);
-        var docBook = new HtmlDocument();
-
-        foreach (var chapter in epubBook.Resources.Html.Select(h => h.TextContent.AsHtmlDoc())) {
-            foreach (var node in chapter.QuerySelector("body").ChildNodes) {
-                docBook.DocumentNode.AppendChild(node);
-            }
-        }
-        
         var current = epubBook.TableOfContents.First();
         
         do {
             Console.WriteLine($"Загружаю главу {current.Title.CoverQuotes()}");
-            if (string.IsNullOrWhiteSpace(current.HashLocation)) {
-                continue;
-            }
-            
+
             var chapter = new Chapter {
                 Title = current.Title
             };
 
-            var content = GetContent(docBook, current);
+            var content = GetContent(epubBook, current);
             chapter.Content = content.DocumentNode.RemoveNodes("h1, h2, h3").InnerHtml;
             chapters.Add(chapter);
         } while ((current = current.Next) != default);
@@ -150,9 +166,10 @@ public class MyBookGetter : GetterBase {
         return chapters;
     }
 
-    private static HtmlDocument GetContent(HtmlDocument book, EpubChapter epubChapter) {
+    private static HtmlDocument GetContent(EpubBook epubBook, EpubChapter epubChapter) {
         var chapter = new HtmlDocument();
 
+        var book = SliceBook(epubBook, epubChapter);
         var startNode = book.QuerySelector($"#{epubChapter.HashLocation}");
         var needStop = false;
 
