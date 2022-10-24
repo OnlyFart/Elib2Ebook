@@ -13,7 +13,7 @@ namespace Elib2Ebook.Logic.Getters;
 
 public class NovelTranslateGetter : GetterBase {
     public NovelTranslateGetter(BookGetterConfig config) : base(config) { }
-    protected override Uri SystemUrl => new("https://noveltranslate.com/novel/raiders-counterattack-quick-transmigration/chapter-2/");
+    protected override Uri SystemUrl => new("https://noveltranslate.com/");
 
     protected override string GetId(Uri url) {
         for (var i = 0; i < url.Segments.Length; i++) {

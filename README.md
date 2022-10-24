@@ -16,6 +16,7 @@
 * https://bookinbook.ru/
 * https://bookinist.pw/
 * https://booknet.com/
+* https://booknet.ua/
 * https://bookstab.ru/
 * https://bookriver.ru/
 * https://dark-novels.ru/

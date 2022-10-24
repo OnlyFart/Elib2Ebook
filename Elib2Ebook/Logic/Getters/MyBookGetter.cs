@@ -207,23 +207,24 @@ public class MyBookGetter : GetterBase {
             needStop = true;
             return default;
         }
-        
-        if (node.HasChildNodes) {
-            var parent = node.CloneNode(false);
-            
-            foreach (var child in node.ChildNodes) {
-                var clone = CloneNode(child, stopId, ref needStop);
-                if (needStop || clone == default) {
-                    return parent;
-                }
-                
-                parent.ChildNodes.Add(clone);    
-            }
 
-            return parent;
+        if (!node.HasChildNodes) {
+            return node.CloneNode(true);
+        }
+        
+        var parent = node.CloneNode(false);
+            
+        foreach (var child in node.ChildNodes) {
+            var clone = CloneNode(child, stopId, ref needStop);
+            if (needStop || clone == default) {
+                return parent;
+            }
+                
+            parent.ChildNodes.Add(clone);    
         }
 
-        return node.CloneNode(true);
+        return parent;
+
     }
 
     private Task<Image> GetCover(MyBookBook book) {
