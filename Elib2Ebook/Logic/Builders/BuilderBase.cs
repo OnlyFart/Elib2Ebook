@@ -101,6 +101,8 @@ public abstract class BuilderBase {
 
             fileName = Path.Combine(directory, fileName);
         }
+        
+        Console.WriteLine($"Начинаю сохранение книги {fileName.CoverQuotes()}");
             
         await BuildInternal(fileName);
 
