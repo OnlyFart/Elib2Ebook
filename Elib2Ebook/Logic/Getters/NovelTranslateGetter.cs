@@ -78,7 +78,7 @@ public class NovelTranslateGetter : GetterBase {
         var chapterDoc = await Config.Client.GetHtmlDocWithTriesAsync(lastChapter);
 
         var chapters = new List<UrlChapter>();
-        foreach (var option in chapterDoc.QuerySelectorAll("select.selectpicker_chapter option")) {
+        foreach (var option in chapterDoc.QuerySelector("select.selectpicker_chapter").QuerySelectorAll("option")) {
             var name = option.GetText();
             var chapterUri = option.Attributes["data-redirect"].Value.AsUri();
             if (!chapterUri.LocalPath.Trim('/').StartsWith(lang)) {
