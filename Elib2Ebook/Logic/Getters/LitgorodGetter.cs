@@ -123,40 +123,16 @@ public class LitgorodGetter : GetterBase {
 
         var doc = await response.Content.ReadAsStreamAsync().ContinueWith(t => t.Result.AsHtmlDoc());
 
-        var content = doc.QuerySelector("div.reader__content__wrap");
+        var content = doc.QuerySelector("book-reader");
         if (content == default) {
             return default;
         }
-        
-        var li = doc.QuerySelectorAll("div.b-paging__numbers li");
-        var pages = int.Parse(li.Count > 0 ? li.Last().InnerText : "1");
 
         var sb = new StringBuilder();
-        const string removeNodeSelector = "div.reader__content__title, div._content, div.b-book_item";
-        sb.Append(content.RemoveNodes(removeNodeSelector).InnerHtml.HtmlDecode());
-        
-        for (var i = 2; i <= pages; i++) {
-            doc = await Config.Client.GetHtmlDocWithTriesAsync(url.AppendQueryParameter("page", i));
-            sb.Append(doc.QuerySelector("div.reader__content__wrap").RemoveNodes(removeNodeSelector).InnerHtml.HtmlDecode());
-        }
 
-        return Decode(sb.AsHtmlDoc());
-    }
-
-    private static HtmlDocument Decode(HtmlDocument encode) {
-        var sb = new StringBuilder();
-
-        foreach (var node in encode.DocumentNode.ChildNodes) {
-            if (node.Name == "read-book-part") {
-                var text = node.Attributes[":text"].Value.Deserialize<LitgorodBookPart>();
-                if (!string.IsNullOrWhiteSpace(text.Text)) {
-                    sb.Append(text.Text.HtmlDecode().CoverTag("p"));
-                }
-            } else {
-                if (!string.IsNullOrWhiteSpace(node.OuterHtml)) {
-                    sb.Append(node.OuterHtml.HtmlDecode());
-                }
-            }
+        var chapterContent = doc.QuerySelector("book-reader").Attributes[":current_chapter"].Value;
+        foreach (var paragraph in HttpUtility.HtmlDecode(chapterContent).Deserialize<LitgorodChapter>().Paragraphs) {
+            sb.Append(paragraph.HtmlDecode());
         }
 
         return sb.AsHtmlDoc();
