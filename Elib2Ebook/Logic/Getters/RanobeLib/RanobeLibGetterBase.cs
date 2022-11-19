@@ -51,6 +51,10 @@ public abstract class RanobeLibGetterBase : GetterBase {
         var bidId = url.GetQueryParameter("bid");
         url = SystemUrl.MakeRelativeUri(GetId(url));
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
+        var header = doc.QuerySelector("h4.modal__title.text-danger");
+        if (header != default && header.GetText() == "Доступ ограничен 18+") {
+            throw new Exception("Произведение доступно только зарегистрированным пользователям. Добавьте в параметры вызова свои логин и пароль");
+        }
 
         var data = GetData(doc);
 

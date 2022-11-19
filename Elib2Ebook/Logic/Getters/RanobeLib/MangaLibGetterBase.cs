@@ -41,6 +41,6 @@ public abstract class MangaLibGetterBase : RanobeLibGetterBase {
     }
 
     protected virtual string GetImageUrl(Uri url, RanobeLibChapter chapter, MangaLibPg p) {
-        return $"https://img3.cdnlib.link/manga/{GetId(url)}/chapters/{chapter.ChapterSlug}/{p.U}";
+        return $"https://img33.imgslib.link/manga/{GetId(url)}/chapters/{chapter.ChapterSlug}/{p.U}";
     }
 }
