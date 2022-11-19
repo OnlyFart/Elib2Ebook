@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -9,6 +8,7 @@ using System.Threading.Tasks;
 using CommandLine;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
+using Elib2Ebook.Logic;
 using Elib2Ebook.Logic.Builders;
 using Elib2Ebook.Logic.Getters;
 using TempFolder;
@@ -65,7 +65,7 @@ internal static class Program {
     private static BuilderBase GetBuilder(string format) {
         return format.Trim().ToLower() switch {
             "fb2" => Fb2Builder.Create(),
-            "epub" => EpubBuilder.Create(File.ReadAllText("Patterns/ChapterPattern.xhtml")),
+            "epub" => EpubBuilder.Create(FileProvider.Instance.ReadAllText("Patterns/ChapterPattern.xhtml")),
             "json" => JsonBuilder.Create(),
             "cbz" => CbzBuilder.Create(),
             _ => throw new ArgumentException("Неизвестный формат", nameof(format))

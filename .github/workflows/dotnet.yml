@@ -26,10 +26,27 @@ jobs:
       run: dotnet build --no-restore -c release
     - name: Test
       run: dotnet test --no-build --verbosity normal
+    - name: Small
+      run: >
+        dotnet publish -c release -o .dist/small --no-self-contained 
+        -p:PublishSingleFile=true -p:DebugType=embedded -p:PublishTrimmed=false 
+        -p:EnableCompressionInSingleFile=false --use-current-runtime
+    - name: Portable
+      run: >
+        dotnet publish -c release -o .dist/portable --self-contained 
+        -p:PublishSingleFile=true -p:DebugType=embedded -p:PublishTrimmed=true 
+        -p:EnableCompressionInSingleFile=true --use-current-runtime
+
     - uses: actions/upload-artifact@v3
       with:
         name: Elib2Ebook-${{ matrix.os }}
-        path: ${{ github.workspace }}/Elib2Ebook/bin/Release/net6.0/
+        path: ${{ github.workspace }}/.dist/small
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: Elib2Ebook-${{ matrix.os }}-portable
+        path: ${{ github.workspace }}/.dist/portable
+    
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -66,7 +83,12 @@ jobs:
         with:
           name: Elib2Ebook-ubuntu-latest
           path: ${{ github.workspace }}/linux
-          
+      - name: download-artifact-ubuntu-portable
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/download-artifact@v3
+        with:
+          name: Elib2Ebook-ubuntu-latest-portable
+          path: ${{ github.workspace }}/linux-portable      
           
       - name: download-artifact-windows
         if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
@@ -74,6 +96,12 @@ jobs:
         with:
           name: Elib2Ebook-windows-latest
           path: ${{ github.workspace }}/windows
+      - name: download-artifact-windows-portable
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/download-artifact@v3
+        with:
+          name: Elib2Ebook-windows-latest-portable
+          path: ${{ github.workspace }}/windows-portable
           
       - name: download-artifact-macos
         if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
@@ -81,6 +109,12 @@ jobs:
         with:
           name: Elib2Ebook-macos-latest
           path: ${{ github.workspace }}/macos
+      - name: download-artifact-macos-portable
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/download-artifact@v3
+        with:
+          name: Elib2Ebook-macos-latest-portable
+          path: ${{ github.workspace }}/macos-portable
                   
       - name: Install zip
         if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
@@ -88,18 +122,31 @@ jobs:
         
       - name: Zip output
         if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        run: zip -qq -r Elib2Ebook-Linux.zip linux
-        working-directory: ${{ github.workspace }}
+        run: zip -qq -x "*.pdb" -r ../Elib2Ebook-Linux.zip .
+        working-directory: ${{ github.workspace }}/linux
+      - name: Zip output
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        run: zip -qq -x "*.pdb" -r ../Elib2Ebook-Linux-portable.zip .
+        working-directory: ${{ github.workspace }}/linux-portable
           
       - name: Zip output
         if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        run: zip -qq -r Elib2Ebook-Windows.zip windows
-        working-directory: ${{ github.workspace }}
+        run: zip -qq -x "*.pdb" -r ../Elib2Ebook-Windows.zip .
+        working-directory: ${{ github.workspace }}/windows          
+      - name: Zip output
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        run: zip -qq -x "*.pdb" -r ../Elib2Ebook-Windows-portable.zip .
+        working-directory: ${{ github.workspace }}/windows-portable
         
       - name: Zip output
         if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        run: zip -qq -r Elib2Ebook-Macos.zip macos
-        working-directory: ${{ github.workspace }}
+        run: zip -qq -x "*.pdb" -r ../Elib2Ebook-Macos.zip .
+        working-directory: ${{ github.workspace }}/macos
+                 
+      - name: Zip output
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        run: zip -qq -x "*.pdb" -r ../Elib2Ebook-Macos-portable.zip .
+        working-directory: ${{ github.workspace }}/macos-portable
                  
       - name: upload linux artifact
         if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
@@ -132,4 +179,37 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: Elib2Ebook-Macos.zip
           asset_name: Elib2Ebook-Macos.zip
+          asset_content_type: application/zip
+
+      - name: upload linux artifact portable
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: Elib2Ebook-Linux-portable.zip
+          asset_name: Elib2Ebook-Linux-portable.zip
+          asset_content_type: application/zip
+
+      - name: upload windows artifact portable
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: Elib2Ebook-Windows-portable.zip
+          asset_name: Elib2Ebook-Windows-portable.zip
+          asset_content_type: application/zip
+
+      - name: upload macos artifact portable
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: Elib2Ebook-Macos-portable.zip
+          asset_name: Elib2Ebook-Macos-portable.zip
           asset_content_type: application/zip
