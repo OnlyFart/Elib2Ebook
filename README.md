@@ -74,7 +74,9 @@
 
 Последняя версия доступна по [ссылке](https://github.com/OnlyFart/Elib2Ebook/releases/latest)
 
-Для запуска необходим установленный NET Runtime версии 6 или выше, который можно скачать с сайта Microsoft [здесь (на английском)](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-6.0.10-windows-x64-installer)
+Для запуска не Portalbe версии необходим установленный NET Runtime версии 6 или выше, который можно скачать с сайта Microsoft [здесь (на английском)](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-6.0.10-windows-x64-installer)
+
+Portable версии запускаются без установленного NET Runtime
 
 ## Пример вызова
 ```
