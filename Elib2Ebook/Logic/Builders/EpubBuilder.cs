@@ -92,8 +92,7 @@ public class EpubBuilder : BuilderBase {
     /// <param name="searchPattern">Шаблон поиска файлов</param>
     /// <returns></returns>
     public override BuilderBase WithFiles(string directory, string searchPattern) {
-        foreach (var file in FileProvider.Instance.GetFiles(directory, searchPattern))
-        {
+        foreach (var file in FileProvider.Instance.GetFiles(directory, searchPattern)) {
             var fileName = Path.GetFileName(file.Name);
             var type = file.Name.EndsWith(".ttf") ? 
                 EpubContentType.FontTruetype : 
