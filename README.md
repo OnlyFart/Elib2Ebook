@@ -44,6 +44,7 @@
 * https://litres.ru/
 * https://manga.ovh/
 * https://mangalib.me/
+* https://mir-knig.com/
 * https://mybook.ru/
 * https://online-knigi.com.ua/
 * https://noveltranslate.com/
