@@ -41,6 +41,7 @@ public class BookriverGetter : GetterBase {
         if (!string.IsNullOrWhiteSpace(data.Token)) {
             Console.WriteLine("Успешно авторизовались");
             _token = data.Token;
+            Config.CookieContainer.Add(new Cookie("authToken", _token, "/", SystemUrl.Host));
         } else {
             throw new Exception("Не удалось авторизоваться");
         }
