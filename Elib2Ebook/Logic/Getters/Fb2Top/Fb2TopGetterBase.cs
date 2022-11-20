@@ -9,15 +9,10 @@ using Elib2Ebook.Types.Common;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 
-namespace Elib2Ebook.Logic.Getters; 
+namespace Elib2Ebook.Logic.Getters.Fb2Top; 
 
-public class Fb2TopGetter : GetterBase {
-    public Fb2TopGetter(BookGetterConfig config) : base(config) { }
-    protected override Uri SystemUrl => null;
-
-    public override bool IsSameUrl(Uri url) {
-        return url.IsSameHost("https://fb2.top/".AsUri()) || url.IsSameHost("https://ladylib.top/".AsUri());
-    }
+public abstract class Fb2TopGetterBase : GetterBase {
+    protected Fb2TopGetterBase(BookGetterConfig config) : base(config) { }
 
     protected override string GetId(Uri url) => url.GetSegment(1);
 

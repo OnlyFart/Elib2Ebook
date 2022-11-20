@@ -16,6 +16,7 @@ public class ProdamanGetter : GetterBase {
     public ProdamanGetter(BookGetterConfig config) : base(config) {
         InitMap();
     }
+
     protected override Uri SystemUrl => new("https://prodaman.ru/");
     
     private static readonly Dictionary<int, char> Map = new();

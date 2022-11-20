@@ -25,7 +25,7 @@ public class LitresGetter : GetterBase {
     private const string APP = "4";
     
     public LitresGetter(BookGetterConfig config) : base(config) { }
-    
+
     protected override Uri SystemUrl => new("https://www.litres.ru");
     
     private static Uri GetShortUri(string bookId) => new($"https://catalit.litres.ru/pub/t/{bookId}.fb3");
