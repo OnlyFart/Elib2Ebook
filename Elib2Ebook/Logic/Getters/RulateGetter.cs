@@ -31,12 +31,20 @@ public class RulateGetter : GetterBase {
         if (!Config.HasCredentials) {
             return;
         }
-
-
+        
         var doc = await Config.Client.PostHtmlDocWithTriesAsync(SystemUrl, GetAuthData());
-        var alertBlock = doc.QuerySelector("div.alert-error");
+        var alertBlock = doc.QuerySelector("div.alert.in.alert-block");
         
         if (alertBlock == default) {
+            RulateAuthResponse error = null;
+            try {
+                error = doc.ParsedText.Deserialize<RulateAuthResponse>();
+            } catch { }
+
+            if (!string.IsNullOrWhiteSpace(error?.Error)) {
+                throw new Exception($"Не удалось авторизоваться. {error.Error}"); 
+            }
+            
             Console.WriteLine("Успешно авторизовались");
         } else {
             throw new Exception($"Не удалось авторизоваться. {alertBlock.GetText()}"); 
