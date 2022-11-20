@@ -58,6 +58,7 @@
 * https://readmanga.live/
 * https://remanga.org/
 * https://renovels.org/
+* https://royalroad.com/
 * https://ru.novelxo.com/
 * http://samlib.ru/
 * https://topliba.com/
