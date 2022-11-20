@@ -7,7 +7,8 @@ using Elib2Ebook.Types.Book;
 
 namespace Elib2Ebook.Logic.Builders; 
 
-public abstract class BuilderBase {
+public abstract class BuilderBase
+{
     /// <summary>
     /// Добавление автора книги
     /// </summary>
