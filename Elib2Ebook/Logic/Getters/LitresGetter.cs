@@ -33,7 +33,7 @@ public class LitresGetter : GetterBase {
     private static long GetCurrentMilli()  {
         var jan1970 = new DateTime(1970, 1, 1, 0, 0, 0,DateTimeKind.Utc);
         var javaSpan = DateTime.UtcNow - jan1970;
-        return ((long)javaSpan.TotalMilliseconds) / 1000;
+        return (long)javaSpan.TotalMilliseconds / 1000;
     }
     
     private Uri GetFullUri(string bookId, string path) {

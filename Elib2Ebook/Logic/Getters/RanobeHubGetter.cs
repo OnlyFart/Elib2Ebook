@@ -50,7 +50,7 @@ public class RanobeHubGetter : GetterBase {
     private async Task<HtmlDocument> GetChapter(string url) {
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url.AsUri());
         while (doc.QuerySelector("div[data-callback=correctCaptcha]") != null) {
-            Console.WriteLine($"Обнаружена каптча. Перейдите по ссылке {url}, введите каптчу и нажмите Enter...");
+            Console.WriteLine($"Обнаружена капча. Перейдите по ссылке {url}, введите капчу и нажмите Enter...");
             Console.Read();
             doc = await Config.Client.GetHtmlDocWithTriesAsync(url.AsUri());
         }

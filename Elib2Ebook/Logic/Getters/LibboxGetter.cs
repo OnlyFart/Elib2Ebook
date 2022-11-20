@@ -71,7 +71,7 @@ public class LibboxGetter : GetterBase {
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"/books/{bookId}"));
         return doc
             .QuerySelectorAll("ul.pagination a.page-numbers")
-            .Where(a => int.TryParse(a.GetText(), out var _))
+            .Where(a => int.TryParse(a.GetText(), out _))
             .Select(a => int.Parse(a.GetText()))
             .Max();
     }
@@ -85,7 +85,7 @@ public class LibboxGetter : GetterBase {
         
         for (var i = 1; i <= pages; i++) {
             Console.WriteLine($"Получаю страницу {i}/{pages}");
-            var page = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"/books/{bookId}?page_book={i}"));;
+            var page = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"/books/{bookId}?page_book={i}"));
 
             var content = page.QuerySelector("div.entry-content");
             var nodes = content.QuerySelectorAll("> h2, > p, > img");
