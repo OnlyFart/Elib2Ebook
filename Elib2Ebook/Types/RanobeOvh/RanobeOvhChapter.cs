@@ -13,13 +13,17 @@ public class RanobeOvhChapter {
     public decimal Number { get; set; }
     
     [JsonPropertyName("volume")]
-    public int Volume { get; set; }
+    public int? Volume { get; set; }
     
     [JsonPropertyName("pages")]
     public RanobeOvhPage[] Pages { get; set; }
 
     public string FullName {
         get {
+            if (!Volume.HasValue) {
+                return Name;
+            }
+            
             var shortName = $"Том {Volume}. Глава {(int)Number}";
             return string.IsNullOrWhiteSpace(Name) ? shortName : shortName + $" - {Name}";
         }
