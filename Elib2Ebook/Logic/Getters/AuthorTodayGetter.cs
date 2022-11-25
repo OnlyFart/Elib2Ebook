@@ -73,6 +73,7 @@ public class AuthorTodayGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
+        url = SystemUrl.MakeRelativeUri($"/work/{GetId(url)}");
         var details = await GetBookDetails(GetId(url));
 
         var book = new Book(url) {
