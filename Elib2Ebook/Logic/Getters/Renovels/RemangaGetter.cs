@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
@@ -14,7 +15,7 @@ public class RemangaGetter : RenovelsGetterBase {
     protected override HtmlDocument GetChapterAsHtml(RenovelsApiResponse<RenovelsChapter> response) {
         var sb = new StringBuilder();
 
-        foreach (var img in response.Content.Pages) {
+        foreach (var img in response.Content.Pages.SelectMany(p => p)) {
             sb.Append($"<img src='{img.Link}'/>");
         }
 

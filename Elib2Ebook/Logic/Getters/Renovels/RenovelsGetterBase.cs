@@ -22,6 +22,11 @@ public abstract class RenovelsGetterBase : GetterBase {
 
     protected override string GetId(Uri url) => url.GetSegment(2);
 
+    public override async Task Init() {
+        await base.Init();
+        Config.Client.DefaultRequestHeaders.Add("Referer", SystemUrl.ToString());
+    }
+
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
         var content = await GetContent(bookId);
@@ -69,7 +74,8 @@ public abstract class RenovelsGetterBase : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(RenovelsChapter ranobeChapter) {
-        var response = await Config.Client.GetFromJsonAsync<RenovelsApiResponse<RenovelsChapter>>(_apiUrl.MakeRelativeUri($"/api/titles/chapters/{ranobeChapter.Id}/"));
+        var makeRelativeUri = _apiUrl.MakeRelativeUri($"/api/titles/chapters/{ranobeChapter.Id}/");
+        var response = await Config.Client.GetFromJsonAsync<RenovelsApiResponse<RenovelsChapter>>(makeRelativeUri);
         return GetChapterAsHtml(response);
     }
 
