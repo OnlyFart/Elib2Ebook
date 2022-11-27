@@ -62,13 +62,14 @@ public abstract class LitnetGetterBase : GetterBase {
         var path = Config.HasCredentials ? "user/find-by-login" : "registration/registration-by-device";
 
         var url = _apiUrl.MakeRelativeUri($"v1/{path}?login={HttpUtility.UrlEncode(Config.Options.Login?.TrimStart('+') ?? string.Empty)}&password={HttpUtility.UrlEncode(Config.Options.Password)}&app=android&device_id={DeviceId}&sign={GetSign(string.Empty)}");
-        var response = await Config.Client.GetFromJsonAsync<LitnetAuthResponse>(url);
+        var response = await Config.Client.GetAsync(url);
+        var data = await response.Content.ReadFromJsonAsync<LitnetAuthResponse>();
 
-        if (!string.IsNullOrWhiteSpace(response?.Token)) {
+        if (!string.IsNullOrWhiteSpace(data?.Token)) {
             Console.WriteLine("Успешно авторизовались");
-            _token = response.Token;
+            _token = data.Token;
         } else {
-            throw new Exception($"Не удалось авторизоваться. {response?.Error}");
+            throw new Exception($"Не удалось авторизоваться. {data?.Error}");
         }
     }
 
