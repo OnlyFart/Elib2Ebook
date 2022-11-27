@@ -61,7 +61,7 @@ public abstract class LitnetGetterBase : GetterBase {
     public override async Task Authorize() {
         var path = Config.HasCredentials ? "user/find-by-login" : "registration/registration-by-device";
 
-        var url = _apiUrl.MakeRelativeUri($"v1/{path}?login={Config.Options.Login?.TrimStart('+') ?? string.Empty}&password={HttpUtility.UrlEncode(Config.Options.Password)}&app=android&device_id={DeviceId}&sign={GetSign(string.Empty)}");
+        var url = _apiUrl.MakeRelativeUri($"v1/{path}?login={HttpUtility.UrlEncode(Config.Options.Login?.TrimStart('+') ?? string.Empty)}&password={HttpUtility.UrlEncode(Config.Options.Password)}&app=android&device_id={DeviceId}&sign={GetSign(string.Empty)}");
         var response = await Config.Client.GetFromJsonAsync<LitnetAuthResponse>(url);
 
         if (!string.IsNullOrWhiteSpace(response?.Token)) {
