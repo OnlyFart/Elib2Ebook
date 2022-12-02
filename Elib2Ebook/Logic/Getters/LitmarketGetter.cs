@@ -172,6 +172,9 @@ public class LitmarketGetter : GetterBase {
                                         case "BOLD":
                                             text = text.CoverTag("b");
                                             break;
+                                        case "UNDERLINE":
+                                            text = text.CoverTag("u");
+                                            break;
                                         default:
                                             Console.WriteLine(style);
                                             break;
