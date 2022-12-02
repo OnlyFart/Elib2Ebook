@@ -10,7 +10,7 @@ public static class FileProviderExtensions {
     public static byte[] ReadAllBytes(this IFileInfo fileInfo) {
         using var ms = new MemoryStream();
         using var source = fileInfo.CreateReadStream();
-        source.CopyToAsync(ms);
+        source.CopyTo(ms);
         return ms.ToArray();
     }
 
