@@ -15,7 +15,7 @@ public class RemangaGetter : RenovelsGetterBase {
     protected override HtmlDocument GetChapterAsHtml(RenovelsApiResponse<RenovelsChapter> response) {
         var sb = new StringBuilder();
 
-        foreach (var img in response.Content.Pages.SelectMany(p => p)) {
+        foreach (var img in response.Content.Pages) {
             sb.Append($"<img src='{img.Link}'/>");
         }
 

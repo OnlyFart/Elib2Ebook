@@ -26,7 +26,7 @@ public class RenovelsChapter {
     public bool? IsBought { get; set; }
     
     [JsonPropertyName("pages")]
-    public List<RenovelsPage[]> Pages { get; set; }
+    public List<RenovelsPage> Pages { get; set; }
     
     public string Title {
         get {
