@@ -29,6 +29,7 @@
 * https://hogwartsnet.ru/
 * https://hotnovelpub.com/
 * https://hub-book.com/
+* https://i-gram.ru/
 * https://ifreedom.su/
 * https://jaomix.ru/
 * https://ladylib.top/
@@ -36,7 +37,6 @@
 * https://libbox.ru/
 * https://libst.ru/
 * https://lightnoveldaily.com/
-* https://litexit.ru/
 * https://litgorod.ru/
 * https://litmarket.ru/
 * https://litmir.me/

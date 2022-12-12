@@ -14,9 +14,9 @@ using HtmlAgilityPack.CssSelectors.NetCore;
 
 namespace Elib2Ebook.Logic.Getters; 
 
-public class LitexitGetter : GetterBase {
-    public LitexitGetter(BookGetterConfig config) : base(config) { }
-    protected override Uri SystemUrl => new("https://litexit.ru/");
+public class IGramGetter : GetterBase {
+    public IGramGetter(BookGetterConfig config) : base(config) { }
+    protected override Uri SystemUrl => new("https://i-gram.ru/");
 
     protected override string GetId(Uri url) => url.GetSegment(2);
 

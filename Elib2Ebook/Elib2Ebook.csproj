@@ -6,19 +6,19 @@
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <LangVersion>10</LangVersion>
         <PackageId>Elib2Ebook</PackageId>
-        <Version>1.30.15</Version>
+        <Version>1.30.16</Version>
         <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="CommandLineParser" Version="2.9.1"/>
-        <PackageReference Include="HtmlAgilityPack" Version="1.11.46"/>
-        <PackageReference Include="HtmlAgilityPack.CssSelectors.NetCore" Version="1.2.1"/>
-        <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="6.0.0"/>
-        <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="6.0.11"/>
-        <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="6.0.0"/>
-        <PackageReference Include="OAuth.DotNetCore" Version="3.0.1"/>
-        <PackageReference Include="TempFolder" Version="1.0.0"/>
+        <PackageReference Include="CommandLineParser" Version="2.9.1" />
+        <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
+        <PackageReference Include="HtmlAgilityPack.CssSelectors.NetCore" Version="1.2.1" />
+        <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="6.0.0" />
+        <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="6.0.11" />
+        <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="6.0.0" />
+        <PackageReference Include="OAuth.DotNetCore" Version="3.0.1" />
+        <PackageReference Include="TempFolder" Version="1.0.0" />
     </ItemGroup>
 
     <ItemGroup>
