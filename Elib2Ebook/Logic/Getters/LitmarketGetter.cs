@@ -88,7 +88,7 @@ public class LitmarketGetter : GetterBase {
         var a = doc.QuerySelector("div.card-author a");
         return a == default ? 
             new Author(doc.GetTextBySelector("div.card-author").Replace("Автор:", "").ReplaceNewLine()): 
-            new Author(a.GetText().ReplaceNewLine(), url.MakeRelativeUri(a.Attributes["href"].Value));
+            new Author(a.GetText().ReplaceNewLine(), url.MakeRelativeUri(a.Attributes["href"].Value).ReplaceHost(SystemUrl.Host));
     }
     
     /// <summary>
