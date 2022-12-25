@@ -76,7 +76,12 @@ public class ReadMangaGetter : GetterBase {
         var sb = new StringBuilder();
         
         foreach (var elem in json) {
-            sb.Append($"<img src='{elem[0].GetString().AsUri().MakeRelativeUri(elem[2].GetString())}'/>");
+            var imageUri = elem[0].GetString().AsUri().MakeRelativeUri(elem[2].GetString());
+            // Это не костыль. На сайте также
+            if (imageUri.Host == "one-way.work") {
+                imageUri = imageUri.MakeRelativeUri(imageUri.AbsolutePath);
+            }
+            sb.Append($"<img src='{imageUri}'/>");
         }
         
         return sb.AsHtmlDoc();
