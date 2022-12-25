@@ -31,6 +31,7 @@ public class Fb2Builder : BuilderBase {
         {"em", "emphasis"},
         {"emphasis", "emphasis"},
         {"del", "strikethrough"},
+        {"strikethrough", "strikethrough"},
         {"blockquote", "cite"},
         {"h1", "subtitle"},
         {"h2", "subtitle"},
