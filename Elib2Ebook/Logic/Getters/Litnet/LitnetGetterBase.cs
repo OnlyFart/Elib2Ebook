@@ -103,7 +103,7 @@ public abstract class LitnetGetterBase : GetterBase {
 
         var litnetBook = await GetBook(_token, bookId);
 
-        var uri = litnetBook.Url.AsUri();
+        var uri = SystemUrl.MakeRelativeUri(litnetBook.Url.AsUri().AbsolutePath);
         var book = new Book(uri) {
             Cover = await GetCover(litnetBook),
             Chapters = await FillChapters(_token, litnetBook, bookId),
