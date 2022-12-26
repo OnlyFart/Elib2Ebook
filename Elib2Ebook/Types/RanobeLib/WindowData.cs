@@ -5,4 +5,7 @@ namespace Elib2Ebook.Types.RanobeLib;
 public class WindowData {
     [JsonPropertyName("chapters")] 
     public RanobeLibChapters RanobeLibChapters { get; set; }
+    
+    [JsonPropertyName("user")]
+    public User User { get; set; }
 }

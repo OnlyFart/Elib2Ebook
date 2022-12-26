@@ -89,7 +89,7 @@ public abstract class RanobeLibGetterBase : GetterBase {
         return windowData;
     }
     
-    protected abstract Task<HtmlDocument> GetChapter(Uri url, RanobeLibChapter chapter);
+    protected abstract Task<HtmlDocument> GetChapter(Uri url, RanobeLibChapter chapter, User user);
 
     private async Task<IEnumerable<Chapter>> FillChapters(WindowData data, Uri url, string bidId) {
         var result = new List<Chapter>();
@@ -104,7 +104,7 @@ public abstract class RanobeLibGetterBase : GetterBase {
             Console.WriteLine($"Загружаю главу {ranobeChapter.GetName()}");
             var chapter = new Chapter();
             
-            var chapterDoc = await GetChapter(url, ranobeChapter);
+            var chapterDoc = await GetChapter(url, ranobeChapter, data.User);
             chapter.Images = await GetImages(chapterDoc, SystemUrl);
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;
             chapter.Title = ranobeChapter.GetName();

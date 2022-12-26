@@ -37,8 +37,13 @@ public abstract class MangaLibGetterBase : RanobeLibGetterBase {
         return defaultServer;
     }
 
-    protected override async Task<HtmlDocument> GetChapter(Uri url, RanobeLibChapter chapter) {
-        var chapterDoc = await Config.Client.GetHtmlDocWithTriesAsync(url.AppendSegment($"/v{chapter.ChapterVolume}/c{chapter.ChapterNumber}?bid={chapter.BranchId}"));
+    protected override async Task<HtmlDocument> GetChapter(Uri url, RanobeLibChapter chapter, User user) {
+        var segment = $"/v{chapter.ChapterVolume}/c{chapter.ChapterNumber}?bid={chapter.BranchId}";
+        if (user != default) {
+            segment += $"&ui={user.Id}";
+        }
+        
+        var chapterDoc = await Config.Client.GetHtmlDocWithTriesAsync(url.AppendSegment(segment));
         var header = chapterDoc.QuerySelector("div.auth-form-title");
         if (header != default && header.GetText() == "Авторизация") {
             throw new Exception("Произведение доступно только зарегистрированным пользователям. Добавьте в параметры вызова свои логин и пароль");
