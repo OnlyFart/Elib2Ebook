@@ -64,10 +64,11 @@ internal static class Program {
 
     private static BuilderBase GetBuilder(string format) {
         return format.Trim().ToLower() switch {
-            "fb2" => Fb2Builder.Create(),
-            "epub" => EpubBuilder.Create(FileProvider.Instance.ReadAllText("Patterns/ChapterPattern.xhtml")),
-            "json" => JsonBuilder.Create(),
-            "cbz" => CbzBuilder.Create(),
+            "fb2"       => Fb2Builder.Create(),
+            "epub"      => EpubBuilder.Create(FileProvider.Instance.ReadAllText("Patterns/ChapterPattern.xhtml")),
+            "json"      => JsonBuilder.Create(),
+            "cbz"       => CbzBuilder.Create(),
+            "json_lite" => JsonLiteBuilder.Create(),
             _ => throw new ArgumentException("Неизвестный формат", nameof(format))
         };
     }
