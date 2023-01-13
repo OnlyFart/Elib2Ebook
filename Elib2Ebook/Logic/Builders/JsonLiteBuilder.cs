@@ -50,7 +50,7 @@ public class JsonLiteBuilder : BuilderBase {
             Title = chapter.Title, 
             Content = chapter.IsValid ? "*" : string.Empty, 
             Images = new List<Image>()
-        }).ToList();
+        });
         
         return this;
     }
