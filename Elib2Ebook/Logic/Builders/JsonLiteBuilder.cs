@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Elib2Ebook.Extensions;
@@ -45,21 +46,12 @@ public class JsonLiteBuilder : BuilderBase {
     }
 
     public override BuilderBase WithChapters(IEnumerable<Chapter> chapters) {
-        var lite_chapters = new List<Chapter>();
-        foreach (var chapter in chapters) {
-            var content = "";
-            var images = new List<Image>();
-            if( chapter.IsValid )
-            {
-                content = "*";
-            }
-            var lite_chapter = new Chapter {};
-            lite_chapter.Title = chapter.Title;
-            lite_chapter.Content = content;
-            lite_chapter.Images = images;
-            lite_chapters.Add(lite_chapter);
-        }
-        _book.Chapters = lite_chapters;
+        _book.Chapters = chapters.Select(chapter => new Chapter {
+            Title = chapter.Title, 
+            Content = chapter.IsValid ? "*" : string.Empty, 
+            Images = new List<Image>()
+        }).ToList();
+        
         return this;
     }
 
