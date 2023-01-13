@@ -68,6 +68,7 @@ internal static class Program {
             "epub" => EpubBuilder.Create(FileProvider.Instance.ReadAllText("Patterns/ChapterPattern.xhtml")),
             "json" => JsonBuilder.Create(),
             "cbz" => CbzBuilder.Create(),
+            "json_lite" => JsonLiteBuilder.Create(),
             _ => throw new ArgumentException("Неизвестный формат", nameof(format))
         };
     }
