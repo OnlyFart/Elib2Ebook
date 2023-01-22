@@ -61,14 +61,27 @@ public class Book {
     public async Task Save(BuilderBase builder, Options options, string resourcesPath) {
         var title = $"{Author.Name} - {Title}".Crop(100);
         
+        // await builder
+        //     .AddAuthor(Author)
+        //     .WithTitle(Title)
+        //     .WithBookUrl(Url)
+        //     .WithAnnotation(Annotation)
+        //     .WithCover(Cover)
+        //     .WithSeria(Seria)
+        //     .WithLang(Lang)
+        //     .WithFiles(resourcesPath, "*.ttf")
+        //     .WithFiles(resourcesPath, "*.css")
+        //     .WithChapters(Chapters)
+        //     .Build(options.SavePath, title);
+        
         await builder
             .AddAuthor(Author)
-            .WithTitle(Title)
             .WithBookUrl(Url)
+            .WithTitle(Title)
             .WithAnnotation(Annotation)
             .WithCover(Cover)
-            .WithSeria(Seria)
             .WithLang(Lang)
+            .WithSeria(Seria)
             .WithFiles(resourcesPath, "*.ttf")
             .WithFiles(resourcesPath, "*.css")
             .WithChapters(Chapters)
