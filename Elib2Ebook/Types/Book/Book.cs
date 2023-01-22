@@ -64,9 +64,9 @@ public class Book {
         await builder
             .AddAuthor(Author)
             .WithTitle(Title)
-            .WithCover(Cover)
             .WithBookUrl(Url)
             .WithAnnotation(Annotation)
+            .WithCover(Cover)
             .WithSeria(Seria)
             .WithLang(Lang)
             .WithFiles(resourcesPath, "*.ttf")
