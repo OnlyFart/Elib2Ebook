@@ -156,10 +156,13 @@ public class Fb2Builder : BuilderBase {
         if (cover != default) {
             var coverPage = CreateXElement("coverpage");
             
-            var imageElem = CreateXElement("image");
-            imageElem.SetAttributeValue(_xlink + "href", "#" + cover.Name);
+            var imageElem1 = CreateXElement("image");
+            var imageElem2 = CreateXElement("image");
+            imageElem1.SetAttributeValue(_xlink + "href", "#" + cover.Name);
+            imageElem2.SetAttributeValue("l:href", "#" + cover.Name);
             
-            coverPage.Add(imageElem);
+            coverPage.Add(imageElem1);
+            coverPage.Add(imageElem2);
             _titleInfo.Add(coverPage);
             _images.Add(cover);
         }
