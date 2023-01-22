@@ -46,6 +46,7 @@ public class Fb2Builder : BuilderBase {
 
     private Fb2Builder() {
         _book = CreateXElement("FictionBook");
+        _book.SetAttributeValue(XNamespace.Xmlns + "xlink", _xlink.NamespaceName);
         _book.SetAttributeValue(XNamespace.Xmlns + "l", _xlink.NamespaceName);
         _description = CreateXElement("description");
         _titleInfo = CreateXElement("title-info");
@@ -357,9 +358,10 @@ public class Fb2Builder : BuilderBase {
         await using var file = File.Create(name);
         var xws = new XmlWriterSettings {
             Async = true,
-            Encoding = Encoding.UTF8,
+            Encoding = new UTF8Encoding(false),
             Indent = true,
             NewLineHandling = NewLineHandling.Replace,
+            NewLineChars = "\r\n",
         };
 
         await using var writer = XmlWriter.Create(file, xws);
