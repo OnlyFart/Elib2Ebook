@@ -46,7 +46,7 @@ public class Fb2Builder : BuilderBase {
 
     private Fb2Builder() {
         _book = CreateXElement("FictionBook");
-        _book.SetAttributeValue(XNamespace.Xmlns + "xlink", _xlink.NamespaceName);
+        _book.SetAttributeValue(XNamespace.Xmlns + "l", _xlink.NamespaceName);
         _description = CreateXElement("description");
         _titleInfo = CreateXElement("title-info");
         _documentInfo = CreateXElement("document-info");
