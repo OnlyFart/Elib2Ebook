@@ -60,20 +60,7 @@ public class Book {
     /// <param name="resourcesPath">Путь к папке с ресурсами</param>
     public async Task Save(BuilderBase builder, Options options, string resourcesPath) {
         var title = $"{Author.Name} - {Title}".Crop(100);
-        
-        // await builder
-        //     .AddAuthor(Author)
-        //     .WithTitle(Title)
-        //     .WithBookUrl(Url)
-        //     .WithAnnotation(Annotation)
-        //     .WithCover(Cover)
-        //     .WithSeria(Seria)
-        //     .WithLang(Lang)
-        //     .WithFiles(resourcesPath, "*.ttf")
-        //     .WithFiles(resourcesPath, "*.css")
-        //     .WithChapters(Chapters)
-        //     .Build(options.SavePath, title);
-        
+
         await builder
             .AddAuthor(Author)
             .WithBookUrl(Url)
