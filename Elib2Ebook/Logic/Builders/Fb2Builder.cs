@@ -357,9 +357,10 @@ public class Fb2Builder : BuilderBase {
         await using var file = File.Create(name);
         var xws = new XmlWriterSettings {
             Async = true,
-            Encoding = Encoding.UTF8,
+            Encoding = new UTF8Encoding(false),
             Indent = true,
             NewLineHandling = NewLineHandling.Replace,
+            NewLineChars = "\r\n",
         };
 
         await using var writer = XmlWriter.Create(file, xws);
