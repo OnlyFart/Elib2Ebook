@@ -70,7 +70,7 @@ public class JaomixGetter : GetterBase {
         var chapters = await res.Content.ReadFromJsonAsync<JaomixChapter[]>();
         var chapter = chapters[0];
 
-        var doc = chapter.Content.Rendered.AsHtmlDoc();
+        // var doc = chapter.Content.Rendered.AsHtmlDoc();
         // var sb = new StringBuilder();
 
         // var b = doc.QuerySelector("body");
@@ -86,7 +86,7 @@ public class JaomixGetter : GetterBase {
         //         sb.Append(node.InnerHtml.HtmlDecode().CoverTag(tag));
         //     }
         // }
-        // chapter.Content.Rendered = sb.ToString();
+        chapter.Content.Rendered = chapter.Content.Rendered.HtmlDecode();
             
         return chapter;
     }
