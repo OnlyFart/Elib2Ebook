@@ -2,12 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
 using Elib2Ebook.Types.Common;
+using Elib2Ebook.Types.Jaomix;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 
@@ -43,13 +46,17 @@ public class JaomixGetter : GetterBase {
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {
         var result = new List<Chapter>();
 
-        foreach (var jaomixChapter in await GetToc(doc, url)) {
-            Console.WriteLine($"Загружаю главу {jaomixChapter.Title.CoverQuotes()}");
+        var termId = doc.QuerySelector("div.like-but").Id;
+        var pages = await GetToc(termId, url);
+        var pages_count = pages.Count();
+
+        foreach (var page in pages) {
+            Console.WriteLine($"Загружаю главу {page}/{pages_count}");
             var chapter = new Chapter();
-            var chapterDoc = await GetChapter(jaomixChapter.Url);
-            chapter.Images = await GetImages(chapterDoc, url);
-            chapter.Content = chapterDoc.DocumentNode.InnerHtml;
-            chapter.Title = jaomixChapter.Title;
+            var chapterJ = await GetChapter(termId, page);
+            chapter.Images = await GetImages(chapterJ.Content.Rendered.AsHtmlDoc(), url);
+            chapter.Content = chapterJ.Content.Rendered;
+            chapter.Title = chapterJ.Title.Rendered;
 
             result.Add(chapter);
         }
@@ -57,54 +64,48 @@ public class JaomixGetter : GetterBase {
         return result;
     }
 
-    private async Task<HtmlDocument> GetChapter(Uri jaomixChapterUrl) {
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(jaomixChapterUrl);
-        var sb = new StringBuilder();
+    private async Task<JaomixChapter> GetChapter(String termId, Int32 page) {
+        var res = await Config.Client.GetWithTriesAsync(SystemUrl.MakeRelativeUri($"/wp-json/wp/v2/posts?categories={termId}&per_page=1&page={page}"));
+
+        var chapters = await res.Content.ReadFromJsonAsync<JaomixChapter[]>();
+        var chapter = chapters[0];
+
+        var doc = chapter.Content.Rendered.AsHtmlDoc();
+        // var sb = new StringBuilder();
+
+        // var b = doc.QuerySelector("body");
+        // Console.WriteLine("----");
+        // Console.WriteLine("----");
+        // Console.WriteLine($"{b}");
+        // Console.WriteLine("----");
+        // Console.WriteLine("----");
+        
+        // foreach (var node in doc.QuerySelector(" > *")) {
+        //     if (node.Name != "br" && node.Name != "script" && !string.IsNullOrWhiteSpace(node.InnerHtml) && node.Attributes["class"]?.Value?.Contains("adblock-service") == null) {
+        //         var tag = node.Name == "#text" ? "p" : node.Name;
+        //         sb.Append(node.InnerHtml.HtmlDecode().CoverTag(tag));
+        //     }
+        // }
+        // chapter.Content.Rendered = sb.ToString();
             
-        foreach (var node in doc.QuerySelector("div.themeform").ChildNodes) {
-            if (node.Name != "br" && node.Name != "script" && !string.IsNullOrWhiteSpace(node.InnerHtml) && node.Attributes["class"]?.Value?.Contains("adblock-service") == null) {
-                var tag = node.Name == "#text" ? "p" : node.Name;
-                sb.Append(node.InnerHtml.HtmlDecode().CoverTag(tag));
-            }
-        }
-            
-        return sb.AsHtmlDoc();
+        return chapter;
     }
 
-    private async Task<IEnumerable<UrlChapter>> GetToc(HtmlDocument doc, Uri url) {
-        var termId = doc.QuerySelector("div.like-but").Id;
-
-        var data = new Dictionary<string, string> {
-            { "action", "toc" },
-            { "selectall", termId }
-        };
+    private async Task<IEnumerable<Int32>> GetToc(String termId, Uri url) {
             
-        var chapters = new List<UrlChapter>();
-        chapters.AddRange(ParseChapters(doc, url));
+        var chapters = new List<Int32>();
         
-        doc = await Config.Client.PostHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri("/wp-admin/admin-ajax.php"), new FormUrlEncodedContent(data));
+        var res = await Config.Client.GetWithTriesAsync(SystemUrl.MakeRelativeUri($"/wp-json/wp/v2/posts?categories={termId}&per_page=1&page=1"));
 
         Console.WriteLine("Получаю оглавление");
-            
-        foreach (var option in doc.QuerySelector("select.sel-toc").ChildNodes) {
-            var pageId = option.Attributes["value"].Value;
-            if (pageId == "0") {
-                continue;
-            }
-                
-            data = new Dictionary<string, string> {
-                { "action", "toc" },
-                { "page", pageId },
-                { "termid", termId }
-            };
+        var res_pages = res.Headers.GetValues("X-WP-TotalPages").First();
 
-            var chapterDoc = await Config.Client.PostHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri("/wp-admin/admin-ajax.php"), new FormUrlEncodedContent(data));
-            chapters.AddRange(ParseChapters(chapterDoc, url));
-        }
-        
+        var range = Enumerable.Range(1, Int32.Parse(res_pages));
+
+        chapters.AddRange(range);
+
         Console.WriteLine($"Получено {chapters.Count} глав");
 
-        chapters.Reverse();
         return SliceToc(chapters);
     }
         

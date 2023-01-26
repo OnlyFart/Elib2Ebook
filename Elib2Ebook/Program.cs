@@ -57,6 +57,9 @@ internal static class Program {
                         }
                     } catch (Exception ex) {
                         Console.WriteLine($"Генерация книги {url} завершилась с ошибкой. {ex.Message}");
+                        Console.WriteLine("---------------");
+                        Console.WriteLine(ex.ToString());
+                        Console.WriteLine("---------------");
                     }
                 }
             });
