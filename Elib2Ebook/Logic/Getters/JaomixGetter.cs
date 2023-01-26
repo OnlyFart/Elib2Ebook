@@ -86,6 +86,7 @@ public class JaomixGetter : GetterBase {
         //         sb.Append(node.InnerHtml.HtmlDecode().CoverTag(tag));
         //     }
         // }
+        chapter.Title.Rendered = chapter.Title.Rendered.HtmlDecode();
         chapter.Content.Rendered = chapter.Content.Rendered.HtmlDecode();
             
         return chapter;
