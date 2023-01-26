@@ -48,7 +48,7 @@ public class JaomixGetter : GetterBase {
         var pages_count = pages.Count();
 
         foreach (var page in pages) {
-            Console.WriteLine($"Загружаю главу {page}/{pages_count}");
+            Console.WriteLine($"Загружаю главу {page}");
             var chapter = new Chapter();
             var chapterJ = await GetChapter(termId, page);
             chapter.Images = await GetImages(chapterJ.Content.Rendered.AsHtmlDoc(), url);
