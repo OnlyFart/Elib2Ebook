@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
@@ -70,22 +67,6 @@ public class JaomixGetter : GetterBase {
         var chapters = await res.Content.ReadFromJsonAsync<JaomixChapter[]>();
         var chapter = chapters[0];
 
-        // var doc = chapter.Content.Rendered.AsHtmlDoc();
-        // var sb = new StringBuilder();
-
-        // var b = doc.QuerySelector("body");
-        // Console.WriteLine("----");
-        // Console.WriteLine("----");
-        // Console.WriteLine($"{b}");
-        // Console.WriteLine("----");
-        // Console.WriteLine("----");
-        
-        // foreach (var node in doc.QuerySelector(" > *")) {
-        //     if (node.Name != "br" && node.Name != "script" && !string.IsNullOrWhiteSpace(node.InnerHtml) && node.Attributes["class"]?.Value?.Contains("adblock-service") == null) {
-        //         var tag = node.Name == "#text" ? "p" : node.Name;
-        //         sb.Append(node.InnerHtml.HtmlDecode().CoverTag(tag));
-        //     }
-        // }
         chapter.Title.Rendered = chapter.Title.Rendered.HtmlDecode();
         chapter.Content.Rendered = chapter.Content.Rendered.HtmlDecode();
             
@@ -99,7 +80,7 @@ public class JaomixGetter : GetterBase {
         var res = await Config.Client.GetWithTriesAsync(SystemUrl.MakeRelativeUri($"/wp-json/wp/v2/posts?categories={termId}&per_page=1&page=1"));
 
         Console.WriteLine("Получаю оглавление");
-        var res_pages = res.Headers.GetValues("X-WP-TotalPages").First();
+        var res_pages = res.Headers.GetValues("X-WP-Total").First();
 
         var range = Enumerable.Range(1, Int32.Parse(res_pages));
 
@@ -113,9 +94,5 @@ public class JaomixGetter : GetterBase {
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
         var imagePath = doc.QuerySelector("div.img-book img")?.Attributes["src"]?.Value;
         return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
-    }
-
-    private static IEnumerable<UrlChapter> ParseChapters(HtmlDocument doc, Uri url) {
-        return doc.QuerySelectorAll("div.hiddenstab a").Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.InnerText.Trim()));
     }
 }
