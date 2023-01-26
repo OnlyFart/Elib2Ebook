@@ -88,6 +88,8 @@ public class JaomixGetter : GetterBase {
 
         Console.WriteLine($"Получено {chapters.Count} глав");
 
+        chapters.Reverse();
+
         return SliceToc(chapters);
     }
         
