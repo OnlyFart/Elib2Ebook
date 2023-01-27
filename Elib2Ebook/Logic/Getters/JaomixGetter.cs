@@ -75,6 +75,7 @@ public class JaomixGetter : GetterBase {
     private async Task<IEnumerable<UrlChapter>> GetToc(HtmlDocument doc, Uri url) {
             
         var chapters = new List<UrlChapter>();
+
         Console.WriteLine("Получаю оглавление");
 
         chapters.AddRange(ParseChapters(doc, url));
