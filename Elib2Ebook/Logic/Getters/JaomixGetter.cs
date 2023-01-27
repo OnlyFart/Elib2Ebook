@@ -52,6 +52,7 @@ public class JaomixGetter : GetterBase {
             chapter.Title = jaomixChapter.Title;
 
             result.Add(chapter);
+            System.Threading.Thread.Sleep(500);
         }
 
         return result;
@@ -72,35 +73,10 @@ public class JaomixGetter : GetterBase {
     }
 
     private async Task<IEnumerable<UrlChapter>> GetToc(HtmlDocument doc, Uri url) {
-        var termId = doc.QuerySelector("div.like-but").Id;
-
-        var data = new Dictionary<string, string> {
-            { "action", "toc" },
-            { "selectall", termId }
-        };
             
         var chapters = new List<UrlChapter>();
-        chapters.AddRange(ParseChapters(doc, url));
-        
-        doc = await Config.Client.PostHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri("/wp-admin/admin-ajax.php"), new FormUrlEncodedContent(data));
-
         Console.WriteLine("Получаю оглавление");
-            
-        foreach (var option in doc.QuerySelector("select.sel-toc").ChildNodes) {
-            var pageId = option.Attributes["value"].Value;
-            if (pageId == "0") {
-                continue;
-            }
-                
-            data = new Dictionary<string, string> {
-                { "action", "toc" },
-                { "page", pageId },
-                { "termid", termId }
-            };
-
-            var chapterDoc = await Config.Client.PostHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri("/wp-admin/admin-ajax.php"), new FormUrlEncodedContent(data));
-            chapters.AddRange(ParseChapters(chapterDoc, url));
-        }
+        chapters.AddRange(ParseChapters(doc, url));
         
         Console.WriteLine($"Получено {chapters.Count} глав");
 
@@ -114,6 +90,6 @@ public class JaomixGetter : GetterBase {
     }
 
     private static IEnumerable<UrlChapter> ParseChapters(HtmlDocument doc, Uri url) {
-        return doc.QuerySelectorAll("div.hiddenstab a").Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.InnerText.Trim()));
+        return doc.QuerySelectorAll("form.download-chapter .hiddenstab .flex-dow-txt a").Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.InnerText.Trim()));
     }
 }
