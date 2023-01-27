@@ -21,6 +21,12 @@ public static class HttpClientExtensions {
             try {
                 var response = await client.GetAsync(url);
 
+                Console.WriteLine("------");
+                Console.WriteLine(response.Headers);
+                Console.WriteLine(response.StatusCode);
+                Console.WriteLine(response.Content);
+                Console.WriteLine("------");
+
                 if (response.StatusCode != HttpStatusCode.OK) {
                     await Task.Delay(GetTimeout(errorTimeout));
                     continue;
