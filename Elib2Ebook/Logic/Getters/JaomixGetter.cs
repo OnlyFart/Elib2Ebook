@@ -76,6 +76,7 @@ public class JaomixGetter : GetterBase {
             
         var chapters = new List<UrlChapter>();
         Console.WriteLine("Получаю оглавление");
+
         chapters.AddRange(ParseChapters(doc, url));
         
         Console.WriteLine($"Получено {chapters.Count} глав");
