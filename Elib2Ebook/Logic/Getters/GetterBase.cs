@@ -138,10 +138,6 @@ public abstract class GetterBase : IDisposable {
         
     public virtual Task Init() {
         Config.Client.DefaultRequestVersion = HttpVersion.Version20;
-        Config.Client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (compatible; YandexBot/3.0; +http://yandex.com/bots)");
-        Config.Client.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
-        Config.Client.DefaultRequestHeaders.Add("Accept-Language", "ru");
-        Config.Client.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br");
         
         return Task.CompletedTask;
     }

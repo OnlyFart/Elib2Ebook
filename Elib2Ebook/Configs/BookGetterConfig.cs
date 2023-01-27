@@ -21,14 +21,20 @@ public class BookGetterConfig : IDisposable {
         Options = options;
         TempFolder = tempFolder;
 
-        Client.DefaultRequestHeaders.Add("sec-ch-ua","\"Not_A Brand\";v=\"99\", \"Google Chrome\";v=\"109\", \"Chromium\";v=\"109\"");
-        Client.DefaultRequestHeaders.Add("sec-ch-ua-mobile","?0");
-        Client.DefaultRequestHeaders.Add("sec-ch-ua-platform","linux");
-        Client.DefaultRequestHeaders.Add("sec-fetch-dest","document");
-        Client.DefaultRequestHeaders.Add("sec-fetch-mode","navigate");
-        Client.DefaultRequestHeaders.Add("sec-fetch-site","none");
-        Client.DefaultRequestHeaders.Add("sec-fetch-user","?1");
-        Client.DefaultRequestHeaders.Add("user-agent","Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36");
+        // Client.DefaultRequestHeaders.Add("sec-ch-ua","\"Not_A Brand\";v=\"99\", \"Google Chrome\";v=\"109\", \"Chromium\";v=\"109\"");
+        Client.DefaultRequestHeaders.Add("Sec-Ch-ua-Mobile","?0");
+        Client.DefaultRequestHeaders.Add("Sec-Ch-ua-Platform","linux");
+        Client.DefaultRequestHeaders.Add("Sec-Fetch-Dest","document");
+        Client.DefaultRequestHeaders.Add("Sec-Fetch-Mode","navigate");
+        Client.DefaultRequestHeaders.Add("Sec-Fetch-Site","none");
+        Client.DefaultRequestHeaders.Add("Sec-Fetch-User","?1");
+        Client.DefaultRequestHeaders.Add("User-Agent","Mozilla/5.0 (compatible; YandexBot/3.0; +http://yandex.com/bots)");
+
+        
+        // Client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (compatible; YandexBot/3.0; +http://yandex.com/bots)");
+        Client.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+        Client.DefaultRequestHeaders.Add("Accept-Language", "ru");
+        Client.DefaultRequestHeaders.Add("Accept-Encoding", "gzip");
     }
 
     public void Dispose() {
