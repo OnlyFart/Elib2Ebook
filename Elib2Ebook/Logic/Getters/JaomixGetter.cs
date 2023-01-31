@@ -43,7 +43,7 @@ public class JaomixGetter : GetterBase {
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {
         var result = new List<Chapter>();
 
-        foreach (var jaomixChapter in await GetToc(doc, url)) {
+        foreach (var jaomixChapter in GetToc(doc, url)) {
             Console.WriteLine($"Загружаю главу {jaomixChapter.Title.CoverQuotes()}");
             var chapter = new Chapter();
             var chapterDoc = await GetChapter(jaomixChapter.Url);
@@ -52,7 +52,7 @@ public class JaomixGetter : GetterBase {
             chapter.Title = jaomixChapter.Title;
 
             result.Add(chapter);
-            System.Threading.Thread.Sleep(500);
+            await Task.Delay(500);
         }
 
         return result;
@@ -72,17 +72,10 @@ public class JaomixGetter : GetterBase {
         return sb.AsHtmlDoc();
     }
 
-    private async Task<IEnumerable<UrlChapter>> GetToc(HtmlDocument doc, Uri url) {
-            
-        var chapters = new List<UrlChapter>();
-
-        Console.WriteLine("Получаю оглавление");
-
-        chapters.AddRange(ParseChapters(doc, url));
-        
+    private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
+        var chapters = ParseChapters(doc, url).ToList();
         Console.WriteLine($"Получено {chapters.Count} глав");
-
-        chapters.Reverse();
+        
         return SliceToc(chapters);
     }
         
@@ -92,6 +85,6 @@ public class JaomixGetter : GetterBase {
     }
 
     private static IEnumerable<UrlChapter> ParseChapters(HtmlDocument doc, Uri url) {
-        return doc.QuerySelectorAll("form.download-chapter .hiddenstab .flex-dow-txt a").Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.InnerText.Trim()));
+        return doc.QuerySelectorAll("form.download-chapter .hiddenstab .flex-dow-txt a").Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.InnerText.Trim())).Reverse();
     }
 }
