@@ -40,3 +40,5 @@ Code/\.idea/\.idea\.AllIn/\.idea/
 **/logs/**
 .dist
 .vs
+.vscode/launch.json
+.vscode/tasks.json
