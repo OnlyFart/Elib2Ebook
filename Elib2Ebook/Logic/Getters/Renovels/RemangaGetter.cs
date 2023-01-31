@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Renovels;
@@ -15,8 +17,19 @@ public class RemangaGetter : RenovelsGetterBase {
     protected override HtmlDocument GetChapterAsHtml(RenovelsApiResponse<RenovelsChapter> response) {
         var sb = new StringBuilder();
 
-        foreach (var img in response.Content.Pages) {
-            sb.Append($"<img src='{img.Link}'/>");
+        foreach (var obj in response.Content.Pages) {
+            switch (obj) {
+                case JsonObject:
+                    sb.Append($"<img src='{obj.Deserialize<RenovelsPage>().Link}'/>");
+                    break;
+                case JsonArray pages: {
+                    foreach (var page in pages) {
+                        sb.Append($"<img src='{page.Deserialize<RenovelsPage>().Link}'/>");
+                    }
+
+                    break;
+                }
+            }
         }
 
         return sb.AsHtmlDoc();

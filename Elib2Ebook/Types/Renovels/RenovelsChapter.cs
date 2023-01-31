@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace Elib2Ebook.Types.Renovels; 
@@ -26,7 +27,7 @@ public class RenovelsChapter {
     public bool? IsBought { get; set; }
     
     [JsonPropertyName("pages")]
-    public List<RenovelsPage> Pages { get; set; }
+    public JsonArray Pages { get; set; }
     
     public string Title {
         get {
