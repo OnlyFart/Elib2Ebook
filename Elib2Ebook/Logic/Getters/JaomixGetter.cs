@@ -16,6 +16,9 @@ namespace Elib2Ebook.Logic.Getters;
 public class JaomixGetter : GetterBase {
     public JaomixGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://jaomix.ru/");
+
+    protected override string GetId(Uri url) => url.GetSegment(1);
+
     public override async Task<Book> Get(Uri url) {
         url = SystemUrl.MakeRelativeUri($"/{GetId(url)}/");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
@@ -29,8 +32,7 @@ public class JaomixGetter : GetterBase {
             
         return book;
     }
-
-
+    
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {
         var result = new List<Chapter>();
 
