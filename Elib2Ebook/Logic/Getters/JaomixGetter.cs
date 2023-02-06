@@ -17,8 +17,7 @@ public class JaomixGetter : GetterBase {
     public JaomixGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://jaomix.ru/");
     public override async Task<Book> Get(Uri url) {
-        url = await GetMainUrl(url);
-        url = SystemUrl.MakeRelativeUri($"/category/{GetId(url)}/");
+        url = SystemUrl.MakeRelativeUri($"/{GetId(url)}/");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var book = new Book(url) {
@@ -31,14 +30,6 @@ public class JaomixGetter : GetterBase {
         return book;
     }
 
-    private async Task<Uri> GetMainUrl(Uri url) {
-        if (url.GetSegment(1) != "category") {
-            var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
-            return url.MakeRelativeUri(doc.QuerySelector("span.entry-category a").Attributes["href"].Value);
-        }
-
-        return url;
-    }
 
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {
         var result = new List<Chapter>();
