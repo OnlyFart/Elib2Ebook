@@ -71,7 +71,7 @@ public class ReadMangaGetter : GetterBase {
             return default;
         }
         
-        var json = Regex.Match(doc.ParsedText, @"initReader(.*?)(?<data>\[\[(.*?)]]),").Groups["data"].Value.Replace("'", "\"").Deserialize<List<JsonElement[]>>();
+        var json = Regex.Match(doc.ParsedText, @"readerInit(.*?)(?<data>\[\[(.*?)]]),").Groups["data"].Value.Replace("'", "\"").Deserialize<List<JsonElement[]>>();
 
         var sb = new StringBuilder();
         
