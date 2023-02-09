@@ -32,7 +32,7 @@ public class DarkNovelsGetter : GetterBase {
 
     public override Task Init() {
         Config.Client.DefaultRequestVersion = HttpVersion.Version20;
-        Config.Client.DefaultRequestHeaders.Add("User-Agent", "novels");
+        Config.Client.DefaultRequestHeaders.Add("User-Agent", "novels 1");
         return Task.CompletedTask;
     }
 
