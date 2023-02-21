@@ -28,7 +28,7 @@ jobs:
       run: dotnet test --no-build --verbosity normal
     - name: Small
       run: >
-        dotnet publish -c release p:PublishDir=.dist/small --no-self-contained 
+        dotnet publish -c release -p:PublishDir=.dist/small --no-self-contained 
         -p:PublishSingleFile=true -p:DebugType=embedded -p:PublishTrimmed=false 
         -p:EnableCompressionInSingleFile=false --use-current-runtime
     - name: Portable
