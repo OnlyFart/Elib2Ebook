@@ -166,7 +166,7 @@ public class AuthorTodayGetter : GetterBase {
         
         foreach (var chunk in book.Chapters.Where(c => !c.IsDraft).OrderBy(c => c.SortOrder).Chunk(100)) {
             var ids = string.Join("&", chunk.Select((c, i) => $"ids[{i}]={c.Id}"));
-            var uri = _apiIp.MakeRelativeUri($"/v1/work/{book.Id}/chapter/many-texts?{ids}");
+            var uri = ApiUrl.MakeRelativeUri($"/v1/work/{book.Id}/chapter/many-texts?{ids}");
             var response = await Config.Client.SendWithTriesAsync(() => GetDefaultMessage(uri, _apiUrl));
             var chapters = await response.Content.ReadFromJsonAsync<AuthorTodayChapter[]>();
             if (chapters != default) {
