@@ -33,7 +33,7 @@ jobs:
         -p:EnableCompressionInSingleFile=false --use-current-runtime
     - name: Portable
       run: >
-        dotnet publish -c release -p:PublishDir= .dist/portable --self-contained 
+        dotnet publish -c release -p:PublishDir=.dist/portable --self-contained 
         -p:PublishSingleFile=true -p:DebugType=embedded -p:PublishTrimmed=true 
         -p:EnableCompressionInSingleFile=true --use-current-runtime
 
