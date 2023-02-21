@@ -40,12 +40,12 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: Elib2Ebook-${{ matrix.os }}
-        path: ${{ github.workspace }}/.dist/small
+        path: ${{ github.workspace }}/dist/small
 
     - uses: actions/upload-artifact@v3
       with:
         name: Elib2Ebook-${{ matrix.os }}-portable
-        path: ${{ github.workspace }}/.dist/portable
+        path: ${{ github.workspace }}/dist/portable
     
   release:
     needs: build
