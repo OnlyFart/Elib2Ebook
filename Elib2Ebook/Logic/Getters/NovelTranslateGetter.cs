@@ -26,12 +26,12 @@ public class NovelTranslateGetter : GetterBase {
 
     private static string GetLang(Uri url) {
         var lang = url.Segments[1].Trim('/');
-        return lang == "novel" ? "en" : lang;
+        return lang == "novel" ? string.Empty : lang;
     }
 
     public override async Task<Book> Get(Uri url) {
         var lang = GetLang(url);
-        url = SystemUrl.MakeRelativeUri($"/{lang}/novel/{GetId(url)}/");
+        url = string.IsNullOrWhiteSpace(lang) ? SystemUrl.MakeRelativeUri($"/novel/{GetId(url)}/") : SystemUrl.MakeRelativeUri($"/{lang}/novel/{GetId(url)}/");
         
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
@@ -80,10 +80,10 @@ public class NovelTranslateGetter : GetterBase {
         foreach (var option in chapterDoc.QuerySelector("select.selectpicker_chapter").QuerySelectorAll("option")) {
             var name = option.GetText();
             var chapterUri = option.Attributes["data-redirect"].Value.AsUri();
-            if (!chapterUri.LocalPath.Trim('/').StartsWith(lang)) {
+            if (!string.IsNullOrWhiteSpace(lang) && !chapterUri.LocalPath.Trim('/').StartsWith(lang)) {
                 chapterUri = url.MakeRelativeUri($"/{lang}/{chapterUri.LocalPath.Trim('/')}");
             }
-            
+
             chapters.Add(new UrlChapter(chapterUri, name));
         }
 
