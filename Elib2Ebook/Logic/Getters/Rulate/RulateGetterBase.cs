@@ -20,10 +20,12 @@ public abstract class RulateGetterBase : GetterBase {
 
     protected override string GetId(Uri url) => url.Segments.Length == 3 ? base.GetId(url) : url.GetSegment(2);
     
+    protected abstract string Mature { get; }
+    
     public override async Task Init() {
         await base.Init();
         Config.Client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
-        Config.CookieContainer.Add(SystemUrl, new Cookie("mature", "7da3ee594b38fc5355692d978fe8f5adbeb3d17di%3A1%3B"));
+        Config.CookieContainer.Add(SystemUrl, new Cookie("mature", Mature));
     }
 
     public override async Task Authorize() {

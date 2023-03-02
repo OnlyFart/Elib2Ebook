@@ -35,7 +35,7 @@ public class FicbookGetter : GetterBase {
     }
 
     private static Author GetAuthor(HtmlDocument doc, Uri url) {
-        var a = doc.QuerySelector("a.creator-nickname");
+        var a = doc.QuerySelector("a.creator-username");
         return new Author(a.GetText(), url.MakeRelativeUri(a.Attributes["href"].Value));
     }
         
