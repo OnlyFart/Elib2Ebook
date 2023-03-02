@@ -1,7 +1,5 @@
 using System;
 using Elib2Ebook.Configs;
-using Elib2Ebook.Types.MangaLib;
-using Elib2Ebook.Types.RanobeLib;
 
 namespace Elib2Ebook.Logic.Getters.RanobeLib; 
 
