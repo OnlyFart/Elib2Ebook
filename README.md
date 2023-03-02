@@ -10,6 +10,7 @@
 Инструмент для сохранения любой доступной книги со следующих сайтов в форматах epub, fb2, cbz:
 <details>
 <pre>
+* http://samlib.ru/
 * https://acomics.ru/
 * https://author.today/
 * https://bigliba.com/
@@ -17,10 +18,11 @@
 * https://bookinist.pw/
 * https://booknet.com/
 * https://booknet.ua/
-* https://bookstab.ru/
 * https://bookriver.ru/
+* https://bookstab.ru/
 * https://dark-novels.ru/
 * https://dreame.com/
+* https://erolate.com/
 * https://eznovels.com/
 * https://fb2.top/
 * https://ficbook.net/
@@ -45,15 +47,16 @@
 * https://manga.ovh/
 * https://mangalib.me/
 * https://mir-knig.com/
+* https://mlate.ru/
 * https://mybook.ru/
-* https://online-knigi.com.ua/
 * https://noveltranslate.com/
 * https://novelxo.com/
+* https://online-knigi.com.ua/
 * https://prodaman.ru/
 * https://ranobe-novels.ru/
+* https://ranobe.ovh/
 * https://ranobehub.org/
 * https://ranobelib.me/
-* https://ranobe.ovh/
 * https://ranobes.com/
 * https://readli.net/
 * https://readmanga.live/
@@ -61,9 +64,8 @@
 * https://renovels.org/
 * https://royalroad.com/
 * https://ru.novelxo.com/
-* http://samlib.ru/
-* https://topliba.com/
 * https://tl.rulate.ru/
+* https://topliba.com/
 * https://twilightrussia.ru/
 * https://wattpad.com/
 * https://wuxiaworld.ru/
