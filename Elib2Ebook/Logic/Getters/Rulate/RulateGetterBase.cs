@@ -13,19 +13,12 @@ using Elib2Ebook.Types.Rulate;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 
-namespace Elib2Ebook.Logic.Getters; 
+namespace Elib2Ebook.Logic.Getters.Rulate; 
 
-public class RulateGetter : GetterBase {
-    public RulateGetter(BookGetterConfig config) : base(config) { }
-    protected override Uri SystemUrl => new("https://tl.rulate.ru");
+public abstract class RulateGetterBase : GetterBase {
+    public RulateGetterBase(BookGetterConfig config) : base(config) { }
 
     protected override string GetId(Uri url) => url.Segments.Length == 3 ? base.GetId(url) : url.GetSegment(2);
-
-    public override async Task Init() {
-        await base.Init();
-        Config.Client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
-        Config.CookieContainer.Add(SystemUrl, new Cookie("mature", "c3a2ed4b199a1a15f5a5483504c7a75a7030dc4bi%3A1%3B"));
-    }
 
     public override async Task Authorize() {
         if (!Config.HasCredentials) {
