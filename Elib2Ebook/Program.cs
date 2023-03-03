@@ -35,8 +35,7 @@ internal static class Program {
                 };
 
                 if (!string.IsNullOrEmpty(options.Proxy)) {
-                    var split = options.Proxy.Split(":");
-                    handler.Proxy = new WebProxy(split[0], int.Parse(split[1]));
+                    handler.Proxy = new WebProxy(new Uri(options.Proxy));
                     handler.UseProxy = true;
                 }
 
