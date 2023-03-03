@@ -103,11 +103,14 @@ public abstract class BuilderBase
             fileName = Path.Combine(directory, fileName);
         }
         
+        Console.ForegroundColor = ConsoleColor.Blue;
         Console.WriteLine($"Начинаю сохранение книги {fileName.CoverQuotes()}");
-            
+        Console.ResetColor();
         await BuildInternal(fileName);
 
+        Console.BackgroundColor = ConsoleColor.Green;
         Console.WriteLine($"Книга {fileName.CoverQuotes()} успешно сохранена");
+        Console.ResetColor();
     }
 
     /// <summary>
