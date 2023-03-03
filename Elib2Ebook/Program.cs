@@ -23,24 +23,7 @@ internal static class Program {
         await Parser.Default.ParseArguments<Options>(args)
             .WithParsedAsync(async options => {
                 var cookieContainer = new CookieContainer();
-
-                using var handler = new HttpClientHandler {
-                    AutomaticDecompression = DecompressionMethods.GZip | 
-                                             DecompressionMethods.Deflate |
-                                             DecompressionMethods.Brotli,
-                    ServerCertificateCustomValidationCallback = (_, _, _, _) => true,
-                    CookieContainer = cookieContainer,
-                    Proxy = null,
-                    UseProxy = false
-                };
-
-                if (!string.IsNullOrEmpty(options.Proxy)) {
-                    handler.Proxy = new WebProxy(new Uri(options.Proxy));
-                    handler.UseProxy = true;
-                }
-
-                using var client = new HttpClient(handler);
-                client.Timeout = TimeSpan.FromSeconds(options.Timeout);
+                using var client = GetClient(options, cookieContainer);
 
                 using var getterConfig = new BookGetterConfig(options, client, cookieContainer, TempFolderFactory.Create()); 
                 using var getter = GetGetter(getterConfig, options.Url.First().AsUri());
@@ -59,6 +42,27 @@ internal static class Program {
                     }
                 }
             });
+    }
+
+    private static HttpClient GetClient(Options options, CookieContainer container) {
+        var handler = new HttpClientHandler {
+            AutomaticDecompression = DecompressionMethods.GZip | 
+                                     DecompressionMethods.Deflate |
+                                     DecompressionMethods.Brotli,
+            ServerCertificateCustomValidationCallback = (_, _, _, _) => true,
+            CookieContainer = container,
+            Proxy = null,
+            UseProxy = false
+        };
+
+        if (!string.IsNullOrEmpty(options.Proxy)) {
+            handler.Proxy = new WebProxy(options.Proxy.AsUri());
+            handler.UseProxy = true;
+        }
+
+        var client = new HttpClient(handler);
+        client.Timeout = TimeSpan.FromSeconds(options.Timeout);
+        return client;
     }
 
     private static BuilderBase GetBuilder(string format) {
