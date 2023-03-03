@@ -34,7 +34,7 @@ jobs:
     - name: Portable
       run: >
         dotnet publish -c release -p:PublishDir=../dist/portable --self-contained 
-        -p:PublishSingleFile=true -p:DebugType=embedded -p:PublishTrimmed=true 
+        -p:PublishSingleFile=true -p:DebugType=embedded -p:PublishTrimmed=true -p:TrimMode=partial
         -p:EnableCompressionInSingleFile=true --use-current-runtime
 
     - uses: actions/upload-artifact@v3
