@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -31,14 +31,20 @@ internal static class Program {
                 await getter.Authorize();
 
                 foreach (var url in options.Url) {
+                    Console.BackgroundColor = ConsoleColor.Green;
+                    
+
                     Console.WriteLine($"Начинаю генерацию книги {url.CoverQuotes()}");
+                    Console.ResetColor()
                     try {
                         var book = await getter.Get(url.AsUri());
                         foreach (var format in options.Format) {
                             await book.Save(GetBuilder(format), options, "Patterns");
                         }
                     } catch (Exception ex) {
+                        Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine($"Генерация книги {url} завершилась с ошибкой. {ex.Message}");
+                        Console.ResetColor();
                     }
                 }
             });
