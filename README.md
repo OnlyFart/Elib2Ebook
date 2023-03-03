@@ -127,7 +127,7 @@ Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2 -l vasya -p pupki
 |  -f, --format|      Обязательное. Формат для сохранения книги. Допустимые значения: epub, fb2, cbz, json|
 |  -l, --login|       Логин от системы|
 |  -p, --password|    Пароль от системы|
-|  --proxy|           Прокси в формате host:port|
+|  --proxy|           Прокси в формате http://host:port/, socks4://host:port/, socks5://host:port/|
 |  -s, --save|        Директория для сохранения книги|
 |  -c, --cover|       Сохранить обложку книги в отдельный файл|
 |  -t, --timeout|     (По-умолчанию: 5) Timeout для запросов в секундах|
