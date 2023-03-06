@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
+using Elib2Ebook.Misc.TempFolder;
 
 namespace Elib2Ebook.Configs; 
 
@@ -13,9 +14,9 @@ public class BookGetterConfig : IDisposable {
     
     public bool HasCredentials => !string.IsNullOrWhiteSpace(Options.Login) && !string.IsNullOrWhiteSpace(Options.Password);
 
-    public TempFolder.TempFolder TempFolder { get; }
+    public TempFolder TempFolder { get; }
 
-    public BookGetterConfig(Options options, HttpClient client, CookieContainer cookieContainer, TempFolder.TempFolder tempFolder){
+    public BookGetterConfig(Options options, HttpClient client, CookieContainer cookieContainer, TempFolder tempFolder){
         Client = client;
         CookieContainer = cookieContainer;
         Options = options;

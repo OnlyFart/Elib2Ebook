@@ -6,11 +6,12 @@
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <LangVersion>latestmajor</LangVersion>
         <PackageId>Elib2Ebook</PackageId>
-        <Version>1.32.0</Version>
+        <Version>1.33.0</Version>
         <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="AngleSharp" Version="1.0.1" />
         <PackageReference Include="CommandLineParser" Version="2.9.1" />
         <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
         <PackageReference Include="HtmlAgilityPack.CssSelectors.NetCore" Version="1.2.1" />
@@ -18,7 +19,6 @@
         <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.3" />
         <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="7.0.0" />
         <PackageReference Include="OAuth.DotNetCore" Version="3.0.1" />
-        <PackageReference Include="TempFolder" Version="1.0.0" />
     </ItemGroup>
 
     <ItemGroup>

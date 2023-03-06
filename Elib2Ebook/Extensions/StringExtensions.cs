@@ -5,6 +5,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Web;
+using AngleSharp.Html;
+using AngleSharp.Html.Parser;
 using HtmlAgilityPack;
 
 namespace Elib2Ebook.Extensions; 
@@ -119,5 +121,15 @@ public static class StringExtensions {
 
     public static Uri AsUri(this string self) {
         return new(self);
+    }
+
+    public static string PrettyHtml(this string self) {
+        var document = new HtmlParser().ParseDocument(self);
+
+        using var sw = new StringWriter();
+        document.ToHtml(sw, new PrettyMarkupFormatter());
+
+        var result = sw.ToString();
+        return result;
     }
 }

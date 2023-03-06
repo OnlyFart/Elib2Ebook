@@ -36,4 +36,10 @@ public class Options {
     
     [Option("end", Required = false, HelpText = "Конечный номер главы")]
     public int? End { get; set; }
+    
+    [Option("temp", Required = false, HelpText = "Папка для временного хранения картинок")]
+    public string TempPath { get; set; }
+    
+    [Option("save-temp", Required = false, HelpText = "Сохранить ни временные файлы", Default = false)]
+    public bool SaveTemp { get; set; }
 }

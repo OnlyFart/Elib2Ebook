@@ -11,7 +11,7 @@ using Elib2Ebook.Extensions;
 using Elib2Ebook.Logic;
 using Elib2Ebook.Logic.Builders;
 using Elib2Ebook.Logic.Getters;
-using TempFolder;
+using Elib2Ebook.Misc.TempFolder;
 
 namespace Elib2Ebook; 
 
@@ -25,7 +25,7 @@ internal static class Program {
                 var cookieContainer = new CookieContainer();
                 using var client = GetClient(options, cookieContainer);
 
-                using var getterConfig = new BookGetterConfig(options, client, cookieContainer, TempFolderFactory.Create()); 
+                using var getterConfig = new BookGetterConfig(options, client, cookieContainer, TempFolderFactory.Create(options.TempPath, !options.SaveTemp)); 
                 using var getter = GetGetter(getterConfig, options.Url.First().AsUri());
                 await getter.Init();
                 await getter.Authorize();
@@ -71,6 +71,7 @@ internal static class Program {
             "epub" => EpubBuilder.Create(FileProvider.Instance.ReadAllText("Patterns/ChapterPattern.xhtml")),
             "json" => JsonBuilder.Create(),
             "cbz" => CbzBuilder.Create(),
+            "txt" => TxtBuilder.Create(),
             "json_lite" => JsonLiteBuilder.Create(),
             _ => throw new ArgumentException("Неизвестный формат", nameof(format))
         };
