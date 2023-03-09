@@ -50,8 +50,14 @@ public class JaomixGetter : GetterBase {
         return result;
     }
 
-    private async Task<HtmlDocument> GetChapter(Uri jaomixChapterUrl) {
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(jaomixChapterUrl);
+    private async Task<HtmlDocument> GetChapter(Uri url) {
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
+        while (doc.QuerySelector("div.themeform div.h-captcha") != null) {
+            Console.WriteLine($"Обнаружена капча. Перейдите по ссылке {url}, введите капчу и нажмите Enter...");
+            Console.Read();
+            doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
+        }
+        
         var sb = new StringBuilder();
             
         foreach (var node in doc.QuerySelector("div.themeform").ChildNodes) {
