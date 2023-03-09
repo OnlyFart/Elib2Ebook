@@ -1,13 +1,49 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
 
-namespace Elib2Ebook.Logic.Builders; 
+namespace Elib2Ebook.Logic.Builders;
+
+public class ShortImageConverter : JsonConverter<Image> {
+    public override Image Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+        return JsonSerializer.Deserialize<Image>(ref reader, options);
+    }
+
+    public override void Write(Utf8JsonWriter writer, Image value, JsonSerializerOptions options) {
+        writer.WriteStartObject();
+        writer.WriteString(nameof(value.Url), value.Url.ToString());
+        writer.WriteString(nameof(value.Directory), value.Directory);
+        writer.WriteString(nameof(value.Name), value.Name);
+        writer.WriteString(nameof(value.FilePath), value.FilePath);
+        writer.WriteEndObject();
+    }
+}
+
+public class ShortChapterConverter : JsonConverter<Chapter> {
+    public override Chapter Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+        return JsonSerializer.Deserialize<Chapter>(ref reader, options);
+    }
+
+    public override void Write(Utf8JsonWriter writer, Chapter value, JsonSerializerOptions options) {
+        writer.WriteStartObject();
+        
+        writer.WriteString(nameof(value.Title), value.Title);
+        writer.WriteBoolean(nameof(value.IsValid), value.IsValid);
+        
+        writer.WriteStartArray(nameof(value.Images));
+        foreach (var image in value.Images) {
+            JsonSerializer.Serialize(writer, image, options);
+        }
+        writer.WriteEndArray();
+
+        writer.WriteEndObject();
+    }
+}
 
 public class JsonLiteBuilder : BuilderBase {
     private readonly Book _book = new(null);
@@ -46,12 +82,7 @@ public class JsonLiteBuilder : BuilderBase {
     }
 
     public override BuilderBase WithChapters(IEnumerable<Chapter> chapters) {
-        _book.Chapters = chapters.Select(chapter => new Chapter {
-            Title = chapter.Title, 
-            Content = chapter.IsValid ? "*" : string.Empty, 
-            Images = new List<Image>()
-        });
-        
+        _book.Chapters = chapters;
         return this;
     }
 
@@ -68,7 +99,8 @@ public class JsonLiteBuilder : BuilderBase {
     protected override async Task BuildInternal(string name) {
         await using var file = File.Create(name);
         var jsonSerializerOptions = new JsonSerializerOptions {
-            WriteIndented = true
+            WriteIndented = true,
+            Converters = { new ShortChapterConverter(), new ShortImageConverter() }
         };
         
         await JsonSerializer.SerializeAsync(file, _book, jsonSerializerOptions);
