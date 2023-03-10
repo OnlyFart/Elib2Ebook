@@ -54,8 +54,10 @@ public abstract class Fb2TopGetterBase : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(Uri url) {
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
-        return doc.QuerySelector("section").RemoveNodes("h3").InnerHtml.AsHtmlDoc();
+        var doc = await Config.Client.GetStringAsync(url);
+        doc = doc.Replace("</h2>", "</h3>");
+        doc = doc.Replace("<h2>", "<h3>");
+        return doc.AsHtmlDoc().QuerySelector("section").RemoveNodes("h3").InnerHtml.AsHtmlDoc();
     }
 
     private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
@@ -84,6 +86,6 @@ public abstract class Fb2TopGetterBase : GetterBase {
 
     private Task<Image> GetCover(HtmlDocument doc, Uri url) {
         var imagePath = doc.QuerySelector("img.book-info-poster-img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(url.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(url.MakeRelativeUri(imagePath.HtmlDecode())) : Task.FromResult(default(Image));
     }
 }
