@@ -261,16 +261,15 @@ public class Fb2Builder : BuilderBase {
 
     private void ProcessSection(XElement parent, HtmlNode node, string textNode = "") {
         if (node.Name == "a") {
-            if (node.Attributes["href"] == null) {
-                return;
-            }
-
-            var href = node.Attributes["href"].Value;
+            var a = CreateXElement("a");
+            a.SetAttributeValue(_xlink + "href", node.Attributes["href"]?.Value ?? string.Empty);
+            a.Value = node.InnerText;
+            
             if (string.IsNullOrWhiteSpace(textNode)) {
-                parent.Add(href);
+                parent.Add(a);
             } else {
                 var tag = CreateXElement(textNode);
-                tag.Value = href.CleanInvalidXmlChars();
+                tag.Add(a);
                 parent.Add(tag);
             }
 
