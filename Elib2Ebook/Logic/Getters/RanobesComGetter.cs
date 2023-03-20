@@ -1,12 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
 using Elib2Ebook.Types.Common;
+using Elib2Ebook.Types.Ranobes;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 
@@ -19,10 +24,14 @@ public class RanobesComGetter : GetterBase {
     protected override string GetId(Uri url) => base.GetId(url).Split(".")[0];
 
     public override async Task<Book> Get(Uri url) {
+        await Config.Client.GetAsync(SystemUrl);
+        
+        
         url = await GetMainUrl(url);
         url = SystemUrl.MakeRelativeUri($"/ranobe/{GetId(url)}.html");
-        
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
+        await Antibot(doc, url);
+        doc = await Config.Client.GetHtmlDocWithTriesAsync(url); 
 
         var book = new Book(url) {
             Cover = await GetCover(doc, url),
@@ -33,6 +42,45 @@ public class RanobesComGetter : GetterBase {
         };
             
         return book;
+    }
+
+    private async Task Antibot(HtmlDocument doc, Uri referrer) {
+        var h1 = Regex.Match(doc.ParsedText, "var h1 = \'(?<id>.*?)\'").Groups["id"].Value;
+        var h2 = Regex.Match(doc.ParsedText, "var h2 = \'(?<id>.*?)\'").Groups["id"].Value;
+        var date = Regex.Match(doc.ParsedText, "var date = \'(?<id>.*?)\'").Groups["id"].Value;
+        var cid = Regex.Match(doc.ParsedText, "var cid = \'(?<id>.*?)\'").Groups["id"].Value;
+        var ip = Regex.Match(doc.ParsedText, "var ip = \'(?<id>.*?)\'").Groups["id"].Value;
+        var ptr = Regex.Match(doc.ParsedText, "var ptr = \'(?<id>.*?)\'").Groups["id"].Value;
+        var v = Regex.Match(doc.ParsedText, "var v = \'(?<id>.*?)\'").Groups["id"].Value;
+        var antibot = Regex.Match(doc.ParsedText, "antibot_(?<id>.*?)=").Groups["id"].Value;
+
+        var data = new Dictionary<string, string> {
+            { "hdc", "0" },
+            { "scheme", "https" },
+            { "a", "0" },
+            { "date", date },
+            { "country", "RU" },
+            { "h1", h1 },
+            { "h2", h2 },
+            { "ip", ip },
+            { "v", v },
+            { "cid", cid },
+            { "ptr", ptr },
+            { "w", "2560" },
+            { "h", "1440" },
+            { "cw", "2560" },
+            { "ch", "770" },
+            { "co", "24" },
+            { "pi", "24" },
+            { "ref", "ranobes.com" },
+            { "xxx", string.Empty },
+        };
+        
+        Config.Client.DefaultRequestHeaders.Add("Referer", referrer.ToString());
+        var post = await Config.Client.PostAsync(SystemUrl.MakeRelativeUri("antibot8/ab.php"), new FormUrlEncodedContent(data));
+        var cookie = await post.Content.ReadFromJsonAsync<RanobesCookie>();
+        Config.CookieContainer.Add(SystemUrl, new Cookie($"antibot_{antibot}", cookie.Cookie + "-" + date));
+        Config.Client.DefaultRequestHeaders.Remove("Referer");
     }
 
     private async Task<Uri> GetMainUrl(Uri url) {
