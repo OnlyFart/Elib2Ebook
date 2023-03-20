@@ -24,9 +24,6 @@ public class RanobesComGetter : GetterBase {
     protected override string GetId(Uri url) => base.GetId(url).Split(".")[0];
 
     public override async Task<Book> Get(Uri url) {
-        await Config.Client.GetAsync(SystemUrl);
-        
-        
         url = await GetMainUrl(url);
         url = SystemUrl.MakeRelativeUri($"/ranobe/{GetId(url)}.html");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
@@ -86,7 +83,7 @@ public class RanobesComGetter : GetterBase {
     private async Task<Uri> GetMainUrl(Uri url) {
         if (url.GetSegment(1) == "chapters" || !url.Segments.Last().EndsWith(".html")) {
             var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri(url.AbsolutePath));
-            return url.MakeRelativeUri(doc.QuerySelector("h5 a").Attributes["href"].Value);
+            return url.MakeRelativeUri(doc.QuerySelector("a[rel=up]").Attributes["href"].Value);
         }
 
         return url;
