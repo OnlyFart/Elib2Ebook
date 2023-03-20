@@ -62,6 +62,7 @@
 * https://readmanga.live/
 * https://remanga.org/
 * https://renovels.org/
+* https://romfant.ru/
 * https://royalroad.com/
 * https://ru.novelxo.com/
 * https://tl.rulate.ru/
