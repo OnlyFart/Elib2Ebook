@@ -17,16 +17,25 @@ public class WattpadGetter : GetterBase {
 
     protected override string GetId(Uri url) => base.GetId(url).Split('-')[0];
 
+    private async Task<string> GetStoryId(Uri url) {
+        if (url.ToString().Contains("/story/")) {
+            return GetId(url);
+        }
+
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
+        return doc.QuerySelector("button[data-story-id]").Attributes["data-story-id"].Value;
+    }
+
     public override async Task<Book> Get(Uri url) {
-        var bookId = GetId(url);
-        url = SystemUrl.MakeRelativeUri(bookId);
-        var wattpadInfo = await Config.Client.GetFromJsonAsync<WattpadInfo>(SystemUrl.MakeRelativeUri($"/api/v3/stories/{bookId}"));
+        var storyId = await GetStoryId(url);
+        url = SystemUrl.MakeRelativeUri(storyId);
+        var wattpadInfo = await Config.Client.GetFromJsonAsync<WattpadInfo>(SystemUrl.MakeRelativeUri($"/api/v3/stories/{storyId}"));
 
         var book = new Book(url) {
             Cover = await GetCover(wattpadInfo),
             Chapters = await FillChapters(wattpadInfo),
             Title = wattpadInfo.Title,
-            Author = new Author(wattpadInfo.User.Name, SystemUrl.MakeRelativeUri($"/user/{wattpadInfo?.User.Name}")),
+            Author = new Author(wattpadInfo?.User.Name, SystemUrl.MakeRelativeUri($"/user/{wattpadInfo?.User.Name}")),
             Annotation = wattpadInfo?.Description
         };
             
