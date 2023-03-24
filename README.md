@@ -44,6 +44,7 @@
 * https://litmir.me/
 * https://litnet.com/
 * https://litres.ru/
+* https://litsovet.ru/
 * https://manga.ovh/
 * https://mangalib.me/
 * https://mir-knig.com/
