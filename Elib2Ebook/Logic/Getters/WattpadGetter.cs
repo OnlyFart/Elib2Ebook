@@ -17,31 +17,16 @@ public class WattpadGetter : GetterBase {
 
     protected override string GetId(Uri url) => base.GetId(url).Split('-')[0];
 
-    private async Task<WattpadMeta> GetMeta(Uri url) {
-        if (url.ToString().Contains("/story/")) {
-            var result = new WattpadMeta();
-            
-            var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
-            result.StoryId = GetId(url);
-            result.BookId = doc.QuerySelector("a.read-btn").Attributes["href"].Value.Trim('/');
-            result.Title = doc.GetTextBySelector("div.story-info__title");
-            
-            return result;
-        }
-
-        var info = await Config.Client.GetFromJsonAsync<WattpadInfo>(SystemUrl.MakeRelativeUri($"/apiv2/info?id={GetId(url)}"));
-        return await GetMeta(url.MakeRelativeUri(info?.Url));
-    }
-
     public override async Task<Book> Get(Uri url) {
-        var meta = await GetMeta(url);
-        var wattpadInfo = await Config.Client.GetFromJsonAsync<WattpadInfo>(SystemUrl.MakeRelativeUri($"/apiv2/info?id={meta.BookId}"));
+        var bookId = GetId(url);
+        url = SystemUrl.MakeRelativeUri(bookId);
+        var wattpadInfo = await Config.Client.GetFromJsonAsync<WattpadInfo>(SystemUrl.MakeRelativeUri($"/api/v3/stories/{bookId}"));
 
         var book = new Book(url) {
             Cover = await GetCover(wattpadInfo),
             Chapters = await FillChapters(wattpadInfo),
-            Title = meta.Title,
-            Author = new Author(wattpadInfo?.Author, SystemUrl.MakeRelativeUri($"/user/{wattpadInfo?.Author}")),
+            Title = wattpadInfo.Title,
+            Author = new Author(wattpadInfo.User.Name, SystemUrl.MakeRelativeUri($"/user/{wattpadInfo?.User.Name}")),
             Annotation = wattpadInfo?.Description
         };
             
@@ -51,7 +36,7 @@ public class WattpadGetter : GetterBase {
     private async Task<IEnumerable<Chapter>> FillChapters(WattpadInfo wattpadInfo) {
         var result = new List<Chapter>();
             
-        foreach (var group in SliceToc(wattpadInfo.Group)) {
+        foreach (var group in SliceToc(wattpadInfo.Parts)) {
             Console.WriteLine($"Загружаю главу {group.GetTitle().CoverQuotes()}");
             var chapter = new Chapter();
                 
@@ -66,8 +51,8 @@ public class WattpadGetter : GetterBase {
         return result;
     }
 
-    private async Task<HtmlDocument> GetChapter(WattpadGroup group) {
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(group.Url);
+    private async Task<HtmlDocument> GetChapter(WattpadPart part) {
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(part.Url);
         foreach (var node in doc.QuerySelectorAll("p")) {
             node.Attributes.RemoveAll();
         }

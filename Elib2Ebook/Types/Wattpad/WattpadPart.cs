@@ -4,11 +4,11 @@ using Elib2Ebook.Extensions;
 
 namespace Elib2Ebook.Types.Wattpad; 
 
-public class WattpadGroup {
-    [JsonPropertyName("ID")]
+public class WattpadPart {
+    [JsonPropertyName("id")]
     public long Id { get; set; }
     
-    [JsonPropertyName("TITLE")]
+    [JsonPropertyName("title")]
     public string Title { private get; set; }
 
     public string GetTitle() {
