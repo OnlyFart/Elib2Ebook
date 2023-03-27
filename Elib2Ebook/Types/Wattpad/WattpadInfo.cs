@@ -12,9 +12,6 @@ public class WattpadInfo {
     [JsonPropertyName("parts")]
     public WattpadPart[] Parts { get; set; }
 
-    [JsonPropertyName("url")]
-    public string Url { get; set; }
-    
     [JsonPropertyName("description")]
     public string Description { get; set; }
     

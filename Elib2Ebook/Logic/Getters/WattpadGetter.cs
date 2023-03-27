@@ -35,8 +35,8 @@ public class WattpadGetter : GetterBase {
             Cover = await GetCover(wattpadInfo),
             Chapters = await FillChapters(wattpadInfo),
             Title = wattpadInfo.Title,
-            Author = new Author(wattpadInfo?.User.Name, SystemUrl.MakeRelativeUri($"/user/{wattpadInfo?.User.Name}")),
-            Annotation = wattpadInfo?.Description
+            Author = new Author(wattpadInfo.User.Name, SystemUrl.MakeRelativeUri($"/user/{wattpadInfo.User.Name}")),
+            Annotation = wattpadInfo.Description
         };
             
         return book;
