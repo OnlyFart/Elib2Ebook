@@ -20,6 +20,7 @@ public class LitgorodGetter : GetterBase {
     protected override Uri SystemUrl => new("https://litgorod.ru/");
     public override async Task<Book> Get(Uri url) {
         url = SystemUrl.MakeRelativeUri($"/books/view/{GetId(url)}");
+        Config.Client.DefaultRequestHeaders.Add("Referer", url.ToString());
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var book = new Book(url) {
@@ -148,7 +149,7 @@ public class LitgorodGetter : GetterBase {
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
-        var imagePath = doc.QuerySelector("div.b-book_cover img")?.Attributes["src"]?.Value;
+        var imagePath = doc.QuerySelector("div.b-book_cover a[href]")?.Attributes["href"]?.Value ?? doc.QuerySelector("div.b-book_cover img")?.Attributes["src"]?.Value;
         return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }
 }

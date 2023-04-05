@@ -143,8 +143,7 @@ public class DarkNovelsGetter : GetterBase {
         if (data.StatusCode == HttpStatusCode.BadRequest) {
             return;
         }
-
-        var images = new List<Image>();
+        
         using var zip = new ZipArchive(await data.Content.ReadAsStreamAsync());
         var sb = new StringBuilder();
 
@@ -156,8 +155,8 @@ public class DarkNovelsGetter : GetterBase {
         }
         
         var chapterDoc = sb.AsHtmlDoc().RemoveNodes("h1");
+        chapter.Images = await GetImages(chapterDoc, SystemUrl);
         chapter.Content = chapterDoc.DocumentNode.InnerHtml;
-        chapter.Images = images;
     }
 
     private static MultipartFormDataContent GetData(string bookId, int chapterId, string format) {
