@@ -50,6 +50,7 @@
 * https://mir-knig.com/
 * https://mlate.ru/
 * https://mybook.ru/
+* https://neobook.org/
 * https://noveltranslate.com/
 * https://novelxo.com/
 * https://online-knigi.com.ua/
