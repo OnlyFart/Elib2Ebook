@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -10,10 +9,8 @@ using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
-using Elib2Ebook.Types.Common;
 using Elib2Ebook.Types.Neobook;
 using HtmlAgilityPack;
-using HtmlAgilityPack.CssSelectors.NetCore;
 
 namespace Elib2Ebook.Logic.Getters;
 
@@ -80,11 +77,6 @@ public class NeobookGetter : GetterBase {
 
     private Author GetAuthor(NeobookPostData data) {
         return new Author(data.User.LastName + " " + data.User.FirstName, SystemUrl.MakeRelativeUri(data.User.UserName));
-    }
-
-    private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
-        var result = doc.QuerySelectorAll("div.book-about-chapters a").Select(a => new UrlChapter(SystemUrl.MakeRelativeUri(a.Attributes["href"].Value), a.GetText())).ToList();
-        return SliceToc(result);
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(NeobookPostData data, string bookId) {
