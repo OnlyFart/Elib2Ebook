@@ -13,11 +13,10 @@
     <ItemGroup>
         <PackageReference Include="AngleSharp" Version="1.0.1" />
         <PackageReference Include="CommandLineParser" Version="2.9.1" />
-        <PackageReference Include="Discord.Net" Version="3.10.0" />
         <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
         <PackageReference Include="HtmlAgilityPack.CssSelectors.NetCore" Version="1.2.1" />
         <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="7.0.0" />
-        <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.3" />
+        <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.5" />
         <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="7.0.0" />
         <PackageReference Include="OAuth.DotNetCore" Version="3.0.1" />
     </ItemGroup>
