@@ -133,7 +133,6 @@ public static class StringExtensions {
         using var sw = new StringWriter();
         document.ToHtml(sw, new PrettyMarkupFormatter());
 
-        var result = sw.ToString();
-        return result;
+        return sw.ToString();
     }
 }
