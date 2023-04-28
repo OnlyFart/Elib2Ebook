@@ -20,6 +20,7 @@
 * https://booknet.ua/
 * https://bookriver.ru/
 * https://bookstab.ru/
+* https://bookuruk.com/ßß
 * https://dark-novels.ru/
 * https://dreame.com/
 * https://erolate.com/
