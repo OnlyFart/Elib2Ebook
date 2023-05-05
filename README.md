@@ -22,6 +22,7 @@
 * https://bookstab.ru/
 * https://bookuruk.com/
 * https://dark-novels.ru/
+* https://desu.me/
 * https://dreame.com/
 * https://erolate.com/
 * https://eznovels.com/
