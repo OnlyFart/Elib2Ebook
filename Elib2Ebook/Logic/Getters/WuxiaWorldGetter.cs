@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
 using Elib2Ebook.Types.Common;
+using Elib2Ebook.Types.WuxiaWorld;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 
@@ -42,19 +44,19 @@ public class WuxiaWorldGetter : GetterBase {
     }
 
     private async Task<IEnumerable<UrlChapter>> GetToc(HtmlDocument doc, Uri url) {
-        var catId = Regex.Match(doc.ParsedText, @"catID = (?<catId>\d+)").Groups["catId"].Value;
-        var slug = url.GetSegment(1);
+        var catId = Regex.Match(doc.ParsedText, "data-cat=\"(?<catId>\\d+)\"").Groups["catId"].Value;
         var result = new List<UrlChapter>();
         
         foreach (var span in doc.QuerySelectorAll("ul.myUL span.caret[data-id]")) {
+            var offset = (int.Parse(span.Attributes["data-id"].Value) - 1) * 100;
             var payload = new FormUrlEncodedContent(new Dictionary<string, string> {
                 ["cat_id"] = catId,
-                ["cat_slug"] = slug,
-                ["chapter"] = span.Attributes["data-id"].Value
+                ["offset"] = offset.ToString()
             });
 
-            var tocDoc = await Config.Client.PostHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri("/wp-content/themes/Wuxia/template-parts/post/menu-query.php"), payload);
-            result.AddRange(tocDoc.QuerySelectorAll("li a").Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.InnerText.HtmlDecode())));
+            var post = await Config.Client.PostWithTriesAsync(SystemUrl.MakeRelativeUri("/wp-content/themes/Wuxia/template-parts/post/menu-query.php"), payload);
+            var toc = await post.Content.ReadFromJsonAsync<WuxiaWorldToc[]>();
+            result.AddRange(toc.Select((a, i) => new UrlChapter(url.MakeRelativeUri(a.PostName), $"Глава {offset + i + 1}")));
         }
 
         return SliceToc(result);
@@ -80,7 +82,7 @@ public class WuxiaWorldGetter : GetterBase {
 
     private async Task<HtmlDocument> GetChapter(Uri url) {
         var doc = await GetSafety(url);
-        return doc.QuerySelector("div.entry-content").RemoveNodes("> :not(p)").InnerHtml.AsHtmlDoc();
+        return doc.QuerySelector("div.js-full-content").RemoveNodes("> :not(p)").InnerHtml.AsHtmlDoc();
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
