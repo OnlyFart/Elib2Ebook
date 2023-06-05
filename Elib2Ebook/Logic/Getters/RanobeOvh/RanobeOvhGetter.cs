@@ -1,11 +1,13 @@
 using System;
 using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.RanobeOvh;
 using HtmlAgilityPack;
+using HtmlAgilityPack.CssSelectors.NetCore;
 
 namespace Elib2Ebook.Logic.Getters.RanobeOvh; 
 
@@ -38,5 +40,15 @@ public class RanobeOvhGetter : RanobeOvhGetterBase {
         }
 
         return sb.AsHtmlDoc();
+    }
+
+    protected override T GetNextData<T>(HtmlDocument doc, string node) {
+        var json = doc.QuerySelector("#__NEXT_DATA__").InnerText;
+        return JsonDocument.Parse(json)
+            .RootElement.GetProperty("props")
+            .GetProperty("pageProps")
+            .GetProperty(node)
+            .GetRawText()
+            .Deserialize<T>();
     }
 }

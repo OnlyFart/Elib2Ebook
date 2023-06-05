@@ -2,14 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
 using Elib2Ebook.Types.RanobeOvh;
 using HtmlAgilityPack;
-using HtmlAgilityPack.CssSelectors.NetCore;
 
 namespace Elib2Ebook.Logic.Getters.RanobeOvh; 
 
@@ -21,6 +19,8 @@ public abstract class RanobeOvhGetterBase : GetterBase {
     protected abstract string Segment { get; }
     
     protected abstract Task<HtmlDocument> GetChapter(RanobeOvhChapter ranobeOvhChapter);
+    
+    protected abstract T GetNextData<T>(HtmlDocument doc, string node);
 
     private async Task<Uri> GetMainUrl(Uri url) {
         if (url.GetSegment(1) != Segment) {
@@ -79,7 +79,7 @@ public abstract class RanobeOvhGetterBase : GetterBase {
         return SliceToc(data.Deserialize<RanobeOvhChapter[]>().Reverse().ToList());
     }
 
-    private static RanobeOvhBranch GetBranch(HtmlDocument doc) {
+    private RanobeOvhBranch GetBranch(HtmlDocument doc) {
         var branches = GetNextData<RanobeOvhBranch[]>(doc, "branches");
         return branches[0];
     }
@@ -95,15 +95,5 @@ public abstract class RanobeOvhGetterBase : GetterBase {
 
     private Task<Image> GetCover(RanobeOvhManga manga, Uri uri) {
         return !string.IsNullOrWhiteSpace(manga.Poster) ? SaveImage(uri.MakeRelativeUri(manga.Poster)) : Task.FromResult(default(Image));
-    }
-    
-    private static T GetNextData<T>(HtmlDocument doc, string node) {
-        var json = doc.QuerySelector("#__NEXT_DATA__").InnerText;
-        return JsonDocument.Parse(json)
-            .RootElement.GetProperty("props")
-            .GetProperty("pageProps")
-            .GetProperty(node)
-            .GetRawText()
-            .Deserialize<T>();
     }
 }
