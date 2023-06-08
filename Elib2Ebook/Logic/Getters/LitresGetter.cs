@@ -199,8 +199,9 @@ public class LitresGetter : GetterBase {
             }
 
             var fileName = t.Target.Split("/").Last().Trim('/');
-            img.Attributes["src"].Value = fileName;
-            images.Add(await Image.Create(null, Config.TempFolder.Path, fileName, t.Content));
+            var image = await Image.Create(null, Config.TempFolder.Path, fileName, t.Content);
+            img.Attributes["src"].Value = image.Name;
+            images.Add(image);
         }
 
         return images;
