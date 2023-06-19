@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
@@ -20,8 +21,13 @@ namespace Elib2Ebook.Logic.Getters.Litnet;
 public abstract class LitnetGetterBase : GetterBase {
     public LitnetGetterBase(BookGetterConfig config) : base(config) { }
 
-    private Uri _apiUrl => new($"https://api.{SystemUrl.Host}/");
+    protected Uri ApiUrl => new($"https://api.{SystemUrl.Host}/");
     
+    //cloudflare :(
+    protected virtual Uri ApiIp => ApiUrl;
+
+    protected virtual Uri SiteIp => SystemUrl;
+
     private static readonly string DeviceId = Guid.NewGuid().ToString().ToUpper();
     private const string SECRET = "14a6579a984b3c6abecda6c2dfa83a64";
 
@@ -53,7 +59,7 @@ public abstract class LitnetGetterBase : GetterBase {
 
         return Convert.ToHexString(hashBytes).ToLower();
     }
-    
+
     /// <summary>
     /// Авторизация в системе
     /// </summary>
@@ -61,8 +67,8 @@ public abstract class LitnetGetterBase : GetterBase {
     public override async Task Authorize() {
         var path = Config.HasCredentials ? "user/find-by-login" : "registration/registration-by-device";
 
-        var url = _apiUrl.MakeRelativeUri($"v1/{path}?login={HttpUtility.UrlEncode(Config.Options.Login?.TrimStart('+') ?? string.Empty)}&password={HttpUtility.UrlEncode(Config.Options.Password)}&app=android&device_id={DeviceId}&sign={GetSign(string.Empty)}");
-        var response = await Config.Client.GetAsync(url);
+        var url = ApiIp.MakeRelativeUri($"v1/{path}?login={HttpUtility.UrlEncode(Config.Options.Login?.TrimStart('+') ?? string.Empty)}&password={HttpUtility.UrlEncode(Config.Options.Password)}&app=android&device_id={DeviceId}&sign={GetSign(string.Empty)}");
+        var response = await Config.Client.SendAsync(GetDefaultMessage(url, ApiUrl));
         var data = await response.Content.ReadFromJsonAsync<LitnetAuthResponse>();
 
         if (!string.IsNullOrWhiteSpace(data?.Token)) {
@@ -74,18 +80,19 @@ public abstract class LitnetGetterBase : GetterBase {
     }
 
     private async Task<LitnetBookResponse> GetBook(string token, string bookId) {
-        var url = _apiUrl.MakeRelativeUri($"/v1/book/get/{bookId}?app=android&device_id={DeviceId}&user_token={token}&sign={GetSign(token)}");
-        var response = await Config.Client.GetFromJsonAsync<LitnetBookResponse>(url);
-        if (!Config.HasCredentials && response!.AdultOnly) {
+        var url = ApiIp.MakeRelativeUri($"/v1/book/get/{bookId}?app=android&device_id={DeviceId}&user_token={token}&sign={GetSign(token)}");
+        var response = await Config.Client.SendAsync(GetDefaultMessage(url, ApiUrl));
+        var data = await response.Content.ReadFromJsonAsync<LitnetBookResponse>();
+        if (!Config.HasCredentials && data!.AdultOnly) {
             throw new Exception("Произведение 18+. Необходимо добавить логин и пароль.");
         }
         
-        return response;
+        return data;
     }
 
     private async Task<LitnetContentsResponse[]> GetBookContents(string token, string bookId) {
-        var url = _apiUrl.MakeRelativeUri($"/v1/book/contents?bookId={bookId}&app=android&device_id={DeviceId}&user_token={token}&sign={GetSign(token)}");
-        var response = await Config.Client.GetAsync(url);
+        var url = ApiIp.MakeRelativeUri($"/v1/book/contents?bookId={bookId}&app=android&device_id={DeviceId}&user_token={token}&sign={GetSign(token)}");
+        var response = await Config.Client.SendAsync(GetDefaultMessage(url, ApiUrl));
         return response.StatusCode == HttpStatusCode.NotFound ? 
             Array.Empty<LitnetContentsResponse>() : 
             await response.Content.ReadFromJsonAsync<LitnetContentsResponse[]>();
@@ -93,9 +100,10 @@ public abstract class LitnetGetterBase : GetterBase {
 
     private async Task<IEnumerable<LitnetChapterResponse>> GetToc(string token, IEnumerable<LitnetContentsResponse> contents) {
         var chapters = string.Join("&", contents.Select(t => $"chapter_ids[]={t.Id}"));
-        var url = _apiUrl.MakeRelativeUri($"/v1/book/get-chapters-texts/?{chapters}&app=android&device_id={DeviceId}&sign={GetSign(token)}&user_token={token}");
-        var response = await Config.Client.GetFromJsonAsync<LitnetChapterResponse[]>(url);
-        return SliceToc(response);
+        var url = ApiIp.MakeRelativeUri($"/v1/book/get-chapters-texts/?{chapters}&app=android&device_id={DeviceId}&sign={GetSign(token)}&user_token={token}");
+        var response = await Config.Client.SendAsync(GetDefaultMessage(url, ApiUrl));
+        var data = await response.Content.ReadFromJsonAsync<LitnetChapterResponse[]>();
+        return SliceToc(data);
     }
     
     public override async Task<Book> Get(Uri url) {
@@ -119,7 +127,7 @@ public abstract class LitnetGetterBase : GetterBase {
 
     private async Task<Seria> GetSeria(Uri url, LitnetBookResponse book) {
         try {
-            var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
+            var doc = await Config.Client.SendAsync(GetDefaultMessage(url.ReplaceHost(SiteIp.Host), SystemUrl)).ContinueWith(t => t.Result.Content.ReadAsStream().AsHtmlDoc());
             var a = doc.QuerySelector("div.book-view-info-coll a[href*='sort=cycles']");
             if (a != default) {
                 return new Seria {
@@ -147,6 +155,28 @@ public abstract class LitnetGetterBase : GetterBase {
     
     private Task<Image> GetCover(LitnetBookResponse book) {
         return !string.IsNullOrWhiteSpace(book.Cover) ? SaveImage(book.Cover.AsUri()) : Task.FromResult(default(Image));
+    }
+    
+    protected override HttpRequestMessage GetImageRequestMessage(Uri uri) {
+        if (uri.IsSameHost(SystemUrl) || uri.IsSameSubDomain(SystemUrl)) {
+            return GetDefaultMessage(SystemUrl.MakeRelativeUri(uri.AbsolutePath), uri);
+        }
+
+        return base.GetImageRequestMessage(uri);
+    }
+    
+    private HttpRequestMessage GetDefaultMessage(Uri uri, Uri host, HttpContent content = null) {
+        var message = new HttpRequestMessage(content == default ? HttpMethod.Get : HttpMethod.Post, uri);
+        message.Content = content;
+        message.Version = Config.Client.DefaultRequestVersion;
+        
+        foreach (var header in Config.Client.DefaultRequestHeaders) {
+            message.Headers.Add(header.Key, header.Value);
+        }
+
+        message.Headers.Host = host.Host;
+
+        return message;
     }
 
     private async Task<List<Chapter>> FillChapters(string token, LitnetBookResponse book, string bookId) {
