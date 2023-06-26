@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
@@ -14,7 +16,6 @@ using Elib2Ebook.Types.Book;
 using Elib2Ebook.Types.Litnet;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
-
 namespace Elib2Ebook.Logic.Getters.Litnet;
 
 public abstract class LitnetGetterBase : GetterBase {
@@ -28,22 +29,24 @@ public abstract class LitnetGetterBase : GetterBase {
     private string _token { get; set; }
 
     protected override string GetId(Uri url) => base.GetId(url).Split('-').Last().Replace("b", string.Empty);
-
-    private static string Decrypt(string text) {
+    private static byte[] DecryptBin(string text)
+    {
         using var aes = Aes.Create();
         const int IV_SHIFT = 16;
-        
-        aes.Key = Encoding.UTF8.GetBytes(SECRET); 
+
+        aes.Key = Encoding.UTF8.GetBytes(SECRET);
         aes.IV = Encoding.UTF8.GetBytes(text)[..IV_SHIFT];
-        
+
         var decryptor = aes.CreateDecryptor();
         using var ms = new MemoryStream(Convert.FromBase64String(text));
         using var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
-        
+
         var output = new MemoryStream();
         cs.CopyTo(output);
-
-        return Encoding.UTF8.GetString(output.ToArray()[IV_SHIFT..]);
+        return output.ToArray()[IV_SHIFT..];
+    }
+    private static string Decrypt(string text) {
+        return Encoding.UTF8.GetString(DecryptBin(text));
     }
 
     private static string GetSign(string token) {
@@ -167,8 +170,26 @@ public abstract class LitnetGetterBase : GetterBase {
             var chapter = new Chapter {
                 Title = (content.Title ?? book.Title).Trim()
             };
-
-            if (!string.IsNullOrWhiteSpace(litnetChapter.Text)) {
+            if (string.IsNullOrWhiteSpace(litnetChapter.Text))
+            {
+                var values = new Dictionary<string, string>() {
+                    { "app", "android" },
+                    { "device_id", DeviceId },
+                    { "user_token", _token },
+                    { "sign", GetSign(_token) },
+                    { "version", "1.0" }
+                };
+                var data = new FormUrlEncodedContent(values);
+                var url = $"https://sapi.litnet.com/v1/text/get-chapter?chapter_id={litnetChapter.Id}";
+                var response = await Config.Client.PostAsync(url, data);
+                var buff = await response.Content.ReadAsByteArrayAsync();
+                var gz = DecryptBin(Convert.ToBase64String(buff));
+                var txt = Gunzip(gz);
+                var chapterDoc = txt.Deserialize<string[]>().Aggregate(new StringBuilder(), (sb, row) => sb.Append(row)).AsHtmlDoc();
+                chapter.Images = await GetImages(chapterDoc, SystemUrl);
+                chapter.Content = chapterDoc.DocumentNode.InnerHtml;
+            } else 
+            {
                 var chapterDoc = GetChapter(litnetChapter);
                 chapter.Images = await GetImages(chapterDoc, SystemUrl);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
@@ -178,6 +199,18 @@ public abstract class LitnetGetterBase : GetterBase {
         }
 
         return result;
+    }
+
+    private string Gunzip(byte[] gz)
+    {
+        using (var compressedStream = new MemoryStream(gz))
+        using (var zipStream = new GZipStream(compressedStream, CompressionMode.Decompress))
+        using (var resultStream = new MemoryStream())
+        {
+            zipStream.CopyTo(resultStream);
+            var result = resultStream.ToArray();
+            return Encoding.UTF8.GetString(result);
+        }
     }
 
     private static HtmlDocument GetChapter(LitnetChapterResponse chapter) {
