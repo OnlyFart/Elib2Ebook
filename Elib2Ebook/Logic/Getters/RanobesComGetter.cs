@@ -147,8 +147,8 @@ public class RanobesComGetter : GetterBase {
         for (var i = 1; i <= pages; i++) {
             doc = await Config.Client.GetHtmlDocWithTriesAsync(tocUri.AppendSegment($"/page/{i}"));
             var chapters = doc
-                .QuerySelectorAll("#dle-content > .cat_block.cat_line a")
-                .Select(a => new UrlChapter(a.Attributes["href"].Value.AsUri(), a.Attributes["title"].Value))
+                .QuerySelectorAll("#dle-content > .cat_block.cat_line a[title]")
+                .Select(a => new UrlChapter(a.Attributes["href"].Value.AsUri(), string.IsNullOrWhiteSpace(a.Attributes["title"].Value) ? "Без названия" : a.Attributes["title"].Value))
                 .ToList();
             
             result.AddRange(chapters);
