@@ -16,9 +16,9 @@ namespace Elib2Ebook.Logic.Getters;
 
 public class NeobookGetter : GetterBase {
     public NeobookGetter(BookGetterConfig config) : base(config) { }
-    protected override Uri SystemUrl => new("https://neobook.org/");
+    protected override Uri SystemUrl => new("http://neobook.org/");
 
-    private Uri _apiUrl = new("https://api.neobook.org/");
+    private Uri _apiUrl = new("http://api.neobook.org/");
 
     protected override string GetId(Uri url) {
         return url.GetSegment(1) == "book" ? url.GetSegment(2) : url.GetQueryParameter("book");
