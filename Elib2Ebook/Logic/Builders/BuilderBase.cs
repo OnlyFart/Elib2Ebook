@@ -15,6 +15,13 @@ public abstract class BuilderBase
     /// <param name="author">Автор</param>
     /// <returns></returns>
     public abstract BuilderBase AddAuthor(Author author);
+    
+    /// <summary>
+    /// Добавление автора книги
+    /// </summary>
+    /// <param name="coAuthors">Со-авторы</param>
+    /// <returns></returns>
+    public abstract BuilderBase AddCoAuthors(IEnumerable<Author> coAuthors);
 
     /// <summary>
     /// Указание названия книги

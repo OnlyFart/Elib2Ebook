@@ -117,6 +117,7 @@ public abstract class LitnetGetterBase : GetterBase {
             Chapters = await FillChapters(_token, litnetBook, bookId),
             Title = litnetBook.Title.Trim(),
             Author = GetAuthor(litnetBook),
+            CoAuthors = GetCoAuthors(litnetBook),
             Annotation = GetAnnotation(litnetBook),
             Seria = await GetSeria(uri, litnetBook),
             Lang = litnetBook.Lang
@@ -145,6 +146,15 @@ public abstract class LitnetGetterBase : GetterBase {
 
     private Author GetAuthor(LitnetBookResponse book) {
         return new Author((book.AuthorName ?? SystemUrl.Host).Trim(), SystemUrl.MakeRelativeUri($"/ru/{book.AuthorId}"));
+    }
+    
+    private IEnumerable<Author> GetCoAuthors(LitnetBookResponse book) {
+        var result = new List<Author>();
+        if (!string.IsNullOrWhiteSpace(book.CoAuthorName)) {
+            result.Add(new Author((book.CoAuthorName ?? SystemUrl.Host).Trim(), SystemUrl.MakeRelativeUri($"/ru/{book.CoAuthorId}")));
+        }
+
+        return result;
     }
 
     private static string GetAnnotation(LitnetBookResponse book) {

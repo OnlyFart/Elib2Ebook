@@ -20,6 +20,11 @@ public class JsonBuilder : BuilderBase {
         return this;
     }
 
+    public override BuilderBase AddCoAuthors(IEnumerable<Author> coAuthors) {
+        _book.CoAuthors = coAuthors;
+        return this;
+    }
+
     public override BuilderBase WithTitle(string title) {
         _book.Title = title;
         return this;

@@ -132,6 +132,21 @@ public class Fb2Builder : BuilderBase {
         _documentInfo.Add(authorElem);
         return this;
     }
+    
+    /// <summary>
+    /// Добавление со-авторов книги
+    /// </summary>
+    /// <param name="coAuthors">Со-авторы</param>
+    /// <returns></returns>
+    public override BuilderBase AddCoAuthors(IEnumerable<Author> coAuthors) {
+        foreach (var coAuthor in coAuthors) {
+            var coAuthorElem = CreateAuthor(coAuthor);
+            _titleInfo.Add(coAuthorElem);
+            _documentInfo.Add(coAuthorElem);
+        }
+        
+        return this;
+    }
 
     /// <summary>
     /// Указание названия книги

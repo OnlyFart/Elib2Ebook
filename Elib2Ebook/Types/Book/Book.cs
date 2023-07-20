@@ -17,7 +17,12 @@ public class Book {
     /// Автор книги
     /// </summary>
     public Author Author { get; set; }
-    
+
+    /// <summary>
+    /// Автор книги
+    /// </summary>
+    public IEnumerable<Author> CoAuthors { get; set; } = new List<Author>();
+
     /// <summary>
     /// Описание книги
     /// </summary>
@@ -63,6 +68,7 @@ public class Book {
 
         await builder
             .AddAuthor(Author)
+            .AddCoAuthors(CoAuthors)
             .WithBookUrl(Url)
             .WithTitle(Title)
             .WithAnnotation(Annotation)

@@ -19,6 +19,10 @@ public class TxtBuilder : BuilderBase {
         return this;
     }
 
+    public override BuilderBase AddCoAuthors(IEnumerable<Author> coAuthors) {
+        return this;
+    }
+
     public override BuilderBase WithTitle(string title) {
         return this;
     }

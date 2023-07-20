@@ -29,4 +29,10 @@ public class LitnetBookResponse {
     
     [JsonPropertyName("adult_only")]
     public bool AdultOnly { get; set; }
+    
+    [JsonPropertyName("co_author_name")]
+    public string CoAuthorName { get; set; }
+    
+    [JsonPropertyName("co_author")]
+    public long CoAuthorId { get; set; }
 }

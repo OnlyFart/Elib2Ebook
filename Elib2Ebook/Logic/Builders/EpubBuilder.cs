@@ -50,6 +50,10 @@ public class EpubBuilder : BuilderBase {
         return this;
     }
 
+    public override BuilderBase AddCoAuthors(IEnumerable<Author> coAuthors) {
+        return this;
+    }
+
     /// <summary>
     /// Указание названия книги
     /// </summary>

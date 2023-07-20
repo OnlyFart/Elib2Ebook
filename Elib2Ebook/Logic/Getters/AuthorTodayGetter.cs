@@ -81,6 +81,7 @@ public class AuthorTodayGetter : GetterBase {
             Chapters = await FillChapters(details),
             Title = details.Title,
             Author = GetAuthor(details),
+            CoAuthors = GetCoAuthors(details),
             Annotation = details.Annotation,
             Seria = GetSeria(details)
         };
@@ -113,6 +114,15 @@ public class AuthorTodayGetter : GetterBase {
 
     private Author GetAuthor(AuthorTodayBookDetails book) {
         return new Author(book.AuthorFio, SystemUrl.MakeRelativeUri($"/u/{book.AuthorUserName}/works"));
+    }
+    
+    private IEnumerable<Author> GetCoAuthors(AuthorTodayBookDetails book) {
+        var result = new List<Author>();
+        if (!string.IsNullOrWhiteSpace(book.CoAuthorFio)) {
+            result.Add( new Author(book.CoAuthorFio, SystemUrl.MakeRelativeUri($"/u/{book.CoAuthorUserName}/works")));
+        }
+
+        return result;
     }
 
     private Seria GetSeria(AuthorTodayBookDetails book) {
