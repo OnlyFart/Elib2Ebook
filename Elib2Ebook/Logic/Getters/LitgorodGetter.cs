@@ -28,6 +28,7 @@ public class LitgorodGetter : GetterBase {
             Chapters = await FillChapters(doc, url),
             Title = doc.GetTextBySelector("div.b-book_item__name h1"),
             Author = GetAuthor(doc, url),
+            CoAuthors = GetCoAuthors(doc, url),
             Annotation = doc.QuerySelector("div[data-tab-item=1] > p")?.InnerHtml,
             Seria = GetSeria(doc, url)
         };
@@ -80,6 +81,10 @@ public class LitgorodGetter : GetterBase {
     private static Author GetAuthor(HtmlDocument doc, Uri url) {
         var a = doc.QuerySelector("div.b-book_item__author a");
         return new Author(a.GetText(), url.MakeRelativeUri(a.Attributes["href"].Value));
+    }
+    
+    private static IEnumerable<Author> GetCoAuthors(HtmlDocument doc, Uri url) {
+        return doc.QuerySelectorAll("div.b-book_item__author a").Skip(1).Select(a => new Author(a.GetText(), url.MakeRelativeUri(a.Attributes["href"].Value))).ToList();
     }
 
     private static Seria GetSeria(HtmlDocument doc, Uri url) {
