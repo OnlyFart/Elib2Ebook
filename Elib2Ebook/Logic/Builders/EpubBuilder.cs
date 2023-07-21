@@ -51,6 +51,10 @@ public class EpubBuilder : BuilderBase {
     }
 
     public override BuilderBase AddCoAuthors(IEnumerable<Author> coAuthors) {
+        foreach (var coAuthor in coAuthors) {
+            _writer.AddAuthor(coAuthor.Name);    
+        }
+        
         return this;
     }
 
