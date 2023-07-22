@@ -46,7 +46,9 @@ public class LitresGetter : GetterBase {
         return new($"https://catalit.litres.ru/pages/{path}/?type=fb3&art={bookId}&sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
     }
 
-    private LitresAuthResponseData _authData;
+    private LitresAuthResponseData _authData = new(){
+        Sid = "6ufp4b2wbx1acc4k1f0wdo571762c0fn"
+    };
 
     public override async Task Authorize() {
         if (!Config.HasCredentials) {
@@ -83,6 +85,11 @@ public class LitresGetter : GetterBase {
         var resp = await Config.Client.PostWithTriesAsync("https://catalit.litres.ru/catalitv2".AsUri(), CreatePayload(payload));
         return await resp.Content.ReadAsStringAsync().ContinueWith(t => t.Result.Deserialize<LitresResponse<T>>().Data);
     }
+    
+    private async Task<T> GetResponse<T>(Uri url) {
+        var resp = await Config.Client.GetWithTriesAsync(url);
+        return await resp.Content.ReadAsStringAsync().ContinueWith(t => t.Result.Deserialize<LitresStaticResponse<T>>().Payload.Data);
+    }
 
     private static FormUrlEncodedContent CreatePayload(LitresPayload payload) {
         var d = new Dictionary<string, string> {
@@ -92,69 +99,62 @@ public class LitresGetter : GetterBase {
         return new FormUrlEncodedContent(d);
     }
 
-    private Uri GetMainUrl(Uri url) {
-        var art = url.GetQueryParameter("art");
-        return string.IsNullOrWhiteSpace(art) ? url : SystemUrl.MakeRelativeUri(art);
-    }
-
     public override async Task<Book> Get(Uri url) {
-        url = GetMainUrl(url);
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
-        var bookId = GetBookId(doc);
-
-        var title = doc.GetTextBySelector("h1");
+        var bookId = GetBookId(url);
         
-        var book = new Book(url) {
-            Cover = await GetCover(doc, url),
-            Chapters = await FillChapters(bookId, title),
-            Title = title,
-            Author = GetAuthor(doc, url),
-            Annotation = doc.QuerySelector("div.biblio_book_descr_publishers")?.InnerHtml,
-            Seria = GetSeria(doc, url)
+        var payload = LitresPayload.Create(DateTime.Now, _authData.Sid, SECRET_KEY, APP);
+        payload.Requests.Add(new LitresBrowseArtsRequest(new[]{bookId}));
+
+        var art = await GetResponse<LitresArts>(payload).ContinueWith(t => t.Result.Arts[0]);
+
+        var book = new Book(SystemUrl.MakeRelativeUri(bookId)) {
+            Cover = await GetCover(art.Cover),
+            Chapters = await FillChapters(bookId, art.Title),
+            Title = art.Title,
+            Author = await GetAuthor(art),
+            Annotation = art.Annotation,
+            Seria = GetSeria(art)
         };
         
         return book;
     }
 
-    private static string GetBookId(HtmlDocument doc) {
-        var input = doc.QuerySelector("input[name=art]");
-        if (input != default) {
-            return input.Attributes["value"].Value;
+    private static string GetBookId(Uri url) {
+        var art = url.GetQueryParameter("art");
+        if (!string.IsNullOrWhiteSpace(art)) {
+            return art;
         }
 
-        var canonical = doc.QuerySelector("meta[property*=canonical_url]");
-        if (canonical != default) {
-            return canonical.Attributes["content"].Value.Split('/', StringSplitOptions.RemoveEmptyEntries).Last();
+        art = url.GetSegment(url.Segments.Length - 1).Split("-").Last();
+        if (long.TryParse(art, out _)) {
+            return art;
         }
 
         throw new Exception("Не удалось определить artId");
     }
 
-    private static Seria GetSeria(HtmlDocument doc, Uri url) {
-        var a = doc.QuerySelector("span.serie_item a");
-        if (a != default) {
-            var number = a.GetTextBySelector("+ span.number");
-            
+    private Seria GetSeria(LitresArt art) {
+        var s = art.Sequences.FirstOrDefault();
+        if (s != default) {
             return new Seria {
-                Name = a.GetText(),
-                Url = url.MakeRelativeUri(a.Attributes["href"].Value),
-                Number = !string.IsNullOrWhiteSpace(number) && number.StartsWith("#") ? number.Trim('#') : string.Empty
+                Name = s.Name,
+                Url = SystemUrl.MakeRelativeUri("serii-knig/").AppendQueryParameter("id", s.Id)
             };
         }
 
         return default;
     }
     
-    private static Author GetAuthor(HtmlDocument doc, Uri url) {
-        var author = doc.QuerySelector("a.biblio_book_author__link");
+    private async Task<Author> GetAuthor(LitresArt art) {
+        var person = art.Persons.FirstOrDefault(a => a.Type == "0");
+        var author = person == null ? default : await GetResponse<LitresPerson<long>>($"https://api.litres.ru/foundation/api/persons/{person.Id}".AsUri());
         return author == default ? 
             new Author("Litres") : 
-            new Author(author.GetText(), url.MakeRelativeUri(author.Attributes["href"]?.Value ?? string.Empty));
+            new Author(author.FullName, SystemUrl.MakeRelativeUri(author.Url));
     }
     
-    private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
-        var imagePath = (doc.QuerySelector("meta[property=og:image]")?.Attributes["content"] ?? doc.QuerySelector("img[itemprop=image]")?.Attributes["data-src"])?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+    private Task<Image> GetCover(string imagePath) {
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(imagePath.AsUri()) : Task.FromResult(default(Image));
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(string bookId, string title) {
