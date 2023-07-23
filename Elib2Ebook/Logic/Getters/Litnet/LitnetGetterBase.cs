@@ -150,8 +150,8 @@ public abstract class LitnetGetterBase : GetterBase {
     
     private IEnumerable<Author> GetCoAuthors(LitnetBookResponse book) {
         var result = new List<Author>();
-        if (!string.IsNullOrWhiteSpace(book.CoAuthorName)) {
-            result.Add(new Author((book.CoAuthorName ?? SystemUrl.Host).Trim(), SystemUrl.MakeRelativeUri($"/ru/{book.CoAuthorId}")));
+        if (!string.IsNullOrWhiteSpace(book.CoAuthorName) && book.CoAuthorId.HasValue) {
+            result.Add(new Author((book.CoAuthorName ?? SystemUrl.Host).Trim(), SystemUrl.MakeRelativeUri($"/ru/{book.CoAuthorId.Value}")));
         }
 
         return result;

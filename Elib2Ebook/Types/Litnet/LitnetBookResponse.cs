@@ -34,5 +34,5 @@ public class LitnetBookResponse {
     public string CoAuthorName { get; set; }
     
     [JsonPropertyName("co_author")]
-    public long CoAuthorId { get; set; }
+    public long? CoAuthorId { get; set; }
 }
