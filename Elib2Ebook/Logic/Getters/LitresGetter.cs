@@ -112,6 +112,7 @@ public class LitresGetter : GetterBase {
             Chapters = await FillChapters(bookId, art.Title),
             Title = art.Title,
             Author = await GetAuthor(art),
+            CoAuthors = await GetCoAuthors(art),
             Annotation = art.Annotation,
             Seria = GetSeria(art)
         };
@@ -151,6 +152,18 @@ public class LitresGetter : GetterBase {
         return author == default ? 
             new Author("Litres") : 
             new Author(author.FullName, SystemUrl.MakeRelativeUri(author.Url));
+    }
+    
+    private async Task<IEnumerable<Author>> GetCoAuthors(LitresArt art) {
+        var result = new List<Author>();
+        foreach (var person in art.Persons.Where(a => a.Type == "0").Skip(1)) {
+            var author = person == null ? default : await GetResponse<LitresPerson<long>>($"https://api.litres.ru/foundation/api/persons/{person.Id}".AsUri());
+            if (author != default) {
+                result.Add(new Author(author.FullName, SystemUrl.MakeRelativeUri(author.Url)));
+            }
+        }
+
+        return result;
     }
     
     private Task<Image> GetCover(string imagePath) {
