@@ -8,4 +8,7 @@ public class LitresSequence {
     
     [JsonPropertyName("id")]
     public string Id { get; set; }
+    
+    [JsonPropertyName("sequence_number")]
+    public string SequenceNumber { get; set; }
 }

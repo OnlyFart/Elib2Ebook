@@ -139,7 +139,8 @@ public class LitresGetter : GetterBase {
         if (s != default) {
             return new Seria {
                 Name = s.Name,
-                Url = SystemUrl.MakeRelativeUri("serii-knig/").AppendQueryParameter("id", s.Id)
+                Url = SystemUrl.MakeRelativeUri("serii-knig/").AppendQueryParameter("id", s.Id),
+                Number = s.SequenceNumber
             };
         }
 
