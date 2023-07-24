@@ -135,16 +135,13 @@ public class LitresGetter : GetterBase {
     }
 
     private Seria GetSeria(LitresArt art) {
-        var s = art.Sequences.FirstOrDefault();
-        if (s != default) {
-            return new Seria {
-                Name = s.Name,
-                Url = SystemUrl.MakeRelativeUri("serii-knig/").AppendQueryParameter("id", s.Id),
+        return art
+            .Sequences
+            .Select(s => new Seria {
+                Name = s.Name, 
+                Url = SystemUrl.MakeRelativeUri("serii-knig/").AppendQueryParameter("id", s.Id), 
                 Number = s.SequenceNumber
-            };
-        }
-
-        return default;
+            }).FirstOrDefault();
     }
     
     private async Task<Author> GetAuthor(LitresArt art) {
