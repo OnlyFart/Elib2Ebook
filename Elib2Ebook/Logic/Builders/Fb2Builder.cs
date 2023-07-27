@@ -271,10 +271,15 @@ public class Fb2Builder : BuilderBase {
     }
 
     private static bool IsTextNode(HtmlNode node) {
-        return node.Name is "#text" or "br" or "span";
+        return node.Name is "#text" or "span";
     }
 
     private void ProcessSection(XElement parent, HtmlNode node, string textNode = "") {
+        if (node.Name == "br") {
+            parent.Add(CreateXElement("br"));
+            return;
+        }
+        
         if (node.Name == "a") {
             var href = node.Attributes["href"]?.Value ?? string.Empty;
             if (string.IsNullOrWhiteSpace(href)) {
