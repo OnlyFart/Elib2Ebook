@@ -14,7 +14,6 @@ using HtmlAgilityPack;
 namespace Elib2Ebook.Logic.Builders; 
 
 public class Fb2Builder : BuilderBase {
-    private readonly XElement _book;
     private readonly XNamespace _ns = "http://www.gribuser.ru/xml/fictionbook/2.0";
     private readonly XNamespace _xlink = "http://www.w3.org/1999/xlink";
 
@@ -45,8 +44,6 @@ public class Fb2Builder : BuilderBase {
     };
 
     private Fb2Builder() {
-        _book = CreateXElement("FictionBook");
-        _book.SetAttributeValue(XNamespace.Xmlns + "l", _xlink.NamespaceName);
         _description = CreateXElement("description");
         _titleInfo = CreateXElement("title-info");
         _documentInfo = CreateXElement("document-info");
