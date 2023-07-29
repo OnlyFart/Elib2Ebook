@@ -18,7 +18,7 @@ public class NeobookGetter : GetterBase {
     public NeobookGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("http://neobook.org/");
 
-    private Uri _apiUrl = new("http://api.neobook.org/");
+    private Uri _apiUrl = new("https://nbapi.net/");
 
     protected override string GetId(Uri url) {
         return url.GetSegment(1) == "book" ? url.GetSegment(2) : url.GetQueryParameter("book");
@@ -36,13 +36,13 @@ public class NeobookGetter : GetterBase {
         }
 
         Console.WriteLine("Успешно авторизовались");
-        Config.CookieContainer.Add(SystemUrl, new Cookie("token", data?.Login.Token));
+        Config.CookieContainer.Add(SystemUrl, new Cookie("utoken", data?.Login.Utoken));
         Config.CookieContainer.Add(SystemUrl, new Cookie("uid", data?.Login.Uid));
     }
 
     private MultipartFormDataContent GenerateAuthData() {
         return new() {
-            { new StringContent("1.11"), "version" },
+            { new StringContent("2.5"), "version" },
             { new StringContent("0"), "uid" },
             { new StringContent(string.Empty), "token" },
             { new StringContent("authorization"), "resource" },
@@ -120,7 +120,7 @@ public class NeobookGetter : GetterBase {
     }
 
     private Task<Image> GetCover(NeobookPostData data) {
-        var imagePath = data.User.Cover.GetValueOrDefault("l");
+        var imagePath = data.Attachment?.Cover?.GetValueOrDefault("l");
         return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(imagePath.AsUri()) : Task.FromResult(default(Image));
     }
 }

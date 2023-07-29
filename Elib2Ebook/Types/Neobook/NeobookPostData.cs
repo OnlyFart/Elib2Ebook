@@ -14,4 +14,7 @@ public class NeobookPostData {
     
     [JsonPropertyName("chapters")]
     public NeobookChapter[] Chapters { get; set; }
+    
+    [JsonPropertyName("attachment")]
+    public NeobookAttachment Attachment { get; set; }
 }

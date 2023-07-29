@@ -12,7 +12,4 @@ public class NeobookUser {
     
     [JsonPropertyName("lastname")]
     public string LastName { get; set; }
-    
-    [JsonPropertyName("cover")]
-    public Dictionary<string, string> Cover { get; set; }
 }
