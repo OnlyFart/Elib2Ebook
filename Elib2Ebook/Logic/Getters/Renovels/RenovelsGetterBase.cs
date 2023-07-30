@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
@@ -23,8 +26,29 @@ public abstract class RenovelsGetterBase : GetterBase {
     protected override string GetId(Uri url) => url.GetSegment(2);
 
     public override async Task Init() {
-        await base.Init();
+        Config.Client.DefaultRequestHeaders.Add("User-Agent", "remanga/1.1.6 CFNetwork/1408.0.4 Darwin/22.5.0");
         Config.Client.DefaultRequestHeaders.Add("Referer", SystemUrl.ToString());
+    }
+
+    public override async Task Authorize() {
+        if (!Config.HasCredentials) {
+            return;
+        }
+        
+        var payload = new {
+            user = Config.Options.Login,
+            password = Config.Options.Password
+        };
+
+        var response = await Config.Client.PostAsJsonAsync("https://api.recomics.org/api/users/login/".AsUri(), payload);
+        var data = await response.Content.ReadFromJsonAsync<RenovelsApiResponse<JsonNode>>();
+        if (string.IsNullOrWhiteSpace(data.Message)) {
+            var auth = data.Content.Deserialize<RenovelsAuthResponse>();
+            Config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.Token);
+            Console.WriteLine("Успешно авторизовались");
+        } else {
+            throw new Exception($"Не удалось авторизоваться. {data.Message}");
+        }
     }
 
     public override async Task<Book> Get(Uri url) {

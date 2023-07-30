@@ -6,7 +6,7 @@
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <LangVersion>latestmajor</LangVersion>
         <PackageId>Elib2Ebook</PackageId>
-        <Version>1.40.13</Version>
+        <Version>1.40.14</Version>
         <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     </PropertyGroup>
 
