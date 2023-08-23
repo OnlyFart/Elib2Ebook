@@ -31,7 +31,7 @@ public class FreedlitGetter : GetterBase{
         var token = doc.QuerySelector("meta[name=csrf-token]").Attributes["content"].Value;
         using var post = await Config.Client.PostAsync(SystemUrl.MakeRelativeUri("/login-modal"), GenerateAuthData(token));
         var response = await post.Content.ReadFromJsonAsync<FreedlitAuthResponse>();
-        if (response.Errors != default) {
+        if (response.Errors == default) {
             Console.WriteLine("Успешно авторизовались");
         } else {
             var errors = response.Errors.Password.Aggregate(response.Errors.Email, (current, error) => current + Environment.NewLine + error);
