@@ -11,4 +11,7 @@ public class RanobeOvhBranch {
     
     [JsonPropertyName("book")]
     public RanobeOvhManga Book { get; set; }
+    
+    [JsonPropertyName("chaptersCount")]
+    public long ChaptersCount { get; set; }
 }

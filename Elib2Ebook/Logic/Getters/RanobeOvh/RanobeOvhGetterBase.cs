@@ -81,7 +81,7 @@ public abstract class RanobeOvhGetterBase : GetterBase {
 
     private RanobeOvhBranch GetBranch(HtmlDocument doc) {
         var branches = GetNextData<RanobeOvhBranch[]>(doc, "branches");
-        return branches[0];
+        return branches.MaxBy(c => c.ChaptersCount);
     }
 
     private Author GetAuthor(RanobeOvhBranch branch) {
