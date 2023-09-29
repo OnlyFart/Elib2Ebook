@@ -40,7 +40,7 @@ public class FreedomGetter : GetterBase{
 
     private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
         var result = doc
-            .QuerySelectorAll("div.li-col1-ranobe a")
+            .QuerySelectorAll("div.li-col1-ranobe > a")
             .Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.GetText()))
             .Reverse()
             .ToList();
