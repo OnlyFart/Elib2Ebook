@@ -159,11 +159,40 @@ public class MyBookGetter : GetterBase {
             };
 
             var content = GetContent(epubBook, current);
+            chapter.Images = await GetImages(content, epubBook);
             chapter.Content = content.DocumentNode.RemoveNodes("h1, h2, h3").InnerHtml;
             chapters.Add(chapter);
         } while ((current = current.Next) != default);
 
         return chapters;
+    }
+
+    private async Task<IEnumerable<Image>> GetImages(HtmlDocument doc, EpubBook book) {
+        var images = new List<Image>();
+        foreach (var img in doc.QuerySelectorAll("img")) {
+            var path = img.Attributes["src"]?.Value;
+            if (string.IsNullOrWhiteSpace(path)) {
+                img.Remove();
+                continue;
+            }
+
+            var t = book.Resources.Images.FirstOrDefault(i => i.Href == path);
+            if (t == default) {
+                img.Remove();
+                continue;
+            }
+
+            if (t.Content == null || t.Content.Length == 0) {
+                img.Remove();
+                continue;
+            }
+            
+            var image = await Image.Create(null, Config.TempFolder.Path, t.Href, t.Content);
+            img.Attributes["src"].Value = image.Name;
+            images.Add(image);
+        }
+
+        return images;
     }
 
     private static HtmlDocument GetContent(EpubBook epubBook, EpubChapter epubChapter) {
