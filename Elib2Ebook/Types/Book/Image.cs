@@ -53,7 +53,7 @@ public class Image {
 
     private static string GetExtension(string name) {
         foreach (var ext in new[] { "jpg", "png", "jpg", "svg" }) {
-            if (name.EndsWith(ext)) {
+            if (name.EndsWith(ext, StringComparison.InvariantCultureIgnoreCase)) {
                 return ext;
             }
         }

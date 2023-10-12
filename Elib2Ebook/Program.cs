@@ -38,7 +38,7 @@ internal static class Program {
                             await book.Save(GetBuilder(format), options, "Patterns");
                         }
                     } catch (Exception ex) {
-                        Console.WriteLine($"Генерация книги {url} завершилась с ошибкой. {ex.Message}");
+                        Console.WriteLine($"Генерация книги {url} завершилась с ошибкой. {ex}");
                     }
                 }
             });
