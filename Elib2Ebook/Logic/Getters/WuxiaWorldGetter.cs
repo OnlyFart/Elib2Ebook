@@ -23,7 +23,7 @@ public class WuxiaWorldGetter : GetterBase {
     private async Task<Uri> GetMainUrl(Uri url) {
         if (url.GetSegment(1) == "category") {
             var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
-            url = doc.QuerySelector("h3[itemprop=name] a").Attributes["href"].Value.AsUri();
+            url = doc.QuerySelector("h2[itemprop=name] a").Attributes["href"].Value.AsUri();
         }
 
         return url;
