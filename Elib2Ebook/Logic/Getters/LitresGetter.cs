@@ -35,14 +35,13 @@ public class LitresGetter : GetterBase {
         var javaSpan = DateTime.UtcNow - jan1970;
         return (long)javaSpan.TotalMilliseconds / 1000;
     }
-    
+
     private Uri GetFullUri(string bookId, string path) {
         var ts = GetCurrentMilli();
-        using var md5 = MD5.Create();
 
         var inputBytes = Encoding.ASCII.GetBytes($"{ts}:{bookId}:{SECRET_KEY}");
-        var hashBytes = md5.ComputeHash(inputBytes);
-        
+        var hashBytes = MD5.HashData(inputBytes);
+
         return new($"https://catalit.litres.ru/pages/{path}/?type=fb3&art={bookId}&sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
     }
 
