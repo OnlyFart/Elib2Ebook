@@ -23,12 +23,12 @@ public class AuthorTodayGetter : GetterBase {
     /// <summary>
     ///  IP сайта author.today
     /// </summary>
-    private Uri _systemIp => new("https://185.26.98.227/");
+    private Uri _systemIp => new("https://185.26.98.195/");
 
     /// <summary>
     /// IP сайта api.author.today
     /// </summary>
-    private Uri _apiIp => new("https://212.224.112.32/");
+    private Uri _apiIp => new("https://212.224.121.254/");
     
     private bool _bypass;
 
