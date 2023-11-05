@@ -24,11 +24,11 @@ public class YounettranslateGetter : GetterBase {
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
         var book = new Book(url) {
-            Cover = await GetCover(doc, url),
-            Chapters = await FillChapters(doc, url),
+            Cover = await GetCover(url),
+            Chapters = await FillChapters(url),
             Title = GetTitle(doc),
             Author = GetAuthor(doc),
-            Annotation = doc.QuerySelector("p.short-p   ")?.InnerHtml
+            Annotation = doc.QuerySelector("p.short-p")?.InnerHtml
         };
 
         return book;
@@ -49,10 +49,10 @@ public class YounettranslateGetter : GetterBase {
         return doc.GetTextBySelector("h1");
     }
 
-    private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {
+    private async Task<IEnumerable<Chapter>> FillChapters(Uri url) {
         var result = new List<Chapter>();
 
-        foreach (var urlChapter in await GetToc(doc, url)) {
+        foreach (var urlChapter in await GetToc(url)) {
             Console.WriteLine($"Загружаю главу {urlChapter.Title.CoverQuotes()}");
             var chapter = new Chapter {
                 Title = urlChapter.Title
@@ -71,11 +71,11 @@ public class YounettranslateGetter : GetterBase {
         return result;
     }
 
-    private async Task<IEnumerable<UrlChapter>> GetToc(HtmlDocument doc, Uri url) {
+    private async Task<IEnumerable<UrlChapter>> GetToc(Uri url) {
         var result = new List<UrlChapter>();
 
         for (var i = 1;; i++) {
-            doc = await Config.Client.GetHtmlDocWithTriesAsync(url.AppendQueryParameter("page", i));
+            var doc = await Config.Client.GetHtmlDocWithTriesAsync(url.AppendQueryParameter("page", i));
             var links = doc.QuerySelectorAll("table.catposts-table td.hidden-sm a[href]").Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.GetText())).ToList();
             if (links.Count == 0) {
                 break;
@@ -92,8 +92,8 @@ public class YounettranslateGetter : GetterBase {
         return doc.QuerySelector("div.postdata-content").RemoveNodes(n => n.InnerText.Contains("ЗАПРЕЩЕНО ПУБЛИКОВАТЬ")).InnerHtml.AsHtmlDoc();
     }
 
-    private async Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
-        doc = await Config.Client.GetHtmlDocWithTriesAsync("https://younettranslate.com/projects/".AsUri());
+    private async Task<Image> GetCover(Uri bookUri) {
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync("https://younettranslate.com/projects/".AsUri());
         
         var imagePath = doc.QuerySelector($"div.category-item a[href='{bookUri}'] img")?.Attributes["src"]?.Value;
         return !string.IsNullOrWhiteSpace(imagePath) ? await SaveImage(bookUri.MakeRelativeUri(imagePath)) : default;
