@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "WSL": {
+      "commandName": "WSL2",
+      "distributionName": ""
+    },
+    "Litnet": {
+      "commandName": "Project",
+      "commandLineArgs": "-u https://litnet.com/ru/reader/vtoraya-doroga-put-oficera-b116264 -l rauf2282004@mail.ru -p parollitnet -f fb2"
+    },
+    "Zelluloza": {
+      "commandName": "Project",
+      "commandLineArgs": "-u https://zelluloza.ru/books/14742/ -l katulman@mail.ru -p SzYOYdoN -f fb2"
+    }
+  }
+}
