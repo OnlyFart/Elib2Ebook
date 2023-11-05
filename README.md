@@ -75,6 +75,7 @@
 * https://wattpad.com/
 * https://wuxiaworld.ru/
 * https://yaoilib.me/
+* https://younettranslate.com/
 * https://ранобэ.рф/
 </pre>
 </details>
