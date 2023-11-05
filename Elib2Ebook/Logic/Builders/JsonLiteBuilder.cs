@@ -16,7 +16,11 @@ public class ShortImageConverter : JsonConverter<Image> {
 
     public override void Write(Utf8JsonWriter writer, Image value, JsonSerializerOptions options) {
         writer.WriteStartObject();
-        writer.WriteString(nameof(value.Url), value.Url.ToString());
+        
+        if (value.Url != default) {
+            writer.WriteString(nameof(value.Url), value.Url.ToString());
+        }
+
         writer.WriteString(nameof(value.Directory), value.Directory);
         writer.WriteString(nameof(value.Name), value.Name);
         writer.WriteString(nameof(value.FilePath), value.FilePath);
@@ -39,8 +43,8 @@ public class ShortChapterConverter : JsonConverter<Chapter> {
         foreach (var image in value.Images) {
             JsonSerializer.Serialize(writer, image, options);
         }
+        
         writer.WriteEndArray();
-
         writer.WriteEndObject();
     }
 }
