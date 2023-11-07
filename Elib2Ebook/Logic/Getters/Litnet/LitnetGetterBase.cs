@@ -36,7 +36,7 @@ public abstract class LitnetGetterBase : GetterBase {
 
     protected override string GetId(Uri url) => base.GetId(url).Split('-').Last().Replace("b", string.Empty);
 
-    private static byte[] DecryptBin(string text) {
+    private static byte[] Decrypt(string text) {
         using var aes = Aes.Create();
         const int IV_SHIFT = 16;
         
@@ -51,10 +51,6 @@ public abstract class LitnetGetterBase : GetterBase {
         cs.CopyTo(output);
 
         return output.ToArray()[IV_SHIFT..];
-    }
-    
-    private static string Decrypt(string text) {
-        return Encoding.UTF8.GetString(DecryptBin(text));
     }
 
     private static string GetSign(string token) {
@@ -113,10 +109,11 @@ public abstract class LitnetGetterBase : GetterBase {
     
     private async Task<HtmlDocument> GetChapterExploit(string token, LitnetChapterResponse chapter) {
         try {
-            var bytes = await Config.Client.GetByteArrayAsync(ApiIp.MakeRelativeUri($"/v1/text/get-chapter?chapter_id={chapter.Id}&app=android&device_id={DeviceId}&sign={GetSign(token)}&user_token={token}"));
-            var gz = DecryptBin(Convert.ToBase64String(bytes));
-            return GetChapterDoc(Unzip(gz));
-        } catch (Exception ex) {
+            var makeRelativeUri = ApiIp.MakeRelativeUri($"/v1/text/get-chapter?chapter_id={chapter.Id}&app=android&device_id={DeviceId}&sign={GetSign(token)}&user_token={token}");
+            var bytes = await Config.Client.GetByteArrayAsync(makeRelativeUri);
+            var gz = Decrypt(Convert.ToBase64String(bytes));
+            return GetChapterDoc(await Unzip(gz));
+        } catch {
             return default;
         }
     }
@@ -225,7 +222,7 @@ public abstract class LitnetGetterBase : GetterBase {
 
             var chapterDoc = string.IsNullOrWhiteSpace(litnetChapter.Text) ? 
                 await GetChapterExploit(token, litnetChapter) : 
-                GetChapterDoc(Decrypt(litnetChapter.Text));
+                GetChapterDoc(Encoding.UTF8.GetString(Decrypt(litnetChapter.Text)));
 
             if (chapterDoc != default) {
                 chapter.Images = await GetImages(chapterDoc, SystemUrl);
@@ -238,13 +235,12 @@ public abstract class LitnetGetterBase : GetterBase {
         return result;
     }
     
-    private static string Unzip(byte[] gz) {
-        using var cs = new MemoryStream(gz);
-        using var zs = new GZipStream(cs, CompressionMode.Decompress);
-        using var rs = new MemoryStream();
-        zs.CopyTo(rs);
-        var result = rs.ToArray();
-        return Encoding.UTF8.GetString(result);
+    private static async Task<string> Unzip(byte[] gz) {
+        await using var cs = new MemoryStream(gz);
+        await using var zs = new GZipStream(cs, CompressionMode.Decompress);
+        await using var rs = new MemoryStream();
+        await zs.CopyToAsync(rs);
+        return Encoding.UTF8.GetString(rs.ToArray());
     }
 
     private static HtmlDocument GetChapterDoc(string text) {
