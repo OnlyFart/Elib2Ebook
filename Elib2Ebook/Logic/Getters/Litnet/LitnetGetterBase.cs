@@ -109,8 +109,8 @@ public abstract class LitnetGetterBase : GetterBase {
     
     private async Task<HtmlDocument> GetChapterExploit(string token, LitnetChapterResponse chapter) {
         try {
-            var makeRelativeUri = ApiIp.MakeRelativeUri($"/v1/text/get-chapter?chapter_id={chapter.Id}&app=android&device_id={DeviceId}&sign={GetSign(token)}&user_token={token}");
-            var bytes = await Config.Client.GetByteArrayAsync(makeRelativeUri);
+            var url = ApiIp.MakeRelativeUri($"/v1/text/get-chapter?chapter_id={chapter.Id}&app=android&device_id={DeviceId}&sign={GetSign(token)}&user_token={token}");
+            var bytes = await Config.Client.GetByteArrayAsync(url);
             var gz = Decrypt(Convert.ToBase64String(bytes));
             return GetChapterDoc(await Unzip(gz));
         } catch {
