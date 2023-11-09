@@ -1,7 +1,7 @@
 using System;
 using Elib2Ebook.Configs;
 
-namespace Elib2Ebook.Logic.Getters.RanobeLib; 
+namespace Elib2Ebook.Logic.Getters.LibSocial; 
 
 public class MangaLibGetter : MangaLibGetterBase {
     public MangaLibGetter(BookGetterConfig config) : base(config) { }

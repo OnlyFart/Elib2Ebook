@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.MangaLib;
-using Elib2Ebook.Types.RanobeLib;
+using Elib2Ebook.Types.SocialLib;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 
-namespace Elib2Ebook.Logic.Getters.RanobeLib; 
+namespace Elib2Ebook.Logic.Getters.LibSocial; 
 
-public abstract class MangaLibGetterBase : RanobeLibGetterBase {
+public abstract class MangaLibGetterBase : LibSocialGetterBase {
     protected MangaLibGetterBase(BookGetterConfig config) : base(config) { }
 
     private static IEnumerable<MangaLibPg> GetPg(HtmlDocument doc) {
@@ -37,7 +37,7 @@ public abstract class MangaLibGetterBase : RanobeLibGetterBase {
         return defaultServer;
     }
 
-    protected override async Task<HtmlDocument> GetChapter(Uri url, RanobeLibChapter chapter, User user) {
+    protected override async Task<HtmlDocument> GetChapter(Uri url, SocialLibChapter chapter, User user) {
         var segment = $"/v{chapter.ChapterVolume}/c{chapter.ChapterNumber}?bid={chapter.BranchId}";
         if (user != default) {
             segment += $"&ui={user.Id}";
@@ -60,7 +60,7 @@ public abstract class MangaLibGetterBase : RanobeLibGetterBase {
         return sb.AsHtmlDoc();
     }
 
-    private string GetImageUrl(Uri imageServer, Uri url, RanobeLibChapter chapter, MangaLibPg p) {
+    private string GetImageUrl(Uri imageServer, Uri url, SocialLibChapter chapter, MangaLibPg p) {
         return imageServer.MakeRelativeUri($"/manga/{GetId(url)}/chapters/{chapter.ChapterSlug}/{p.U}").ToString();
     }
 }

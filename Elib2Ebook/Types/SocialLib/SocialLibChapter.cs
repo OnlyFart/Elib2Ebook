@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
 
-namespace Elib2Ebook.Types.RanobeLib; 
+namespace Elib2Ebook.Types.SocialLib; 
 
-public class RanobeLibChapter {
+public class SocialLibChapter {
     [JsonPropertyName("chapter_number")] 
     public string ChapterNumber { get; set; }
 

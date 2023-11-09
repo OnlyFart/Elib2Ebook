@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
-using Elib2Ebook.Types.RanobeLib;
+using Elib2Ebook.Types.SocialLib;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 
-namespace Elib2Ebook.Logic.Getters.RanobeLib; 
+namespace Elib2Ebook.Logic.Getters.LibSocial; 
 
-public abstract class RanobeLibGetterBase : GetterBase {
-    public RanobeLibGetterBase(BookGetterConfig config) : base(config) { }
+public abstract class LibSocialGetterBase : GetterBase {
+    public LibSocialGetterBase(BookGetterConfig config) : base(config) { }
 
     protected override string GetId(Uri url) => url.GetSegment(1);
 
@@ -85,22 +85,22 @@ public abstract class RanobeLibGetterBase : GetterBase {
     private static WindowData GetData(HtmlDocument doc) {
         var match = new Regex("window.__DATA__ = (?<data>{.*}).*window._SITE_COLOR_", RegexOptions.Compiled | RegexOptions.Singleline).Match(doc.Text).Groups["data"].Value;
         var windowData = match.Deserialize<WindowData>();
-        windowData.RanobeLibChapters.List.Reverse();
+        windowData.Chapters.List.Reverse();
         return windowData;
     }
     
-    protected abstract Task<HtmlDocument> GetChapter(Uri url, RanobeLibChapter chapter, User user);
+    protected abstract Task<HtmlDocument> GetChapter(Uri url, SocialLibChapter chapter, User user);
 
     private async Task<IEnumerable<Chapter>> FillChapters(WindowData data, Uri url, string bidId) {
         var result = new List<Chapter>();
         var branchId = string.IsNullOrWhiteSpace(bidId)
-            ? data.RanobeLibChapters.List
+            ? data.Chapters.List
                 .GroupBy(c => c.BranchId)
                 .MaxBy(c => c.Count())!
                 .Key
             : int.Parse(bidId);
 
-        foreach (var ranobeChapter in SliceToc(data.RanobeLibChapters.List.Where(c => c.BranchId == branchId).ToList())) {
+        foreach (var ranobeChapter in SliceToc(data.Chapters.List.Where(c => c.BranchId == branchId).ToList())) {
             Console.WriteLine($"Загружаю главу {ranobeChapter.GetName()}");
             var chapter = new Chapter();
             

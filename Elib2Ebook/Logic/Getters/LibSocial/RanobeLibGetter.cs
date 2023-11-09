@@ -2,17 +2,17 @@ using System;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
-using Elib2Ebook.Types.RanobeLib;
+using Elib2Ebook.Types.SocialLib;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 
-namespace Elib2Ebook.Logic.Getters.RanobeLib; 
+namespace Elib2Ebook.Logic.Getters.LibSocial; 
 
-public class RanobeLibGetter : RanobeLibGetterBase {
+public class RanobeLibGetter : LibSocialGetterBase {
     public RanobeLibGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://ranobelib.me");
 
-    protected override async Task<HtmlDocument> GetChapter(Uri url, RanobeLibChapter chapter, User user) {
+    protected override async Task<HtmlDocument> GetChapter(Uri url, SocialLibChapter chapter, User user) {
         var segment = $"/v{chapter.ChapterVolume}/c{chapter.ChapterNumber}?bid={chapter.BranchId}";
         if (user != default) {
             segment += $"&ui={user.Id}";
