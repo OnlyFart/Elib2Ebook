@@ -23,7 +23,7 @@ public class OnlineKnigiGetter : GetterBase {
 
         var title = doc.GetTextBySelector("h1");
         var book = new Book(url) {
-            Cover = await GetCover(doc, url),
+            Cover = await GetCover(doc),
             Chapters = await FillChapters(bookId, title),
             Title = title,
             Author = GetAuthor(doc, url),
@@ -59,7 +59,7 @@ public class OnlineKnigiGetter : GetterBase {
          return int.Parse(doc.QuerySelector("li.last a").Attributes["href"].Value.AsUri().GetQueryParameter("page"));
     }
 
-    private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
+    private Task<Image> GetCover(HtmlDocument doc) {
         var imagePath = doc.QuerySelector("meta[property=og:image]")?.Attributes["content"]?.Value;
         return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(SystemUrl.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
     }

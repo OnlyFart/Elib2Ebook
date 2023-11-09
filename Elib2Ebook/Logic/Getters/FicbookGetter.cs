@@ -64,6 +64,8 @@ public class FicbookGetter : GetterBase {
 
     private async Task<HtmlDocument> GetChapter(UrlChapter urlChapter) {
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(urlChapter.Url);
+        await Task.Delay(TimeSpan.FromSeconds(5));
+        
         var content = doc.QuerySelector("#content").RemoveNodes("div");
         using var sr = new StringReader(content.InnerText.HtmlDecode());
 
