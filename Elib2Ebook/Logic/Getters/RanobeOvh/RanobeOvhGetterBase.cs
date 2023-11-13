@@ -44,7 +44,7 @@ public abstract class RanobeOvhGetterBase : GetterBase {
             Chapters = await FillChapters(branch, url),
             Title = manga.Name.Ru,
             Author = GetAuthor(branch),
-            Annotation = manga.Description.Ru
+            Annotation = manga.Description
         };
 
         return book;

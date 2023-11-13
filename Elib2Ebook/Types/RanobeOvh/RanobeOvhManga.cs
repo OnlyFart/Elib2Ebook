@@ -13,7 +13,7 @@ public class RanobeOvhManga {
     public string Poster { get; set; }
     
     [JsonPropertyName("description")]
-    public RanobeOvhMangaName Description { get; set; }
+    public string Description { get; set; }
     
     [JsonPropertyName("slug")]
     public string Slug { get; set; }
