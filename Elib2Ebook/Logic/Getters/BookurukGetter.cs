@@ -36,7 +36,7 @@ public class BookurukGetter : GetterBase{
     }
 
     private Author GetAuthor(HtmlDocument doc) {
-        var a = doc.QuerySelector("a.bookcard_author");
+        var a = doc.QuerySelector("a.bookcard_author + a");
         var href = a.Attributes["href"]?.Value;
         return string.IsNullOrWhiteSpace(href) ? 
             new Author(a.GetText()) : 
@@ -57,7 +57,7 @@ public class BookurukGetter : GetterBase{
         doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"/book/chapters/{internalId}"));
         
         var result = doc
-            .QuerySelectorAll("ul.read-chapters-list a")
+            .QuerySelectorAll("a.read-chapters-item")
             .Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.GetText()))
             .ToList();
         
