@@ -28,7 +28,7 @@ public abstract class MangaLibGetterBase : LibSocialGetterBase {
         var match = Regex.Match(doc.ParsedText, "\"servers\":(?<servers>{.*?})");
         if (match.Success) {
             var servers = match.Groups["servers"].Value.Deserialize<Dictionary<string, string>>();
-            if (servers.TryGetValue("main", out var main)) {
+            if (servers.TryGetValue("secondary", out var main)) {
                 return main.AsUri();
             }
         }
