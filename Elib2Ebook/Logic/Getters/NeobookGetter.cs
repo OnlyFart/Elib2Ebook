@@ -18,7 +18,7 @@ public class NeobookGetter : GetterBase {
     public NeobookGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("http://neobook.org/");
 
-    private Uri _apiUrl = new("https://nbapi.net/");
+    private Uri _apiUrl = new("https://api.neobook.org/");
 
     protected override string GetId(Uri url) {
         return url.GetSegment(1) == "book" ? url.GetSegment(2) : url.GetQueryParameter("book");
@@ -42,14 +42,14 @@ public class NeobookGetter : GetterBase {
 
     private MultipartFormDataContent GenerateAuthData() {
         return new() {
-            { new StringContent("2.5"), "version" },
+            { new StringContent("3.1"), "version" },
             { new StringContent("0"), "uid" },
-            { new StringContent(string.Empty), "token" },
+            { new StringContent(string.Empty), "utoken" },
             { new StringContent("authorization"), "resource" },
             { new StringContent("login_by_email"), "action" },
             { new StringContent(Config.Options.Login), "email" },
             { new StringContent(Config.Options.Password), "password" },
-            { new StringContent("3"), "device_type" },
+            { new StringContent("3"), "platform_id" },
         };
     }
 

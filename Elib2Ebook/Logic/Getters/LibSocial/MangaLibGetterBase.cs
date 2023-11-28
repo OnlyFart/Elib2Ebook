@@ -16,19 +16,21 @@ namespace Elib2Ebook.Logic.Getters.LibSocial;
 public abstract class MangaLibGetterBase : LibSocialGetterBase {
     protected MangaLibGetterBase(BookGetterConfig config) : base(config) { }
 
+    protected virtual string _server => "main";
+
     private static IEnumerable<MangaLibPg> GetPg(HtmlDocument doc) {
         var match = new Regex("window.__pg = (?<data>.*);", RegexOptions.Compiled | RegexOptions.Singleline).Match(doc.QuerySelector("#pg").InnerText).Groups["data"].Value;
         var pg = match.Deserialize<MangaLibPg[]>();
         return pg.OrderBy(p => p.P);
     }
 
-    private static Uri GetImgServer(HtmlDocument doc) {
+    private Uri GetImgServer(HtmlDocument doc) {
         var defaultServer = "https://img33.imgslib.link".AsUri();
         
         var match = Regex.Match(doc.ParsedText, "\"servers\":(?<servers>{.*?})");
         if (match.Success) {
             var servers = match.Groups["servers"].Value.Deserialize<Dictionary<string, string>>();
-            if (servers.TryGetValue("secondary", out var main)) {
+            if (servers.TryGetValue(_server, out var main)) {
                 return main.AsUri();
             }
         }
