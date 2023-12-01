@@ -19,7 +19,7 @@ namespace Elib2Ebook.Logic.Getters;
 public class BookstimeGetter : GetterBase {
     public BookstimeGetter(BookGetterConfig config) : base(config) { }
     
-    protected override Uri SystemUrl => new("a");
+    protected override Uri SystemUrl => new("https://bookstime.ru/");
 
     protected override string GetId(Uri url) {
         return url.GetSegment(2);
