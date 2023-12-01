@@ -20,6 +20,7 @@
 * https://booknet.ua/
 * https://bookriver.ru/
 * https://bookstab.ru/
+* https://bookstime.ru/
 * https://bookuruk.com/
 * https://dark-novels.ru/
 * https://desu.me/
