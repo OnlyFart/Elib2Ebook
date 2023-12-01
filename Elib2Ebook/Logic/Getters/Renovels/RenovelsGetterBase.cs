@@ -15,7 +15,7 @@ using HtmlAgilityPack;
 namespace Elib2Ebook.Logic.Getters.Renovels; 
 
 public abstract class RenovelsGetterBase : GetterBase {
-    public RenovelsGetterBase(BookGetterConfig config) : base(config) { }
+    protected RenovelsGetterBase(BookGetterConfig config) : base(config) { }
 
     private Uri _apiUrl => new($"https://api.{SystemUrl.Host}/");
     
@@ -25,9 +25,10 @@ public abstract class RenovelsGetterBase : GetterBase {
 
     protected override string GetId(Uri url) => url.GetSegment(2);
 
-    public override async Task Init() {
+    public override Task Init() {
         Config.Client.DefaultRequestHeaders.Add("User-Agent", "remanga/1.1.6 CFNetwork/1408.0.4 Darwin/22.5.0");
         Config.Client.DefaultRequestHeaders.Add("Referer", SystemUrl.ToString());
+        return Task.CompletedTask;
     }
 
     public override async Task Authorize() {
