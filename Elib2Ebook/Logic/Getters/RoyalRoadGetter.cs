@@ -72,9 +72,11 @@ public class RoyalRoadGetter : GetterBase {
         return SliceToc(result);
     }
 
-    private static Author GetAuthor(HtmlDocument doc, Uri url) {
-        var a = doc.QuerySelector("h4[property=author] span[property=name] a");
-        return new Author(a.GetText(), url.MakeRelativeUri(a.Attributes["href"].Value));
+    private Author GetAuthor(HtmlDocument doc, Uri url) {
+        var a = doc.QuerySelector("div.fic-header h4 a[href*=profile]");
+        return a == default ? 
+            new Author("Royalroad") : 
+            new Author(a.GetText(), SystemUrl.MakeRelativeUri(a.Attributes["href"].Value));
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
