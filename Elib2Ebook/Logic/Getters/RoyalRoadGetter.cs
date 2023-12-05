@@ -24,9 +24,9 @@ public class RoyalRoadGetter : GetterBase {
         var book = new Book(url) {
             Cover = await GetCover(doc, url),
             Chapters = await FillChapters(doc, url),
-            Title = doc.GetTextBySelector("h1[property=name]"),
+            Title = doc.GetTextBySelector("h1"),
             Author = GetAuthor(doc, url),
-            Annotation = doc.QuerySelector("div[property=description]")?.InnerHtml,
+            Annotation = doc.QuerySelector("div.description div.hidden-content")?.InnerHtml,
         };
             
         return book;
