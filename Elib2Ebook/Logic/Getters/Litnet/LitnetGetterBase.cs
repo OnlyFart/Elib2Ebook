@@ -107,17 +107,6 @@ public abstract class LitnetGetterBase : GetterBase {
         return SliceToc(data);
     }
     
-    private async Task<HtmlDocument> GetChapterExploit(string token, LitnetChapterResponse chapter) {
-        try {
-            var url = ApiIp.MakeRelativeUri($"/v1/text/get-chapter?chapter_id={chapter.Id}&app=android&device_id={DeviceId}&sign={GetSign(token)}&user_token={token}");
-            var bytes = await Config.Client.GetByteArrayAsync(url);
-            var gz = Decrypt(Convert.ToBase64String(bytes));
-            return GetChapterDoc(await Unzip(gz));
-        } catch {
-            return default;
-        }
-    }
-    
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
 
@@ -219,12 +208,9 @@ public abstract class LitnetGetterBase : GetterBase {
             var chapter = new Chapter {
                 Title = (content.Title ?? book.Title).Trim()
             };
-
-            var chapterDoc = string.IsNullOrWhiteSpace(litnetChapter.Text) ? 
-                await GetChapterExploit(token, litnetChapter) : 
-                GetChapterDoc(Encoding.UTF8.GetString(Decrypt(litnetChapter.Text)));
-
-            if (chapterDoc != default) {
+            
+            if (!string.IsNullOrWhiteSpace(litnetChapter.Text)) {
+                var chapterDoc = GetChapterDoc(Encoding.UTF8.GetString(Decrypt(litnetChapter.Text)));
                 chapter.Images = await GetImages(chapterDoc, SystemUrl);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
             }
