@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -219,14 +218,6 @@ public abstract class LitnetGetterBase : GetterBase {
         }
 
         return result;
-    }
-    
-    private static async Task<string> Unzip(byte[] gz) {
-        await using var cs = new MemoryStream(gz);
-        await using var zs = new GZipStream(cs, CompressionMode.Decompress);
-        await using var rs = new MemoryStream();
-        await zs.CopyToAsync(rs);
-        return Encoding.UTF8.GetString(rs.ToArray());
     }
 
     private static HtmlDocument GetChapterDoc(string text) {
