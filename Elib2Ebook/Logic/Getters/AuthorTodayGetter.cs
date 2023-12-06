@@ -18,7 +18,7 @@ public class AuthorTodayGetter : GetterBase {
 
     protected override Uri SystemUrl => new("https://author.today/");
     
-    private Uri _apiUrl => new($"https://api.author.today/");
+    private Uri _apiUrl => new("https://api.author.today/");
     
     /// <summary>
     ///  IP сайта author.today

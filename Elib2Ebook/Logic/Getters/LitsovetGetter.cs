@@ -28,7 +28,7 @@ public class LitsovetGetter : GetterBase {
         if (response.Ok == 1) {
             Console.WriteLine("Успешно авторизовались");
         } else {
-            throw new Exception($"Не удалось авторизоваться.");
+            throw new Exception("Не удалось авторизоваться.");
         }
     }
 

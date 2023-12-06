@@ -35,7 +35,7 @@ public class HogwartsNetGetter : GetterBase {
         var anketa = doc.QuerySelector("tr.top_fanf a[href*=anketa.php]");
         
         if (anketa == default) {
-            throw new Exception($"Не удалось авторизоваться. Проверьте правильность ID/пароля");
+            throw new Exception("Не удалось авторизоваться. Проверьте правильность ID/пароля");
         }
 
         Console.WriteLine("Успешно авторизовались");
