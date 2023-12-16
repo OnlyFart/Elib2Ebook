@@ -111,15 +111,24 @@ public abstract class LitnetGetterBase : GetterBase {
 
         var litnetBook = await GetBook(_token, bookId);
 
+        System.Threading.Thread.Sleep(1000);
+
         var uri = SystemUrl.MakeRelativeUri(litnetBook.Url.AsUri().AbsolutePath);
+
+        var Chapters = await FillChapters(_token, litnetBook, bookId);
+
+        System.Threading.Thread.Sleep(1000);
+
+        var Seria = await GetSeria(uri, litnetBook);
+
         var book = new Book(uri) {
             Cover = await GetCover(litnetBook),
-            Chapters = await FillChapters(_token, litnetBook, bookId),
+            Chapters = Chapters,
             Title = litnetBook.Title.Trim(),
             Author = GetAuthor(litnetBook),
             CoAuthors = GetCoAuthors(litnetBook),
             Annotation = GetAnnotation(litnetBook),
-            Seria = await GetSeria(uri, litnetBook),
+            Seria = Seria,
             Lang = litnetBook.Lang
         };
             
@@ -197,6 +206,8 @@ public abstract class LitnetGetterBase : GetterBase {
             return result;
         }
         
+        System.Threading.Thread.Sleep(1000);
+
         var chapters = await GetToc(token, contents);
         var map = chapters.ToDictionary(t => t.Id);
         
