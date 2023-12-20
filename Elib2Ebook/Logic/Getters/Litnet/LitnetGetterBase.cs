@@ -19,7 +19,7 @@ using HtmlAgilityPack.CssSelectors.NetCore;
 namespace Elib2Ebook.Logic.Getters.Litnet;
 
 public abstract class LitnetGetterBase : GetterBase {
-    public LitnetGetterBase(BookGetterConfig config) : base(config) { }
+    protected LitnetGetterBase(BookGetterConfig config) : base(config) { }
 
     protected Uri ApiUrl => new($"https://api.{SystemUrl.Host}/");
     
@@ -68,8 +68,7 @@ public abstract class LitnetGetterBase : GetterBase {
         var path = Config.HasCredentials ? "user/find-by-login" : "registration/registration-by-device";
 
         var url = ApiIp.MakeRelativeUri($"v1/{path}?login={HttpUtility.UrlEncode(Config.Options.Login?.TrimStart('+') ?? string.Empty)}&password={HttpUtility.UrlEncode(Config.Options.Password)}&app=android&device_id={DeviceId}&sign={GetSign(string.Empty)}");
-        var response = await Config.Client.SendAsync(GetDefaultMessage(url, ApiUrl));
-        var data = await response.Content.ReadFromJsonAsync<LitnetAuthResponse>();
+        var data = await GetApiData<LitnetAuthResponse>(url);
 
         if (!string.IsNullOrWhiteSpace(data?.Token)) {
             Console.WriteLine("Успешно авторизовались");
@@ -81,8 +80,7 @@ public abstract class LitnetGetterBase : GetterBase {
 
     private async Task<LitnetBookResponse> GetBook(string token, string bookId) {
         var url = ApiIp.MakeRelativeUri($"/v1/book/get/{bookId}?app=android&device_id={DeviceId}&user_token={token}&sign={GetSign(token)}");
-        var response = await Config.Client.SendAsync(GetDefaultMessage(url, ApiUrl));
-        var data = await response.Content.ReadFromJsonAsync<LitnetBookResponse>();
+        var data = await GetApiData<LitnetBookResponse>(url);
         if (!Config.HasCredentials && data!.AdultOnly) {
             throw new Exception("Произведение 18+. Необходимо добавить логин и пароль.");
         }
@@ -90,20 +88,30 @@ public abstract class LitnetGetterBase : GetterBase {
         return data;
     }
 
-    private async Task<LitnetContentsResponse[]> GetBookContents(string token, string bookId) {
+    private Task<LitnetContentsResponse[]> GetBookContents(string token, string bookId) {
         var url = ApiIp.MakeRelativeUri($"/v1/book/contents?bookId={bookId}&app=android&device_id={DeviceId}&user_token={token}&sign={GetSign(token)}");
-        var response = await Config.Client.SendAsync(GetDefaultMessage(url, ApiUrl));
-        return response.StatusCode == HttpStatusCode.NotFound ? 
-            Array.Empty<LitnetContentsResponse>() : 
-            await response.Content.ReadFromJsonAsync<LitnetContentsResponse[]>();
+        return GetApiData<LitnetContentsResponse[]>(url);
     }
 
     private async Task<IEnumerable<LitnetChapterResponse>> GetToc(string token, IEnumerable<LitnetContentsResponse> contents) {
         var chapters = string.Join("&", contents.Select(t => $"chapter_ids[]={t.Id}"));
         var url = ApiIp.MakeRelativeUri($"/v1/book/get-chapters-texts/?{chapters}&app=android&device_id={DeviceId}&sign={GetSign(token)}&user_token={token}");
-        var response = await Config.Client.SendAsync(GetDefaultMessage(url, ApiUrl));
-        var data = await response.Content.ReadFromJsonAsync<LitnetChapterResponse[]>();
+        var data = await GetApiData<LitnetChapterResponse[]>(url);
         return SliceToc(data);
+    }
+
+    private async Task<T> GetApiData<T>(Uri uri) {
+        var response = await Config.Client.SendAsync(GetDefaultMessage(uri, ApiUrl));
+        if (response.StatusCode == HttpStatusCode.TooManyRequests) {
+            throw new Exception("Получен бан. Попробуйте позже.");
+        }
+
+        if (response.StatusCode == HttpStatusCode.NotFound) {
+            return default;
+        }
+        
+        var data = await response.Content.ReadFromJsonAsync<T>();
+        return data;
     }
     
     public override async Task<Book> Get(Uri url) {
@@ -193,7 +201,7 @@ public abstract class LitnetGetterBase : GetterBase {
         var result = new List<Chapter>();
             
         var contents = await GetBookContents(token, bookId);
-        if (contents.Length == 0) {
+        if (contents?.Length == 0) {
             return result;
         }
         
