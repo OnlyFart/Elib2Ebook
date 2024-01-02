@@ -4,16 +4,17 @@ using System.Linq;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
+using Elib2Ebook.Logic.Getters;
 using Elib2Ebook.Types.Book;
 using Elib2Ebook.Types.Common;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 
-namespace Elib2Ebook.Logic.Getters; 
+namespace Elib2Ebook.Logic.Freedom; 
 
-public class FreedomGetter : GetterBase{
-    public FreedomGetter(BookGetterConfig config) : base(config) { }
-    protected override Uri SystemUrl => new("https://ifreedom.su/");
+public abstract class FreedomGetterBase : GetterBase{
+    protected FreedomGetterBase(BookGetterConfig config) : base(config) { }
+
     public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);
         url = SystemUrl.MakeRelativeUri($"/ranobe/{GetId(url)}/");
