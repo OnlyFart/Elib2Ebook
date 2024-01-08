@@ -1,7 +1,7 @@
 using System;
 using Elib2Ebook.Configs;
 
-namespace Elib2Ebook.Logic.Freedom;
+namespace Elib2Ebook.Logic.Getters.Freedom;
 
 public class FreedomGetter : FreedomGetterBase {
     public FreedomGetter(BookGetterConfig config) : base(config) { }

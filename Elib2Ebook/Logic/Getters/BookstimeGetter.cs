@@ -118,7 +118,7 @@ public class BookstimeGetter : GetterBase {
         }
         
         var text = new StringBuilder();
-        text.Append(reader.RemoveNodes("h2, iframe").InnerHtml);
+        text.Append(reader.RemoveNodes("h2.ui-text-head--3-em, iframe").InnerHtml);
         
         var paging = doc
             .QuerySelectorAll("a.ui-pagination-item")
@@ -129,7 +129,7 @@ public class BookstimeGetter : GetterBase {
         var pages = paging.Any() ? paging.Max() : 1;
         for (var i = 2; i <= pages; i++) {
             doc = await Config.Client.GetHtmlDocWithTriesAsync(urlChapter.Url.AppendSegment(i.ToString()));
-            text.Append(doc.QuerySelector("div.reader__body").RemoveNodes("h2, iframe").InnerHtml);
+            text.Append(doc.QuerySelector("div.reader__body").RemoveNodes("h2.ui-text-head--3-em, iframe").InnerHtml);
         }
         
         return text.AsHtmlDoc();

@@ -4,13 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
-using Elib2Ebook.Logic.Getters;
 using Elib2Ebook.Types.Book;
 using Elib2Ebook.Types.Common;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 
-namespace Elib2Ebook.Logic.Freedom; 
+namespace Elib2Ebook.Logic.Getters.Freedom; 
 
 public abstract class FreedomGetterBase : GetterBase{
     protected FreedomGetterBase(BookGetterConfig config) : base(config) { }
