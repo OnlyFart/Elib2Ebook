@@ -51,6 +51,7 @@
 * https://litsovet.ru/
 * https://manga.ovh/
 * https://mangalib.me/
+* https://mangamammy.ru/
 * https://mir-knig.com/
 * https://mlate.ru/
 * https://mybook.ru/
