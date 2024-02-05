@@ -55,7 +55,7 @@ public class NeobookGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
-        url = SystemUrl.MakeRelativeUri("/book/" + bookId);
+        url = SystemUrl.MakeRelativeUri("/book/" + bookId + "/");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         var data = GetPostData(doc);
 
@@ -100,23 +100,24 @@ public class NeobookGetter : GetterBase {
         return result;
     }
 
-    private async Task<HtmlDocument> GetChapter(NeobookChapter neobookChapter, string bookId) {
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri("reader").AppendQueryParameter("book", bookId).AppendQueryParameter("chapter", neobookChapter.Token));
-        var base64 = Regex.Match(doc.ParsedText, "var chapter_delta_base64 = \'(?<data>.*?)\'").Groups["data"].Value;
-        if (string.IsNullOrWhiteSpace(base64)) {
+    private async Task<HtmlDocument> GetChapter(NeobookTocChapter neobookTocChapter, string bookId) {
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri("reader/").AppendQueryParameter("book", bookId).AppendQueryParameter("chapter", neobookTocChapter.Token));
+        var data = Regex.Match(doc.ParsedText, "var data = (?<data>.*?);\n").Groups["data"].Value;
+        if (string.IsNullOrWhiteSpace(data)) {
+            return default;
+        }
+        
+        var neobookBook = data.Deserialize<NeobookBook>();
+        if (neobookBook.ActiveChapterIndex > neobookBook.Chapters.Length) {
             return default;
         }
 
-        var neobookOps = Encoding.UTF8.GetString(Convert.FromBase64String(base64)).Deserialize<NeobookOps>();
-
-        var sb = new StringBuilder();
-        foreach (var op in neobookOps.Ops) {
-            if (op.Insert != "\n") {
-                sb.Append(op.Insert.HtmlDecode().CoverTag("p"));
-            }
+        var chapter = neobookBook.Chapters[neobookBook.ActiveChapterIndex];
+        if (string.IsNullOrWhiteSpace(chapter.Data?.Html)) {
+            return default;
         }
-
-        return sb.AsHtmlDoc();
+        
+        return chapter.Data.Html.AsHtmlDoc();
     }
 
     private Task<Image> GetCover(NeobookPostData data) {

@@ -13,7 +13,7 @@ public class NeobookPostData {
     public NeobookUser User { get; set; }
     
     [JsonPropertyName("chapters")]
-    public NeobookChapter[] Chapters { get; set; }
+    public NeobookTocChapter[] Chapters { get; set; }
     
     [JsonPropertyName("attachment")]
     public NeobookAttachment Attachment { get; set; }
