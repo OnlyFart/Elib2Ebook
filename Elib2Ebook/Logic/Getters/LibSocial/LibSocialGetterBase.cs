@@ -50,7 +50,6 @@ public abstract class LibSocialGetterBase : GetterBase {
     public override async Task<Book> Get(Uri url) {
         var bidId = url.GetQueryParameter("bid");
         url = SystemUrl.MakeRelativeUri(GetId(url));
-        Console.WriteLine($"URL: {url}");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         var header = doc.QuerySelector("h4.modal__title.text-danger");
         if (header != default && header.GetText() == "Доступ ограничен 18+") {
