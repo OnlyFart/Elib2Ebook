@@ -52,7 +52,7 @@ public class RanobeLibGetter : LibSocialGetterBase {
         {
             Chapters = socialLibChapters,
         };
-        windowData.Chapters.List.Reverse();
+        //windowData.Chapters.List.Reverse();
         return windowData;
     }
 }
