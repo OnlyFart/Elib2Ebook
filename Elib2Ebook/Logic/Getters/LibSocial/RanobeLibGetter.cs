@@ -10,7 +10,7 @@ namespace Elib2Ebook.Logic.Getters.LibSocial;
 
 public class RanobeLibGetter : LibSocialGetterBase {
     public RanobeLibGetter(BookGetterConfig config) : base(config) { }
-    protected override Uri SystemUrl => new("https://old.ranobelib.me");
+    protected override Uri SystemUrl => new("https://old.ranobelib.me/old/");
 
     protected override async Task<HtmlDocument> GetChapter(Uri url, SocialLibChapter chapter, User user) {
         var segment = $"/v{chapter.ChapterVolume}/c{chapter.ChapterNumber}?bid={chapter.BranchId}";
