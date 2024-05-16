@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
+using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
 using HtmlAgilityPack;
@@ -14,6 +15,8 @@ using HtmlAgilityPack;
 namespace Elib2Ebook.Logic.Builders; 
 
 public class Fb2Builder : BuilderBase {
+    protected override string Extension => "fb2";
+    
     private readonly XNamespace _ns = "http://www.gribuser.ru/xml/fictionbook/2.0";
     private readonly XNamespace _xlink = "http://www.w3.org/1999/xlink";
 
@@ -43,7 +46,7 @@ public class Fb2Builder : BuilderBase {
         {"u", "u"},
     };
 
-    private Fb2Builder() {
+    public Fb2Builder(Options options) : base(options) {
         _description = CreateXElement("description");
         _titleInfo = CreateXElement("title-info");
         _documentInfo = CreateXElement("document-info");
@@ -109,25 +112,16 @@ public class Fb2Builder : BuilderBase {
 
         await writer.WriteEndElementAsync();
     }
-
-    /// <summary>
-    /// Создание нового объекта Builder'a
-    /// </summary>
-    /// <returns></returns>
-    public static BuilderBase Create() {
-        return new Fb2Builder();
-    }
-
+    
     /// <summary>
     /// Добавление автора книги
     /// </summary>
     /// <param name="author">Автор</param>
     /// <returns></returns>
-    public override BuilderBase AddAuthor(Author author) {
+    private void AddAuthor(Author author) {
         var authorElem = CreateAuthor(author);
         _titleInfo.Add(authorElem);
         _documentInfo.Add(authorElem);
-        return this;
     }
     
     /// <summary>
@@ -135,14 +129,12 @@ public class Fb2Builder : BuilderBase {
     /// </summary>
     /// <param name="coAuthors">Со-авторы</param>
     /// <returns></returns>
-    public override BuilderBase AddCoAuthors(IEnumerable<Author> coAuthors) {
+    private void AddCoAuthors(IEnumerable<Author> coAuthors) {
         foreach (var coAuthor in coAuthors) {
             var coAuthorElem = CreateAuthor(coAuthor);
             _titleInfo.Add(coAuthorElem);
             _documentInfo.Add(coAuthorElem);
         }
-        
-        return this;
     }
 
     /// <summary>
@@ -150,13 +142,12 @@ public class Fb2Builder : BuilderBase {
     /// </summary>
     /// <param name="title">Название книги</param>
     /// <returns></returns>
-    public override BuilderBase WithTitle(string title) {
+    private void WithTitle(string title) {
         var bookTitle = CreateXElement("book-title");
         bookTitle.Value = title.ReplaceNewLine();
 
         _titleInfo.Add(bookTitle);
         _body.Add(CreateTitle(title));
-        return this;
     }
 
     /// <summary>
@@ -164,7 +155,7 @@ public class Fb2Builder : BuilderBase {
     /// </summary>
     /// <param name="cover">Обложка</param>
     /// <returns></returns>
-    public override BuilderBase WithCover(Image cover) {
+    private void WithCover(Image cover) {
         if (cover != default) {
             var coverPage = CreateXElement("coverpage");
             
@@ -175,26 +166,20 @@ public class Fb2Builder : BuilderBase {
             _titleInfo.Add(coverPage);
             _images.Add(cover);
         }
-
-        return this;
     }
 
-    public override BuilderBase WithBookUrl(Uri url) {
+    private void WithBookUrl(Uri url) {
         if (url != default) {
             var srcUrlElem = CreateXElement("src-url");
             srcUrlElem.Value = url.ToString().CleanInvalidXmlChars();
             _documentInfo.Add(srcUrlElem);
         }
-
-        return this;
     }
 
-    public override BuilderBase WithAnnotation(string annotation) {
+    private void WithAnnotation(string annotation) {
         if (!string.IsNullOrWhiteSpace(annotation)) {
             _titleInfo.Add(CreateAnnotation(annotation));
         }
-
-        return this;
     }
 
     private XElement CreateAnnotation(string annotation) {
@@ -211,22 +196,11 @@ public class Fb2Builder : BuilderBase {
     }
 
     /// <summary>
-    /// Добавление внешних файлов
-    /// </summary>
-    /// <param name="directory">Путь к директории с файлами</param>
-    /// <param name="searchPattern">Шаблон поиска файлов</param>
-    /// <param name="type">Тип файла</param>
-    /// <returns></returns>
-    public override BuilderBase WithFiles(string directory, string searchPattern) {
-        return this;
-    }
-
-    /// <summary>
     /// Добавление списка частей книги
     /// </summary>
     /// <param name="chapters">Список частей</param>
     /// <returns></returns>
-    public override BuilderBase WithChapters(IEnumerable<Chapter> chapters) {
+    public void WithChapters(IEnumerable<Chapter> chapters) {
         foreach (var chapter in chapters.Where(c => c.IsValid)) {
             var section = CreateXElement("section");
             section.Add(CreateTitle(chapter.Title));
@@ -242,29 +216,23 @@ public class Fb2Builder : BuilderBase {
                 _images.Add(image);
             }
         }
-
-        return this;
     }
 
-    public override BuilderBase WithSeria(Seria seria) {
+    private void WithSeria(Seria seria) {
         if (seria != default) {
             var sequenceElem = CreateXElement("sequence");
             sequenceElem.SetAttributeValue("name", seria.Name.CleanInvalidXmlChars());
             sequenceElem.SetAttributeValue("number", seria.Number.CleanInvalidXmlChars());
             _titleInfo.Add(sequenceElem);
         }
-
-        return this;
     }
 
-    public override BuilderBase WithLang(string lang) {
+    private void WithLang(string lang) {
         if (!string.IsNullOrWhiteSpace(lang)) {
             var langElem = CreateXElement("lang");
             langElem.Value = lang;
             _titleInfo.Add(langElem);
         }
-
-        return this;
     }
 
     private static bool IsTextNode(HtmlNode node) {
@@ -371,7 +339,17 @@ public class Fb2Builder : BuilderBase {
         return dateElem;
     }
 
-    protected override async Task BuildInternal(string name) {
+    protected override async Task BuildInternal(Book book, string fileName) {
+        AddAuthor(book.Author);
+        AddCoAuthors(book.CoAuthors);
+        WithBookUrl(book.Url);
+        WithTitle(book.Title);
+        WithAnnotation(book.Annotation);
+        WithCover(book.Cover);
+        WithLang(book.Lang);
+        WithSeria(book.Seria);
+        WithChapters(book.Chapters);
+        
         _documentInfo.Add(GetDateElement(DateTime.Today));
         
         var programUsed = CreateXElement("program-used");
@@ -381,7 +359,7 @@ public class Fb2Builder : BuilderBase {
         _description.Add(_titleInfo);
         _description.Add(_documentInfo);
 
-        await using var file = File.Create(name);
+        await using var file = File.Create(fileName);
         var xws = new XmlWriterSettings {
             Async = true,
             Encoding = new UTF8Encoding(false),
@@ -404,9 +382,5 @@ public class Fb2Builder : BuilderBase {
 
         await writer.WriteEndElementAsync();
         await writer.FlushAsync();
-    }
-
-    protected override string GetFileName(string name) {
-        return $"{name}.fb2".RemoveInvalidChars();
     }
 }

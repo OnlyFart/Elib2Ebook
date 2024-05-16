@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using CommandLine;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
-using Elib2Ebook.Logic;
 using Elib2Ebook.Logic.Builders;
 using Elib2Ebook.Logic.Getters;
 using Elib2Ebook.Misc.TempFolder;
@@ -35,7 +34,7 @@ internal static class Program {
                     try {
                         var book = await getter.Get(url.AsUri());
                         foreach (var format in options.Format) {
-                            await book.Save(GetBuilder(format), options, "Patterns");
+                            await GetBuilder(format, options).Build(book);
                         }
                     } catch (Exception ex) {
                         Console.WriteLine($"Генерация книги {url} завершилась с ошибкой. {ex}");
@@ -65,14 +64,14 @@ internal static class Program {
         return client;
     }
 
-    private static BuilderBase GetBuilder(string format) {
+    private static BuilderBase GetBuilder(string format, Options options) {
         return format.Trim().ToLower() switch {
-            "fb2" => Fb2Builder.Create(),
-            "epub" => EpubBuilder.Create(FileProvider.Instance.ReadAllText("Patterns/ChapterPattern.xhtml")),
-            "json" => JsonBuilder.Create(),
-            "cbz" => CbzBuilder.Create(),
-            "txt" => TxtBuilder.Create(),
-            "json_lite" => JsonLiteBuilder.Create(),
+            "fb2" => new Fb2Builder(options),
+            "epub" => new EpubBuilder(options),
+            "json" => new JsonBuilder(options),
+            "cbz" => new CbzBuilder(options),
+            "txt" => new TxtBuilder(options),
+            "json_lite" => new JsonBuilder(options),
             _ => throw new ArgumentException("Неизвестный формат", nameof(format))
         };
     }

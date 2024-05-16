@@ -1,70 +1,27 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
-using Elib2Ebook.Extensions;
+using Elib2Ebook.Configs;
 using Elib2Ebook.Types.Book;
 
 namespace Elib2Ebook.Logic.Builders; 
 
 public class CbzBuilder : BuilderBase {
-    private IEnumerable<Chapter> _chapters;
-    
-    public static BuilderBase Create() {
-        return new CbzBuilder();
+    public CbzBuilder(Options options) : base(options) {
+        
     }
 
-    public override BuilderBase AddAuthor(Author author) {
-        return this;
-    }
+    protected override string Extension => "cbz";
 
-    public override BuilderBase AddCoAuthors(IEnumerable<Author> coAuthors) {
-        return this;
-    }
-
-    public override BuilderBase WithTitle(string title) {
-        return this;
-    }
-
-    public override BuilderBase WithCover(Image cover) {
-        return this;
-    }
-
-    public override BuilderBase WithBookUrl(Uri url) {
-        return this;
-    }
-
-    public override BuilderBase WithAnnotation(string annotation) {
-        return this;
-    }
-
-    public override BuilderBase WithFiles(string directory, string searchPattern) {
-        return this;
-    }
-
-    public override BuilderBase WithChapters(IEnumerable<Chapter> chapters) {
-        _chapters = chapters;
-        return this;
-    }
-
-    public override BuilderBase WithSeria(Seria seria) {
-        return this;
-    }
-
-    public override BuilderBase WithLang(string lang) {
-        return this;
-    }
-
-    protected override async Task BuildInternal(string name) {
-        if (File.Exists(name)) {
-            File.Delete(name);
+    protected override async Task BuildInternal(Book book, string fileName) {
+        if (File.Exists(fileName)) {
+            File.Delete(fileName);
         }
         
-        using var archive = ZipFile.Open(name, ZipArchiveMode.Create);
+        using var archive = ZipFile.Open(fileName, ZipArchiveMode.Create);
         
         var c = 0;
-        foreach (var chapter in _chapters) {
+        foreach (var chapter in book.Chapters) {
             if (chapter.Images == default) {
                 continue;
             }
@@ -76,9 +33,5 @@ public class CbzBuilder : BuilderBase {
                 await fileStream.CopyToAsync(entryStream);
             }
         }
-    }
-
-    protected override string GetFileName(string name) {
-        return $"{name}.cbz".RemoveInvalidChars();
     }
 }
