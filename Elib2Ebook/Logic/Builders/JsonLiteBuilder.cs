@@ -49,7 +49,7 @@ public class ShortChapterConverter : JsonConverter<Chapter> {
 }
 
 public class JsonLiteBuilder : BuilderBase {
-    private JsonLiteBuilder(Options options) : base(options) { }
+    public JsonLiteBuilder(Options options) : base(options) { }
 
     protected override string Extension => "json";
 

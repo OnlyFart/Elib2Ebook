@@ -71,7 +71,7 @@ internal static class Program {
             "json" => new JsonBuilder(options),
             "cbz" => new CbzBuilder(options),
             "txt" => new TxtBuilder(options),
-            "json_lite" => new JsonBuilder(options),
+            "json_lite" => new JsonLiteBuilder(options),
             _ => throw new ArgumentException("Неизвестный формат", nameof(format))
         };
     }
