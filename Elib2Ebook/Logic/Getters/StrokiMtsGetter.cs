@@ -23,7 +23,7 @@ public class StrokiMtsGetter : GetterBase {
     }
 
     public override Task Authorize() {
-        Config.Client.DefaultRequestHeaders.Add("access-token", Config.Options.Login ?? Config.Options.Login);
+        Config.Client.DefaultRequestHeaders.Add("access-token", Config.Options.Login ?? Config.Options.Password);
         
         return Task.CompletedTask;
     }

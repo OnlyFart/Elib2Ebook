@@ -8,18 +8,19 @@ using Elib2Ebook.Types.Book;
 namespace Elib2Ebook.Logic.Builders; 
 
 public abstract class BuilderBase {
-    protected readonly Options _options;
+    protected readonly Options Options;
 
     protected abstract string Extension { get;}
 
     protected BuilderBase(Options options) {
-        _options = options;
+        Options = options;
     }
 
     /// <summary>
     ///  Создание файла
     /// </summary>
     /// <param name="book">Книга</param>
+    /// <param name="fileName">Имя файла</param>
     protected abstract Task BuildInternal(Book book, string fileName);
 
     /// <summary>
@@ -39,19 +40,19 @@ public abstract class BuilderBase {
         
         var fileName = GetFileName(title);
         
-        if (!string.IsNullOrWhiteSpace(_options.SavePath)) {
-            if (!Directory.Exists(_options.SavePath)) {
-                Directory.CreateDirectory(_options.SavePath);
+        if (!string.IsNullOrWhiteSpace(Options.SavePath)) {
+            if (!Directory.Exists(Options.SavePath)) {
+                Directory.CreateDirectory(Options.SavePath);
             }
 
-            fileName = Path.Combine(_options.SavePath, fileName);
+            fileName = Path.Combine(Options.SavePath, fileName);
         }
         
         Console.WriteLine($"Начинаю сохранение книги {fileName.CoverQuotes()}");
         await BuildInternal(book, fileName);
         
-        if (_options.Cover) {
-            await SaveCover(_options.SavePath, book.Cover, title);
+        if (Options.Cover) {
+            await SaveCover(Options.SavePath, book.Cover, title);
         }
         
         Console.WriteLine($"Книга {fileName.CoverQuotes()} успешно сохранена");

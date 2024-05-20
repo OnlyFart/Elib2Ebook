@@ -86,7 +86,7 @@ public class EpubBuilder : BuilderBase {
             _writer.AddCollection(book.Seria.Name, book.Seria.Number);
         }
 
-        var pattern = FileProvider.Instance.ReadAllText($"{_options.ResourcesPath}/ChapterPattern.xhtml");
+        var pattern = FileProvider.Instance.ReadAllText($"{Options.ResourcesPath}/ChapterPattern.xhtml");
         foreach (var chapter in book.Chapters.Where(c => c.IsValid)) {
             foreach (var image in chapter.Images) {
                 _writer.AddFile(image.Name, Array.Empty<byte>(), GetImageFormat(image.Name).ToEpubContentType());
@@ -96,8 +96,8 @@ public class EpubBuilder : BuilderBase {
             _writer.AddChapter(chapter.Title.HtmlDecode().ReplaceNewLine().RemoveInvalidChars(), ApplyPattern(pattern, chapter.Title, chapter.Content));
         }
         
-        WithFiles(_options.ResourcesPath, "*.ttf");
-        WithFiles(_options.ResourcesPath, "*.css");
+        WithFiles(Options.ResourcesPath, "*.ttf");
+        WithFiles(Options.ResourcesPath, "*.css");
         
         await _writer.Write(fileName, Images.Select(image => new FileMeta(image.Name, image.FilePath)));
     }
