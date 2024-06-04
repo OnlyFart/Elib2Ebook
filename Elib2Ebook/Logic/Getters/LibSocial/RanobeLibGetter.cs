@@ -103,7 +103,7 @@ public class RanobeLibGetter : GetterBase {
 
     private async Task<HtmlDocument> GetChapter(RanobeLibBookDetails book, RanobeLibBookChapter chapter) {
         var uri = ApiUrl.MakeRelativeUri($"{book.Data.SlugUrl}/chapter?number={chapter.Number}&volume={chapter.Volume}");
-        var response = await Config.Client.GetWithTriesAsync(uri);
+        var response = await Config.Client.GetWithTriesAsync(uri, TimeSpan.FromSeconds(10));
         return await response.Content.ReadFromJsonAsync<RanobeLibBookChapterResponse>().ContinueWith(t => t.Result.Data.Content.AsHtmlDoc());
     }
 }
