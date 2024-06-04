@@ -22,6 +22,7 @@ public class RanobeLibGetter : LibSocialGetterBase {
     public RanobeLibGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://ranobelib.me/");
     protected Uri ApiUrl => new("https://api.lib.social/api/manga/");
+    protected Uri ImagesUrl => new("https://cover.imgslib.link/");
     protected override string GetId(Uri url) => url.GetSegment(3);
 
     public override Task Authorize() {
@@ -39,12 +40,6 @@ public class RanobeLibGetter : LibSocialGetterBase {
             Author = GetAuthor(details),
             CoAuthors = GetCoAuthors(details)
         };
-        
-        Console.WriteLine($"Cover: {book.Cover}");
-        Console.WriteLine($"Title: {book.Title}");
-        Console.WriteLine($"Author: {book.Author}");
-        Console.WriteLine($"CoAuthors: {book.CoAuthors}");
-        Console.WriteLine($"Chapters: {book.Chapters}");
 
         return book;
     }
@@ -126,7 +121,7 @@ public class RanobeLibGetter : LibSocialGetterBase {
             };
 
             var chapterDoc = rlbChapter.Content.AsHtmlDoc();
-            chapter.Images = await GetImages(chapterDoc, SystemUrl);
+            chapter.Images = await GetImages(chapterDoc, ImagesUrl);
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;
 
             chapters.Add(chapter);
@@ -136,7 +131,6 @@ public class RanobeLibGetter : LibSocialGetterBase {
     }
 
     private async Task<List<RanobeLibBookChapter>> GetChapters(RanobeLibBookDetails book) {
-        // chapters = new RanobeLibBookChapters();
         var _chapters = await GetBookChapters(book);
         var chapters = SliceToc(_chapters.Chapters);
         var result = new List<RanobeLibBookChapter>();
