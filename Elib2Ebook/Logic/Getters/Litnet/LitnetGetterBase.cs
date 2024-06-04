@@ -53,9 +53,8 @@ public abstract class LitnetGetterBase : GetterBase {
     }
 
     private static string GetSign(string token) {
-        using var md5 = MD5.Create();
         var inputBytes = Encoding.ASCII.GetBytes(DeviceId + SECRET + (token ?? string.Empty));
-        var hashBytes = md5.ComputeHash(inputBytes);
+        var hashBytes = MD5.HashData(inputBytes);
 
         return Convert.ToHexString(hashBytes).ToLower();
     }
