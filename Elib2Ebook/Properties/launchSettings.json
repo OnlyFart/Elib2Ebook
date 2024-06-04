@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Elib2Ebook": {
+      "commandName": "Project",
+      "commandLineArgs": "--url \"https://ranobelib.me/ru/book/15630--mushoku-tensei\"\r\n--format \"fb2\"\r\n--save .\r\n--start \"3\"\r\n--end \"5\"",
+      "workingDirectory": "U:\\e2e\\Elib2Ebook\\dist"
+    }
+  }
+}
