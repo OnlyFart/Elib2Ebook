@@ -69,8 +69,8 @@ public class RanobeLibGetter : GetterBase {
     }
 
     private Author GetAuthor(RanobeLibBookDetails details) {
-        var author = details.Data.Authors[0];
-        return new Author(author.Name, SystemUrl.MakeRelativeUri($"/ru/people/{author.SlugUrl}"));
+        var author = details.Data.Authors.FirstOrDefault();
+        return author == default ? new Author("Ranobelib") : new Author(author.Name, SystemUrl.MakeRelativeUri($"/ru/people/{author.SlugUrl}"));
     }
     
     private IEnumerable<Author> GetCoAuthors(RanobeLibBookDetails details) {
@@ -107,6 +107,7 @@ public class RanobeLibGetter : GetterBase {
     private async Task<HtmlDocument> GetChapter(RanobeLibBookDetails book, RanobeLibBookChapter chapter) {
         var uri = ApiUrl.MakeRelativeUri($"{book.Data.SlugUrl}/chapter?number={chapter.Number}&volume={chapter.Volume}");
         var response = await Config.Client.GetWithTriesAsync(uri, TimeSpan.FromSeconds(10));
-        return await response.Content.ReadFromJsonAsync<RanobeLibBookChapterResponse>().ContinueWith(t => t.Result.Data.Content.AsHtmlDoc());
+        var cc = await response.Content.ReadFromJsonAsync<RanobeLibBookChapterResponse>(); 
+        return cc.Data.GetHtmlDoc();
     }
 }

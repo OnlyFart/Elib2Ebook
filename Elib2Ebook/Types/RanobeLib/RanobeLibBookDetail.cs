@@ -9,6 +9,10 @@ public class RanobeLibBookDetails {
 }
 
 public class RLBDData {
+    public RLBDData(int? id) {
+        Id = id;
+    }
+
     [JsonPropertyName("id")]
     public int? Id { get; set; }
 
