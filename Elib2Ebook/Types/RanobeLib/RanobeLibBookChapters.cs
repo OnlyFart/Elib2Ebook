@@ -65,10 +65,10 @@ public class RanobeLibChapterContent {
     public string Text { get; set; }
 
     [JsonPropertyName("marks")]
-    private RanobeLibChapterMark[] Marks { get; set; } = [];
+    public RanobeLibChapterMark[] Marks { get; set; } = [];
 
     [JsonPropertyName("content")]
-    private RanobeLibChapterContent[] Content { get; set; } = [];
+    public RanobeLibChapterContent[] Content { get; set; } = [];
 
     public HtmlDocument AsHtmlDoc() {
         return AsHtml(Content).AsHtmlDoc();
