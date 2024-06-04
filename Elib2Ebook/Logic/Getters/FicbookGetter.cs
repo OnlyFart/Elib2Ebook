@@ -94,7 +94,7 @@ public class FicbookGetter : GetterBase {
             result.Add(new UrlChapter(url, title));
         } else {
             foreach (var li in links) {
-                var a = li.QuerySelector("a.part-link.visit-link");
+                var a = li.QuerySelector("a.part-link");
                 if (a != null) {
                     result.Add(new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), li.GetTextBySelector("h3")));
                 }

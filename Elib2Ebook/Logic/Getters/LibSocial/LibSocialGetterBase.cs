@@ -82,7 +82,7 @@ public abstract class LibSocialGetterBase : GetterBase {
         return logo == default ? new Author(SystemUrl.Host) : new Author(logo.Attributes["alt"].Value);
     }
 
-    private static WindowData GetData(HtmlDocument doc) {
+    public virtual WindowData GetData(HtmlDocument doc) {
         var match = new Regex("window.__DATA__ = (?<data>{.*}).*window._SITE_COLOR_", RegexOptions.Compiled | RegexOptions.Singleline).Match(doc.Text).Groups["data"].Value;
         var windowData = match.Deserialize<WindowData>();
         windowData.Chapters.List.Reverse();

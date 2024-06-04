@@ -46,6 +46,7 @@ public abstract class GetterBase : IDisposable {
     /// <returns></returns>
     protected async Task<Image> SaveImage(Uri uri) {
         try {
+            Console.WriteLine($"Загружаю картинку {uri}");
             using var response = await Config.Client.SendWithTriesAsync(() => GetImageRequestMessage(uri));
             Console.WriteLine($"Загружена картинка {response.RequestMessage!.RequestUri}");
             if (response is not { StatusCode: HttpStatusCode.OK }) {
