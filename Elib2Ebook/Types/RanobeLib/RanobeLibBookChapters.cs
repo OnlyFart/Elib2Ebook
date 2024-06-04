@@ -1,23 +1,19 @@
-using System.Text;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Elib2Ebook.Types.RanobeLib; 
+namespace Elib2Ebook.Types.RanobeLib;
 
-public class RanobeLibBookChapters
-{
+public class RanobeLibBookChapters {
     [JsonPropertyName("data")]
     public List<RanobeLibBookChapter> Chapters { get; set; }
 }
 
-public class RanobeLibBookChapterResponse
-{
+public class RanobeLibBookChapterResponse {
     [JsonPropertyName("data")]
     public RanobeLibBookChapter Data { get; set; }
 }
 
-public class RanobeLibBookChapter
-{
+public class RanobeLibBookChapter {
     [JsonPropertyName("volume")]
     public string Volume { get; set; }
 
@@ -28,13 +24,12 @@ public class RanobeLibBookChapter
 
     [JsonPropertyName("name")]
     public string Name {
-        get
-        {
-            var name = $"“ÓÏ {Volume} √Î‡‚‡ {Number}";
-            if (RawName != "")
-            {
+        get {
+            var name = $"–¢–æ–º {Volume} –ì–ª–∞–≤–∞ {Number}";
+            if (!string.IsNullOrWhiteSpace(RawName)) {
                 name += $" - {RawName}";
             }
+
             return name;
         }
         set { RawName = value; }
@@ -42,9 +37,4 @@ public class RanobeLibBookChapter
 
     [JsonPropertyName("content")]
     public string Content { get; set; }
-
-    public string ToHTML() {
-        var html = $"<html><body>{Content}</body></html>";
-        return html;
-    }
 }

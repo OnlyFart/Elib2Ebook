@@ -1,16 +1,14 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Elib2Ebook.Types.RanobeLib; 
+namespace Elib2Ebook.Types.RanobeLib;
 
-public class RanobeLibBookDetails
-{
+public class RanobeLibBookDetails {
     [JsonPropertyName("data")]
     public RLBDData Data { get; set; }
 }
 
-public class RLBDData
-{
+public class RLBDData {
     [JsonPropertyName("id")]
     public int? Id { get; set; }
 
@@ -26,17 +24,13 @@ public class RLBDData
     [JsonPropertyName("authors")]
     public List<RLBDAuthor> Authors { get; set; }
 }
-public class RLBDCover
-{
-    [JsonPropertyName("filename")]
-    public string Filename { get; set; }
 
+public class RLBDCover {
     [JsonPropertyName("default")]
     public string Default { get; set; }
 }
 
-public class RLBDAuthor
-{
+public class RLBDAuthor {
     [JsonPropertyName("name")]
     public string Name { get; set; }
 
