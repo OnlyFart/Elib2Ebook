@@ -63,29 +63,41 @@ public class RanobeLibChapterContent {
     
     [JsonPropertyName("text")]
     public string Text { get; set; }
-    
+
     [JsonPropertyName("marks")]
-    public RanobeLibChapterMark[] Marks { get; set; } 
-    
+    public RanobeLibChapterMark[] Marks { get; set; } = [];
+
     [JsonPropertyName("content")]
-    public RanobeLibChapterContent[] Content { get; set; }
+    public RanobeLibChapterContent[] Content { get; set; } = [];
 
     public HtmlDocument AsHtmlDoc() {
-        return AsHtmlDoc(Content).AsHtmlDoc();
+        return AsHtml(Content).AsHtmlDoc();
     }
 
-    private StringBuilder AsHtmlDoc(RanobeLibChapterContent[] contents) {
+    private static StringBuilder AsHtml(RanobeLibChapterContent[] contents) {
         var sb = new StringBuilder();
-        
-        foreach (var content in contents ?? []) {
+
+        foreach (var content in contents) {
             switch (content.Type) {
                 case "paragraph":
-                    sb.Append(AsHtmlDoc(content.Content).ToString().CoverTag("p"));
+                    sb.Append(AsHtml(content.Content).ToString().CoverTag("p"));
+                    break;
+                case "orderedList":
+                    sb.Append(AsHtml(content.Content).ToString().CoverTag("ol"));
+                    break;
+                case "listItem":
+                    sb.Append(AsHtml(content.Content).ToString().CoverTag("li"));
+                    break;
+                case "horizontalRule":
+                    sb.Append("<hr />");
+                    break;
+                case "hardBreak":
+                    sb.Append("<br />");
                     break;
                 case "text": {
                     var text = content.Text;
-                
-                    foreach (var mark in content.Marks ?? []) {
+
+                    foreach (var mark in content.Marks) {
                         switch (mark.Type) {
                             case "italic":
                                 text = text.CoverTag("i");
@@ -94,7 +106,7 @@ public class RanobeLibChapterContent {
                                 text = text.CoverTag("b");
                                 break;
                             default:
-                                Console.WriteLine(mark.Type);
+                                Console.WriteLine($"Неизвестый тип форматирования {mark.Type}");
                                 break;
                         }
                     }
@@ -103,7 +115,7 @@ public class RanobeLibChapterContent {
                     break;
                 }
                 default:
-                    Console.WriteLine(content.Type);
+                    Console.WriteLine($"Неизвестый тип {content.Type}");
                     break;
             }
         }
