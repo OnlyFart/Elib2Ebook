@@ -58,6 +58,22 @@ public class RanobeLibBookChapter {
 }
 
 public class RanobeLibChapterContent {
+    private static readonly Dictionary<string, string> RecursiveTag = new() {
+        { "paragraph", "p" },
+        { "orderedList", "ol" },
+        { "listItem", "li" },
+    };
+    
+    private static readonly Dictionary<string, string> InlineTag = new() {
+        { "horizontalRule", "<hr />" },
+        { "hardBreak", "<br />" },
+    };
+    
+    private static readonly Dictionary<string, string> MarkTag = new() {
+        { "italic", "i" },
+        { "bold", "b" },
+    };
+    
     [JsonPropertyName("type")]
     public string Type { get; set; }
     
@@ -78,46 +94,32 @@ public class RanobeLibChapterContent {
         var sb = new StringBuilder();
 
         foreach (var content in contents) {
-            switch (content.Type) {
-                case "paragraph":
-                    sb.Append(AsHtml(content.Content).ToString().CoverTag("p"));
-                    break;
-                case "orderedList":
-                    sb.Append(AsHtml(content.Content).ToString().CoverTag("ol"));
-                    break;
-                case "listItem":
-                    sb.Append(AsHtml(content.Content).ToString().CoverTag("li"));
-                    break;
-                case "horizontalRule":
-                    sb.Append("<hr />");
-                    break;
-                case "hardBreak":
-                    sb.Append("<br />");
-                    break;
-                case "text": {
-                    var text = content.Text;
-
-                    foreach (var mark in content.Marks) {
-                        switch (mark.Type) {
-                            case "italic":
-                                text = text.CoverTag("i");
-                                break;
-                            case "bold":
-                                text = text.CoverTag("b");
-                                break;
-                            default:
-                                Console.WriteLine($"Неизвестый тип форматирования {mark.Type}");
-                                break;
-                        }
-                    }
-
-                    sb.Append(text);
-                    break;
-                }
-                default:
-                    Console.WriteLine($"Неизвестый тип {content.Type}");
-                    break;
+            if (RecursiveTag.TryGetValue(content.Type, out var tag)) {
+                sb.Append(AsHtml(content.Content).ToString().CoverTag(tag)); 
+                continue;
             }
+            
+            if (InlineTag.TryGetValue(content.Type, out tag)) {
+                sb.Append(tag);
+                continue;
+            }
+
+            if (content.Type == "text") {
+                var text = content.Text;
+
+                foreach (var mark in content.Marks) {
+                    if (MarkTag.TryGetValue(mark.Type, out tag)) {
+                        text = text.CoverTag(tag);
+                    } else {
+                        Console.WriteLine($"Неизвестый тип форматирования {mark.Type}");
+                    }
+                }
+
+                sb.Append(text);
+                continue;
+            }
+            
+            Console.WriteLine($"Неизвестый тип {content.Type}");
         }
 
         return sb;
