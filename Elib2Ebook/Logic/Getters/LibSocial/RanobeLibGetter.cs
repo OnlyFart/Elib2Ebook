@@ -21,7 +21,10 @@ public class RanobeLibGetter : GetterBase {
     
     private static Uri ImagesUrl => new("https://cover.imgslib.link/");
     
-    protected override string GetId(Uri url) => url.GetSegment(2);
+    protected override string GetId(Uri url) {
+        var id = url.GetSegment(2);
+        return id is "book" or "read" ? url.GetSegment(3) : id;
+    }
 
     public override async Task<Book> Get(Uri url) {
         var details = await GetBookDetails(url);
