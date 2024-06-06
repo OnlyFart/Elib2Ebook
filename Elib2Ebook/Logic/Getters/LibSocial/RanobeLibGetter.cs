@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,19 +22,19 @@ public class RanobeLibGetter : GetterBase {
     
     protected override Uri SystemUrl => new("https://ranobelib.me/");
     
-    private static Uri ApiUrl => new("https://api.lib.social/api/manga/");
+    private static Uri ApiHost => new("https://api.lib.social/");
     
-    private static Uri ImagesUrl => new("https://cover.imgslib.link/");
+    private static Uri ImagesHost => new("https://cover.imgslib.link/");
+
+    private static Uri AuthHost => new("https://auth.lib.social/");
 
     private const string ALPHABET_BASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private const string ALPHABET_CHALLENGE = ALPHABET_BASE + "-_";
     
     private static string Challenge(string str) {
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(str).AsSpan(0, Encoding.UTF8.GetByteCount(str)));
-        
         var result = string.Empty;
         
-
         for (var t = 0; t < bytes.Length; t += 3) {
             result += ALPHABET_CHALLENGE[bytes[t] >> 2];
             result += ALPHABET_CHALLENGE[(bytes[t] & 3) << 4 | bytes[t + 1] >> 4];
@@ -41,23 +42,17 @@ public class RanobeLibGetter : GetterBase {
             result += ALPHABET_CHALLENGE[(t + 2 < bytes.Length ? bytes[t + 2] : 0) & 63];
         }
 
-        result = (bytes.Length % 3) switch {
+        return (bytes.Length % 3) switch {
             2 => result[..^1],
             1 => result[..^2],
             _ => result
         };
-
-        return result;
     }
 
     private static string GetRandom(int length) {
-        var result = string.Empty;
-
-        for (var i = 0; i < length; i++) {
-            result += ALPHABET_BASE[new Random().Next(ALPHABET_BASE.Length)];
-        }
-
-        return result;
+        return Enumerable
+            .Repeat(0, length)
+            .Aggregate(string.Empty, (c, _) => c + ALPHABET_BASE[new Random().Next(ALPHABET_BASE.Length)]);
     }
 
     public override async Task Authorize() {
@@ -67,47 +62,43 @@ public class RanobeLibGetter : GetterBase {
 
         var secret = GetRandom(128);
         var state = GetRandom(40);
-        const string redirectUri = "https://ranobelib.me/auth/oauth/callback";
+        var redirectUri = SystemUrl.MakeRelativeUri("/auth/oauth/callback");
         
         var challenge = Challenge(secret);
 
-        await Config.Client.GetAsync($"https://auth.lib.social/auth/oauth/authorize?client_id=1&code_challenge={challenge}&code_challenge_method=S256&prompt=consent&redirect_uri={redirectUri}&response_type=code&scope=&state={state}".AsUri());
-        var loginForm = await Config.Client.GetHtmlDocWithTriesAsync("https://auth.lib.social/auth/login-form".AsUri());
-        var token = loginForm.QuerySelector("input[name=_token]").Attributes["value"].Value;
+        await Config.Client.GetAsync(AuthHost.MakeRelativeUri($"/auth/oauth/authorize?client_id=1&code_challenge={challenge}&code_challenge_method=S256&prompt=consent&redirect_uri={redirectUri}&response_type=code&scope=&state={state}"));
+        var loginForm = await Config.Client.GetHtmlDocWithTriesAsync(AuthHost.MakeRelativeUri("/auth/login-form"));
 
         var payload = new Dictionary<string, string> {
-            { "_token", token },
+            { "_token", loginForm.QuerySelector("input[name=_token]").Attributes["value"].Value },
             { "login", Config.Options.Login },
             { "password", Config.Options.Password },
         };
         
-        var login = await Config.Client.PostHtmlDocWithTriesAsync("https://auth.lib.social/auth/login".AsUri(), new FormUrlEncodedContent(payload));
+        var login = await Config.Client.PostHtmlDocWithTriesAsync(AuthHost.MakeRelativeUri("/auth/login"), new FormUrlEncodedContent(payload));
         var error = login.QuerySelector(".form-field__error");
         if (error != default && !string.IsNullOrWhiteSpace(error.InnerText)) {
             throw new Exception($"Не удалось авторизоваться. {error.InnerText}");
         }
+
+        var postForm = login.QuerySelector("form[method=post]");
+        payload = postForm
+            .QuerySelectorAll("input[type=hidden]")
+            .Select(input => input.Attributes["name"].Value)
+            .ToDictionary(name => name, name => login.QuerySelector($"input[name={name}]").Attributes["value"].Value);
         
-        payload = new Dictionary<string, string> {
-            { "_token", login.QuerySelector("input[name=_token]").Attributes["value"].Value },
-            { "state", login.QuerySelector("input[name=state]").Attributes["value"].Value },
-            { "client_id", login.QuerySelector("input[name=client_id]").Attributes["value"].Value },
-            { "auth_token", login.QuerySelector("input[name=auth_token]").Attributes["value"].Value },
-        };
-        
-        var authorize = await Config.Client.PostAsync("https://auth.lib.social/auth/oauth/authorize".AsUri(), new FormUrlEncodedContent(payload));
-        var code = authorize.RequestMessage?.RequestUri.GetQueryParameter("code");
-        
-        var authTokenResponse = await Config.Client.PostAsync("https://api.lib.social/api/auth/oauth/token".AsUri(), JsonContent.Create(new {
+        var authorize = await Config.Client.PostAsync(AuthHost.MakeRelativeUri(postForm.Attributes["action"].Value), new FormUrlEncodedContent(payload));
+        var tokenResponse = await Config.Client.PostAsync(ApiHost.MakeRelativeUri("/api/auth/oauth/token"), JsonContent.Create(new {
             grant_type = "authorization_code",
             client_id = 1,
             redirect_uri = redirectUri,
             code_verifier = secret,
-            code = code
+            code = authorize.RequestMessage?.RequestUri.GetQueryParameter("code")
         }));
 
-        var authToken = await authTokenResponse.Content.ReadFromJsonAsync<LibSocialToken>();
-        
-        Config.Client.DefaultRequestHeaders.Add("Authorization", $"Bearer {authToken.AccessToken}");
+        var token = await tokenResponse.Content.ReadFromJsonAsync<LibSocialToken>();
+
+        Config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
         Console.WriteLine("Успешно авторизовались");
     }
 
@@ -131,7 +122,8 @@ public class RanobeLibGetter : GetterBase {
     }
 
     private async Task<RanobeLibBookDetails> GetBookDetails(Uri url) {
-        url = ApiUrl.AppendSegment(GetId(url))
+        url = ApiHost
+            .AppendSegment("api/manga/" + GetId(url))
             .AppendQueryParameter("fields[]", "background")
             .AppendQueryParameter("fields[]", "teams")
             .AppendQueryParameter("fields[]", "authors")
@@ -146,7 +138,7 @@ public class RanobeLibGetter : GetterBase {
     }
 
     private async Task<IEnumerable<RanobeLibBookChapter>> GetToc(RanobeLibBookDetails book) {
-        var url = ApiUrl.MakeRelativeUri(book.Data.SlugUrl).AppendSegment("chapters");
+        var url = ApiHost.MakeRelativeUri("/api/manga/" + book.Data.SlugUrl).AppendSegment("chapters");
 
         Console.WriteLine("Загружаю оглавление");
 
@@ -185,7 +177,7 @@ public class RanobeLibGetter : GetterBase {
             };
 
             var chapterDoc = await GetChapter(book, rlbChapter);
-            chapter.Images = await GetImages(chapterDoc, ImagesUrl);
+            chapter.Images = await GetImages(chapterDoc, ImagesHost);
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;
 
             chapters.Add(chapter);
@@ -195,7 +187,7 @@ public class RanobeLibGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(RanobeLibBookDetails book, RanobeLibBookChapter chapter) {
-        var uri = ApiUrl.MakeRelativeUri($"{book.Data.SlugUrl}/chapter?number={chapter.Number}&volume={chapter.Volume}");
+        var uri = ApiHost.MakeRelativeUri($"api/manga/{book.Data.SlugUrl}/chapter?number={chapter.Number}&volume={chapter.Volume}");
         var response = await Config.Client.GetWithTriesAsync(uri, TimeSpan.FromSeconds(10));
         var cc = await response.Content.ReadFromJsonAsync<RanobeLibBookChapterResponse>(); 
         return cc.Data.GetHtmlDoc();
