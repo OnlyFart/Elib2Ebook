@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -19,13 +20,38 @@ public class RanobeLibBookChapterResponse {
     public RanobeLibBookChapter Data { get; set; }
 }
 
+public class RanobeLibChapterBranch {
+    [JsonPropertyName("branch_id")]
+    public long? BranchId { get; set; }
+}
+
+public class RanobeLibChapterAttachment {
+    [JsonPropertyName("url")]
+    public string Url { get; set; }
+    
+    [JsonPropertyName("name")]
+    public string Name { get; set; }
+}
+
 public class RanobeLibBookChapter {
+    [JsonPropertyName("id")]
+    public long Id { get; set; } 
+    
+    [JsonPropertyName("manga_id")]
+    public long MangaId { get; set; }
+    
     [JsonPropertyName("volume")]
     public string Volume { get; set; }
 
     [JsonPropertyName("number")]
     public string Number { get; set; }
+    
+    [JsonPropertyName("branches")]
+    public List<RanobeLibChapterBranch> Branches { get; set; }
 
+    [JsonPropertyName("attachments")]
+    public RanobeLibChapterAttachment[] Attachments { get; set; } = [];
+ 
     private string RawName { get; set; }
 
     [JsonPropertyName("name")]
@@ -43,25 +69,12 @@ public class RanobeLibBookChapter {
 
     [JsonPropertyName("content")]
     public JsonNode Content { get; set; }
-
-    public HtmlDocument GetHtmlDoc() {
-        switch (Content) {
-            case JsonValue e:
-                return e.GetValue<string>().AsHtmlDoc();
-            case JsonObject o:
-                var content = o.Deserialize<RanobeLibChapterContent>();
-                return content.AsHtmlDoc();
-        }
-
-        throw new Exception("Неизвестный тип");
-    }
-}
-
-public class RanobeLibChapterContent {
+    
     private static readonly Dictionary<string, string> RecursiveTag = new() {
         { "paragraph", "p" },
         { "orderedList", "ol" },
         { "listItem", "li" },
+        { "blockquote", "blockquote" },
     };
     
     private static readonly Dictionary<string, string> InlineTag = new() {
@@ -73,24 +86,20 @@ public class RanobeLibChapterContent {
         { "italic", "i" },
         { "bold", "b" },
     };
-    
-    [JsonPropertyName("type")]
-    public string Type { get; set; }
-    
-    [JsonPropertyName("text")]
-    public string Text { get; set; }
 
-    [JsonPropertyName("marks")]
-    public RanobeLibChapterMark[] Marks { get; set; } = [];
+    public HtmlDocument GetHtmlDoc() {
+        switch (Content) {
+            case JsonValue e:
+                return e.GetValue<string>().AsHtmlDoc();
+            case JsonObject o:
+                var content = o.Deserialize<RanobeLibChapterContent>();
+                return AsHtml(content.Content).AsHtmlDoc();
+        }
 
-    [JsonPropertyName("content")]
-    public RanobeLibChapterContent[] Content { get; set; } = [];
-
-    public HtmlDocument AsHtmlDoc() {
-        return AsHtml(Content).AsHtmlDoc();
+        throw new Exception("Неизвестный тип");
     }
 
-    private static StringBuilder AsHtml(RanobeLibChapterContent[] contents) {
+    private StringBuilder AsHtml(IEnumerable<RanobeLibChapterContent> contents) {
         var sb = new StringBuilder();
 
         foreach (var content in contents) {
@@ -104,26 +113,64 @@ public class RanobeLibChapterContent {
                 continue;
             }
 
-            if (content.Type == "text") {
-                var text = content.Text;
+            switch (content.Type) {
+                case "text": {
+                    var text = content.Text;
 
-                foreach (var mark in content.Marks) {
-                    if (MarkTag.TryGetValue(mark.Type, out tag)) {
-                        text = text.CoverTag(tag);
-                    } else {
-                        Console.WriteLine($"Неизвестый тип форматирования {mark.Type}");
+                    foreach (var mark in content.Marks) {
+                        if (MarkTag.TryGetValue(mark.Type, out tag)) {
+                            text = text.CoverTag(tag);
+                        } else {
+                            Console.WriteLine($"Неизвестый тип форматирования {mark.Type}");
+                        }
                     }
-                }
 
-                sb.Append(text);
-                continue;
+                    sb.Append(text);
+                    continue;
+                }
+                case "image": {
+                    if (content.Attrs.TryGetValue("images", out var images)) {
+                        foreach (var image in images) {
+                            if (!image.TryGetValue("image", out var imageId)) {
+                                continue;
+                            }
+                            
+                            var attachment = Attachments.FirstOrDefault(a => a.Name == imageId);
+                            if (attachment == default) {
+                                continue;
+                            }
+                            
+                            sb.Append($"<img src=\"{attachment.Url}\" />");
+                        }
+                    }
+                
+                    continue;
+                }
+                default:
+                    Console.WriteLine($"Неизвестый тип {content.Type}");
+                    break;
             }
-            
-            Console.WriteLine($"Неизвестый тип {content.Type}");
         }
 
         return sb;
     }
+}
+
+public class RanobeLibChapterContent {
+    [JsonPropertyName("type")]
+    public string Type { get; set; }
+    
+    [JsonPropertyName("text")]
+    public string Text { get; set; }
+
+    [JsonPropertyName("marks")]
+    public RanobeLibChapterMark[] Marks { get; set; } = [];
+
+    [JsonPropertyName("content")]
+    public RanobeLibChapterContent[] Content { get; set; } = [];
+
+    [JsonPropertyName("attrs")]
+    public Dictionary<string, Dictionary<string, string>[]> Attrs { get; set; } = new();
 }
 
 public class RanobeLibChapterMark {

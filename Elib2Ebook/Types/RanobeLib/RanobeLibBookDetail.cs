@@ -18,6 +18,9 @@ public class RLBDData {
 
     [JsonPropertyName("name")]
     public string Name { get; set; }
+    
+    [JsonPropertyName("rus_name")]
+    public string RusName { get; set; }
 
     [JsonPropertyName("slug_url")]
     public string SlugUrl { get; set; }

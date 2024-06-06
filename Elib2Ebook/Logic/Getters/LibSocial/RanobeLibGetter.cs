@@ -108,12 +108,13 @@ public class RanobeLibGetter : GetterBase {
     }
 
     public override async Task<Book> Get(Uri url) {
+        var bid = url.GetQueryParameter("bid");
         var details = await GetBookDetails(url);
 
         var book = new Book(url) {
             Cover = await GetCover(details),
-            Chapters = await FillChapters(details),
-            Title = details.Data.Name,
+            Chapters = await FillChapters(details, bid),
+            Title = string.IsNullOrWhiteSpace(details.Data.RusName) ? details.Data.Name : details.Data.RusName,
             Author = GetAuthor(details),
             CoAuthors = GetCoAuthors(details)
         };
@@ -137,8 +138,8 @@ public class RanobeLibGetter : GetterBase {
         return await response.Content.ReadFromJsonAsync<RanobeLibBookDetails>();
     }
 
-    private async Task<IEnumerable<RanobeLibBookChapter>> GetToc(RanobeLibBookDetails book) {
-        var url = ApiHost.MakeRelativeUri("/api/manga/" + book.Data.SlugUrl).AppendSegment("chapters");
+    private async Task<IEnumerable<RanobeLibBookChapter>> GetToc(RanobeLibBookDetails book, string bid) {
+        var url = ApiHost.MakeRelativeUri($"/api/manga/{book.Data.SlugUrl}/chapters");
 
         Console.WriteLine("Загружаю оглавление");
 
@@ -147,7 +148,12 @@ public class RanobeLibGetter : GetterBase {
             throw new Exception("Ошибка загрузки оглавления");
         }
 
-        return SliceToc(await response.Content.ReadFromJsonAsync<RanobeLibBookChapters>().ContinueWith(t => t.Result.Chapters));
+        var result = await response.Content.ReadFromJsonAsync<RanobeLibBookChapters>().ContinueWith(t => t.Result.Chapters);
+        if (!string.IsNullOrWhiteSpace(bid)) {
+            result = result.Where(c => c.Branches.Any(b => b.BranchId.ToString() == bid)).ToList();
+        }
+        
+        return SliceToc(result);
     }
 
     private Author GetAuthor(RanobeLibBookDetails details) {
@@ -165,10 +171,14 @@ public class RanobeLibGetter : GetterBase {
         return !string.IsNullOrWhiteSpace(details.Data.Cover.Default) ? SaveImage(details.Data.Cover.Default.AsUri()) : Task.FromResult(default(Image));
     }
 
-    private async Task<IEnumerable<Chapter>> FillChapters(RanobeLibBookDetails book) {
+    protected override HttpRequestMessage GetImageRequestMessage(Uri uri) {
+        return base.GetImageRequestMessage(uri.ReplaceHost(ImagesHost.Host));
+    }
+
+    private async Task<IEnumerable<Chapter>> FillChapters(RanobeLibBookDetails book, string bid) {
         var chapters = new List<Chapter>();
         
-        foreach (var rlbChapter in await GetToc(book)) {
+        foreach (var rlbChapter in await GetToc(book, bid)) {
             var title = rlbChapter.Name.ReplaceNewLine();
             Console.WriteLine($"Загружаю главу {title.CoverQuotes()}");
             
@@ -176,7 +186,7 @@ public class RanobeLibGetter : GetterBase {
                 Title = title
             };
 
-            var chapterDoc = await GetChapter(book, rlbChapter);
+            var chapterDoc = await GetChapter(book, rlbChapter, bid);
             chapter.Images = await GetImages(chapterDoc, ImagesHost);
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;
 
@@ -186,9 +196,13 @@ public class RanobeLibGetter : GetterBase {
         return chapters;
     }
 
-    private async Task<HtmlDocument> GetChapter(RanobeLibBookDetails book, RanobeLibBookChapter chapter) {
+    private async Task<HtmlDocument> GetChapter(RanobeLibBookDetails book, RanobeLibBookChapter chapter, string bid) {
         var uri = ApiHost.MakeRelativeUri($"api/manga/{book.Data.SlugUrl}/chapter?number={chapter.Number}&volume={chapter.Volume}");
-        var response = await Config.Client.GetWithTriesAsync(uri, TimeSpan.FromSeconds(10));
+        if (!string.IsNullOrWhiteSpace(bid)) {
+            uri = uri.AppendQueryParameter("branch_id", bid);
+        }
+        
+        var response = await Config.Client.GetWithTriesAsync(uri, TimeSpan.FromSeconds(30));
         var cc = await response.Content.ReadFromJsonAsync<RanobeLibBookChapterResponse>(); 
         return cc.Data.GetHtmlDoc();
     }
