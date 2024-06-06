@@ -3,12 +3,16 @@ using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
 using Elib2Ebook.Types.RanobeLib;
 using HtmlAgilityPack;
+using HtmlAgilityPack.CssSelectors.NetCore;
 
 namespace Elib2Ebook.Logic.Getters.LibSocial; 
 
@@ -20,7 +24,93 @@ public class RanobeLibGetter : GetterBase {
     private static Uri ApiUrl => new("https://api.lib.social/api/manga/");
     
     private static Uri ImagesUrl => new("https://cover.imgslib.link/");
+
+    private const string ALPHABET_BASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    private const string ALPHABET_CHALLENGE = ALPHABET_BASE + "-_";
     
+    private static string Challenge(string str) {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(str).AsSpan(0, Encoding.UTF8.GetByteCount(str)));
+        
+        var result = string.Empty;
+        
+
+        for (var t = 0; t < bytes.Length; t += 3) {
+            result += ALPHABET_CHALLENGE[bytes[t] >> 2];
+            result += ALPHABET_CHALLENGE[(bytes[t] & 3) << 4 | bytes[t + 1] >> 4];
+            result += ALPHABET_CHALLENGE[(bytes[t + 1] & 15) << 2 | (t + 2 < bytes.Length ? bytes[t + 2] : 0) >> 6];
+            result += ALPHABET_CHALLENGE[(t + 2 < bytes.Length ? bytes[t + 2] : 0) & 63];
+        }
+
+        result = (bytes.Length % 3) switch {
+            2 => result[..^1],
+            1 => result[..^2],
+            _ => result
+        };
+
+        return result;
+    }
+
+    private static string GetRandom(int length) {
+        var result = string.Empty;
+
+        for (var i = 0; i < length; i++) {
+            result += ALPHABET_BASE[new Random().Next(ALPHABET_BASE.Length)];
+        }
+
+        return result;
+    }
+
+    public override async Task Authorize() {
+        if (!Config.HasCredentials) {
+            return;
+        }
+
+        var secret = GetRandom(128);
+        var state = GetRandom(40);
+        const string redirectUri = "https://ranobelib.me/auth/oauth/callback";
+        
+        var challenge = Challenge(secret);
+
+        await Config.Client.GetAsync($"https://auth.lib.social/auth/oauth/authorize?client_id=1&code_challenge={challenge}&code_challenge_method=S256&prompt=consent&redirect_uri={redirectUri}&response_type=code&scope=&state={state}".AsUri());
+        var loginForm = await Config.Client.GetHtmlDocWithTriesAsync("https://auth.lib.social/auth/login-form".AsUri());
+        var token = loginForm.QuerySelector("input[name=_token]").Attributes["value"].Value;
+
+        var payload = new Dictionary<string, string> {
+            { "_token", token },
+            { "login", Config.Options.Login },
+            { "password", Config.Options.Password },
+        };
+        
+        var login = await Config.Client.PostHtmlDocWithTriesAsync("https://auth.lib.social/auth/login".AsUri(), new FormUrlEncodedContent(payload));
+        var error = login.QuerySelector(".form-field__error");
+        if (error != default && !string.IsNullOrWhiteSpace(error.InnerText)) {
+            throw new Exception($"Не удалось авторизоваться. {error.InnerText}");
+        }
+        
+        payload = new Dictionary<string, string> {
+            { "_token", login.QuerySelector("input[name=_token]").Attributes["value"].Value },
+            { "state", login.QuerySelector("input[name=state]").Attributes["value"].Value },
+            { "client_id", login.QuerySelector("input[name=client_id]").Attributes["value"].Value },
+            { "auth_token", login.QuerySelector("input[name=auth_token]").Attributes["value"].Value },
+        };
+        
+        var authorize = await Config.Client.PostAsync("https://auth.lib.social/auth/oauth/authorize".AsUri(), new FormUrlEncodedContent(payload));
+        var code = authorize.RequestMessage?.RequestUri.GetQueryParameter("code");
+        
+        var authTokenResponse = await Config.Client.PostAsync("https://api.lib.social/api/auth/oauth/token".AsUri(), JsonContent.Create(new {
+            grant_type = "authorization_code",
+            client_id = 1,
+            redirect_uri = redirectUri,
+            code_verifier = secret,
+            code = code
+        }));
+
+        var authToken = await authTokenResponse.Content.ReadFromJsonAsync<LibSocialToken>();
+        
+        Config.Client.DefaultRequestHeaders.Add("Authorization", $"Bearer {authToken.AccessToken}");
+        Console.WriteLine("Успешно авторизовались");
+    }
+
     protected override string GetId(Uri url) {
         var id = url.GetSegment(2);
         return id is "book" or "read" ? url.GetSegment(3) : id;
