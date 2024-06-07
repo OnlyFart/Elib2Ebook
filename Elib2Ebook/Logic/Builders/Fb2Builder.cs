@@ -200,7 +200,7 @@ public class Fb2Builder : BuilderBase {
     /// </summary>
     /// <param name="chapters">Список частей</param>
     /// <returns></returns>
-    public void WithChapters(IEnumerable<Chapter> chapters) {
+    private void WithChapters(IEnumerable<Chapter> chapters) {
         foreach (var chapter in chapters.Where(c => c.IsValid)) {
             var section = CreateXElement("section");
             section.Add(CreateTitle(chapter.Title));
