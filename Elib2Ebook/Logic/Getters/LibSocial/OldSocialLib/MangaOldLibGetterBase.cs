@@ -11,10 +11,10 @@ using Elib2Ebook.Types.SocialLib;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 
-namespace Elib2Ebook.Logic.Getters.LibSocial; 
+namespace Elib2Ebook.Logic.Getters.LibSocial.OldSocialLib; 
 
-public abstract class MangaLibGetterBase : LibSocialGetterBase {
-    protected MangaLibGetterBase(BookGetterConfig config) : base(config) { }
+public abstract class MangaOldLibGetterBase : OldLibSocialGetterBase {
+    protected MangaOldLibGetterBase(BookGetterConfig config) : base(config) { }
 
     protected virtual string _server => "main";
 

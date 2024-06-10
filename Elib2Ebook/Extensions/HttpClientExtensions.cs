@@ -98,8 +98,8 @@ public static class HttpClientExtensions {
         return await response.Content.ReadAsStreamAsync().ContinueWith(t => t.Result.AsHtmlDoc(encoding));
     }
     
-    public static async Task<T> GetFromJsonWithTriesAsync<T>(this HttpClient client, Uri url) {
-        using var response = await client.GetWithTriesAsync(url);
+    public static async Task<T> GetFromJsonWithTriesAsync<T>(this HttpClient client, Uri url, TimeSpan errorTimeout = default) {
+        using var response = await client.GetWithTriesAsync(url, errorTimeout);
         return await response.Content.ReadFromJsonAsync<T>();
     }
     

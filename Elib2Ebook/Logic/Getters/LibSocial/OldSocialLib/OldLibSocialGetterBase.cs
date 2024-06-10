@@ -11,10 +11,10 @@ using Elib2Ebook.Types.SocialLib;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 
-namespace Elib2Ebook.Logic.Getters.LibSocial; 
+namespace Elib2Ebook.Logic.Getters.LibSocial.OldSocialLib; 
 
-public abstract class LibSocialGetterBase : GetterBase {
-    public LibSocialGetterBase(BookGetterConfig config) : base(config) { }
+public abstract class OldLibSocialGetterBase : GetterBase {
+    public OldLibSocialGetterBase(BookGetterConfig config) : base(config) { }
 
     protected override string GetId(Uri url) => url.GetSegment(1);
 
