@@ -62,7 +62,7 @@ public abstract class NewLibSocialGetterBase : GetterBase{
 
         var secret = GetRandom(128);
         var state = GetRandom(40);
-        var redirectUri = SystemUrl.MakeRelativeUri("ru/front/auth/oauth/callback");
+        var redirectUri = SystemUrl.MakeRelativeUri("/ru/front/auth/oauth/callback");
         
         var challenge = Challenge(secret);
 
