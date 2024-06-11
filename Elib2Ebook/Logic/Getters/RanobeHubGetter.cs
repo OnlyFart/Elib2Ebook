@@ -14,7 +14,9 @@ namespace Elib2Ebook.Logic.Getters;
 
 public class RanobeHubGetter : GetterBase {
     public RanobeHubGetter(BookGetterConfig config) : base(config) { }
-    protected override Uri SystemUrl => new("https://ranobehub.org");
+    
+    protected override Uri SystemUrl => new("https://ranobehub.org/");
+    
     public override async Task<Book> Get(Uri url) {
         url = SystemUrl.MakeRelativeUri($"/ranobe/{GetId(url)}");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
@@ -55,7 +57,7 @@ public class RanobeHubGetter : GetterBase {
             doc = await Config.Client.GetHtmlDocWithTriesAsync(url.AsUri());
         }
         
-        var result = doc.QuerySelector("div.container[data-container]").RemoveNodes("div.title-wrapper, div.ads-desktop, div.tablet").InnerHtml.AsHtmlDoc();
+        var result = doc.QuerySelector("div.container[data-container]").RemoveNodes("div.title-wrapper, div.ads-desktop, div.tablet, div.chapter-hoticons").InnerHtml.AsHtmlDoc();
         
         foreach (var img in result.QuerySelectorAll("img")) {
             var id = img.Attributes["data-media-id"]?.Value;
