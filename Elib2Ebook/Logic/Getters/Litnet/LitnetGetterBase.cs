@@ -200,7 +200,7 @@ public abstract class LitnetGetterBase : GetterBase {
         var result = new List<Chapter>();
             
         var contents = await GetBookContents(token, bookId);
-        if (contents?.Length == 0) {
+        if (contents == default || contents.Length == 0) {
             return result;
         }
         
@@ -208,7 +208,9 @@ public abstract class LitnetGetterBase : GetterBase {
         var map = chapters.ToDictionary(t => t.Id);
         
         foreach (var content in contents) {
-            var litnetChapter = map[content.Id];
+            if (!map.TryGetValue(content.Id, out var litnetChapter)) {
+                litnetChapter = new LitnetChapterResponse();
+            }
 
             Console.WriteLine($"Загружаю главу {content.Title.Trim().CoverQuotes()}");
             var chapter = new Chapter {
