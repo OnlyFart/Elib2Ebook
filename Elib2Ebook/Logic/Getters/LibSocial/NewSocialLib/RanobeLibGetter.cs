@@ -50,7 +50,7 @@ public class RanobeLibGetter : NewLibSocialGetterBase {
 
             switch (content.Type) {
                 case "text": {
-                    var text = content.Text;
+                    var text = content.Text.HtmlEncode();
 
                     foreach (var mark in content.Marks) {
                         if (MarkTag.TryGetValue(mark.Type, out tag)) {

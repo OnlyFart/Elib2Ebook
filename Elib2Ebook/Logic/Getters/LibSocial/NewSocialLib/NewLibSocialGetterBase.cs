@@ -84,8 +84,7 @@ public abstract class NewLibSocialGetterBase : GetterBase{
         var postForm = login.QuerySelector("form[method=post]");
         payload = postForm
             .QuerySelectorAll("input[type=hidden]")
-            .Select(input => input.Attributes["name"].Value)
-            .ToDictionary(name => name, name => login.QuerySelector($"input[name={name}]").Attributes["value"].Value);
+            .ToDictionary(input => input.Attributes["name"].Value, input => input.Attributes["value"].Value);
         
         var authorize = await Config.Client.PostAsync(AuthHost.MakeRelativeUri(postForm.Attributes["action"].Value), new FormUrlEncodedContent(payload));
         var tokenResponse = await Config.Client.PostAsync(ApiHost.MakeRelativeUri("/api/auth/oauth/token"), JsonContent.Create(new {

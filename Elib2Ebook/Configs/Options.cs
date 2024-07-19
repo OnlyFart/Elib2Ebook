@@ -40,7 +40,7 @@ public class Options {
     [Option("temp", Required = false, HelpText = "Папка для временного хранения картинок")]
     public string TempPath { get; set; }
     
-    [Option("save-temp", Required = false, HelpText = "Сохранить ни временные файлы", Default = false)]
+    [Option("save-temp", Required = false, HelpText = "Сохранять временные файлы", Default = false)]
     public bool SaveTemp { get; set; }
 
     public string ResourcesPath => "Patterns";
