@@ -75,9 +75,9 @@
 * https://tl.rulate.ru/
 * https://topliba.com/
 * https://twilightrussia.ru/
+* https://v2.slashlib.me/
 * https://wattpad.com/
 * https://wuxiaworld.ru/
-* https://yaoilib.me/
 * https://younettranslate.com/
 * https://ранобэ.рф/
 </pre>
