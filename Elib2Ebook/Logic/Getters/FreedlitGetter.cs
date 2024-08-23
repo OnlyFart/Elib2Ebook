@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using System.Web;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
-using Elib2Ebook.Types.Common;
 using Elib2Ebook.Types.Freedlit;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
@@ -18,96 +18,101 @@ public class FreedlitGetter : GetterBase{
     public FreedlitGetter(BookGetterConfig config) : base(config) { }
     protected override Uri SystemUrl => new("https://freedlit.space/");
 
-    protected override string GetId(Uri url) {
-        return url.GetSegment(2);
-    }
-
     public override async Task Authorize() {
         if (!Config.HasCredentials) {
             return;
         }
 
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl);
-        var token = doc.QuerySelector("meta[name=csrf-token]").Attributes["content"].Value;
-        using var post = await Config.Client.PostAsync(SystemUrl.MakeRelativeUri("/login-modal"), GenerateAuthData(token));
-        var response = await post.Content.ReadFromJsonAsync<FreedlitAuthResponse>();
-        if (response.Errors == default) {
+        await Config.Client.GetAsync(SystemUrl.MakeRelativeUri("/login"));
+        SetToken();
+        using var post = await Config.Client.PostAsJsonAsync(SystemUrl.MakeRelativeUri("/login"), GenerateAuthData());
+        var doc = await post.Content.ReadAsStreamAsync().ContinueWith(c => c.Result.AsHtmlDoc());
+        var errors = doc.QuerySelector("#app").Attributes["data-page"].Value.HtmlDecode().Deserialize<FreedlitApp<FreedlitAuthError>>().Props.Errors;
+        
+        if (string.IsNullOrWhiteSpace(errors?.Email)) {
             Console.WriteLine("Успешно авторизовались");
         } else {
-            var errors = response.Errors.Password.Aggregate(response.Errors.Email, (current, error) => current + Environment.NewLine + error);
-            throw new Exception($"Не удалось авторизоваться. {errors}");
+            throw new Exception($"Не удалось авторизоваться. {errors.Email}");
         }
     }
 
-    private MultipartFormDataContent GenerateAuthData(string token) {
-        return new() {
-            {new StringContent(token), "_token"},
-            {new StringContent(Config.Options.Login), "email"},
-            {new StringContent(Config.Options.Password), "password"},
+    private object GenerateAuthData() {
+        return new {
+            email = Config.Options.Login,
+            password = Config.Options.Password,
+            remember = false,
         };
+    }
+
+    private void SetToken() {
+        Config.Client.DefaultRequestHeaders.Remove("X-XSRF-TOKEN");
+        Config.Client.DefaultRequestHeaders.Add("X-XSRF-TOKEN", HttpUtility.UrlDecode(Config.CookieContainer.GetAllCookies().FirstOrDefault(c => c.Name == "XSRF-TOKEN").Value));
     }
 
     public override async Task<Book> Get(Uri url) {
         url = SystemUrl.MakeRelativeUri($"/book/{GetId(url)}");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
+
+        var freedlitBook = doc.QuerySelector("#app").Attributes["data-page"].Value.HtmlDecode().Deserialize<FreedlitApp<JsonObject>>().Props.Book;
+        SetToken();
         
         var book = new Book(url) {
-            Cover = await GetCover(doc, url),
-            Chapters = await FillChapters(doc),
-            Title = doc.GetTextBySelector(".book-info h4"),
-            Author = GetAuthor(doc),
-            Annotation = doc.QuerySelector("#nav-home")?.InnerHtml
+            Cover = await GetCover(freedlitBook),
+            Chapters = await FillChapters(freedlitBook),
+            Title = freedlitBook.Title,
+            Author = GetAuthor(freedlitBook),
+            Annotation = freedlitBook.Annotation,
+            Lang = freedlitBook.Language
         };
             
         return book;
     }
 
-    private Author GetAuthor(HtmlDocument doc) {
-        var a = doc.QuerySelector("a[href*=/p/]");
-        var href = a?.Attributes["href"]?.Value;
-        return a == default ? 
-            new Author("Freedlit") : 
-            new Author(a.GetText(), SystemUrl.MakeRelativeUri(href));
+    private Author GetAuthor(FreedlitBook book) {
+        return new Author(book.MainAuthor.Name, SystemUrl.MakeRelativeUri($"/p/{book.MainAuthor.UserLink}"));
     }
     
-    private IEnumerable<UrlChapter> GetToc(HtmlDocument doc) {
-        var result = doc
-            .QuerySelectorAll("#nav-contents div.chapter-block a")
-            .Select(a => new UrlChapter(SystemUrl.MakeRelativeUri(a.Attributes["href"].Value), a.GetText()))
-            .ToList();
+    private async Task<IEnumerable<FreedlitChapter>> GetToc(FreedlitBook book) {
+        var response = await Config.Client.PostAsJsonAsync(SystemUrl.MakeRelativeUri("/api/bookpage/get-chapters"), new { book_id = book.Id });
+        var data = await response.Content.ReadFromJsonAsync<FreedlitApiResponse<FreedlitItemsContent<FreedlitChapter>>>();
         
-        return SliceToc(result);
+        return SliceToc(data.Success.Items);
     }
-    
-    private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc) {
+
+    private async Task<IEnumerable<Chapter>> FillChapters(FreedlitBook book) {
         var result = new List<Chapter>();
 
-        foreach (var urlChapter in GetToc(doc)) {
+        foreach (var freedlitChapter in await GetToc(book)) {
             var chapter = new Chapter {
-                Title = urlChapter.Title
+                Title = freedlitChapter.Header
             };
 
-            Console.WriteLine($"Загружаю главу {urlChapter.Title.CoverQuotes()}");
+            Console.WriteLine($"Загружаю главу {freedlitChapter.Header.CoverQuotes()}");
 
-            var chapterDoc = await GetChapter(urlChapter.Url);
+            var chapterDoc = await GetChapter(book, freedlitChapter);
             if (chapterDoc != default) {
-                chapter.Images = await GetImages(chapterDoc, urlChapter.Url);
+                chapter.Images = await GetImages(chapterDoc, SystemUrl);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
             }
-            
+
             result.Add(chapter);
         }
 
         return result;
     }
 
-    private async Task<HtmlDocument> GetChapter(Uri url) {
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
-        return doc.QuerySelector("div.chapter").RemoveNodes("h2").InnerHtml.AsHtmlDoc();
+    private async Task<HtmlDocument> GetChapter(FreedlitBook book, FreedlitChapter chapter) {
+        var response = await Config.Client.PostAsJsonAsync(SystemUrl.MakeRelativeUri("/reader/get-content"), new { book_id = book.Id, chapter_id = chapter.Id });
+        var fullChapter = await response.Content.ReadFromJsonAsync<FreedlitApiResponse<FreedlitChapter>>();
+        if (string.IsNullOrWhiteSpace(fullChapter.Success?.Content)) {
+            return default;
+        }
+        
+        var doc = fullChapter.Success.Content.AsHtmlDoc();
+        return doc.QuerySelector("body").InnerHtml.AsHtmlDoc();
     }
 
-    private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
-        var imagePath = doc.QuerySelector("div.book-cover img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+    private Task<Image> GetCover(FreedlitBook book) {
+        return !string.IsNullOrWhiteSpace(book.Cover) ? SaveImage(SystemUrl.MakeRelativeUri($"/storage/{book.Cover}")) : Task.FromResult(default(Image));
     }
 }
