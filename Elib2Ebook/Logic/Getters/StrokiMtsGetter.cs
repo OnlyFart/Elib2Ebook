@@ -29,7 +29,12 @@ public class StrokiMtsGetter : GetterBase {
     }
 
     public override Task Authorize() {
-        Config.Client.DefaultRequestHeaders.Add("access-token", Config.Options.Login ?? Config.Options.Password);
+        var token = Config.Options.Login ?? Config.Options.Password;
+        if (string.IsNullOrWhiteSpace(token)) {
+            throw new Exception("Не указан авторизационный token.");
+        }
+        
+        Config.Client.DefaultRequestHeaders.Add("access-token", token);
         return Task.CompletedTask;
     }
     
@@ -203,21 +208,27 @@ public class StrokiMtsGetter : GetterBase {
     }
 
     private async Task<StrokiMtsFile> GetFileMeta(string id) {
-        var response = await Config.Client.SendAsync(GetMessage(SystemUrl.MakeRelativeUri("/api/books/files").AppendQueryParameter("bookId", id), "5.0", "5.0"));
-        var json = await response.Content.ReadFromJsonAsync<StrokiMtsApiResponse<StrokiMtsFiles>>();
+        var json = await SendAsync<StrokiMtsApiResponse<StrokiMtsFiles>>(GetMessage(SystemUrl.MakeRelativeUri("/api/books/files").AppendQueryParameter("bookId", id), "5.0", "5.0"));
         return json.Data.Full?.FirstOrDefault() ?? json.Data.Preview;
     }
     
     private async Task<StrokiMtsFileUrl> GetFileUrl(StrokiMtsFile file) {
-        var response = await Config.Client.SendAsync(GetMessage(SystemUrl.MakeRelativeUri($"api/books/files/data/link/{file.FileId}"), "5.0", "5.0"));
-        var json = await response.Content.ReadFromJsonAsync<StrokiMtsApiResponse<StrokiMtsFileUrl>>();
+        var json = await SendAsync<StrokiMtsApiResponse<StrokiMtsFileUrl>>(GetMessage(SystemUrl.MakeRelativeUri($"api/books/files/data/link/{file.FileId}"), "5.0", "5.0"));
         return json.Data;
     }
 
     private async Task<StrokiMtsBookItem> GetBook(string id) {
-        var response = await Config.Client.SendAsync(GetMessage(SystemUrl.MakeRelativeUri($"/api/books/multi/{id}"), "5.38.0", "5.3"));
-        var json = await response.Content.ReadFromJsonAsync<StrokiMtsApiResponse<StrokiMtsApiMultiResponse>>();
+        var json = await SendAsync<StrokiMtsApiResponse<StrokiMtsApiMultiResponse>>(GetMessage(SystemUrl.MakeRelativeUri($"/api/books/multi/{id}"), "5.38.0", "5.3"));
         return json.Data.Items.FirstOrDefault(i => i.TextBook != default).TextBook;
+    }
+
+    private async Task<T> SendAsync<T>(HttpRequestMessage message) {
+        var response = await Config.Client.SendAsync(message);
+        if (response.StatusCode != HttpStatusCode.OK) {
+            throw new Exception(await response.Content.ReadAsStringAsync());
+        }
+        
+        return await response.Content.ReadFromJsonAsync<T>();
     }
     
     protected virtual HttpRequestMessage GetMessage(Uri uri, string appVersion, string apiVerions) {
