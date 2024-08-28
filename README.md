@@ -87,7 +87,7 @@
 
 Portable версии запускаются без установленного NET Runtime. За настройку сборки Portalbe версий большая благодарность [@alfeg](https://github.com/alfeg)
 
-Для запуска не Portable версии необходим установленный NET Runtime версии 7 или выше, который можно скачать с сайта Microsoft [здесь (на английском)](https://dotnet.microsoft.com/en-us/download/dotnet/7.0)
+Для запуска не Portable версии необходим установленный NET Runtime версии 8 или выше, который можно скачать с сайта Microsoft [здесь (на английском)](https://dotnet.microsoft.com/en-us/download/dotnet/7.0)
 
 ## Пример вызова
 ```
