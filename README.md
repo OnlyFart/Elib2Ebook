@@ -72,6 +72,7 @@
 * https://romfant.ru/
 * https://royalroad.com/
 * https://ru.novelxo.com/
+* https://stroki.mts.ru/
 * https://tl.rulate.ru/
 * https://topliba.com/
 * https://twilightrussia.ru/
