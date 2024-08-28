@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -11,7 +10,6 @@ using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
 using Elib2Ebook.Types.Book;
-using Elib2Ebook.Types.MyBook;
 using Elib2Ebook.Types.StrokiMts;
 using EpubSharp;
 using HtmlAgilityPack;
