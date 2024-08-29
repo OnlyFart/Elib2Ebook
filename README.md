@@ -44,6 +44,7 @@
 * https://libst.ru/
 * https://lightnoveldaily.com/
 * https://litgorod.ru/
+* https://litlife.club/
 * https://litmarket.ru/
 * https://litmir.me/
 * https://litnet.com/
