@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Elib2Ebook.Configs;
 using Elib2Ebook.Extensions;
@@ -17,6 +18,33 @@ public class BookurukGetter : GetterBase{
 
     protected override string GetId(Uri url) {
         return url.GetSegment(2);
+    }
+
+    public override async Task Authorize() {
+        if (!Config.HasCredentials) {
+            return;
+        }
+
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl);
+        var token = doc.QuerySelector("#loginpopup input[name=_csrf-shop]").Attributes["value"].Value;
+        
+        doc = await Config.Client.PostHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri("/login"), GenerateAuthData(token));
+        var alert = doc.QuerySelector("#infoMess")?.GetText();
+        if (string.IsNullOrWhiteSpace(alert)) {
+            Console.WriteLine("Успешно авторизовались");
+        } else {
+            throw new Exception($"Не удалось авторизоваться. {alert}");
+        }
+    }
+
+    private FormUrlEncodedContent GenerateAuthData(string token) {
+        var payload = new Dictionary<string, string> {
+            { "_csrf-shop", token },
+            { "email", Config.Options.Login },
+            { "password", Config.Options.Password },
+        };
+
+        return new FormUrlEncodedContent(payload);
     }
 
     public override async Task<Book> Get(Uri url) {
