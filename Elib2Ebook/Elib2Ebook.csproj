@@ -3,7 +3,6 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net8.0</TargetFramework>
-        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <LangVersion>latestmajor</LangVersion>
         <PackageId>Elib2Ebook</PackageId>
         <Version>1.47.1</Version>
@@ -31,6 +30,12 @@
         <Reference Include="EpubSharp, Version=1.1.5.13, Culture=neutral, PublicKeyToken=null">
             <HintPath>External\EpubSharp.dll</HintPath>
         </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
     </ItemGroup>
 
 </Project>
