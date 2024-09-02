@@ -15,9 +15,21 @@ jobs:
           username: ${{secrets.DOCKERHUB_USERNAME}}
           password: ${{secrets.DOCKERHUB_TOKEN}}
 
+      - uses: kzrnm/get-net-sdk-project-versions-action@v1
+        id: get-version
+        with:
+          proj-path: Elib2Ebook/Elib2Ebook.csproj
+          
+      - name: "get-last-release"
+        id: last_release
+        uses: InsonusK/get-latest-release@v1.0.1
+        with:
+          myToken: ${{ github.token }}
+
       - name: build and push docker image to registry
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
         uses: docker/build-push-action@v5
         with:
           context: "Elib2Ebook"
           push: true
-          tags: onlyfart/elib2ebook:latest
+          tags: onlyfart/elib2ebook:${{steps.get-version.outputs.version}}
