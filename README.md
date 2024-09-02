@@ -131,6 +131,12 @@ Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2 --start -2 --end 
 Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2 -l vasya -p pupkin
 ```
 
+## Docker
+```
+docker run --rm -v <путь_к_папке_для_сохранения>:/Save onlyfart/elib2ebook -u https://author.today/work/212721 -f fb2,epub --save /Save
+```
+
+
 ## Полный список опций 
 | Команда                | Описание                                                                                  |
 |------------------------|-------------------------------------------------------------------------------------------|
