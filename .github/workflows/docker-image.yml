@@ -27,7 +27,7 @@ jobs:
           myToken: ${{ github.token }}
 
       - name: build and push docker image to registry
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        if: ${{ steps.last_release.outputs.tag_name == steps.get-version.outputs.version }}
         uses: docker/build-push-action@v5
         with:
           context: "Elib2Ebook"
