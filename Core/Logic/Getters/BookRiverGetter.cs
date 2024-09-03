@@ -90,6 +90,10 @@ public class BookriverGetter : GetterBase {
 
     private async Task<IEnumerable<Chapter>> FillChapters(Uri uri, string bookId) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
+        
         var internalId = await GetInternalBookId(bookId);
         
         foreach (var bookChapter in await GetToc(internalId)) {

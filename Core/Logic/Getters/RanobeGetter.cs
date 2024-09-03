@@ -37,6 +37,9 @@ public class RanobeGetter : GetterBase {
 
     private async Task<IEnumerable<Chapter>> FillChapters(RanobeBook ranobeBook, Uri url) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
             
         foreach (var ranobeChapter in SliceToc(ranobeBook.Chapters.Reverse().ToList())) {
             Config.Logger.LogInformation($"Загружаю главу {ranobeChapter.Title.CoverQuotes()}");

@@ -139,7 +139,10 @@ public class MyBookGetter : GetterBase {
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(MyBookBook details) {
-        var chapters = new List<Chapter>();
+        var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
         
         var bookUrl = SystemUrl.MakeRelativeUri(details.BookFile);
         
@@ -162,10 +165,10 @@ public class MyBookGetter : GetterBase {
             var content = GetContent(epubBook, current);
             chapter.Images = await GetImages(content, epubBook);
             chapter.Content = content.DocumentNode.RemoveNodes("h1, h2, h3").InnerHtml;
-            chapters.Add(chapter);
+            result.Add(chapter);
         } while ((current = current.Next) != default);
 
-        return chapters;
+        return result;
     }
 
     private async Task<IEnumerable<Image>> GetImages(HtmlDocument doc, EpubBook book) {

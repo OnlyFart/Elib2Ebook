@@ -92,6 +92,9 @@ public class RanobesComGetter : GetterBase {
 
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
 
         foreach (var ranobeChapter in await GetToc(GetTocLink(doc, url))) {
             Config.Logger.LogInformation($"Загружаю главу {ranobeChapter.Title.CoverQuotes()}");

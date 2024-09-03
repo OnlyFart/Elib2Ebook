@@ -191,7 +191,11 @@ public class ProdamanGetter : GetterBase {
     }
 
     private async Task<IEnumerable<Chapter>> FillChapter(Uri url, string title) {
-        var chapters = new List<Chapter>();
+        var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
+        
         Chapter chapter = null;
         var text = new StringBuilder();
 
@@ -238,7 +242,7 @@ public class ProdamanGetter : GetterBase {
                     }
                 } else {
                     text.Append("</p>");
-                    await AddChapter(chapters, chapter, text, url);
+                    await AddChapter(result, chapter, text, url);
                     text.Clear();
                     chapter = CreateChapter(Decode(node.InnerText.HtmlDecode()));
                 }
@@ -246,8 +250,8 @@ public class ProdamanGetter : GetterBase {
         }
         
         text.Append("</p>");
-        await AddChapter(chapters, chapter ?? CreateChapter(title), text, url);
-        return chapters;
+        await AddChapter(result, chapter ?? CreateChapter(title), text, url);
+        return result;
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri url) {

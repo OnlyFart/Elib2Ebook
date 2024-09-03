@@ -54,6 +54,9 @@ public class DesuGetter : GetterBase {
 
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
             
         foreach (var urlChapter in GetToc(doc)) {
             Config.Logger.LogInformation($"Загружаю главу {urlChapter.Title.CoverQuotes()}");

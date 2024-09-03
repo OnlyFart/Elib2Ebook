@@ -34,6 +34,9 @@ public class RanobeHubGetter : GetterBase {
 
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
 
         foreach (var ranobeChapter in await GetToc(doc)) {
             Config.Logger.LogInformation($"Загружаю главу {ranobeChapter.Name}");

@@ -78,7 +78,11 @@ public class LibboxGetter : GetterBase {
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(string bookId, string title) {
-        var chapters = new List<Chapter>();
+        var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
+        
         Chapter chapter = null;
         var singleChapter = true;
         var text = new StringBuilder();
@@ -103,15 +107,15 @@ public class LibboxGetter : GetterBase {
                         }
                     }
                 } else {
-                    await AddChapter(chapters, chapter, text);
+                    await AddChapter(result, chapter, text);
                     text.Clear();
                     chapter = CreateChapter(node.InnerHtml.HtmlDecode());
                 }
             }
         }
 
-        await AddChapter(chapters, chapter ?? CreateChapter(title), text);
-        return chapters;
+        await AddChapter(result, chapter ?? CreateChapter(title), text);
+        return result;
     }
 
     private static Author GetAuthor(HtmlDocument doc, Uri url) {

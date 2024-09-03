@@ -41,6 +41,10 @@ public class TwilightRussiaGetter : GetterBase {
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {
+        if (Config.Options.NoChapters) {
+            return [];
+        }
+        
         var post = doc.QuerySelectorAll("td.content-block-forum");
         
         var result = new List<Chapter>();

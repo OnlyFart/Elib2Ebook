@@ -50,6 +50,10 @@ public abstract class NovelxoGetterBase : GetterBase {
 
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
+        
         var start = url.MakeRelativeUri(doc.QuerySelector("div.actions a.read").Attributes["href"].Value);
         
         while (true) {

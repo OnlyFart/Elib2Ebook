@@ -47,6 +47,9 @@ public class FicbookGetter : GetterBase {
 
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url, string title) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
             
         foreach (var ficbookChapter in GetToc(doc, url, title)) {
             Config.Logger.LogInformation($"Загружаю главу {ficbookChapter.Title.CoverQuotes()}");

@@ -199,6 +199,9 @@ public abstract class LitnetGetterBase : GetterBase {
 
     private async Task<List<Chapter>> FillChapters(string token, LitnetBookResponse book, string bookId) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
             
         var contents = await GetBookContents(token, bookId);
         if (contents == default || contents.Length == 0) {

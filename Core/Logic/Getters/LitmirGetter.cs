@@ -115,7 +115,11 @@ public class LitmirGetter : GetterBase {
     }
 
     private async Task<List<Chapter>> FillChapters(string bookId, long pages, string name) {
-        var chapters = new List<Chapter>();
+        var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
+        
         Chapter chapter = null;
         var singleChapter = true;
         var text = new StringBuilder();
@@ -137,14 +141,14 @@ public class LitmirGetter : GetterBase {
                         }
                     }
                 } else {
-                    await AddChapter(chapters, chapter, text);
+                    await AddChapter(result, chapter, text);
                     text.Clear();
                     chapter = CreateChapter(node.InnerText.HtmlDecode());
                 }
             }
         }
 
-        await AddChapter(chapters, chapter ?? CreateChapter(name), text);
-        return chapters;
+        await AddChapter(result, chapter ?? CreateChapter(name), text);
+        return result;
     }
 }

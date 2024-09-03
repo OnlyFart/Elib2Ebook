@@ -51,6 +51,9 @@ public abstract class FreedomGetterBase : GetterBase{
     
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri uri) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
 
         foreach (var urlChapter in GetToc(doc, uri)) {
             var chapter = new Chapter {

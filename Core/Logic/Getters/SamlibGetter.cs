@@ -57,6 +57,9 @@ public class SamlibGetter : GetterBase {
 
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url, string title) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
             
         foreach (var urlChapter in GetToc(doc, url, title)) {
             Config.Logger.LogInformation($"Загружаю главу {urlChapter.Title.CoverQuotes()}");

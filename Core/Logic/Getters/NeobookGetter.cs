@@ -81,6 +81,9 @@ public class NeobookGetter : GetterBase {
 
     private async Task<IEnumerable<Chapter>> FillChapters(NeobookPostData data, string bookId) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
 
         foreach (var neobookChapter in SliceToc(data.Chapters)) {
             Config.Logger.LogInformation($"Загружаю главу {neobookChapter.Title.CoverQuotes()}");

@@ -50,6 +50,9 @@ public class NovelTranslateGetter : GetterBase {
 
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, string lang, Uri url) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
 
         foreach (var urlChapter in await GetToc(doc, lang, url)) {
             Config.Logger.LogInformation($"Загружаю главу {urlChapter.Title.CoverQuotes()}");

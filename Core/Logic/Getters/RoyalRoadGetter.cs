@@ -35,6 +35,9 @@ public class RoyalRoadGetter : GetterBase {
     
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
 
         foreach (var bookChapter in GetToc(doc, url)) {
             var chapter = new Chapter();

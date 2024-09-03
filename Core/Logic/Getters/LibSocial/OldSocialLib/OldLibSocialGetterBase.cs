@@ -94,6 +94,10 @@ public abstract class OldLibSocialGetterBase : GetterBase {
 
     private async Task<IEnumerable<Chapter>> FillChapters(WindowData data, Uri url, string bidId) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
+        
         var branchId = string.IsNullOrWhiteSpace(bidId)
             ? data.Chapters.List
                 .GroupBy(c => c.BranchId)

@@ -82,7 +82,10 @@ public class StrokiMtsGetter : GetterBase {
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(Uri url) {
-        var chapters = new List<Chapter>();
+        var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
         
         var response = await Config.Client.GetAsync(url);
         var epubBook = EpubReader.Read(await response.Content.ReadAsStreamAsync(), false, Encoding.UTF8);
@@ -98,10 +101,10 @@ public class StrokiMtsGetter : GetterBase {
             var content = GetContent(epubBook, current);
             chapter.Images = await GetImages(content, epubBook);
             chapter.Content = content.DocumentNode.RemoveNodes("h1, h2, h3").InnerHtml;
-            chapters.Add(chapter);
+            result.Add(chapter);
         } while ((current = current.Next) != default);
 
-        return chapters;
+        return result;
     }
 
     private async Task<IEnumerable<Image>> GetImages(HtmlDocument doc, EpubBook book) {

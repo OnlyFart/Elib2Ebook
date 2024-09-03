@@ -84,6 +84,9 @@ public abstract class RenovelsGetterBase : GetterBase {
 
     private async Task<IEnumerable<Chapter>> FillChapters(RenovelsContent content, Uri url) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
             
         foreach (var ranobeChapter in await GetToc(content)) {
             Config.Logger.LogInformation($"Загружаю главу {ranobeChapter.Title.CoverQuotes()}");

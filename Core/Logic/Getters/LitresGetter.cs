@@ -169,6 +169,10 @@ public class LitresGetter : GetterBase {
 
     private async Task<IEnumerable<Chapter>> FillChapters(string bookId, string title) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
+        
         var book = await GetBook(bookId);
         
         foreach (var section in book.Content.QuerySelectorAll("section")) {

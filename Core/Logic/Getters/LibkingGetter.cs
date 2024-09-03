@@ -93,7 +93,11 @@ public class LibkingGetter : GetterBase {
     }
     
     private async Task<List<Chapter>> FillChapters(HtmlDocument doc, Uri baseUrl, string name) {
-        var chapters = new List<Chapter>();
+        var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
+        
         var fullText = new StringBuilder();
         var i = 1;
 
@@ -118,12 +122,12 @@ public class LibkingGetter : GetterBase {
                 } while (node.NextSibling != default && !IsTitle(node.NextSibling));
 
                 node = node.NextSibling;
-                await AddChapter(chapters, CreateChapter(title), chapterText);
+                await AddChapter(result, CreateChapter(title), chapterText);
             }
         } else {
-            await AddChapter(chapters, CreateChapter(name), fullText);
+            await AddChapter(result, CreateChapter(name), fullText);
         }
         
-        return chapters;
+        return result;
     }
 }

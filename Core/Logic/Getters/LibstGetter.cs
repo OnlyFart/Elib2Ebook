@@ -66,6 +66,9 @@ public class LibstGetter : GetterBase {
 
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
 
         foreach (var bookChapter in GetToc(doc)) {
             Config.Logger.LogInformation($"Загружаю главу {bookChapter.Title.CoverQuotes()}");

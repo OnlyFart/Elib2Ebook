@@ -102,6 +102,9 @@ public class LitLifeGetter : GetterBase {
 
     private async Task<IEnumerable<Chapter>> FillChapters(string id) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
             
         foreach (var urlChapter in await GetToc(id)) {
             Config.Logger.LogInformation($"Загружаю главу {urlChapter.Title.CoverQuotes()}");

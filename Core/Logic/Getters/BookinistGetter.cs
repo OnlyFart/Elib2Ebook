@@ -31,6 +31,9 @@ public class BookinistGetter : GetterBase {
 
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
 
         foreach (var bookChapter in GetToc(doc, url)) {
             Config.Logger.LogInformation($"Загружаю главу {bookChapter.Title.CoverQuotes()}");

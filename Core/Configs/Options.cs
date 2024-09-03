@@ -48,6 +48,9 @@ public class Options {
     
     [Option("save-temp", Required = false, HelpText = "Сохранять временные файлы", Default = false)]
     public bool SaveTemp { get; set; }
+    
+    [Option("no-chapters", Required = false, HelpText = "Не загружать главы", Default = false)]
+    public bool NoChapters { get; set; }
 
     public string ResourcesPath => "Patterns";
 }

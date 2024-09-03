@@ -59,6 +59,9 @@ public abstract class RanobeOvhGetterBase : GetterBase {
 
     private async Task<IEnumerable<Chapter>> FillChapters(RanobeOvhBranch branch, Uri url) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
 
         foreach (var ranobeOvhChapter in await GetToc(branch)) {
             var chapter = new Chapter();

@@ -111,6 +111,9 @@ public abstract class RulateGetterBase : GetterBase {
         
     private async Task<List<Chapter>> FillChapters(HtmlDocument doc, Uri bookUri, string bookId) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
             
         foreach (var (id, name) in GetToc(doc)) {
             Config.Logger.LogInformation($"Загружаю главу {name.CoverQuotes()}");

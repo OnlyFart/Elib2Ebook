@@ -35,6 +35,10 @@ public class OnlineKnigiGetter : GetterBase {
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(string bookId, string title) {
+        if (Config.Options.NoChapters) {
+            return [];
+        }
+        
         var chapter = new Chapter();
         var sb = new StringBuilder();
         var pages = await GetPages(bookId);

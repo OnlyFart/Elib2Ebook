@@ -180,7 +180,10 @@ public abstract class NewLibSocialGetterBase : GetterBase{
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(RanobeLibBookDetails book, string bid) {
-        var chapters = new List<Chapter>();
+        var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
         
         foreach (var socialChapter in await GetToc(book, bid)) {
             var title = socialChapter.Name.ReplaceNewLine();
@@ -194,10 +197,10 @@ public abstract class NewLibSocialGetterBase : GetterBase{
             chapter.Images = await GetImages(chapterDoc, ImagesHost);
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;
 
-            chapters.Add(chapter);
+            result.Add(chapter);
         }
             
-        return chapters;
+        return result;
     }
 
     private async Task<HtmlDocument> GetChapter(RanobeLibBookDetails book, SocialLibBookChapter chapter, string bid) {

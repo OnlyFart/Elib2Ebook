@@ -106,6 +106,9 @@ public class DarkNovelsGetter : GetterBase {
 
     private async Task<IEnumerable<Chapter>> FillChapters(string bookId) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
 
         foreach (var darkNovelsChapter in await GetToc(bookId)) {
             Config.Logger.LogInformation($"Загружаю главу {darkNovelsChapter.Title.CoverQuotes()}");

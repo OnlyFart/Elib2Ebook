@@ -151,7 +151,11 @@ public class AuthorTodayGetter : GetterBase {
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(AuthorTodayBookDetails book) {
-        var chapters = new List<Chapter>();
+        var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
+        
         foreach (var atChapter in await GetChapters(book)) {
             var title = atChapter.Title.ReplaceNewLine();
             Config.Logger.LogInformation($"Загружаю главу {title.CoverQuotes()}");
@@ -166,10 +170,10 @@ public class AuthorTodayGetter : GetterBase {
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
             }
 
-            chapters.Add(chapter);
+            result.Add(chapter);
         }
             
-        return chapters;
+        return result;
     }
 
     private async Task<IEnumerable<AuthorTodayChapter>> GetChapters(AuthorTodayBookDetails book) {

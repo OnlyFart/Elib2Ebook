@@ -75,6 +75,9 @@ public abstract class TopLibaGetterBase : GetterBase {
 
     private async Task<IEnumerable<Chapter>> FillChapters(Uri uri, string bookId, string token, string title) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
             
         foreach (var id in await GetToc(bookId)) {
             var chapter = new Chapter();

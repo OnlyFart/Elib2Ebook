@@ -53,7 +53,11 @@ public abstract class HotNovelPubGetterBase : GetterBase {
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(ICollection<HotNovelPubChapter> toc) {
-        var chapters = new List<Chapter>();
+        var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
+        
         foreach (var ezChapter in SliceToc(toc)) {
             var title = ezChapter.Title.Trim();
             Config.Logger.LogInformation($"Загружаю главу {title.CoverQuotes()}");
@@ -66,10 +70,10 @@ public abstract class HotNovelPubGetterBase : GetterBase {
             chapter.Images = await GetImages(chapterDoc, SystemUrl);
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;
 
-            chapters.Add(chapter);
+            result.Add(chapter);
         }
             
-        return chapters;
+        return result;
     }
 
     private async Task<HtmlDocument> GetChapter(HotNovelPubChapter ezChapter) {

@@ -144,6 +144,9 @@ public class LitmarketGetter : GetterBase {
 
     private async Task<List<Chapter>> FillChapters(List<Block> toc, Block[] blocks, Uri bookUri, long eBookId) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
 
         for (var i = 0; i < toc.Count; i++) {
             var chapterTitle = string.IsNullOrWhiteSpace(toc[i].Chunk.Mods[0].Text.Trim()) ? "Без названия" : toc[i].Chunk.Mods[0].Text.Trim();

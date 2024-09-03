@@ -49,6 +49,10 @@ public class AcomicsGetter : GetterBase {
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, string bookId, string title, Uri url) {
+        if (Config.Options.NoChapters) {
+            return [];
+        }
+        
         var chapter = new Chapter {
             Title = title
         };

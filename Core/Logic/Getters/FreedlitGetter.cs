@@ -82,6 +82,9 @@ public class FreedlitGetter : GetterBase{
 
     private async Task<IEnumerable<Chapter>> FillChapters(FreedlitBook book) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
 
         foreach (var freedlitChapter in await GetToc(book)) {
             var chapter = new Chapter {

@@ -36,6 +36,10 @@ public class HubBookGetter : GetterBase {
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url, string title) {
+        if (Config.Options.NoChapters) {
+            return [];
+        }
+        
         var pages = int.Parse(doc.GetTextBySelector("span[itemprop=numberOfPages]"));
         var text = new StringBuilder();
 

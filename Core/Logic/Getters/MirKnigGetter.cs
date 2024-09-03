@@ -37,6 +37,10 @@ public class MirKnigGetter : GetterBase {
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(string bookId, string title) {
+        if (Config.Options.NoChapters) {
+            return [];
+        }
+        
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"/read_{bookId}-1"));
         var pages = int.Parse(doc.QuerySelectorAll("select.allp option").Last().Attributes["value"].Value);
 

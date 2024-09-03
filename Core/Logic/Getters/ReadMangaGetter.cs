@@ -37,6 +37,9 @@ public class ReadMangaGetter : GetterBase {
 
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
             
         foreach (var urlChapter in GetToc(doc, url)) {
             Config.Logger.LogInformation($"Загружаю главу {urlChapter.Title.CoverQuotes()}");

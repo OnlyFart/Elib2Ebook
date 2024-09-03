@@ -118,7 +118,11 @@ public class ReadliGetter : GetterBase {
     }
 
     private async Task<List<Chapter>> FillChapters(string bookId, long pages, string name) {
-        var chapters = new List<Chapter>();
+        var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
+        
         Chapter chapter = null;
         var singleChapter = true;
         var text = new StringBuilder();
@@ -146,14 +150,14 @@ public class ReadliGetter : GetterBase {
                         }
                     }
                 } else {
-                    await AddChapter(chapters, chapter, text);
+                    await AddChapter(result, chapter, text);
                     text.Clear();
                     chapter = CreateChapter(node.InnerHtml.HtmlDecode());
                 }
             }
         }
 
-        await AddChapter(chapters, chapter ?? CreateChapter(name), text);
-        return chapters;
+        await AddChapter(result, chapter ?? CreateChapter(name), text);
+        return result;
     }
 }

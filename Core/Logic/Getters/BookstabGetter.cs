@@ -50,6 +50,9 @@ public class BookstabGetter : GetterBase {
 
     private async Task<IEnumerable<Chapter>> FillChapters(BookstabApiResponse response, Uri uri, string bookId) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
 
         foreach (var bookChapter in SliceToc(response.Book.ChaptersShow)) {
             var chapter = new Chapter {

@@ -38,6 +38,9 @@ public class RanobeNovelsGetter : GetterBase {
     
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {
         var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
 
         var toc = await GetToc(doc);
         if (toc.Count == 0) {
