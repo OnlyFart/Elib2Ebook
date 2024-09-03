@@ -31,7 +31,7 @@ jobs:
         if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
         uses: docker/build-push-action@v5
         with:
-          context: "Elib2EbookCli"
+          file: "Elib2EbookCli/Dockerfile"
           push: true
           tags: onlyfart/elib2ebookcli:${{steps.get-version.outputs.version}}
 
@@ -39,7 +39,7 @@ jobs:
         if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
         uses: docker/build-push-action@v5
         with:
-          context: "Elib2EbookCli"
+          file: "Elib2EbookCli/Dockerfile"
           push: true
           tags: onlyfart/elib2ebookcli:latest
           
@@ -47,7 +47,7 @@ jobs:
         if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
         uses: docker/build-push-action@v5
         with:
-          context: "Elib2EbookWeb"
+          file: "Elib2EbookWeb/Dockerfile"
           push: true
           tags: onlyfart/elib2ebookweb:${{steps.get-version.outputs.version}}
 
@@ -55,6 +55,6 @@ jobs:
         if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
         uses: docker/build-push-action@v5
         with:
-          context: "Elib2EbookWeb"
+          file: "Elib2EbookWeb/Dockerfile"
           push: true
           tags: onlyfart/elib2ebookweb:latest
