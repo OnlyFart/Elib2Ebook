@@ -1,0 +1,193 @@
+﻿@page "/"
+@using System.Net
+@using System.Reflection
+@using System.Text
+@using Core.Configs
+@using Core.Extensions
+@using Core.Logic.Builders
+@using Core.Logic.Getters
+@using Core.Misc.TempFolder
+@rendermode InteractiveServer
+@inject IJSRuntime jsRuntime
+
+<PageTitle>Counter</PageTitle>
+
+<h1>Counter</h1>
+
+<script>
+    window.downloadFileFromStream = async (fileName, contentStreamReference) => {
+      const arrayBuffer = await contentStreamReference.arrayBuffer();
+      const blob = new Blob([arrayBuffer]);
+      const url = URL.createObjectURL(blob);
+      const anchorElement = document.createElement('a');
+      anchorElement.href = url;
+      anchorElement.download = fileName ?? '';
+      anchorElement.click();
+      anchorElement.remove();
+      URL.revokeObjectURL(url);
+    }
+</script>
+
+<MudGrid>
+    <MudItem xs="12" sm="5">
+        <MudPaper Class="pa-4">
+            <MudForm Spacing="10">
+                <MudTextField T="string" Immediate="true" Label="Ссылка на книгу" Required="true" RequiredError="Ссылка на книгу обязательна!" Variant="Variant.Outlined" TextChanged="@(value => options.Url = new[] { value })"/>
+                
+                <MudStack>
+                    <MudToggleGroup T="string" SelectionMode="SelectionMode.MultiSelection" Color="Color.Tertiary" CheckMark @bind-Values="options.Format">
+                        <MudToggleItem Value="@("epub")" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox"/>
+                        <MudToggleItem Value="@("fb2")" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox" />
+                        <MudToggleItem Value="@("cbz")" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox" />
+                    </MudToggleGroup>
+                </MudStack>
+                
+                <MudTextField T="string" Label="Login" Variant="Variant.Outlined" @bind-Value="@options.Login"/>
+                <MudTextField T="string" Label="Password" InputType="InputType.Password" Variant="Variant.Outlined"  @bind-Value="@options.Password"/>
+            </MudForm>
+        </MudPaper>
+        <MudPaper Class="pa-4 mt-4">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" DropShadow="false" OnClick="Generate">Сгенерировать</MudButton>
+        </MudPaper>
+    </MudItem>
+    
+    @if (!string.IsNullOrWhiteSpace(_logs?.Text)) {
+        <MudItem xs="12" sm="7">
+            <MudPaper Class="pa-4">
+                <pre>
+                    @_logs.Text
+                </pre>
+            </MudPaper>
+        </MudItem>
+    }
+</MudGrid>
+
+
+@code {
+    public class Logs {
+        public string Text { get; set; }
+    }
+    
+    private Logs? _logs;
+    private Options options = new(url: new List<string> { string.Empty });
+    
+    private class RedirectHandler : DelegatingHandler {
+        public RedirectHandler(HttpMessageHandler innerHandler) => InnerHandler = innerHandler;
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) {
+            var responseMessage = await base.SendAsync(request, cancellationToken);
+        
+            if (responseMessage is { StatusCode: HttpStatusCode.Redirect or HttpStatusCode.PermanentRedirect or HttpStatusCode.MovedPermanently or HttpStatusCode.Moved, Headers.Location: not null }) {
+                request = new HttpRequestMessage(HttpMethod.Get, responseMessage.Headers.Location);
+                responseMessage = await base.SendAsync(request, cancellationToken);
+            }
+
+            return responseMessage;
+        }
+    }
+
+    public class ControlWriter : TextWriter {
+        private readonly Logs _logs;
+        private readonly Action _action;
+        
+        public ControlWriter(Logs logs, Action action) {
+            _logs = logs;
+            _action = action;
+        }
+
+        public override void Write(char value) {
+            _logs.Text += value;
+            _action();
+        }
+
+        public override void Write(string? value) {
+            _logs.Text += value;
+            _action();
+        }
+
+        public override Encoding Encoding => Encoding.ASCII;
+    }
+
+    private async Task Generate() {
+        Console.SetOut(new ControlWriter(_logs = new Logs(), () => InvokeAsync(StateHasChanged)));
+        
+        var cookieContainer = new CookieContainer();
+
+        using var tempSave = TempFolderFactory.Create("test", true);
+        
+        options.Timeout = 10;
+        options.SavePath = tempSave.Path;
+        
+        using var client = GetClient(options, cookieContainer);
+
+        try {
+            using var getterConfig = new BookGetterConfig(options, client, cookieContainer, TempFolderFactory.Create(options.TempPath, !options.SaveTemp));
+            using var getter = GetGetter(getterConfig, options.Url.First().AsUri());
+            await getter.Init();
+            await getter.Authorize();
+
+            foreach (var url in options.Url) {
+                Console.WriteLine($"Начинаю генерацию книги {url.CoverQuotes()}");
+                try {
+                    var book = await getter.Get(url.AsUri());
+                    foreach (var format in options.Format) {
+                        await GetBuilder(format, options).Build(book);
+                    }
+
+                    foreach (var fileName in Directory.GetFiles(tempSave.Path)) {
+                        await using var file = File.OpenRead(fileName);
+                        using var streamRef = new DotNetStreamReference(file);
+                        await jsRuntime.InvokeVoidAsync("downloadFileFromStream", Path.GetFileName(file.Name), streamRef);
+                    }
+
+                } catch (Exception ex) {
+                    Console.WriteLine($"Генерация книги {url} завершилась с ошибкой. {ex}");
+                }
+            }
+        } catch (Exception ex) {
+            Console.WriteLine(ex.Message);
+        }
+    }
+    
+    private static HttpClient GetClient(Options options, CookieContainer container) {
+        var handler = new HttpClientHandler {
+            AutomaticDecompression = DecompressionMethods.GZip | 
+                                     DecompressionMethods.Deflate |
+                                     DecompressionMethods.Brotli,
+            ServerCertificateCustomValidationCallback = (_, _, _, _) => true,
+            CookieContainer = container,
+            Proxy = null,
+            UseProxy = false,
+        };
+
+        if (!string.IsNullOrEmpty(options.Proxy)) {
+            handler.Proxy = new WebProxy(options.Proxy.AsUri());
+            handler.UseProxy = true;
+        }
+
+        var client = new HttpClient(new RedirectHandler(handler));
+        client.Timeout = TimeSpan.FromSeconds(options.Timeout);
+        return client;
+    }
+
+    private static BuilderBase GetBuilder(string format, Options options) {
+        return format.Trim().ToLower() switch {
+            "fb2" => new Fb2Builder(options),
+            "epub" => new EpubBuilder(options),
+            "json" => new JsonBuilder(options),
+            "cbz" => new CbzBuilder(options),
+            "txt" => new TxtBuilder(options),
+            "json_lite" => new JsonLiteBuilder(options),
+            _ => throw new ArgumentException("Неизвестный формат", nameof(format))
+        };
+    }
+
+    private static GetterBase GetGetter(BookGetterConfig config, Uri url) {
+        return Assembly.GetAssembly(typeof(GetterBase))!.GetTypes()
+                   .Where(myType => myType is { IsClass: true, IsAbstract: false } && myType.IsSubclassOf(typeof(GetterBase)))
+                   .Select(type => (GetterBase) Activator.CreateInstance(type, config)!)
+                   .FirstOrDefault(g => g.IsSameUrl(url)) ??
+               throw new ArgumentException("Данная система не поддерживается", nameof(url));
+    }
+
+}
