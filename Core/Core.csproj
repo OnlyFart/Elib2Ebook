@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <LangVersion>latestmajor</LangVersion>
+        <PackageId>Core</PackageId>
+        <Version>2.0.0</Version>
+        <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AngleSharp" Version="1.1.2" />
+        <PackageReference Include="CommandLineParser" Version="2.9.1" />
+        <PackageReference Include="HtmlAgilityPack" Version="1.11.64" />
+        <PackageReference Include="HtmlAgilityPack.CssSelectors.NetCore" Version="1.2.1" />
+        <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="8.0.8" />
+        <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="8.0.0" />
+        <PackageReference Include="OAuth.DotNetCore" Version="3.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Patterns\**\*.*">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="EpubSharp">
+        <HintPath>External\EpubSharp.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+</Project>

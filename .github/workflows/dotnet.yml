@@ -57,7 +57,7 @@ jobs:
       - uses: kzrnm/get-net-sdk-project-versions-action@v1
         id: get-version
         with:
-          proj-path: Elib2Ebook/Elib2Ebook.csproj
+          proj-path: Core/Core.csproj
           
       - name: "get-last-release"
         id: last_release
