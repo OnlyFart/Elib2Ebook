@@ -4,11 +4,12 @@ using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Builders; 
 
 public class TxtBuilder : BuilderBase {
-    public TxtBuilder(Options options) : base(options) { }
+    public TxtBuilder(Options options, ILogger logger) : base(options, logger) { }
 
     protected override string Extension => "txt";
 

@@ -9,6 +9,7 @@ using Core.Extensions;
 using Core.Types.Book;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -28,7 +29,7 @@ public class RomfantGetter : GetterBase {
         using var post = await Config.Client.PostAsync(SystemUrl.MakeRelativeUri("ajax/"), GenerateAuthData());
         var response = await post.Content.ReadAsStringAsync();
         if (response == "ok") {
-            Console.WriteLine("Успешно авторизовались");
+            Config.Logger.LogInformation("Успешно авторизовались");
         } else {
             throw new Exception($"Не удалось авторизоваться. {response.AsHtmlDoc().DocumentNode.GetText()}");
         }
@@ -65,13 +66,13 @@ public class RomfantGetter : GetterBase {
         var pages = await GetPages(bookId);
 
         for (var i = 1; i <= pages; i++) {
-            Console.WriteLine($"Получаю страницу {i}/{pages}");
+            Config.Logger.LogInformation($"Получаю страницу {i}/{pages}");
 
             var uri = SystemUrl.MakeRelativeUri($"/read/{bookId}/?page={i}");
             var doc = await Config.Client.GetHtmlDocWithTriesAsync(uri);
 
             if (doc.DocumentNode.InnerText.Contains("Чтобы продолжить чтение, пожалуйста, оплатите доступ.")) {
-                Console.WriteLine("Платный контент");
+                Config.Logger.LogInformation("Платный контент");
                 break;
             }
 

@@ -9,6 +9,7 @@ using Core.Extensions;
 using Core.Types.Book;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters;
 
@@ -197,7 +198,7 @@ public class ProdamanGetter : GetterBase {
         var pages = await GetPages(url);
         var firstBr = true;
         for (var i = 1; i <= pages; i++) {
-            Console.WriteLine($"Получаю страницу {i}/{pages}");
+            Config.Logger.LogInformation($"Получаю страницу {i}/{pages}");
 
             var appendSegment = url.AppendQueryParameter("page", i);
             var page = await Config.Client.GetHtmlDocWithTriesAsync(appendSegment);

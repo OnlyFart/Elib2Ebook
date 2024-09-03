@@ -11,6 +11,7 @@ using Core.Types.Book;
 using Core.Types.Freedlit;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -30,7 +31,7 @@ public class FreedlitGetter : GetterBase{
         var errors = doc.QuerySelector("#app").Attributes["data-page"].Value.HtmlDecode().Deserialize<FreedlitApp<FreedlitAuthError>>().Props.Errors;
         
         if (string.IsNullOrWhiteSpace(errors?.Email)) {
-            Console.WriteLine("Успешно авторизовались");
+            Config.Logger.LogInformation("Успешно авторизовались");
         } else {
             throw new Exception($"Не удалось авторизоваться. {errors.Email}");
         }
@@ -87,7 +88,7 @@ public class FreedlitGetter : GetterBase{
                 Title = freedlitChapter.Header
             };
 
-            Console.WriteLine($"Загружаю главу {freedlitChapter.Header.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {freedlitChapter.Header.CoverQuotes()}");
 
             var chapterDoc = await GetChapter(book, freedlitChapter);
             if (chapterDoc != default) {

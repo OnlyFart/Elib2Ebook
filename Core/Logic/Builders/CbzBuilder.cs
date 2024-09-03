@@ -3,11 +3,12 @@ using System.IO.Compression;
 using System.Threading.Tasks;
 using Core.Configs;
 using Core.Types.Book;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Builders; 
 
 public class CbzBuilder : BuilderBase {
-    public CbzBuilder(Options options) : base(options) {
+    public CbzBuilder(Options options, ILogger logger) : base(options, logger) {
         
     }
 

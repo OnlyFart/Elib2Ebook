@@ -9,6 +9,7 @@ using Core.Types.Book;
 using Core.Types.Common;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -31,7 +32,7 @@ public class BookurukGetter : GetterBase{
         doc = await Config.Client.PostHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri("/login"), GenerateAuthData(token));
         var alert = doc.QuerySelector("#infoMess")?.GetText();
         if (string.IsNullOrWhiteSpace(alert)) {
-            Console.WriteLine("Успешно авторизовались");
+            Config.Logger.LogInformation("Успешно авторизовались");
         } else {
             throw new Exception($"Не удалось авторизоваться. {alert}");
         }
@@ -100,7 +101,7 @@ public class BookurukGetter : GetterBase{
                 Title = urlChapter.Title
             };
 
-            Console.WriteLine($"Загружаю главу {urlChapter.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {urlChapter.Title.CoverQuotes()}");
 
             var chapterDoc = await GetChapter(urlChapter.Url);
             if (chapterDoc != default) {

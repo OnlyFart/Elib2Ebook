@@ -11,6 +11,7 @@ using Core.Types.Book;
 using Core.Types.Litmarket;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -146,7 +147,7 @@ public class LitmarketGetter : GetterBase {
 
         for (var i = 0; i < toc.Count; i++) {
             var chapterTitle = string.IsNullOrWhiteSpace(toc[i].Chunk.Mods[0].Text.Trim()) ? "Без названия" : toc[i].Chunk.Mods[0].Text.Trim();
-            Console.WriteLine($"Загружаю главу {chapterTitle.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {chapterTitle.CoverQuotes()}");
             var sb = new StringBuilder();
             var chapter = new Chapter();
 
@@ -176,7 +177,7 @@ public class LitmarketGetter : GetterBase {
                                             text = text.CoverTag("u");
                                             break;
                                         default:
-                                            Console.WriteLine(style);
+                                            Config.Logger.LogInformation(style);
                                             break;
                                     }
                                 }

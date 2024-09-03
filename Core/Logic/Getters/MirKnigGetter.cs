@@ -9,6 +9,7 @@ using Core.Extensions;
 using Core.Types.Book;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -41,7 +42,7 @@ public class MirKnigGetter : GetterBase {
 
         var sb = new StringBuilder();
         for (var i = 1; i <= pages; i++) {
-            Console.WriteLine($"Получаю страницу {i}/{pages}");
+            Config.Logger.LogInformation($"Получаю страницу {i}/{pages}");
             doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"/read_{bookId}-{i}"));
             sb.Append(doc.QuerySelector("div.text-block").InnerHtml.HtmlDecode());
         }

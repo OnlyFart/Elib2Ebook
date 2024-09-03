@@ -15,6 +15,7 @@ using Core.Types.Book;
 using Core.Types.Litnet;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.Litnet;
 
@@ -70,7 +71,7 @@ public abstract class LitnetGetterBase : GetterBase {
         var data = await GetApiData<LitnetAuthResponse>(url);
 
         if (!string.IsNullOrWhiteSpace(data?.Token)) {
-            Console.WriteLine("Успешно авторизовались");
+            Config.Logger.LogInformation("Успешно авторизовались");
             _token = data.Token;
         } else {
             throw new Exception($"Не удалось авторизоваться. {data?.Error}");
@@ -145,7 +146,7 @@ public abstract class LitnetGetterBase : GetterBase {
                 };
             }
         } catch (Exception ex) {
-            Console.WriteLine(ex);
+            Config.Logger.LogInformation(ex.ToString());
         }
 
         return default;
@@ -212,7 +213,7 @@ public abstract class LitnetGetterBase : GetterBase {
                 litnetChapter = new LitnetChapterResponse();
             }
 
-            Console.WriteLine($"Загружаю главу {content.Title.Trim().CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {content.Title.Trim().CoverQuotes()}");
             var chapter = new Chapter {
                 Title = (content.Title ?? book.Title).Trim()
             };

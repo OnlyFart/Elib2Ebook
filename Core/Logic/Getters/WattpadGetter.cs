@@ -8,6 +8,7 @@ using Core.Types.Book;
 using Core.Types.Wattpad;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -46,7 +47,7 @@ public class WattpadGetter : GetterBase {
         var result = new List<Chapter>();
             
         foreach (var group in SliceToc(wattpadInfo.Parts)) {
-            Console.WriteLine($"Загружаю главу {group.GetTitle().CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {group.GetTitle().CoverQuotes()}");
             var chapter = new Chapter();
                 
             var chapterDoc = await GetChapter(group);

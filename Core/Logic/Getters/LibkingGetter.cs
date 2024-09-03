@@ -7,6 +7,7 @@ using Core.Extensions;
 using Core.Types.Book;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters;
 
@@ -97,7 +98,7 @@ public class LibkingGetter : GetterBase {
         var i = 1;
 
         for (var url = GetFirstPage(doc, baseUrl); url != default;) {
-            Console.WriteLine($"Получаю страницу {i}");
+            Config.Logger.LogInformation($"Получаю страницу {i}");
             doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
             url = GetNextPage(doc, baseUrl);
             fullText.Append(doc.QuerySelector("#book").RemoveNodes(".navigation, .cpab, .cpab1, .load_text, #twentypersent").InnerHtml);

@@ -9,6 +9,7 @@ using Core.Types.Book;
 using Core.Types.Ranobe;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -38,7 +39,7 @@ public class RanobeGetter : GetterBase {
         var result = new List<Chapter>();
             
         foreach (var ranobeChapter in SliceToc(ranobeBook.Chapters.Reverse().ToList())) {
-            Console.WriteLine($"Загружаю главу {ranobeChapter.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {ranobeChapter.Title.CoverQuotes()}");
             var chapter = new Chapter();
             var doc = await GetChapter(url, ranobeChapter.Url);
             chapter.Images = await GetImages(doc, url);

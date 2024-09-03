@@ -10,6 +10,7 @@ using Core.Types.Book;
 using Core.Types.Common;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -38,7 +39,7 @@ public class HogwartsNetGetter : GetterBase {
             throw new Exception("Не удалось авторизоваться. Проверьте правильность ID/пароля");
         }
 
-        Console.WriteLine("Успешно авторизовались");
+        Config.Logger.LogInformation("Успешно авторизовались");
     }
 
     public override async Task<Book> Get(Uri url) {
@@ -60,7 +61,7 @@ public class HogwartsNetGetter : GetterBase {
         var result = new List<Chapter>();
 
         foreach (var urlChapter in GetToc(doc, url)) {
-            Console.WriteLine($"Загружаю главу {urlChapter.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {urlChapter.Title.CoverQuotes()}");
             var chapter = new Chapter {
                 Title = urlChapter.Title
             };

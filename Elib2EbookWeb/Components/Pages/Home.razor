@@ -4,41 +4,28 @@
 @using Core.Extensions
 @using Core.Misc
 @using Core.Misc.TempFolder
+@using Elib2EbookWeb.Misc
 @rendermode InteractiveServer
 @inject IJSRuntime jsRuntime
 
 <PageTitle>Elib2Ebook</PageTitle>
 
-<script>
-    window.downloadFileFromStream = async (fileName, contentStreamReference) => {
-      const arrayBuffer = await contentStreamReference.arrayBuffer();
-      const blob = new Blob([arrayBuffer]);
-      const url = URL.createObjectURL(blob);
-      const anchorElement = document.createElement('a');
-      anchorElement.href = url;
-      anchorElement.download = fileName ?? '';
-      anchorElement.click();
-      anchorElement.remove();
-      URL.revokeObjectURL(url);
-    }
-</script>
-
 <MudGrid>
     <MudItem xs="12" sm="5">
         <MudPaper Class="pa-4">
             <MudForm Spacing="10">
-                <MudTextField T="string" Immediate="true" Label="Ссылка на книгу" Required="true" RequiredError="Ссылка на книгу обязательна!" Variant="Variant.Outlined" TextChanged="@(value => options.Url = new[] { value })"/>
+                <MudTextField T="string" Immediate="true" Label="Ссылка на книгу" Required="true" RequiredError="Ссылка на книгу обязательна!" Variant="Variant.Outlined" TextChanged="@(value => _options.Url = new[] { value })"/>
                 
                 <MudStack>
-                    <MudToggleGroup T="string" SelectionMode="SelectionMode.MultiSelection" Color="Color.Tertiary" CheckMark @bind-Values="options.Format">
+                    <MudToggleGroup T="string" SelectionMode="SelectionMode.MultiSelection" Color="Color.Tertiary" CheckMark @bind-Values="_options.Format">
                         <MudToggleItem Value="@("epub")" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox"/>
                         <MudToggleItem Value="@("fb2")" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox" />
                         <MudToggleItem Value="@("cbz")" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox" />
                     </MudToggleGroup>
                 </MudStack>
                 
-                <MudTextField T="string" Label="Login" Variant="Variant.Outlined" @bind-Value="@options.Login"/>
-                <MudTextField T="string" Label="Password" InputType="InputType.Password" Variant="Variant.Outlined"  @bind-Value="@options.Password"/>
+                <MudTextField T="string" Label="Login" Variant="Variant.Outlined" @bind-Value="@_options.Login"/>
+                <MudTextField T="string" Label="Password" InputType="InputType.Password" Variant="Variant.Outlined"  @bind-Value="@_options.Password"/>
             </MudForm>
         </MudPaper>
         <MudPaper Class="pa-4 mt-4">
@@ -46,11 +33,11 @@
         </MudPaper>
     </MudItem>
     
-    @if (!string.IsNullOrWhiteSpace(_logs?.Text)) {
+    @if (_logs.Length > 0) {
         <MudItem xs="12" sm="7">
             <MudPaper Class="pa-4">
                 <pre>
-                    @_logs.Text
+                    @_logs.ToString()
                 </pre>
             </MudPaper>
         </MudItem>
@@ -59,55 +46,30 @@
 
 
 @code {
-    public class Logs {
-        public string Text { get; set; }
-    }
-    
-    private Logs? _logs;
-    private Options options = new(url: new List<string> { string.Empty });
-
-    public class ControlWriter : TextWriter {
-        private readonly Logs _logs;
-        private readonly Action _action;
-        
-        public ControlWriter(Logs logs, Action action) {
-            _logs = logs;
-            _action = action;
-        }
-
-        public override void Write(char value) {
-            _logs.Text += value;
-            _action();
-        }
-
-        public override void Write(string? value) {
-            _logs.Text += value;
-            _action();
-        }
-
-        public override Encoding Encoding => Encoding.ASCII;
-    }
+    private readonly StringBuilder _logs = new();
+    private readonly Options _options = new();
 
     private async Task Generate() {
-        Console.SetOut(new ControlWriter(_logs = new Logs(), () => InvokeAsync(StateHasChanged)));
+        _logs.Clear();
+        var logger = new SbLogger(_logs, StateHasChanged);
         
         using var tempSave = TempFolderFactory.Create("Books", true);
         
-        options.Timeout = 10;
-        options.SavePath = tempSave.Path;
+        _options.Timeout = 10;
+        _options.SavePath = tempSave.Path;
 
         try {
-            using var getterConfig = BookGetterConfig.GetDefault(options);
-            using var getter = GetterProvider.Get(getterConfig, options.Url.First().AsUri());
+            using var getterConfig = BookGetterConfig.GetDefault(_options, logger);
+            using var getter = GetterProvider.Get(getterConfig, _options.Url.First().AsUri());
             await getter.Init();
             await getter.Authorize();
 
-            foreach (var url in options.Url) {
-                Console.WriteLine($"Начинаю генерацию книги {url.CoverQuotes()}");
+            foreach (var url in _options.Url) {
+                logger.LogInformation($"Начинаю генерацию книги {url.CoverQuotes()}");
                 try {
                     var book = await getter.Get(url.AsUri());
-                    foreach (var format in options.Format) {
-                        await BuilderProvider.Get(format, options).Build(book);
+                    foreach (var format in _options.Format) {
+                        await BuilderProvider.Get(format, _options, logger).Build(book);
                     }
 
                     foreach (var fileName in Directory.GetFiles(tempSave.Path)) {
@@ -117,11 +79,11 @@
                     }
 
                 } catch (Exception ex) {
-                    Console.WriteLine($"Генерация книги {url} завершилась с ошибкой. {ex}");
+                    logger.LogInformation($"Генерация книги {url} завершилась с ошибкой. {ex}");
                 }
             }
         } catch (Exception ex) {
-            Console.WriteLine(ex.Message);
+            logger.LogInformation(ex.Message);
         }
     }
 }

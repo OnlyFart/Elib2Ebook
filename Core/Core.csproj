@@ -16,6 +16,7 @@
         <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="8.0.8" />
         <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
         <PackageReference Include="OAuth.DotNetCore" Version="3.0.1" />
     </ItemGroup>
 

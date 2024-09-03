@@ -7,6 +7,7 @@ using Core.Extensions;
 using Core.Types.Book;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -39,7 +40,7 @@ public class HubBookGetter : GetterBase {
         var text = new StringBuilder();
 
         for (var i = 1; i <= pages; i++) {
-            Console.WriteLine($"Получаю страницу {i}/{pages}");
+            Config.Logger.LogInformation($"Получаю страницу {i}/{pages}");
             doc = await Config.Client.GetHtmlDocWithTriesAsync(url.AppendSegment($"/toread/page-{i}"));
             text.Append(doc.QuerySelector("div.b-reader-text__container").InnerHtml.HtmlDecode());
         }

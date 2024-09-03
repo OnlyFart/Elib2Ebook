@@ -12,6 +12,7 @@ using Core.Types.Book;
 using Core.Types.Bookriver;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -39,7 +40,7 @@ public class BookriverGetter : GetterBase {
         using var post = await Config.Client.PostAsJsonAsync(_apiUrl.MakeRelativeUri("/api/v1/auth/login"), payload);
         var data = await post.Content.ReadFromJsonAsync<BookRiverAuthResponse>();
         if (!string.IsNullOrWhiteSpace(data.Token)) {
-            Console.WriteLine("Успешно авторизовались");
+            Config.Logger.LogInformation("Успешно авторизовались");
             _token = data.Token;
             Config.CookieContainer.Add(new Cookie("authToken", _token, "/", SystemUrl.Host));
         } else {
@@ -92,7 +93,7 @@ public class BookriverGetter : GetterBase {
         var internalId = await GetInternalBookId(bookId);
         
         foreach (var bookChapter in await GetToc(internalId)) {
-            Console.WriteLine($"Загружаю главу {bookChapter.Name.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {bookChapter.Name.CoverQuotes()}");
             var chapter = new Chapter {
                 Title = bookChapter.Name
             };

@@ -10,6 +10,7 @@ using Core.Types.MangaLib;
 using Core.Types.SocialLib;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.LibSocial.OldSocialLib; 
 
@@ -35,7 +36,7 @@ public abstract class MangaOldLibGetterBase : OldLibSocialGetterBase {
             }
         }
         
-        Console.WriteLine($"Не удалось определить основной сервер изображений. Использую {defaultServer}");
+        Config.Logger.LogInformation($"Не удалось определить основной сервер изображений. Использую {defaultServer}");
         return defaultServer;
     }
 

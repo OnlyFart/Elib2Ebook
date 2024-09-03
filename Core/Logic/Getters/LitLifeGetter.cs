@@ -10,6 +10,7 @@ using Core.Types.Book;
 using Core.Types.Common;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters;
 
@@ -33,7 +34,7 @@ public class LitLifeGetter : GetterBase {
         doc = await Config.Client.PostHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri("/login"), GenerateAuthData(token));
         var alert = doc.QuerySelector("div.alert-danger");
         if (alert == default) {
-            Console.WriteLine("Успешно авторизовались");
+            Config.Logger.LogInformation("Успешно авторизовались");
         } else {
             throw new Exception($"Не удалось авторизоваться. {alert.GetText()}");
         }
@@ -103,7 +104,7 @@ public class LitLifeGetter : GetterBase {
         var result = new List<Chapter>();
             
         foreach (var urlChapter in await GetToc(id)) {
-            Console.WriteLine($"Загружаю главу {urlChapter.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {urlChapter.Title.CoverQuotes()}");
    
             var chapter = new Chapter {
                 Title = urlChapter.Title

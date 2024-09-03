@@ -10,6 +10,7 @@ using Core.Types.Common;
 using Core.Types.Litsovet;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -26,7 +27,7 @@ public class LitsovetGetter : GetterBase {
         using var post = await Config.Client.PostAsync(SystemUrl.MakeRelativeUri("/ajax/login_signup_remind"), GenerateAuthData());
         var response = await post.Content.ReadFromJsonAsync<LitsovetLoginResponse>();
         if (response.Ok == 1) {
-            Console.WriteLine("Успешно авторизовались");
+            Config.Logger.LogInformation("Успешно авторизовались");
         } else {
             throw new Exception("Не удалось авторизоваться.");
         }
@@ -78,7 +79,7 @@ public class LitsovetGetter : GetterBase {
         var result = new List<Chapter>();
             
         foreach (var urlChapter in GetToc(doc, url)) {
-            Console.WriteLine($"Загружаю главу {urlChapter.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {urlChapter.Title.CoverQuotes()}");
             var chapter = new Chapter {
                 Title = urlChapter.Title
             };

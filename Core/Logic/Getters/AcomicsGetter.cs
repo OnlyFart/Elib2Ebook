@@ -9,6 +9,7 @@ using Core.Extensions;
 using Core.Types.Book;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -55,7 +56,7 @@ public class AcomicsGetter : GetterBase {
         var pages = int.Parse(doc.GetTextBySelector("span.issueNumber").Split("/").Last());
         var sb = new StringBuilder();
         for (var i = 1; i <= pages; i++) {
-            Console.WriteLine($"Получаю страницу {i}/{pages}");
+            Config.Logger.LogInformation($"Получаю страницу {i}/{pages}");
             var response = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"{bookId}/{i}"));
             var img = response.QuerySelector("#mainImage");
             var src = url.MakeRelativeUri(img.Attributes["src"].Value);

@@ -9,6 +9,7 @@ using Core.Types.Book;
 using Core.Types.HotNovelPub;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.HotNovelPub; 
 
@@ -55,7 +56,7 @@ public abstract class HotNovelPubGetterBase : GetterBase {
         var chapters = new List<Chapter>();
         foreach (var ezChapter in SliceToc(toc)) {
             var title = ezChapter.Title.Trim();
-            Console.WriteLine($"Загружаю главу {title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {title.CoverQuotes()}");
             
             var chapter = new Chapter {
                 Title = title

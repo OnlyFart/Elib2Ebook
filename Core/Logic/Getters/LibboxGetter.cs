@@ -8,6 +8,7 @@ using Core.Extensions;
 using Core.Types.Book;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -84,7 +85,7 @@ public class LibboxGetter : GetterBase {
         var pages = await GetPages(bookId);
         
         for (var i = 1; i <= pages; i++) {
-            Console.WriteLine($"Получаю страницу {i}/{pages}");
+            Config.Logger.LogInformation($"Получаю страницу {i}/{pages}");
             var page = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"/books/{bookId}?page_book={i}"));
 
             var content = page.QuerySelector("div.entry-content");

@@ -8,6 +8,7 @@ using Core.Configs;
 using Core.Extensions;
 using Core.Types.SocialLib;
 using HtmlAgilityPack;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.LibSocial.NewSocialLib; 
 
@@ -56,7 +57,7 @@ public class RanobeLibGetter : NewLibSocialGetterBase {
                         if (MarkTag.TryGetValue(mark.Type, out tag)) {
                             text = text.CoverTag(tag);
                         } else {
-                            Console.WriteLine($"Неизвестый тип форматирования {mark.Type}");
+                            Config.Logger.LogInformation($"Неизвестый тип форматирования {mark.Type}");
                         }
                     }
 
@@ -82,7 +83,7 @@ public class RanobeLibGetter : NewLibSocialGetterBase {
                     continue;
                 }
                 default:
-                    Console.WriteLine($"Неизвестый тип {content.Type}");
+                    Config.Logger.LogInformation($"Неизвестый тип {content.Type}");
                     break;
             }
         }

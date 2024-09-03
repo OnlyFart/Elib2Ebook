@@ -14,6 +14,7 @@ using Core.Types.StrokiMts;
 using EpubSharp;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters;
 
@@ -88,7 +89,7 @@ public class StrokiMtsGetter : GetterBase {
         var current = epubBook.TableOfContents.First();
         
         do {
-            Console.WriteLine($"Загружаю главу {current.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {current.Title.CoverQuotes()}");
 
             var chapter = new Chapter {
                 Title = current.Title

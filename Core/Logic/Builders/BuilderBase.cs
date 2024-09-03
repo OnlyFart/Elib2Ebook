@@ -1,19 +1,21 @@
-using System;
 using System.IO;
 using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Builders; 
 
 public abstract class BuilderBase {
     protected readonly Options Options;
+    protected readonly ILogger Logger;
 
     protected abstract string Extension { get;}
 
-    protected BuilderBase(Options options) {
+    protected BuilderBase(Options options, ILogger logger) {
         Options = options;
+        Logger = logger;
     }
 
     /// <summary>
@@ -47,14 +49,14 @@ public abstract class BuilderBase {
             fileName = Path.Combine(Options.SavePath, fileName);
         }
         
-        Console.WriteLine($"Начинаю сохранение книги {fileName.CoverQuotes()}");
+        Logger.LogInformation($"Начинаю сохранение книги {fileName.CoverQuotes()}");
         await BuildInternal(book, fileName);
         
         if (Options.Cover) {
             await SaveCover(Options.SavePath, book.Cover, title);
         }
         
-        Console.WriteLine($"Книга {fileName.CoverQuotes()} успешно сохранена");
+        Logger.LogInformation($"Книга {fileName.CoverQuotes()} успешно сохранена");
     }
 
     /// <summary>

@@ -8,6 +8,7 @@ using Core.Extensions;
 using Core.Types.Book;
 using Core.Types.RanobeOvh;
 using HtmlAgilityPack;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.RanobeOvh; 
 
@@ -61,7 +62,7 @@ public abstract class RanobeOvhGetterBase : GetterBase {
 
         foreach (var ranobeOvhChapter in await GetToc(branch)) {
             var chapter = new Chapter();
-            Console.WriteLine($"Загружаю главу {ranobeOvhChapter.FullName.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {ranobeOvhChapter.FullName.CoverQuotes()}");
 
             var chapterDoc = await GetChapter(ranobeOvhChapter);
             chapter.Title = ranobeOvhChapter.FullName;

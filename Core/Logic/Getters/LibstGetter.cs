@@ -12,6 +12,7 @@ using Core.Types.Book;
 using Core.Types.Common;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -47,7 +48,7 @@ public class LibstGetter : GetterBase {
         doc = await Config.Client.PostHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri("/Account/Login?ReturnUrl=/"), GenerateAuthData(token));
         var error = doc.GetTextBySelector("div.validation-summary-errors");
         if (string.IsNullOrEmpty(error)) {
-            Console.WriteLine("Авторизация прошла успешно");
+            Config.Logger.LogInformation("Авторизация прошла успешно");
         } else {
             throw new Exception($"Не удалось авторизоваться. {error}");
         }
@@ -67,7 +68,7 @@ public class LibstGetter : GetterBase {
         var result = new List<Chapter>();
 
         foreach (var bookChapter in GetToc(doc)) {
-            Console.WriteLine($"Загружаю главу {bookChapter.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {bookChapter.Title.CoverQuotes()}");
             
             var chapter = new Chapter {
                 Title = bookChapter.Title

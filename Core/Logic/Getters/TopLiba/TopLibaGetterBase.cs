@@ -9,6 +9,7 @@ using Core.Extensions;
 using Core.Types.Book;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.TopLiba; 
 
@@ -51,7 +52,7 @@ public abstract class TopLibaGetterBase : GetterBase {
         doc = await response.Content.ReadAsStreamAsync().ContinueWith(t => t.Result.AsHtmlDoc());
         var helpBlock = doc.QuerySelector("input[type=email] + span.help-block");
         if (helpBlock == default) {
-            Console.WriteLine("Успешно авторизовались");
+            Config.Logger.LogInformation("Успешно авторизовались");
         } else {
             throw new Exception($"Не удалось авторизоваться. {helpBlock.GetText()}"); 
         }
@@ -79,7 +80,7 @@ public abstract class TopLibaGetterBase : GetterBase {
             var chapter = new Chapter();
             var content = await GetChapter(bookId, id, token);
             if (content.StartsWith("{\"status\":\"error\"")) {
-                Console.WriteLine($"Часть {id} заблокирована");
+                Config.Logger.LogInformation($"Часть {id} заблокирована");
                 continue;
             }
 
@@ -91,7 +92,7 @@ public abstract class TopLibaGetterBase : GetterBase {
             chapter.Content = doc.DocumentNode.InnerHtml;
             
             
-            Console.WriteLine($"Загружаю главу {chapter.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {chapter.Title.CoverQuotes()}");
 
             result.Add(chapter);
         }

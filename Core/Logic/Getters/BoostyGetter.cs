@@ -8,6 +8,7 @@ using Core.Types.Book;
 using Core.Types.Boosty;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters;
 
@@ -47,7 +48,7 @@ public class BoostyGetter : GetterBase {
         var result = new List<Chapter>();
         
         foreach (var post in await GetToc(bookId)) {
-            Console.WriteLine($"Загружаю главу {post.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {post.Title.CoverQuotes()}");
             var chapter = new Chapter {
                 Title = post.Title
             };

@@ -8,6 +8,7 @@ using Core.Extensions;
 using Core.Types.RanobeOvh;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.RanobeOvh; 
 
@@ -33,7 +34,7 @@ public class RanobeOvhGetter : RanobeOvhGetterBase {
                     sb.Append("***".CoverTag("h3"));
                     break;
                 default:
-                    Console.WriteLine($"Неизвестный тип: {page.Metadata.Type}");
+                    Config.Logger.LogInformation($"Неизвестный тип: {page.Metadata.Type}");
                     sb.Append(page.Text.HtmlDecode().CoverTag("p"));
                     break;
             }

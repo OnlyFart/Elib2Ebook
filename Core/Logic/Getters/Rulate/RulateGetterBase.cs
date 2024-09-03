@@ -12,6 +12,7 @@ using Core.Types.Common;
 using Core.Types.Rulate;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.Rulate; 
 
@@ -46,7 +47,7 @@ public abstract class RulateGetterBase : GetterBase {
                 throw new Exception($"Не удалось авторизоваться. {error.Error}"); 
             }
             
-            Console.WriteLine("Успешно авторизовались");
+            Config.Logger.LogInformation("Успешно авторизовались");
         } else {
             throw new Exception($"Не удалось авторизоваться. {alertBlock.GetText()}"); 
         }
@@ -112,7 +113,7 @@ public abstract class RulateGetterBase : GetterBase {
         var result = new List<Chapter>();
             
         foreach (var (id, name) in GetToc(doc)) {
-            Console.WriteLine($"Загружаю главу {name.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {name.CoverQuotes()}");
             var chapter = new Chapter();
                 
             var chapterDoc = await GetChapter(bookId, id);

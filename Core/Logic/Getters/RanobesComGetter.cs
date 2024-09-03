@@ -14,6 +14,7 @@ using Core.Types.Common;
 using Core.Types.Ranobes;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -93,7 +94,7 @@ public class RanobesComGetter : GetterBase {
         var result = new List<Chapter>();
 
         foreach (var ranobeChapter in await GetToc(GetTocLink(doc, url))) {
-            Console.WriteLine($"Загружаю главу {ranobeChapter.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {ranobeChapter.Title.CoverQuotes()}");
             var chapter = new Chapter();
             var chapterDoc = await GetChapter(ranobeChapter);
             chapter.Images = await GetImages(chapterDoc, url);
@@ -142,7 +143,7 @@ public class RanobesComGetter : GetterBase {
         var lastA = doc.QuerySelector("div.pages a:last-child")?.InnerText;
         var pages = string.IsNullOrWhiteSpace(lastA) ? 1 : int.Parse(lastA);
             
-        Console.WriteLine("Получаю оглавление");
+        Config.Logger.LogInformation("Получаю оглавление");
         var result = new List<UrlChapter>();
         for (var i = 1; i <= pages; i++) {
             doc = await Config.Client.GetHtmlDocWithTriesAsync(tocUri.AppendSegment($"/page/{i}"));
@@ -154,7 +155,7 @@ public class RanobesComGetter : GetterBase {
             result.AddRange(chapters);
         }
         
-        Console.WriteLine($"Получено {result.Count} глав");
+        Config.Logger.LogInformation($"Получено {result.Count} глав");
 
         result.Reverse();
         return SliceToc(result);

@@ -9,6 +9,7 @@ using Core.Types.Book;
 using Core.Types.RanobeHub;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -35,7 +36,7 @@ public class RanobeHubGetter : GetterBase {
         var result = new List<Chapter>();
 
         foreach (var ranobeChapter in await GetToc(doc)) {
-            Console.WriteLine($"Загружаю главу {ranobeChapter.Name}");
+            Config.Logger.LogInformation($"Загружаю главу {ranobeChapter.Name}");
             var chapter = new Chapter();
             
             var chapterDoc = await GetChapter(ranobeChapter.Url);
@@ -52,7 +53,7 @@ public class RanobeHubGetter : GetterBase {
     private async Task<HtmlDocument> GetChapter(string url) {
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url.AsUri());
         while (doc.QuerySelector("div[data-callback=correctCaptcha]") != null) {
-            Console.WriteLine($"Обнаружена капча. Перейдите по ссылке {url}, введите капчу и нажмите Enter...");
+            Config.Logger.LogInformation($"Обнаружена капча. Перейдите по ссылке {url}, введите капчу и нажмите Enter...");
             Console.Read();
             doc = await Config.Client.GetHtmlDocWithTriesAsync(url.AsUri());
         }

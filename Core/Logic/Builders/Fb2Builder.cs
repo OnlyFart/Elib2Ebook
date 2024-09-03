@@ -11,6 +11,7 @@ using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
 using HtmlAgilityPack;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Builders; 
 
@@ -46,7 +47,7 @@ public class Fb2Builder : BuilderBase {
         {"u", "u"},
     };
 
-    public Fb2Builder(Options options) : base(options) {
+    public Fb2Builder(Options options, ILogger logger) : base(options, logger) {
         _description = CreateXElement("description");
         _titleInfo = CreateXElement("title-info");
         _documentInfo = CreateXElement("document-info");
@@ -325,7 +326,7 @@ public class Fb2Builder : BuilderBase {
             parent.Add(tag);
         } else {
             parent.Add(nodeText);
-            Console.WriteLine(node.Name);
+            Logger.LogInformation(node.Name);
         }
     }
 

@@ -9,6 +9,7 @@ using Core.Types.Book;
 using Core.Types.Dreame;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -53,7 +54,7 @@ public class DreameGetter : GetterBase {
         var result = new List<Chapter>();
 
         foreach (var urlChapter in await GetToc(bookId)) {
-            Console.WriteLine($"Загружаю главу {urlChapter.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {urlChapter.Title.CoverQuotes()}");
             var chapter = new Chapter {
                 Title = urlChapter.Title
             };

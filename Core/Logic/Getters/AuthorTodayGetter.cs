@@ -10,6 +10,7 @@ using Core.Configs;
 using Core.Extensions;
 using Core.Types.AuthorToday;
 using Core.Types.Book;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters;
 
@@ -45,7 +46,7 @@ public class AuthorTodayGetter : GetterBase {
 
         var response = await Config.Client.GetAsync(_apiUrl);
         _bypass = response.StatusCode != HttpStatusCode.OK;
-        Console.WriteLine(_bypass ? 
+        Config.Logger.LogInformation(_bypass ? 
             $"Сайт {_apiUrl} не доступен. Работаю через {_apiIp}" : 
             $"Сайт {_apiUrl} доступен. Работаю через него");
 
@@ -61,7 +62,7 @@ public class AuthorTodayGetter : GetterBase {
         var data = await response.Content.ReadFromJsonAsync<AuthorTodayAuthResponse>();
 
         if (!string.IsNullOrWhiteSpace(data?.Token)) {
-            Console.WriteLine("Успешно авторизовались");
+            Config.Logger.LogInformation("Успешно авторизовались");
             Config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", data.Token);
 
             response = await Config.Client.SendWithTriesAsync(() => GetDefaultMessage(ApiUrl.MakeRelativeUri("/v1/account/current-user"), _apiUrl));
@@ -153,7 +154,7 @@ public class AuthorTodayGetter : GetterBase {
         var chapters = new List<Chapter>();
         foreach (var atChapter in await GetChapters(book)) {
             var title = atChapter.Title.ReplaceNewLine();
-            Console.WriteLine($"Загружаю главу {title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {title.CoverQuotes()}");
             
             var chapter = new Chapter {
                 Title = title

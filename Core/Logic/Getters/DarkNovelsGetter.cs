@@ -15,6 +15,7 @@ using Core.Types.Book;
 using Core.Types.DarkNovels;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters;
 
@@ -50,7 +51,7 @@ public class DarkNovelsGetter : GetterBase {
         var data = await response.Content.ReadFromJsonAsync<DarkNovelsData<DarkNovelsAuthResponse>>();
         if (data!.Status == "success") {
             Config.Client.DefaultRequestHeaders.Add("Token", data.Data.Token.AccessToken);
-            Console.WriteLine("Успешно авторизовались");
+            Config.Logger.LogInformation("Успешно авторизовались");
         } else {
             throw new Exception($"Не удалось авторизоваться. {data.Message}");
         }
@@ -107,7 +108,7 @@ public class DarkNovelsGetter : GetterBase {
         var result = new List<Chapter>();
 
         foreach (var darkNovelsChapter in await GetToc(bookId)) {
-            Console.WriteLine($"Загружаю главу {darkNovelsChapter.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {darkNovelsChapter.Title.CoverQuotes()}");
 
             var chapter = new Chapter {
                 Title = darkNovelsChapter.Title

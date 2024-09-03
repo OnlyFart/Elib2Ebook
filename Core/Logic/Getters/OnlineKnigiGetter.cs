@@ -7,6 +7,7 @@ using Core.Extensions;
 using Core.Types.Book;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -39,7 +40,7 @@ public class OnlineKnigiGetter : GetterBase {
         var pages = await GetPages(bookId);
 
         for (var i = 1; i <= pages; i++) {
-            Console.WriteLine($"Получаю страницу {i}/{pages}");
+            Config.Logger.LogInformation($"Получаю страницу {i}/{pages}");
 
             var uri = SystemUrl.MakeRelativeUri($"/page/{bookId}?page={i}");
             var doc = await Config.Client.GetHtmlDocWithTriesAsync(uri);

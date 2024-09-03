@@ -8,6 +8,7 @@ using Core.Types.Book;
 using Core.Types.Common;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.Freedom; 
 
@@ -56,7 +57,7 @@ public abstract class FreedomGetterBase : GetterBase{
                 Title = urlChapter.Title
             };
 
-            Console.WriteLine($"Загружаю главу {urlChapter.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {urlChapter.Title.CoverQuotes()}");
 
             var chapterDoc = await GetChapter(urlChapter.Url);
             if (chapterDoc != default) {

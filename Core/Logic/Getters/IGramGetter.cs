@@ -11,6 +11,7 @@ using Core.Types.Book;
 using Core.Types.Litexit;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -32,7 +33,7 @@ public class IGramGetter : GetterBase {
         using var post = await Config.Client.PostAsync(SystemUrl.MakeRelativeUri("/account/login/"), GenerateAuthData(token));
         var checkLogin = await Config.Client.GetFromJsonAsync<LitexitUser>(SystemUrl.MakeRelativeUri("/api/v2/users/current/"));
         if (checkLogin?.Id > 0) {
-            Console.WriteLine("Успешно авторизовались");
+            Config.Logger.LogInformation("Успешно авторизовались");
         } else {
             throw new Exception("Не удалось авторизоваться");
         }
@@ -81,7 +82,7 @@ public class IGramGetter : GetterBase {
         var result = new List<Chapter>();
 
         foreach (var bookChapter in await GetToc(doc)) {
-            Console.WriteLine($"Загружаю главу {bookChapter.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {bookChapter.Title.CoverQuotes()}");
             var chapter = new Chapter {
                 Title = bookChapter.Title
             };

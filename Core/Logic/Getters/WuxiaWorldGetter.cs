@@ -13,6 +13,7 @@ using Core.Types.Common;
 using Core.Types.WuxiaWorld;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -67,7 +68,7 @@ public class WuxiaWorldGetter : GetterBase {
 
         foreach (var bookChapter in await GetToc(doc, url)) {
             var chapter = new Chapter();
-            Console.WriteLine($"Загружаю главу {bookChapter.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {bookChapter.Title.CoverQuotes()}");
             
             var chapterDoc = await GetChapter(bookChapter.Url);
             chapter.Title = bookChapter.Title;
@@ -95,7 +96,7 @@ public class WuxiaWorldGetter : GetterBase {
         await Task.Delay(TimeSpan.FromSeconds(1));
         
         while (response == default || response.StatusCode == HttpStatusCode.ServiceUnavailable) {
-            Console.WriteLine("Получен бан от системы. Жду...");
+            Config.Logger.LogInformation("Получен бан от системы. Жду...");
             var errorTimeout = TimeSpan.FromSeconds(30);
             response = await Config.Client.GetWithTriesAsync(url, errorTimeout);
             await Task.Delay(errorTimeout);

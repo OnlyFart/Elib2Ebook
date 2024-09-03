@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Core.Configs;
 using Core.Types.Book;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Builders;
 
@@ -49,7 +50,7 @@ public class ShortChapterConverter : JsonConverter<Chapter> {
 }
 
 public class JsonLiteBuilder : BuilderBase {
-    public JsonLiteBuilder(Options options) : base(options) { }
+    public JsonLiteBuilder(Options options, ILogger logger) : base(options, logger) { }
 
     protected override string Extension => "json";
 

@@ -10,6 +10,7 @@ using Core.Extensions;
 using Core.Types.Book;
 using Core.Types.Neobook;
 using HtmlAgilityPack;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters;
 
@@ -34,7 +35,7 @@ public class NeobookGetter : GetterBase {
             throw new Exception($"Не удалось авторизоваться. {data.Error}");
         }
 
-        Console.WriteLine("Успешно авторизовались");
+        Config.Logger.LogInformation("Успешно авторизовались");
         Config.CookieContainer.Add(SystemUrl, new Cookie("utoken", data?.Login.Utoken));
         Config.CookieContainer.Add(SystemUrl, new Cookie("uid", data?.Login.Uid));
     }
@@ -82,7 +83,7 @@ public class NeobookGetter : GetterBase {
         var result = new List<Chapter>();
 
         foreach (var neobookChapter in SliceToc(data.Chapters)) {
-            Console.WriteLine($"Загружаю главу {neobookChapter.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {neobookChapter.Title.CoverQuotes()}");
             var chapter = new Chapter {
                 Title = neobookChapter.Title
             };

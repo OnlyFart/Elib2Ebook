@@ -8,6 +8,7 @@ using Core.Extensions;
 using Core.Types.Book;
 using EpubSharp;
 using EpubSharp.Format;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Builders; 
 
@@ -18,7 +19,7 @@ public class EpubBuilder : BuilderBase {
 
     private List<Image> Images { get; set; } = new();
 
-    public EpubBuilder(Options options) : base(options) {
+    public EpubBuilder(Options options, ILogger logger) : base(options, logger) {
         _writer = new EpubWriter();
     }
 

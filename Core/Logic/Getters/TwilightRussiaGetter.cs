@@ -7,6 +7,7 @@ using Core.Extensions;
 using Core.Types.Book;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -49,7 +50,7 @@ public class TwilightRussiaGetter : GetterBase {
                 continue;
             }
             
-            Console.WriteLine($"Загружаю главу {title}");
+            Config.Logger.LogInformation($"Загружаю главу {title}");
             var href = url.MakeRelativeUri(a.Attributes["href"].Value);
             result.Add(await GetChapter(href, title));
         }

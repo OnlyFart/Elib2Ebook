@@ -10,6 +10,7 @@ using Core.Extensions;
 using Core.Types.Book;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -46,9 +47,9 @@ public abstract class GetterBase : IDisposable {
     /// <returns></returns>
     protected async Task<Image> SaveImage(Uri uri) {
         try {
-            Console.WriteLine($"Загружаю картинку {uri}");
+            Config.Logger.LogInformation($"Загружаю картинку {uri}");
             using var response = await Config.Client.SendWithTriesAsync(() => GetImageRequestMessage(uri));
-            Console.WriteLine($"Загружена картинка {response.RequestMessage!.RequestUri}");
+            Config.Logger.LogInformation($"Загружена картинка {response.RequestMessage!.RequestUri}");
             if (response is not { StatusCode: HttpStatusCode.OK }) {
                 return default;
             }

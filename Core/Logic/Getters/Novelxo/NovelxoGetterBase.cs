@@ -12,6 +12,7 @@ using Core.Extensions;
 using Core.Types.Book;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.Novelxo; 
 
@@ -76,7 +77,7 @@ public abstract class NovelxoGetterBase : GetterBase {
 
             result.Add(chapter);
             
-            Console.WriteLine($"Загружена глава {chapter.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружена глава {chapter.Title.CoverQuotes()}");
 
             var next = doc.QuerySelector("div.readernav-wg a.next");
             if (next == default) {

@@ -8,6 +8,7 @@ using Core.Types.Book;
 using Core.Types.Common;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -32,7 +33,7 @@ public class BookinistGetter : GetterBase {
         var result = new List<Chapter>();
 
         foreach (var bookChapter in GetToc(doc, url)) {
-            Console.WriteLine($"Загружаю главу {bookChapter.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {bookChapter.Title.CoverQuotes()}");
             var chapter = new Chapter {
                 Title = bookChapter.Title
             };

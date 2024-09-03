@@ -13,6 +13,7 @@ using Core.Types.Common;
 using Core.Types.WuxiaWorld;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -45,7 +46,7 @@ public class RanobeNovelsGetter : GetterBase {
         }
         
         foreach (var ranobeChapter in toc) {
-            Console.WriteLine($"Загружаю главу {ranobeChapter.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {ranobeChapter.Title.CoverQuotes()}");
             var chapter = new Chapter();
             var chapterDoc = await GetChapter(ranobeChapter.Url);
             chapter.Images = await GetImages(chapterDoc, url);
@@ -92,7 +93,7 @@ public class RanobeNovelsGetter : GetterBase {
         await Task.Delay(TimeSpan.FromSeconds(1));
         
         while (response == default || response.StatusCode == HttpStatusCode.ServiceUnavailable) {
-            Console.WriteLine("Получен бан от системы. Жду...");
+            Config.Logger.LogInformation("Получен бан от системы. Жду...");
             var errorTimeout = TimeSpan.FromSeconds(30);
             response = await Config.Client.GetWithTriesAsync(url, errorTimeout);
             await Task.Delay(errorTimeout);

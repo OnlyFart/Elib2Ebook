@@ -12,6 +12,7 @@ using Core.Types.Common;
 using Core.Types.Litgorod;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -72,7 +73,7 @@ public class LitgorodGetter : GetterBase {
         var response = await Config.Client.PostAsJsonAsync(SystemUrl.MakeRelativeUri("login"), payload);
         var data = await response.Content.ReadFromJsonAsync<LitgorodAuthResponse>();
         if (string.IsNullOrWhiteSpace(data?.Message)) {
-            Console.WriteLine("Успешно авторизовались");
+            Config.Logger.LogInformation("Успешно авторизовались");
         } else {
             throw new Exception($"Не удалось авторизоваться. {data.Message}");
         }
@@ -107,7 +108,7 @@ public class LitgorodGetter : GetterBase {
                 Title = bookChapter.Title
             };
 
-            Console.WriteLine($"Загружаю главу {bookChapter.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {bookChapter.Title.CoverQuotes()}");
             var chapterDoc = await GetChapter(bookChapter.Url);
 
             if (chapterDoc != default) {

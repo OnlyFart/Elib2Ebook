@@ -9,6 +9,7 @@ using Core.Types.Book;
 using Core.Types.Common;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -36,7 +37,7 @@ public class JaomixGetter : GetterBase {
         var result = new List<Chapter>();
 
         foreach (var jaomixChapter in GetToc(doc, url)) {
-            Console.WriteLine($"Загружаю главу {jaomixChapter.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {jaomixChapter.Title.CoverQuotes()}");
             var chapter = new Chapter();
             var chapterDoc = await GetChapter(jaomixChapter.Url);
             chapter.Images = await GetImages(chapterDoc, url);
@@ -53,7 +54,7 @@ public class JaomixGetter : GetterBase {
     private async Task<HtmlDocument> GetChapter(Uri url) {
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         while (doc.QuerySelector("div.themeform div.h-captcha, div.themeform div.but-captcha") != null) {
-            Console.WriteLine($"Обнаружена капча. Перейдите по ссылке {url}, введите капчу и нажмите Enter...");
+            Config.Logger.LogInformation($"Обнаружена капча. Перейдите по ссылке {url}, введите капчу и нажмите Enter...");
             Console.Read();
             doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         }
@@ -72,7 +73,7 @@ public class JaomixGetter : GetterBase {
 
     private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
         var chapters = ParseChapters(doc, url).ToList();
-        Console.WriteLine($"Получено {chapters.Count} глав");
+        Config.Logger.LogInformation($"Получено {chapters.Count} глав");
         
         return SliceToc(chapters);
     }

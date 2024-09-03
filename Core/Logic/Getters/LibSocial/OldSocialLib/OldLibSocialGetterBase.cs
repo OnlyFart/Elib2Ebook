@@ -10,6 +10,7 @@ using Core.Types.Book;
 using Core.Types.SocialLib;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.LibSocial.OldSocialLib; 
 
@@ -101,7 +102,7 @@ public abstract class OldLibSocialGetterBase : GetterBase {
             : int.Parse(bidId);
 
         foreach (var ranobeChapter in SliceToc(data.Chapters.List.Where(c => c.BranchId == branchId).ToList())) {
-            Console.WriteLine($"Загружаю главу {ranobeChapter.GetName()}");
+            Config.Logger.LogInformation($"Загружаю главу {ranobeChapter.GetName()}");
             var chapter = new Chapter();
             
             var chapterDoc = await GetChapter(url, ranobeChapter, data.User);

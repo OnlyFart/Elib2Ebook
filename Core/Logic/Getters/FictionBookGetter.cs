@@ -8,6 +8,7 @@ using Core.Extensions;
 using Core.Types.Book;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -101,7 +102,7 @@ public class FictionBookGetter : GetterBase{
         var pages = await GetPages(url);
             
         for (var i = 1; i <= pages; i++) {
-            Console.WriteLine($"Получаю страницу {i}/{pages}");
+            Config.Logger.LogInformation($"Получаю страницу {i}/{pages}");
             var page = await GetChapter(url, i);
 
             var nodes  = page.QuerySelector("#onlineread").RemoveNodes("div.biblio_book__wrap").ChildNodes;

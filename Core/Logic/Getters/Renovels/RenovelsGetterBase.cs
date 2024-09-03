@@ -11,6 +11,7 @@ using Core.Extensions;
 using Core.Types.Book;
 using Core.Types.Renovels;
 using HtmlAgilityPack;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.Renovels; 
 
@@ -46,7 +47,7 @@ public abstract class RenovelsGetterBase : GetterBase {
         if (string.IsNullOrWhiteSpace(data.Message)) {
             var auth = data.Content.Deserialize<RenovelsAuthResponse>();
             Config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.Token);
-            Console.WriteLine("Успешно авторизовались");
+            Config.Logger.LogInformation("Успешно авторизовались");
         } else {
             throw new Exception($"Не удалось авторизоваться. {data.Message}");
         }
@@ -85,7 +86,7 @@ public abstract class RenovelsGetterBase : GetterBase {
         var result = new List<Chapter>();
             
         foreach (var ranobeChapter in await GetToc(content)) {
-            Console.WriteLine($"Загружаю главу {ranobeChapter.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {ranobeChapter.Title.CoverQuotes()}");
             var chapter = new Chapter();
             var doc = await GetChapter(ranobeChapter);
             chapter.Images = await GetImages(doc, url);

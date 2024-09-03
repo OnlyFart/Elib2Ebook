@@ -14,6 +14,7 @@ using Core.Types.Book;
 using Core.Types.SocialLib;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.LibSocial.NewSocialLib;
 
@@ -98,7 +99,7 @@ public abstract class NewLibSocialGetterBase : GetterBase{
         var token = await tokenResponse.Content.ReadFromJsonAsync<LibSocialToken>();
 
         Config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
-        Console.WriteLine("Успешно авторизовались");
+        Config.Logger.LogInformation("Успешно авторизовались");
     }
 
     protected override string GetId(Uri url) {
@@ -140,7 +141,7 @@ public abstract class NewLibSocialGetterBase : GetterBase{
     private async Task<IEnumerable<SocialLibBookChapter>> GetToc(RanobeLibBookDetails book, string bid) {
         var url = ApiHost.MakeRelativeUri($"/api/manga/{book.Data.SlugUrl}/chapters");
 
-        Console.WriteLine("Загружаю оглавление");
+        Config.Logger.LogInformation("Загружаю оглавление");
 
         var response = await Config.Client.GetWithTriesAsync(url);
         if (response.StatusCode != HttpStatusCode.OK) {
@@ -183,7 +184,7 @@ public abstract class NewLibSocialGetterBase : GetterBase{
         
         foreach (var socialChapter in await GetToc(book, bid)) {
             var title = socialChapter.Name.ReplaceNewLine();
-            Console.WriteLine($"Загружаю главу {title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {title.CoverQuotes()}");
             
             var chapter = new Chapter {
                 Title = title

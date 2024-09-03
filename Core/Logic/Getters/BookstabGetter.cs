@@ -9,6 +9,7 @@ using Core.Extensions;
 using Core.Types.Book;
 using Core.Types.Bookstab;
 using HtmlAgilityPack;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -55,7 +56,7 @@ public class BookstabGetter : GetterBase {
                 Title = bookChapter.Title
             };
 
-            Console.WriteLine($"Загружаю главу {bookChapter.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {bookChapter.Title.CoverQuotes()}");
             
             var doc = await GetChapter(bookChapter.Id, bookId);
 
@@ -74,7 +75,7 @@ public class BookstabGetter : GetterBase {
         while (true) {
             using var response = await Config.Client.GetAsync(_apiUrl.MakeRelativeUri($"/api/reader-get/{bookId}/{chapterId}"));
             if (response.StatusCode == HttpStatusCode.TooManyRequests) {
-                Console.WriteLine("Очень много запросов. Подождем...");
+                Config.Logger.LogInformation("Очень много запросов. Подождем...");
                 await Task.Delay(TimeSpan.FromSeconds(10));
                 continue;
             }

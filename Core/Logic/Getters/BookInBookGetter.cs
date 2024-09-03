@@ -10,6 +10,7 @@ using Core.Types.Book;
 using Core.Types.Common;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -40,7 +41,7 @@ public class BookInBookGetter : GetterBase {
 
         foreach (var bookChapter in GetToc(doc, uri)) {
             var chapter = new Chapter();
-            Console.WriteLine($"Загружаю главу {bookChapter.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {bookChapter.Title.CoverQuotes()}");
             
             var chapterDoc = await GetChapter(bookChapter.Url);
 

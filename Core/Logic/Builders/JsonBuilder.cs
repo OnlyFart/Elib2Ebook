@@ -3,11 +3,12 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Core.Configs;
 using Core.Types.Book;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Builders; 
 
 public class JsonBuilder : BuilderBase {
-    public JsonBuilder(Options options) : base(options) {
+    public JsonBuilder(Options options, ILogger logger) : base(options, logger) {
         
     }
 

@@ -15,6 +15,7 @@ using Core.Types.MyBook;
 using EpubSharp;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 using OAuth;
 
 namespace Core.Logic.Getters; 
@@ -75,7 +76,7 @@ public class MyBookGetter : GetterBase {
         
         using var response = await _apiClient.PostAsJsonAsync(authUrl, payload);
         if (response.StatusCode == HttpStatusCode.OK) {
-            Console.WriteLine("Успешно авторизовались");
+            Config.Logger.LogInformation("Успешно авторизовались");
         } else {
             var message = await response.Content.ReadAsStringAsync();
             throw new Exception($"Не удалось авторизоваться. {message}");
@@ -152,7 +153,7 @@ public class MyBookGetter : GetterBase {
         var current = epubBook.TableOfContents.First();
         
         do {
-            Console.WriteLine($"Загружаю главу {current.Title.CoverQuotes()}");
+            Config.Logger.LogInformation($"Загружаю главу {current.Title.CoverQuotes()}");
 
             var chapter = new Chapter {
                 Title = current.Title
