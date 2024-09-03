@@ -111,7 +111,7 @@
         
         var cookieContainer = new CookieContainer();
 
-        using var tempSave = TempFolderFactory.Create("test", true);
+        using var tempSave = TempFolderFactory.Create("Books", true);
         
         options.Timeout = 10;
         options.SavePath = tempSave.Path;
