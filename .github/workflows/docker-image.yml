@@ -29,7 +29,7 @@ jobs:
 
       - name: build and push docker image to registry
         if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           file: "Elib2EbookCli/Dockerfile"
           push: true
@@ -37,7 +37,7 @@ jobs:
 
       - name: build and push docker image to registry
         if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           file: "Elib2EbookCli/Dockerfile"
           push: true
@@ -45,7 +45,7 @@ jobs:
           
       - name: build and push docker image to registry
         if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           file: "Elib2EbookWeb/Dockerfile"
           push: true
@@ -53,7 +53,7 @@ jobs:
 
       - name: build and push docker image to registry
         if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           file: "Elib2EbookWeb/Dockerfile"
           push: true
