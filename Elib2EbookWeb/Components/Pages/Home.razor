@@ -1,5 +1,4 @@
 ﻿@page "/"
-@using System.Text
 @using Core.Configs
 @using Core.Extensions
 @using Core.Misc
@@ -7,14 +6,15 @@
 @using Elib2EbookWeb.Misc
 @rendermode InteractiveServer
 @inject IJSRuntime jsRuntime
+@inject ISnackbar Snackbar
 
 <PageTitle>Elib2Ebook</PageTitle>
 
 <MudGrid>
-    <MudItem xs="12" sm="5">
+    <MudItem xs="12" sm="12" md="12" lg="5">
         <MudPaper Class="pa-4">
             <MudForm Spacing="10">
-                <MudTextField T="string" Immediate="true" Label="Ссылка на книгу" Required="true" RequiredError="Ссылка на книгу обязательна!" Variant="Variant.Outlined" TextChanged="@(value => _options.Url = new[] { value })"/>
+                <MudTextField T="string" Immediate="true" Label="Ссылка на книгу" Required="true" RequiredError="Ссылка на книгу обязательна!" Variant="Variant.Outlined" TextChanged="@(value => _options.Url = new[] { value })" AutoFocus="true"/>
                 
                 <MudStack>
                     <MudToggleGroup T="string" SelectionMode="SelectionMode.MultiSelection" Color="Color.Tertiary" CheckMark @bind-Values="_options.Format">
@@ -29,15 +29,21 @@
             </MudForm>
         </MudPaper>
         <MudPaper Class="pa-4 mt-4">
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" DropShadow="false" OnClick="Generate">Сгенерировать</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Info" DropShadow="false" OnClick="Generate" Disabled="_onGenerate" FullWidth="true" Size="Size.Large">
+                @if (_onGenerate) {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                } else {
+                    <MudText>Сгенерировать</MudText>
+                }
+            </MudButton>
         </MudPaper>
     </MudItem>
     
-    @if (_logs.Length > 0) {
-        <MudItem xs="12" sm="7">
+    @if (_logger?.Builder.Length > 0) {
+        <MudItem xs="12" sm="12" md="12" lg="7">
             <MudPaper Class="pa-4">
-                <pre>
-                    @_logs.ToString()
+                <pre class="autoscrollable-wrapper" style="max-height: 400px">
+                    @_logger.Builder.ToString()
                 </pre>
             </MudPaper>
         </MudItem>
@@ -46,12 +52,13 @@
 
 
 @code {
-    private readonly StringBuilder _logs = new();
     private readonly Options _options = new();
+    private SbLogger? _logger;
+    private bool _onGenerate;
 
     private async Task Generate() {
-        _logs.Clear();
-        var logger = new SbLogger(_logs, StateHasChanged);
+        _onGenerate = true;
+        _logger = new SbLogger(StateHasChanged);
         
         using var tempSave = TempFolderFactory.Create("Books", true);
         
@@ -59,17 +66,17 @@
         _options.SavePath = tempSave.Path;
 
         try {
-            using var getterConfig = BookGetterConfig.GetDefault(_options, logger);
+            using var getterConfig = BookGetterConfig.GetDefault(_options, _logger);
             using var getter = GetterProvider.Get(getterConfig, _options.Url.First().AsUri());
             await getter.Init();
             await getter.Authorize();
 
             foreach (var url in _options.Url) {
-                logger.LogInformation($"Начинаю генерацию книги {url.CoverQuotes()}");
+                _logger.LogInformation($"Начинаю генерацию книги {url.CoverQuotes()}");
                 try {
                     var book = await getter.Get(url.AsUri());
                     foreach (var format in _options.Format) {
-                        await BuilderProvider.Get(format, _options, logger).Build(book);
+                        await BuilderProvider.Get(format, _options, _logger).Build(book);
                     }
 
                     foreach (var fileName in Directory.GetFiles(tempSave.Path)) {
@@ -77,13 +84,16 @@
                         using var streamRef = new DotNetStreamReference(file);
                         await jsRuntime.InvokeVoidAsync("downloadFileFromStream", Path.GetFileName(file.Name), streamRef);
                     }
-
+                    
+                    Snackbar.Add($"Генерация книги {url.CoverQuotes()} завершена", Severity.Success);
                 } catch (Exception ex) {
-                    logger.LogInformation($"Генерация книги {url} завершилась с ошибкой. {ex}");
+                    _logger.LogInformation($"Генерация книги {url} завершилась с ошибкой. {ex}");
                 }
             }
         } catch (Exception ex) {
-            logger.LogInformation(ex.Message);
+            _logger.LogInformation(ex.Message);
         }
+
+        _onGenerate = false;
     }
 }

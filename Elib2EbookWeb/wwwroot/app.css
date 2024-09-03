@@ -49,3 +49,10 @@ h1:focus {
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
 }
+
+.autoscrollable-wrapper {
+    overflow: auto;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column-reverse;
+}
