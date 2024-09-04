@@ -58,7 +58,7 @@ public class BookurukGetter : GetterBase{
             Chapters = await FillChapters(doc, url),
             Title = doc.GetTextBySelector("h1"),
             Author = GetAuthor(doc),
-            Annotation = doc.QuerySelector("div.single-prew__desc_anot b + p")?.InnerHtml
+            Annotation = doc.QuerySelector("div.single-prew__desc_anot")?.RemoveNodes(" > b")?.InnerHtml
         };
             
         return book;
