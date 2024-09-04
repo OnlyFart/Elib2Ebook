@@ -4,7 +4,7 @@
 @inject ISnackbar Snackbar
 
 <MudPaper Class="pa-4">
-    <MudForm Spacing="10">
+    <MudForm Spacing="2">
         <MudTextField T="string" Immediate="true" Label="Ссылка на книгу" RequiredError="Ссылка на книгу обязательна!" Variant="Variant.Outlined" TextChanged="@(value => _options.Url = new[] { value })" AutoFocus="true"/>
 
         <MudStack>

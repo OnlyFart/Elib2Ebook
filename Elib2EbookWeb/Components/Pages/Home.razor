@@ -11,7 +11,7 @@
 <PageTitle>Elib2Ebook</PageTitle>
 
 <MudGrid Justify="Justify.Center">
-    <MudItem xs="12" sm="12" md="6" lg="6">
+    <MudItem xs="12" sm="12" md="10" lg="6" xl="4">
         <MudPaper Class="pa-4">
             <BookForm OnClick="OnClick"/>
         </MudPaper>
@@ -20,7 +20,7 @@
 
 @if (_shortBook != default) {
     <MudGrid Justify="Justify.Center" class="mt-2">
-        <MudItem xs="12" sm="12" md="6" lg="6">
+        <MudItem xs="12" sm="12" md="10" lg="6" xl="4">
             <ShortBook Book="_shortBook"/>
         </MudItem>
     </MudGrid>

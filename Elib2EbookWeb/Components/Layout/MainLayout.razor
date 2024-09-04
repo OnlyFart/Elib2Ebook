@@ -7,10 +7,12 @@
 
 <div class="page">
     <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
-
+        <MudAppBar Color="Color.Primary" Fixed="false">
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" />
+            <MudSpacer />
+            <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" />
+        </MudAppBar>
+        
         <article class="content px-4">
             @Body
         </article>

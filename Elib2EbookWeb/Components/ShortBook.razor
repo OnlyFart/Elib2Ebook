@@ -1,15 +1,34 @@
 @using Core.Types.Book
 
 <MudCard>
-    <MudImage Src="@_cover" Height="400" ObjectFit="ObjectFit.Contain" ObjectPosition="ObjectPosition.Left"/>
-    <MudCardHeader>
-        <CardHeaderContent>
-            <MudText Typo="Typo.h5">@Book.Author.Name - @Book.Title</MudText>
-        </CardHeaderContent>
-    </MudCardHeader>
-    <MudCardContent>
-        <MudText Typo="Typo.body2" Class="pre" Style="white-space: pre-line">@((MarkupString)Book.Annotation)</MudText>
-    </MudCardContent>
+    <MudGrid Justify="Justify.Center">
+        <MudItem sm="5" md="5" xl="5">
+            <MudImage Src="@_cover" Height="400" ObjectFit="ObjectFit.Contain" ObjectPosition="ObjectPosition.Center"/>
+        </MudItem>
+        <MudItem sm="7" md="7" xl="7">
+            <MudCardContent>
+                <MudLink Href="@Book.Url.ToString()" Target="_blank"><MudText Typo="Typo.h5">@Book.Title</MudText></MudLink>
+
+                @if (Book.Author?.Url == default) {
+                    <MudText Typo="Typo.subtitle2">Автор: @Book.Author.Name</MudText>
+                } else {
+                    <MudText Typo="Typo.subtitle2">Автор: <MudLink Href="@Book.Author.Url.ToString()" Target="_blank">@Book.Author.Name</MudLink></MudText>
+                }
+
+                @if (Book.Seria != default) {
+                    @if (Book.Seria?.Url == default) {
+                        <MudText Typo="Typo.subtitle2">Серия: @Seria</MudText>
+                    } else {
+                        <MudText Typo="Typo.subtitle2">Серия: <MudLink Href="@Book.Seria.Url.ToString()" Target="_blank">@Seria</MudLink></MudText>
+                    }
+                }
+
+                @if (!string.IsNullOrWhiteSpace(Book.Annotation)) {
+                    <MudElement HtmlTag="pre" Style="white-space: pre-line">@((MarkupString)Book.Annotation)</MudElement>
+                }
+            </MudCardContent>
+        </MudItem>
+    </MudGrid>
 </MudCard>
 
 @code {
@@ -19,6 +38,8 @@
     private string? _cover;
 
     private string? _coverPath;
+
+    private string Seria => Book.Seria?.Name + (string.IsNullOrWhiteSpace(Book.Seria?.Number) ? string.Empty : $" #{Book.Seria.Number}");
 
     protected override Task OnInitializedAsync() {
         InitCover();
