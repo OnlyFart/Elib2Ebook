@@ -11,7 +11,7 @@ public class Image {
     
     public string Directory { get; set; }
 
-    public byte[] Content => File.ReadAllBytes(FilePath);
+    public byte[] Content => File.Exists(FilePath) ?  File.ReadAllBytes(FilePath) : [];
     
     public string Extension => GetExtension(Name);
     

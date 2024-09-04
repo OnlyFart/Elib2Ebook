@@ -4,7 +4,6 @@
 @using Core.Misc
 @using Core.Misc.TempFolder
 @using Core.Types.Book
-@using Elib2EbookWeb.Misc
 @rendermode InteractiveServer
 @inject IJSRuntime jsRuntime
 @inject ISnackbar Snackbar
@@ -14,34 +13,7 @@
 <MudGrid Justify="Justify.Center">
     <MudItem xs="12" sm="12" md="6" lg="6">
         <MudPaper Class="pa-4">
-            <MudForm Spacing="10">
-                <MudTextField T="string" Immediate="true" Label="Ссылка на книгу" RequiredError="Ссылка на книгу обязательна!" Variant="Variant.Outlined" TextChanged="@(value => _options.Url = new[] { value })" AutoFocus="true"/>
-                
-                <MudStack>
-                    <MudToggleGroup T="string" SelectionMode="SelectionMode.MultiSelection" Color="Color.Tertiary" CheckMark @bind-Values="_options.Format">
-                        <MudToggleItem Value="@("epub")" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox"/>
-                        <MudToggleItem Value="@("fb2")" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox" />
-                        <MudToggleItem Value="@("cbz")" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox" />
-                    </MudToggleGroup>
-                </MudStack>
-                
-                <MudTextField T="string" Label="Логин" Variant="Variant.Outlined" @bind-Value="@_options.Login"/>
-                <MudTextField  @bind-Value="@_options.Password" Label="Пароль"  Variant="Variant.Outlined" InputType="@_passwordInput" Adornment="Adornment.End" AdornmentIcon="@_passwordInputIcon" OnAdornmentClick="ShowPassword" AdornmentAriaLabel="Показать пароль" />
-            </MudForm>
-        </MudPaper>
-        <MudPaper Class="pa-4 mt-4">
-            <MudButton Variant="Variant.Filled" Color="Color.Info" DropShadow="false" OnClick="Generate" Disabled="_onGenerate" FullWidth="true" Size="Size.Large">
-                @if (_onGenerate) {
-                    @if (_logger?.Builder.Length > 0) {
-                        <MudText>@_logger.Builder.ToString()</MudText>
-                    } else {
-                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
-                    }
-                } else {
-                    <MudText>Сгенерировать</MudText>
-                }
-            </MudButton>
-            
+            <BookForm OnClick="OnClick"/>
         </MudPaper>
     </MudItem>
 </MudGrid>
@@ -49,83 +21,38 @@
 @if (_shortBook != default) {
     <MudGrid Justify="Justify.Center" class="mt-2">
         <MudItem xs="12" sm="12" md="6" lg="6">
-            <MudCard>
-                <MudImage Src="@_cover" Height="400" ObjectFit="ObjectFit.Contain" ObjectPosition="ObjectPosition.Left"/>
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="Typo.h5">@_shortBook.Author.Name - @_shortBook.Title</MudText>
-                    </CardHeaderContent>
-                </MudCardHeader>
-                <MudCardContent>
-                    <MudText Typo="Typo.body2">@((MarkupString)_shortBook.Annotation)</MudText>
-                </MudCardContent>
-            </MudCard>
+            <ShortBook Book="_shortBook"/>
         </MudItem>
     </MudGrid>
 }
 
 
 @code {
-    private readonly Options _options = new();
-    private SbLogger? _logger;
-    private bool _onGenerate;
-    
     private Book? _shortBook;
-    private string _cover;
     
-    private bool _isShow;
-    private InputType _passwordInput = InputType.Password;
-    private string _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
-    
-
-    void ShowPassword() {
-        if (_isShow) {
-            _isShow = false;
-            _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
-            _passwordInput = InputType.Password;
-        } else {
-            _isShow = true;
-            _passwordInputIcon = Icons.Material.Filled.Visibility;
-            _passwordInput = InputType.Text;
-        }
-    }
-
-    private async Task Generate() {
-        if (_options.Url == null || !_options.Url.Any()) {
-            Snackbar.Add("Укажите ссылку на книгу", Severity.Error);
-            return;
-        }
-        
-        if (_options.Format == null || !_options.Format.Any()) {
-            Snackbar.Add("Выберите формат", Severity.Error);
-            return;
-        }
-        
-        _onGenerate = true;
-        _logger = new SbLogger(StateHasChanged);
-        
+    private async Task OnClick(Options options, ILogger logger) {
         using var tempSave = TempFolderFactory.Create("Books", true);
-        
-        _options.Timeout = 10;
-        _options.SavePath = tempSave.Path;
+
+        options.Timeout = 10;
+        options.SavePath = tempSave.Path;
 
         try {
-            using var getterConfig = BookGetterConfig.GetDefault(_options, _logger);
-            using var getter = GetterProvider.Get(getterConfig, _options.Url.First().AsUri());
+            using var getterConfig = BookGetterConfig.GetDefault(options, logger);
+            using var getter = GetterProvider.Get(getterConfig, options.Url.First().AsUri());
             await getter.Init();
             await getter.Authorize();
 
-            foreach (var url in _options.Url) {
+            foreach (var url in options.Url) {
                 try {
                     getterConfig.Options.NoChapters = true;
                     _shortBook = await getter.Get(url.AsUri());
-                    _cover = _shortBook.Cover != default && _shortBook.Cover.Content.Length > 0 ? $"data:image/png;base64, {Convert.ToBase64String(_shortBook.Cover.Content)}" : string.Empty;
+
                     StateHasChanged();
                     getterConfig.Options.NoChapters = false;
-                    
+
                     var book = await getter.Get(url.AsUri());
-                    foreach (var format in _options.Format) {
-                        await BuilderProvider.Get(format, _options, _logger).Build(book);
+                    foreach (var format in options.Format) {
+                        await BuilderProvider.Get(format, options, logger).Build(book);
                     }
 
                     foreach (var fileName in Directory.GetFiles(tempSave.Path)) {
@@ -133,18 +60,18 @@
                         using var streamRef = new DotNetStreamReference(file);
                         await jsRuntime.InvokeVoidAsync("downloadFileFromStream", Path.GetFileName(file.Name), streamRef);
                     }
-                    
-                    Snackbar.Add($"Генерация книги {url.CoverQuotes()} завершена", Severity.Success);
+
+                    Snackbar.Add($"Генерация книги {GetBookName(url, _shortBook).CoverQuotes()} завершена", Severity.Success);
                 } catch (Exception ex) {
-                    _logger.LogInformation($"Генерация книги {url} завершилась с ошибкой. {ex}");
-                    Snackbar.Add($"Генерация книги {url} завершилась с ошибкой. {ex}", Severity.Error);
+                    logger.LogInformation($"Генерация книги {GetBookName(url, _shortBook).CoverQuotes()} завершилась с ошибкой. {ex}");
+                    Snackbar.Add($"Генерация книги {GetBookName(url, _shortBook).CoverQuotes()} завершилась с ошибкой. {ex}", Severity.Error);
                 }
             }
         } catch (Exception ex) {
-            _logger.LogInformation(ex.Message);
+            logger.LogInformation(ex.Message);
             Snackbar.Add(ex.Message, Severity.Error);
         }
-
-        _onGenerate = false;
     }
+
+    private string GetBookName(string url, Book? book) => book?.Title ?? url;
 }

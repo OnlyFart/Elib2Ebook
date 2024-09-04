@@ -1,0 +1,76 @@
+@using Core.Configs
+@using Elib2EbookWeb.Misc
+@inject IJSRuntime jsRuntime
+@inject ISnackbar Snackbar
+
+<MudPaper Class="pa-4">
+    <MudForm Spacing="10">
+        <MudTextField T="string" Immediate="true" Label="Ссылка на книгу" RequiredError="Ссылка на книгу обязательна!" Variant="Variant.Outlined" TextChanged="@(value => _options.Url = new[] { value })" AutoFocus="true"/>
+
+        <MudStack>
+            <MudToggleGroup T="string" SelectionMode="SelectionMode.MultiSelection" Color="Color.Tertiary" CheckMark @bind-Values="_options.Format">
+                <MudToggleItem Value="@("epub")" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox"/>
+                <MudToggleItem Value="@("fb2")" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox" />
+                <MudToggleItem Value="@("cbz")" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox" />
+            </MudToggleGroup>
+        </MudStack>
+
+        <MudTextField T="string" Label="Логин" Variant="Variant.Outlined" @bind-Value="@_options.Login"/>
+        <MudTextField  @bind-Value="@_options.Password" Label="Пароль"  Variant="Variant.Outlined" InputType="@_passwordInput" Adornment="Adornment.End" AdornmentIcon="@_passwordInputIcon" OnAdornmentClick="ShowPassword" AdornmentAriaLabel="Показать пароль" />
+    </MudForm>
+</MudPaper>
+<MudPaper Class="pa-4 mt-4">
+    <MudButton Variant="Variant.Filled" Color="Color.Info" DropShadow="false" OnClick="OnCLick" Disabled="_onGenerate" FullWidth="true" Size="Size.Large">
+        @if (_onGenerate) {
+            @if (_logger?.Builder.Length > 0) {
+                <MudText>@_logger.Builder.ToString()</MudText>
+            } else {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+            }
+        } else {
+            <MudText>Сгенерировать</MudText>
+        }
+    </MudButton>
+</MudPaper>
+
+@code {
+    private readonly Options _options = new();
+    private SbLogger? _logger;
+    private bool _onGenerate;
+    
+    private bool _isShow;
+    private InputType _passwordInput = InputType.Password;
+    private string _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
+
+    [Parameter]
+    public required Func<Options, ILogger, Task> OnClick { get; set; }
+
+    void ShowPassword() {
+        if (_isShow) {
+            _isShow = false;
+            _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
+            _passwordInput = InputType.Password;
+        } else {
+            _isShow = true;
+            _passwordInputIcon = Icons.Material.Filled.Visibility;
+            _passwordInput = InputType.Text;
+        }
+    }
+
+    private async Task OnCLick() {
+        if (_options.Url == null || !_options.Url.Any()) {
+            Snackbar.Add("Укажите ссылку на книгу", Severity.Error);
+            return;
+        }
+        
+        if (_options.Format == null || !_options.Format.Any()) {
+            Snackbar.Add("Выберите формат", Severity.Error);
+            return;
+        }
+        
+        _onGenerate = true;
+        _logger = new SbLogger(StateHasChanged);
+        await OnClick(_options, _logger);
+        _onGenerate = false;
+    }
+}

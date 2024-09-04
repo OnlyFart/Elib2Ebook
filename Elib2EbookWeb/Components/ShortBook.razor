@@ -1,0 +1,40 @@
+@using Core.Types.Book
+
+<MudCard>
+    <MudImage Src="@_cover" Height="400" ObjectFit="ObjectFit.Contain" ObjectPosition="ObjectPosition.Left"/>
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h5">@Book.Author.Name - @Book.Title</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudText Typo="Typo.body2">@((MarkupString)Book.Annotation)</MudText>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter]
+    public required Book Book { get; set; }
+
+    private string? _cover;
+
+    private string? _coverPath;
+
+    protected override Task OnInitializedAsync() {
+        InitCover();
+        return base.OnInitializedAsync();
+    }
+
+    protected override Task OnParametersSetAsync() {
+        if (Book.Cover?.FilePath != _coverPath) {
+            InitCover();
+        }
+        
+        return base.OnParametersSetAsync();
+    }
+
+    private void InitCover() {
+        _cover = Book.Cover != default && Book.Cover.Content.Length > 0 ? $"data:image/png;base64, {Convert.ToBase64String(Book.Cover.Content)}" : _cover;
+        _coverPath = Book.Cover?.FilePath;
+    }
+}
