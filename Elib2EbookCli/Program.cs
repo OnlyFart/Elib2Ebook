@@ -10,6 +10,7 @@ namespace Elib2EbookCli;
 internal static class Program {
     private static async Task Main(string[] args) {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        Console.OutputEncoding = Encoding.UTF8;
 
         await Parser.Default.ParseArguments<Options>(args)
             .WithParsedAsync(async options => {
