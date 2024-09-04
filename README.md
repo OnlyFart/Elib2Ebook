@@ -85,56 +85,66 @@
 </pre>
 </details>
 
-Последняя версия доступна по [ссылке](https://github.com/OnlyFart/Elib2Ebook/releases/latest)
+Последняя версия консольной утилиты доступна по [ссылке](https://github.com/OnlyFart/Elib2Ebook/releases/latest)
 
-Portable версии запускаются без установленного NET Runtime. За настройку сборки Portalbe версий большая благодарность [@alfeg](https://github.com/alfeg)
+Portable версии консольной утилиты запускаются без установленного NET Runtime. За настройку сборки Portalbe версий большая благодарность [@alfeg](https://github.com/alfeg)
 
-Для запуска не Portable версии необходим установленный NET Runtime версии 8 или выше, который можно скачать с сайта Microsoft [здесь (на английском)](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
+Для запуска не Portable версии консольной утилиты необходим установленный NET Runtime версии 8 или выше, который можно скачать с сайта Microsoft [здесь (на английском)](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
 
-## Пример вызова
+Web версия доступна для установки через [docker](https://www.docker.com)
+
+## Пример вызова консольной утилиты
 ```
-Elib2Ebook.exe -u https://author.today/work/212721 -f epub
-```
-
-## Пример вызова для генерации книги в нескольких форматах
-```
-Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2
+Elib2EbookCli.exe -u https://author.today/work/212721 -f epub
 ```
 
-## Пример вызова для генерации книги с указанием начальной главы 
+## Пример вызова консольной утилиты для генерации книги в нескольких форматах
 ```
-Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2 --start 3
-```
-
-## Пример вызова для генерации книги с указанием конечной главы 
-```
-Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2 --end 10
+Elib2EbookCli.exe -u https://author.today/work/212721 -f epub,fb2
 ```
 
-## Пример вызова для генерации книги с указанием начальной и конечной главы
+## Пример вызова консольной утилиты для генерации книги с указанием начальной главы 
 ```
-Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2 --start 3 --end 10
-```
-
-## Пример вызова для генерации книги с указанием индекса начиная с конца (в книге будут 3 последних главы)
-```
-Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2 --start -3
+Elib2EbookCli.exe -u https://author.today/work/212721 -f epub,fb2 --start 3
 ```
 
-## Пример вызова для генерации книги с указанием индекса начиная с конца (в книге будет только предпоследняя глава)
+## Пример вызова консольной утилиты для генерации книги с указанием конечной главы 
 ```
-Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2 --start -2 --end -1
-```
-
-## Пример вызова c указанием логина и пароля для скачивания платных книг
-```
-Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2 -l vasya -p pupkin
+Elib2EbookCli.exe -u https://author.today/work/212721 -f epub,fb2 --end 10
 ```
 
-## Docker
+## Пример вызова консольной утилиты для генерации книги с указанием начальной и конечной главы
 ```
-docker run --rm -v <путь_к_папке_для_сохранения>:/Save onlyfart/elib2ebook -u https://author.today/work/212721 -f fb2,epub --save /Save
+Elib2EbookCli.exe -u https://author.today/work/212721 -f epub,fb2 --start 3 --end 10
 ```
+
+## Пример вызова консольной утилиты для генерации книги с указанием индекса начиная с конца (в книге будут 3 последних главы)
+```
+Elib2EbookCli.exe -u https://author.today/work/212721 -f epub,fb2 --start -3
+```
+
+## Пример вызова консольной утилиты для генерации книги с указанием индекса начиная с конца (в книге будет только предпоследняя глава)
+```
+Elib2EbookCli.exe -u https://author.today/work/212721 -f epub,fb2 --start -2 --end -1
+```
+
+## Пример вызова консольной утилиты c указанием логина и пароля для скачивания платных книг
+```
+Elib2EbookCli.exe -u https://author.today/work/212721 -f epub,fb2 -l vasya -p pupkin
+```
+
+## Docker для консольной утилиты
+```
+docker run --rm -v <путь_к_папке_для_сохранения>:/Save onlyfart/Elib2EbookCli -u https://author.today/work/212721 -f fb2,epub --save /Save
+```
+
+## Docker для web версии
+```
+docker run --rm -p 8080:8080 onlyfart/elib2ebookweb
+```
+
+## Скриншоты
+<img width="901" alt="image" src="https://github.com/user-attachments/assets/e4ecb9e0-32a0-45a6-994b-6d2161a9788d">
 
 
 ## Полный список опций 
@@ -153,3 +163,4 @@ docker run --rm -v <путь_к_папке_для_сохранения>:/Save on
 | --save-temp            | Не удалять временную директорию                                                           |
 | --start                | Стартовый номер главы                                                                     |
 | --end                  | Конечный номер главы                                                                      |
+| --no-chapters          | Не загружать главы                                                                        |

@@ -1,6 +1,10 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elib2Ebook", "Elib2Ebook\Elib2Ebook.csproj", "{3576A033-7429-4DE3-BBE3-CD703A4564ED}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{3576A033-7429-4DE3-BBE3-CD703A4564ED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elib2EbookWeb", "Elib2EbookWeb\Elib2EbookWeb.csproj", "{C3CCD71A-37D0-4665-A628-AC6185313A4C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elib2EbookCli", "Elib2EbookCli\Elib2EbookCli.csproj", "{04A5E9A6-9EA9-4771-9766-1241F8341A9B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -12,5 +16,13 @@ Global
 		{3576A033-7429-4DE3-BBE3-CD703A4564ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3576A033-7429-4DE3-BBE3-CD703A4564ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3576A033-7429-4DE3-BBE3-CD703A4564ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C3CCD71A-37D0-4665-A628-AC6185313A4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C3CCD71A-37D0-4665-A628-AC6185313A4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C3CCD71A-37D0-4665-A628-AC6185313A4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C3CCD71A-37D0-4665-A628-AC6185313A4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04A5E9A6-9EA9-4771-9766-1241F8341A9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04A5E9A6-9EA9-4771-9766-1241F8341A9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04A5E9A6-9EA9-4771-9766-1241F8341A9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04A5E9A6-9EA9-4771-9766-1241F8341A9B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
