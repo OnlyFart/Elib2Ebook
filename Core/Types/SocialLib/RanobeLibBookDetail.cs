@@ -30,6 +30,9 @@ public class RLBDData {
 
     [JsonPropertyName("authors")]
     public List<RLBDAuthor> Authors { get; set; }
+    
+    [JsonPropertyName("summary")]
+    public string Summary { get; set; }
 }
 
 public class RLBDCover {

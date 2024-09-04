@@ -116,7 +116,8 @@ public abstract class NewLibSocialGetterBase : GetterBase{
             Chapters = await FillChapters(details, bid),
             Title = string.IsNullOrWhiteSpace(details.Data.RusName) ? details.Data.Name : details.Data.RusName,
             Author = GetAuthor(details),
-            CoAuthors = GetCoAuthors(details)
+            CoAuthors = GetCoAuthors(details),
+            Annotation = details.Data.Summary
         };
 
         return book;
@@ -128,6 +129,7 @@ public abstract class NewLibSocialGetterBase : GetterBase{
             .AppendQueryParameter("fields[]", "background")
             .AppendQueryParameter("fields[]", "teams")
             .AppendQueryParameter("fields[]", "authors")
+            .AppendQueryParameter("fields[]", "summary")
             .AppendQueryParameter("fields[]", "chap_count");
 
         var response = await Config.Client.GetWithTriesAsync(url);
