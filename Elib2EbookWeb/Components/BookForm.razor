@@ -58,7 +58,7 @@
     }
 
     private async Task OnCLick() {
-        if (_options.Url == null || !_options.Url.Any()) {
+        if (_options.Url == null || !_options.Url.Any() || string.IsNullOrWhiteSpace(_options.Url.First())) {
             Snackbar.Add("Укажите ссылку на книгу", Severity.Error);
             return;
         }

@@ -12,6 +12,6 @@ public class GetterProvider {
                    .Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(GetterBase)))
                    .Select(type => (GetterBase) Activator.CreateInstance(type, config))
                    .FirstOrDefault(g => g!.IsSameUrl(url)) ??
-               throw new ArgumentException("Данная система не поддерживается", nameof(url));
+               throw new ArgumentException($"Сайт {url.Host} не поддерживается");
     }
 }
