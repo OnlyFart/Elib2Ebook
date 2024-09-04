@@ -57,7 +57,7 @@ public abstract class GetterBase : IDisposable {
             await using var stream = await response.Content.ReadAsStreamAsync();
             return await Image.Create(uri, Config.TempFolder.Path, uri.GetFileName(), stream);
 
-        } catch (Exception ex) {
+        } catch (Exception) {
             return default;
         }
     }

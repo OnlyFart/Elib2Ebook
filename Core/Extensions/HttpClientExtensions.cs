@@ -27,7 +27,7 @@ public static class HttpClientExtensions {
                 }
 
                 return response;
-            } catch (Exception ex) {
+            } catch (Exception) {
                 await Task.Delay(GetTimeout(errorTimeout));
             }
         }
@@ -46,7 +46,7 @@ public static class HttpClientExtensions {
                 }
 
                 return response;
-            } catch (Exception ex) {
+            } catch (Exception) {
                 await Task.Delay(GetTimeout(errorTimeout));
             }
         }
@@ -71,7 +71,7 @@ public static class HttpClientExtensions {
                 return response;
             } catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException) {
                 await Task.Delay(GetTimeout(errorTimeout));
-            } catch (Exception ex) {
+            } catch (Exception) {
                 
                 await Task.Delay(GetTimeout(errorTimeout));
             }
