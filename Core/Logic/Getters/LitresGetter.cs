@@ -102,7 +102,7 @@ public class LitresGetter : GetterBase {
         var bookId = GetBookId(url);
         
         var payload = LitresPayload.Create(DateTime.Now, _authData.Sid, SECRET_KEY, APP);
-        payload.Requests.Add(new LitresBrowseArtsRequest(new[]{bookId}));
+        payload.Requests.Add(new LitresBrowseArtsRequest([bookId]));
 
         var art = await GetResponse<LitresArts>(payload).ContinueWith(t => t.Result.Arts[0]);
 
@@ -123,6 +123,10 @@ public class LitresGetter : GetterBase {
         var art = url.GetQueryParameter("art");
         if (!string.IsNullOrWhiteSpace(art)) {
             return art;
+        }
+
+        if (url.GetSegment(1) == "audiobook") {
+            throw new Exception("Указана ссылка на аудиокнигу. Укажите ссылку на текстовую версию");
         }
 
         art = url.GetSegment(url.Segments.Length - 1).Split("-").Last();

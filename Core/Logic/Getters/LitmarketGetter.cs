@@ -125,18 +125,18 @@ public class LitmarketGetter : GetterBase {
     private List<Block> GetToc(Response response, string title) {
         var toc = response.Toc.Deserialize<List<Block>>();
         if (toc?.Count == 0) {
-            toc = new List<Block> {
+            toc = [
                 new() {
                     Index = 0,
                     Chunk = new Chunk {
-                        Mods = new[] {
+                        Mods = [
                             new Mod {
                                 Text = title
                             }
-                        }
+                        ]
                     }
                 }
-            };
+            ];
         }
 
         return SliceToc(toc).ToList();
