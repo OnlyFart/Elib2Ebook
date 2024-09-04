@@ -11,8 +11,8 @@
 
 <PageTitle>Elib2Ebook</PageTitle>
 
-<MudGrid>
-    <MudItem xs="12" sm="12" md="12" lg="5">
+<MudGrid Justify="Justify.Center">
+    <MudItem xs="12" sm="12" md="6" lg="6">
         <MudPaper Class="pa-4">
             <MudForm Spacing="10">
                 <MudTextField T="string" Immediate="true" Label="Ссылка на книгу" RequiredError="Ссылка на книгу обязательна!" Variant="Variant.Outlined" TextChanged="@(value => _options.Url = new[] { value })" AutoFocus="true"/>
@@ -44,9 +44,11 @@
             
         </MudPaper>
     </MudItem>
-    
-    @if (_shortBook != default) {
-        <MudItem xs="12" sm="12" md="12" lg="7">
+</MudGrid>
+
+@if (_shortBook != default) {
+    <MudGrid Justify="Justify.Center" class="mt-2">
+        <MudItem xs="12" sm="12" md="6" lg="6">
             <MudCard>
                 <MudImage Src="@_cover" Height="400" ObjectFit="ObjectFit.Contain" ObjectPosition="ObjectPosition.Left"/>
                 <MudCardHeader>
@@ -59,9 +61,8 @@
                 </MudCardContent>
             </MudCard>
         </MudItem>
-    }
-    
-</MudGrid>
+    </MudGrid>
+}
 
 
 @code {

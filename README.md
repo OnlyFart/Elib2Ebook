@@ -161,3 +161,4 @@ docker run --rm -p 8080:8080 onlyfart/elib2ebookweb
 | --save-temp            | Не удалять временную директорию                                                           |
 | --start                | Стартовый номер главы                                                                     |
 | --end                  | Конечный номер главы                                                                      |
+| --no-chapters          | Не загружать главы                                                                        |
