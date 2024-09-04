@@ -23,7 +23,7 @@ jobs:
       - uses: kzrnm/get-net-sdk-project-versions-action@v1
         id: get-version
         with:
-          proj-path: Elib2Ebook/Elib2Ebook.csproj
+          proj-path: Core/Core.csproj
           
       - name: "get-last-release"
         id: last_release
@@ -33,16 +33,32 @@ jobs:
 
       - name: build and push docker image to registry
         if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
-          context: "Elib2Ebook"
+          file: "Elib2EbookCli/Dockerfile"
           push: true
-          tags: onlyfart/elib2ebook:${{steps.get-version.outputs.version}}
+          tags: onlyfart/elib2ebookcli:${{steps.get-version.outputs.version}}
 
       - name: build and push docker image to registry
         if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
-          context: "Elib2Ebook"
+          file: "Elib2EbookCli/Dockerfile"
           push: true
-          tags: onlyfart/elib2ebook:latest
+          tags: onlyfart/elib2ebookcli:latest
+          
+      - name: build and push docker image to registry
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: docker/build-push-action@v6
+        with:
+          file: "Elib2EbookWeb/Dockerfile"
+          push: true
+          tags: onlyfart/elib2ebookweb:${{steps.get-version.outputs.version}}
+
+      - name: build and push docker image to registry
+        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        uses: docker/build-push-action@v6
+        with:
+          file: "Elib2EbookWeb/Dockerfile"
+          push: true
+          tags: onlyfart/elib2ebookweb:latest
