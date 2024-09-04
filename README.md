@@ -136,10 +136,13 @@ Elib2EbookCli.exe -u https://author.today/work/212721 -f epub,fb2 -l vasya -p pu
 docker run --rm -v <путь_к_папке_для_сохранения>:/Save onlyfart/Elib2EbookCli -u https://author.today/work/212721 -f fb2,epub --save /Save
 ```
 
-## Docker для web версии.
+## Docker для web версии
 ```
 docker run --rm -p 8080:8080 onlyfart/elib2ebookweb
 ```
+
+## Скриншоты
+<img width="901" alt="image" src="https://github.com/user-attachments/assets/e4ecb9e0-32a0-45a6-994b-6d2161a9788d">
 
 
 ## Полный список опций 
