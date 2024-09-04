@@ -93,47 +93,47 @@ Portable версии запускаются без установленного
 
 ## Пример вызова
 ```
-Elib2Ebook.exe -u https://author.today/work/212721 -f epub
+Elib2EbookCli.exe -u https://author.today/work/212721 -f epub
 ```
 
 ## Пример вызова для генерации книги в нескольких форматах
 ```
-Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2
+Elib2EbookCli.exe -u https://author.today/work/212721 -f epub,fb2
 ```
 
 ## Пример вызова для генерации книги с указанием начальной главы 
 ```
-Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2 --start 3
+Elib2EbookCli.exe -u https://author.today/work/212721 -f epub,fb2 --start 3
 ```
 
 ## Пример вызова для генерации книги с указанием конечной главы 
 ```
-Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2 --end 10
+Elib2EbookCli.exe -u https://author.today/work/212721 -f epub,fb2 --end 10
 ```
 
 ## Пример вызова для генерации книги с указанием начальной и конечной главы
 ```
-Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2 --start 3 --end 10
+Elib2EbookCli.exe -u https://author.today/work/212721 -f epub,fb2 --start 3 --end 10
 ```
 
 ## Пример вызова для генерации книги с указанием индекса начиная с конца (в книге будут 3 последних главы)
 ```
-Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2 --start -3
+Elib2EbookCli.exe -u https://author.today/work/212721 -f epub,fb2 --start -3
 ```
 
 ## Пример вызова для генерации книги с указанием индекса начиная с конца (в книге будет только предпоследняя глава)
 ```
-Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2 --start -2 --end -1
+Elib2EbookCli.exe -u https://author.today/work/212721 -f epub,fb2 --start -2 --end -1
 ```
 
 ## Пример вызова c указанием логина и пароля для скачивания платных книг
 ```
-Elib2Ebook.exe -u https://author.today/work/212721 -f epub,fb2 -l vasya -p pupkin
+Elib2EbookCli.exe -u https://author.today/work/212721 -f epub,fb2 -l vasya -p pupkin
 ```
 
 ## Docker
 ```
-docker run --rm -v <путь_к_папке_для_сохранения>:/Save onlyfart/elib2ebook -u https://author.today/work/212721 -f fb2,epub --save /Save
+docker run --rm -v <путь_к_папке_для_сохранения>:/Save onlyfart/Elib2EbookCli -u https://author.today/work/212721 -f fb2,epub --save /Save
 ```
 
 
