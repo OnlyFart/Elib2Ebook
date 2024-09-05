@@ -25,7 +25,7 @@ public abstract class NewLibSocialGetterBase : GetterBase{
 
     private static Uri ApiHost => new("https://api.lib.social/");
 
-    private static Uri BaseImageHost => new("https://cover.imgslib.link/");
+    private static Uri BaseImageHost => new("https://cover.imglib.info/");
     
     protected virtual Uri ImagesHost => BaseImageHost;
 

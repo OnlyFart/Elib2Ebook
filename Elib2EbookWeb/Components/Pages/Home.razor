@@ -12,9 +12,7 @@
 
 <MudGrid Justify="Justify.Center">
     <MudItem xs="12" sm="12" md="10" lg="6" xl="4">
-        <MudPaper Class="pa-4">
-            <BookForm OnClick="OnClick"/>
-        </MudPaper>
+        <BookForm OnClick="OnClick"/>
     </MudItem>
 </MudGrid>
 
@@ -39,6 +37,7 @@
         try {
             using var getterConfig = BookGetterConfig.GetDefault(options, logger);
             using var getter = GetterProvider.Get(getterConfig, options.Url.First().AsUri());
+            
             await getter.Init();
             await getter.Authorize();
 

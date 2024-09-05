@@ -20,6 +20,7 @@
         <MudTextField  @bind-Value="@_options.Password" Label="Пароль"  Variant="Variant.Outlined" InputType="@_passwordInput" Adornment="Adornment.End" AdornmentIcon="@_passwordInputIcon" OnAdornmentClick="ShowPassword" AdornmentAriaLabel="Показать пароль" />
     </MudForm>
 </MudPaper>
+
 <MudPaper Class="pa-4 mt-4">
     <MudButton Variant="Variant.Filled" Color="Color.Info" DropShadow="false" OnClick="OnCLick" Disabled="_onGenerate" FullWidth="true" Size="Size.Large">
         @if (_onGenerate) {

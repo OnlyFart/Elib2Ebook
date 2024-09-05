@@ -69,10 +69,7 @@ public static class HttpClientExtensions {
                 }
                     
                 return response;
-            } catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException) {
-                await Task.Delay(GetTimeout(errorTimeout));
             } catch (Exception) {
-                
                 await Task.Delay(GetTimeout(errorTimeout));
             }
         }
