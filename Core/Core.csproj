@@ -4,7 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <LangVersion>latestmajor</LangVersion>
         <PackageId>Core</PackageId>
-        <Version>2.0.2</Version>
+        <Version>2.0.3</Version>
         <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     </PropertyGroup>
 

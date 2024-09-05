@@ -18,6 +18,17 @@ builder.Services.AddMudServices(config => {
     config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
 });
 
+var domain = builder.Configuration.GetValue<string>("LETS_DOMAIN_NAME");
+var email = builder.Configuration.GetValue<string>("LETS_EMAIL_ADDRESS");
+
+if (!string.IsNullOrWhiteSpace(domain) && !string.IsNullOrWhiteSpace(email)) {
+    builder.Services.AddLettuceEncrypt(options => {
+        options.AcceptTermsOfService = true;
+        options.DomainNames = [domain];
+        options.EmailAddress = email;
+    });
+}
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
