@@ -1,0 +1,22 @@
+<MudButton Variant="Variant.Filled" Color="Color.Tertiary" DropShadow="false" Size="Size.Small" UserAttributes="@(new Dictionary<string, object?> { {"hidden", "" }, {"data-pwa", ""} })">Установить приложение</MudButton>
+
+<script>
+    let installPrompt = null;
+    const installButton = document.querySelector("[data-pwa]");
+
+    window.addEventListener("beforeinstallprompt", (event) => {
+      event.preventDefault();
+      installPrompt = event;
+      installButton.removeAttribute("hidden");
+    });
+
+    installButton.addEventListener("click", async () => {
+      if (!installPrompt) {
+        return;
+      }
+      
+      const result = await installPrompt.prompt();
+      installPrompt = null;
+      installButton.setAttribute("hidden", "");
+    });
+</script>
