@@ -29,7 +29,7 @@ public class AuthorTodayGetter : GetterBase {
     /// <summary>
     /// IP сайта api.author.today
     /// </summary>
-    private Uri _apiIp => new("https://212.224.121.254/");
+    private Uri _apiIp => new("https://91.228.155.190/");
     
     private bool _bypass;
 
