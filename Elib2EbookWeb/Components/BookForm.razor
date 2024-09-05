@@ -24,8 +24,8 @@
 <MudPaper Class="pa-4 mt-4">
     <MudButton Variant="Variant.Filled" Color="Color.Info" DropShadow="false" OnClick="OnCLick" Disabled="_onGenerate" FullWidth="true" Size="Size.Large">
         @if (_onGenerate) {
-            @if (_logger?.Builder.Length > 0) {
-                <MudText>@_logger.Builder.ToString()</MudText>
+            @if (!string.IsNullOrWhiteSpace(_log)) {
+                <MudText>@_log</MudText>
             } else {
                 <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
             }
@@ -37,8 +37,9 @@
 
 @code {
     private readonly Options _options = new();
-    private SbLogger? _logger;
+    private ActionLogger? _logger;
     private bool _onGenerate;
+    private string _log;
     
     private bool _isShow;
     private InputType _passwordInput = InputType.Password;
@@ -71,7 +72,11 @@
         }
         
         _onGenerate = true;
-        _logger = new SbLogger(StateHasChanged);
+        _logger = new ActionLogger(str => {
+            _log = str;
+            InvokeAsync(StateHasChanged);
+        });
+        
         await OnClick(_options, _logger);
         _onGenerate = false;
     }

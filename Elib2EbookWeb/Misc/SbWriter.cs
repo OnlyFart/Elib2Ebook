@@ -1,18 +1,10 @@
-using System.Text;
-
 namespace Elib2EbookWeb.Misc;
 
-public class SbLogger : ILogger {
-    public readonly StringBuilder Builder;
-    private readonly Action _action;
+public class ActionLogger : ILogger {
+    private readonly Action<string> _action;
 
-    public SbLogger(Action action) : this(action, new StringBuilder()) {
-
-    }
-    
-    public SbLogger(Action action, StringBuilder builder) {
+    public ActionLogger(Action<string> action) {
         _action = action;
-        Builder = builder;
     }
     
     public IDisposable? BeginScope<TState>(TState state) where TState : notnull => default!;
@@ -20,8 +12,6 @@ public class SbLogger : ILogger {
     public bool IsEnabled(LogLevel logLevel) => true;
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) {
-        Builder.Clear();
-        Builder.AppendLine($"{formatter(state, exception)}");
-        _action();
+        _action($"{formatter(state, exception)}");
     }
 }
