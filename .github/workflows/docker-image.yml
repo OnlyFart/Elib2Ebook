@@ -10,12 +10,6 @@ jobs:
   push_to_registry:
     name: push docker image to hub
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        platform:
-          - linux/amd64
-          - linux/arm64
           
     steps:
       - name: Set up QEMU
@@ -48,7 +42,7 @@ jobs:
         if: ${{ steps.last_release.outputs.tag_name == steps.get-version.outputs.version }}
         uses: docker/build-push-action@v6
         with:
-          platforms: ${{ matrix.platform }}
+          platforms: linux/amd64, linux/arm64
           file: "Elib2EbookCli/Dockerfile"
           push: true
           tags: onlyfart/elib2ebookcli:${{steps.get-version.outputs.version}}
@@ -57,7 +51,7 @@ jobs:
         if: ${{ steps.last_release.outputs.tag_name == steps.get-version.outputs.version }}
         uses: docker/build-push-action@v6
         with:
-          platforms: ${{ matrix.platform }}
+          platforms: linux/amd64, linux/arm64
           file: "Elib2EbookCli/Dockerfile"
           push: true
           tags: onlyfart/elib2ebookcli:latest
@@ -66,7 +60,7 @@ jobs:
         if: ${{ steps.last_release.outputs.tag_name == steps.get-version.outputs.version }}
         uses: docker/build-push-action@v6
         with:
-          platforms: ${{ matrix.platform }}
+          platforms: linux/amd64, linux/arm64
           file: "Elib2EbookWeb/Dockerfile"
           push: true
           tags: onlyfart/elib2ebookweb:${{steps.get-version.outputs.version}}
@@ -75,7 +69,7 @@ jobs:
         if: ${{ steps.last_release.outputs.tag_name == steps.get-version.outputs.version }}
         uses: docker/build-push-action@v6
         with:
-          platforms: ${{ matrix.platform }}
+          platforms: linux/amd64, linux/arm64
           file: "Elib2EbookWeb/Dockerfile"
           push: true
           tags: onlyfart/elib2ebookweb:latest
