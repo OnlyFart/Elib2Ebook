@@ -1,9 +1,9 @@
 namespace Elib2EbookWeb.Misc;
 
 public class ActionLogger : ILogger {
-    private readonly Action<string> _action;
+    private readonly Action<string?> _action;
 
-    public ActionLogger(Action<string> action) {
+    public ActionLogger(Action<string?> action) {
         _action = action;
     }
     
