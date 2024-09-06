@@ -32,33 +32,37 @@ jobs:
           myToken: ${{ github.token }}
 
       - name: build and push docker image to registry
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        if: ${{ steps.last_release.outputs.tag_name == steps.get-version.outputs.version }}
         uses: docker/build-push-action@v6
         with:
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
           file: "Elib2EbookCli/Dockerfile"
           push: true
           tags: onlyfart/elib2ebookcli:${{steps.get-version.outputs.version}}
 
       - name: build and push docker image to registry
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        if: ${{ steps.last_release.outputs.tag_name == steps.get-version.outputs.version }}
         uses: docker/build-push-action@v6
         with:
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
           file: "Elib2EbookCli/Dockerfile"
           push: true
           tags: onlyfart/elib2ebookcli:latest
           
       - name: build and push docker image to registry
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        if: ${{ steps.last_release.outputs.tag_name == steps.get-version.outputs.version }}
         uses: docker/build-push-action@v6
         with:
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
           file: "Elib2EbookWeb/Dockerfile"
           push: true
           tags: onlyfart/elib2ebookweb:${{steps.get-version.outputs.version}}
 
       - name: build and push docker image to registry
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+        if: ${{ steps.last_release.outputs.tag_name == steps.get-version.outputs.version }}
         uses: docker/build-push-action@v6
         with:
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
           file: "Elib2EbookWeb/Dockerfile"
           push: true
           tags: onlyfart/elib2ebookweb:latest
