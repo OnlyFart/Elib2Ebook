@@ -25,7 +25,7 @@
     <MudButton Variant="Variant.Filled" Color="Color.Info" DropShadow="false" OnClick="OnCLick" Disabled="_onGenerate" FullWidth="true" Size="Size.Large">
         @if (_onGenerate) {
             @if (!string.IsNullOrWhiteSpace(_log)) {
-                <MudText>@_log</MudText>
+                <MudText Class="text-truncate">@_log</MudText>
             } else {
                 <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
             }

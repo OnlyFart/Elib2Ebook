@@ -53,6 +53,8 @@
                     foreach (var format in options.Format) {
                         await BuilderProvider.Get(format, options, logger).Build(book);
                     }
+                    
+                    logger.LogInformation("Ожидайте. Сейчас начнется скачивание");
 
                     foreach (var fileName in Directory.GetFiles(tempSave.Path)) {
                         await using var file = File.OpenRead(fileName);
