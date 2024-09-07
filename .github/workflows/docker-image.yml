@@ -33,7 +33,7 @@ jobs:
     name: push docker image to hub
     runs-on: ubuntu-latest
     needs: check_version
-    if: ${{ needs.check_version.outputs.LAST_TAG != needs.get-version.outputs.VERSION }}
+    if: ${{ needs.check_version.outputs.LAST_TAG != needs.check_version.outputs.VERSION }}
           
     steps:
       - name: Set up QEMU
@@ -57,7 +57,7 @@ jobs:
           platforms: linux/amd64, linux/arm64
           file: "Elib2EbookCli/Dockerfile"
           push: true
-          tags: onlyfart/elib2ebookcli:${{ needs.get-version.outputs.VERSION }}
+          tags: onlyfart/elib2ebookcli:${{ needs.check_version.outputs.VERSION }}
 
       - name: build and push docker image to registry
         uses: docker/build-push-action@v6
@@ -73,7 +73,7 @@ jobs:
           platforms: linux/amd64, linux/arm64
           file: "Elib2EbookWeb/Dockerfile"
           push: true
-          tags: onlyfart/elib2ebookweb:${{ needs.get-version.outputs.VERSION  }}
+          tags: onlyfart/elib2ebookweb:${{ needs.check_version.outputs.VERSION  }}
 
       - name: build and push docker image to registry
         uses: docker/build-push-action@v6
