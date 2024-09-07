@@ -115,7 +115,7 @@ jobs:
         run: zip -qq -x "*.pdb" -r ../Elib2Ebook-${{ matrix.os }}-${{ matrix.version }}.zip .
         working-directory: ${{ github.workspace }}/${{ matrix.os }}-${{ matrix.version }}
                  
-      - name: upload ${{ matrix.os }}-${{ matrix.version }} artifact
+      - name: upload ${{ matrix.os }}-${{ matrix.version }} asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
