@@ -36,7 +36,7 @@ jobs:
     if: ${{ needs.check_version.outputs.LAST_TAG == needs.check_version.outputs.VERSION }}
     strategy:
       matrix:
-        package: [elib2ebookcli, elib2ebookweb]
+        folder: [Elib2EbookCli, Elib2EbookWeb]
           
     steps:
       - name: Set up QEMU
@@ -58,14 +58,14 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64, linux/arm64
-          file: "${{ matrix.package }}/Dockerfile"
+          file: "${{ matrix.folder }}/Dockerfile"
           push: true
-          tags: onlyfart/${{ matrix.package }}:${{ needs.check_version.outputs.VERSION }}
+          tags: onlyfart/${{ matrix.folder }}:${{ needs.check_version.outputs.VERSION }}
 
       - name: build and push docker image to registry
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64, linux/arm64
-          file: "${{ matrix.package }}/Dockerfile"
+          file: "${{ matrix.folder }}/Dockerfile"
           push: true
-          tags: onlyfart/${{ matrix.package }}:latest
+          tags: onlyfart/${{ matrix.folder }}:latest
