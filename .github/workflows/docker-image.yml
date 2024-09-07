@@ -10,28 +10,27 @@ jobs:
   check_version:
     name: Check version
     runs-on: ubuntu-latest
+    outputs:
+      VERSION: ${{ steps.get-version.outputs.version }}
+      LAST_TAG: ${{ steps.last_release.outputs.tag_name }}
 
     steps:
       - uses: kzrnm/get-net-sdk-project-versions-action@v1
         id: get-version
         with:
           proj-path: Core/Core.csproj
-        env:
-          VERSION: ${{ steps.get-version.outputs.version }}
           
       - name: "get-last-release"
         id: last_release
         uses: InsonusK/get-latest-release@v1.0.1
         with:
           myToken: ${{ github.token }}
-        env:
-          LAST_TAG: ${{ steps.last_release.outputs.tag_name }}
          
   push_to_registry:
     name: push docker image to hub
     runs-on: ubuntu-latest
     needs: check_version
-    if: ${{ jobs.steps.set_vars.env.LAST_TAG != steps.get-version.outputs.VERSION }}
+    if: ${{ needs.check_version.outputs.LAST_TAG != needs.get-version.outputs.VERSION }}
           
     steps:
       - name: Set up QEMU
@@ -55,7 +54,7 @@ jobs:
           platforms: linux/amd64, linux/arm64
           file: "Elib2EbookCli/Dockerfile"
           push: true
-          tags: onlyfart/elib2ebookcli:${{ jobs.steps.set_vars.env.LAST_TAG }}
+          tags: onlyfart/elib2ebookcli:${{ needs.get-version.outputs.VERSION }}
 
       - name: build and push docker image to registry
         uses: docker/build-push-action@v6
@@ -71,7 +70,7 @@ jobs:
           platforms: linux/amd64, linux/arm64
           file: "Elib2EbookWeb/Dockerfile"
           push: true
-          tags: onlyfart/elib2ebookweb:${{ jobs.steps.set_vars.env.LAST_TAG }}
+          tags: onlyfart/elib2ebookweb:${{ needs.get-version.outputs.VERSION  }}
 
       - name: build and push docker image to registry
         uses: docker/build-push-action@v6
