@@ -15,6 +15,9 @@ jobs:
       LAST_TAG: ${{ steps.last_release.outputs.tag_name }}
 
     steps:
+      - name: check repository
+        uses: actions/checkout@v4
+    
       - uses: kzrnm/get-net-sdk-project-versions-action@v1
         id: get-version
         with:
