@@ -54,13 +54,10 @@ jobs:
           username: ${{secrets.DOCKERHUB_USERNAME}}
           password: ${{secrets.DOCKERHUB_TOKEN}}
 
-      - name: build and push docker image to registry
-        uses: docker/build-push-action@v6
+      - id: string
+        uses: ASzc/change-string-case-action@v2
         with:
-          platforms: linux/amd64, linux/arm64
-          file: "${{ matrix.folder }}/Dockerfile"
-          push: true
-          tags: onlyfart/${{ matrix.folder }}:${{ needs.check_version.outputs.VERSION }}
+          string: ${{ matrix.folder }}
 
       - name: build and push docker image to registry
         uses: docker/build-push-action@v6
@@ -68,4 +65,12 @@ jobs:
           platforms: linux/amd64, linux/arm64
           file: "${{ matrix.folder }}/Dockerfile"
           push: true
-          tags: onlyfart/${{ matrix.folder }}:latest
+          tags: onlyfart/${{ steps.string.outputs.lowercase }}:${{ needs.check_version.outputs.VERSION }}
+
+      - name: build and push docker image to registry
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64, linux/arm64
+          file: "${{ matrix.folder }}/Dockerfile"
+          push: true
+          tags: onlyfart/${{ steps.string.outputs.lowercase }}:latest
