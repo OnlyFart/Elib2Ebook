@@ -34,6 +34,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: check_version
     if: ${{ needs.check_version.outputs.LAST_TAG != needs.check_version.outputs.VERSION }}
+    strategy:
+      matrix:
+        package: [elib2ebookcli, elib2ebookweb]
           
     steps:
       - name: Set up QEMU
@@ -55,30 +58,14 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64, linux/arm64
-          file: "Elib2EbookCli/Dockerfile"
+          file: "${{ matrix.version }}/Dockerfile"
           push: true
-          tags: onlyfart/elib2ebookcli:${{ needs.check_version.outputs.VERSION }}
+          tags: onlyfart/${{ matrix.version }}:${{ needs.check_version.outputs.VERSION }}
 
       - name: build and push docker image to registry
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64, linux/arm64
-          file: "Elib2EbookCli/Dockerfile"
+          file: "${{ matrix.version }}/Dockerfile"
           push: true
-          tags: onlyfart/elib2ebookcli:latest
-          
-      - name: build and push docker image to registry
-        uses: docker/build-push-action@v6
-        with:
-          platforms: linux/amd64, linux/arm64
-          file: "Elib2EbookWeb/Dockerfile"
-          push: true
-          tags: onlyfart/elib2ebookweb:${{ needs.check_version.outputs.VERSION  }}
-
-      - name: build and push docker image to registry
-        uses: docker/build-push-action@v6
-        with:
-          platforms: linux/amd64, linux/arm64
-          file: "Elib2EbookWeb/Dockerfile"
-          push: true
-          tags: onlyfart/elib2ebookweb:latest
+          tags: onlyfart/${{ matrix.version }}:latest
