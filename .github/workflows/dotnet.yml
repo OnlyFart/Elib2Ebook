@@ -20,17 +20,22 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 8.0.x
+        
     - name: Restore dependencies
       run: dotnet restore
+      
     - name: Build
       run: dotnet build --no-restore -c release
+      
     - name: Test
       run: dotnet test --no-build --verbosity normal
-    - name: Small
+      
+    - name: Min
       run: >
-        dotnet publish -c release -p:PublishDir=../dist/small --no-self-contained 
+        dotnet publish -c release -p:PublishDir=../dist/min --no-self-contained 
         -p:PublishSingleFile=true -p:DebugType=embedded -p:PublishTrimmed=false 
         -p:EnableCompressionInSingleFile=false --use-current-runtime Elib2EbookCli
+        
     - name: Portable
       run: >
         dotnet publish -c release -p:PublishDir=../dist/portable --self-contained 
@@ -39,177 +44,84 @@ jobs:
 
     - uses: actions/upload-artifact@v3
       with:
-        name: Elib2Ebook-${{ matrix.os }}
-        path: ${{ github.workspace }}/dist/small
+        name: Elib2Ebook-${{ matrix.os }}-min
+        path: ${{ github.workspace }}/dist/min
 
     - uses: actions/upload-artifact@v3
       with:
         name: Elib2Ebook-${{ matrix.os }}-portable
         path: ${{ github.workspace }}/dist/portable
-    
-  release:
-    needs: build
+        
+  check_version:
+    name: Check version
     runs-on: ubuntu-latest
-    
+    outputs:
+      VERSION: ${{ steps.get-version.outputs.version }}
+      LAST_TAG: ${{ steps.last_release.outputs.tag_name }}
+
     steps:
-      - uses: actions/checkout@v2
-      
+      - name: check repository
+        uses: actions/checkout@v4
+
       - uses: kzrnm/get-net-sdk-project-versions-action@v1
         id: get-version
         with:
           proj-path: Core/Core.csproj
-          
+
       - name: "get-last-release"
         id: last_release
         uses: InsonusK/get-latest-release@v1.0.1
         with:
           myToken: ${{ github.token }}
           
+  create_release:
+    needs: [ build, check_version ]
+    runs-on: ubuntu-latest
+    if: ${{ needs.check_version.outputs.LAST_TAG != needs.check_version.outputs.VERSION }}
+    outputs:
+      UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
+    
+    steps:
       - name: release
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
         uses: actions/create-release@v1
         id: create_release
         with:
           draft: false
           prerelease: false
-          release_name: ${{steps.get-version.outputs.version}}
-          tag_name: ${{steps.get-version.outputs.version}}
+          release_name: ${{needs.check_version.outputs.VERSION}}
+          tag_name: ${{needs.check_version.outputs.VERSION}}
         env:
           GITHUB_TOKEN: ${{ github.token }}
-         
-      - name: download-artifact-ubuntu
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+    
+  upload_release:
+    needs: [create_release]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        version: [ min, portable ]
+    
+    steps:
+      - name: download-artifact-${{ matrix.os }}-${{ matrix.version }}
         uses: actions/download-artifact@v3
         with:
-          name: Elib2Ebook-ubuntu-latest
-          path: ${{ github.workspace }}/linux
-      - name: download-artifact-ubuntu-portable
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        uses: actions/download-artifact@v3
-        with:
-          name: Elib2Ebook-ubuntu-latest-portable
-          path: ${{ github.workspace }}/linux-portable      
-          
-      - name: download-artifact-windows
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        uses: actions/download-artifact@v3
-        with:
-          name: Elib2Ebook-windows-latest
-          path: ${{ github.workspace }}/windows
-      - name: download-artifact-windows-portable
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        uses: actions/download-artifact@v3
-        with:
-          name: Elib2Ebook-windows-latest-portable
-          path: ${{ github.workspace }}/windows-portable
-          
-      - name: download-artifact-macos
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        uses: actions/download-artifact@v3
-        with:
-          name: Elib2Ebook-macos-latest
-          path: ${{ github.workspace }}/macos
-      - name: download-artifact-macos-portable
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        uses: actions/download-artifact@v3
-        with:
-          name: Elib2Ebook-macos-latest-portable
-          path: ${{ github.workspace }}/macos-portable
+          name: Elib2Ebook-${{ matrix.os }}-${{ matrix.version }}
+          path: ${{ github.workspace }}/${{ matrix.os }}-${{ matrix.version }} 
                   
       - name: Install zip
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
         uses: montudor/action-zip@v0.1.0
         
       - name: Zip output
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        run: zip -qq -x "*.pdb" -r ../Elib2Ebook-Linux.zip .
-        working-directory: ${{ github.workspace }}/linux
-      - name: Zip output
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        run: zip -qq -x "*.pdb" -r ../Elib2Ebook-Linux-portable.zip .
-        working-directory: ${{ github.workspace }}/linux-portable
-          
-      - name: Zip output
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        run: zip -qq -x "*.pdb" -r ../Elib2Ebook-Windows.zip .
-        working-directory: ${{ github.workspace }}/windows          
-      - name: Zip output
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        run: zip -qq -x "*.pdb" -r ../Elib2Ebook-Windows-portable.zip .
-        working-directory: ${{ github.workspace }}/windows-portable
-        
-      - name: Zip output
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        run: zip -qq -x "*.pdb" -r ../Elib2Ebook-Macos.zip .
-        working-directory: ${{ github.workspace }}/macos
+        run: zip -qq -x "*.pdb" -r ../Elib2Ebook-${{ matrix.os }}-${{ matrix.version }}.zip .
+        working-directory: ${{ github.workspace }}/${{ matrix.os }}-${{ matrix.version }}
                  
-      - name: Zip output
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        run: zip -qq -x "*.pdb" -r ../Elib2Ebook-Macos-portable.zip .
-        working-directory: ${{ github.workspace }}/macos-portable
-                 
-      - name: upload linux artifact
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
+      - name: upload ${{ matrix.os }}-${{ matrix.version }} artifact
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: Elib2Ebook-Linux.zip
-          asset_name: Elib2Ebook-Linux.zip
-          asset_content_type: application/zip
-                 
-      - name: upload windows artifact
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: Elib2Ebook-Windows.zip
-          asset_name: Elib2Ebook-Windows.zip
-          asset_content_type: application/zip
-          
-      - name: upload macos artifact
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: Elib2Ebook-Macos.zip
-          asset_name: Elib2Ebook-Macos.zip
+          upload_url: ${{ needs.create_release.outputs.UPLOAD_URL }}
+          asset_path: Elib2Ebook-${{ matrix.os }}-${{ matrix.version }}.zip
+          asset_name: Elib2Ebook-${{ matrix.os }}-${{ matrix.version }}.zip
           asset_content_type: application/zip
 
-      - name: upload linux artifact portable
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: Elib2Ebook-Linux-portable.zip
-          asset_name: Elib2Ebook-Linux-portable.zip
-          asset_content_type: application/zip
-
-      - name: upload windows artifact portable
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: Elib2Ebook-Windows-portable.zip
-          asset_name: Elib2Ebook-Windows-portable.zip
-          asset_content_type: application/zip
-
-      - name: upload macos artifact portable
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: Elib2Ebook-Macos-portable.zip
-          asset_name: Elib2Ebook-Macos-portable.zip
-          asset_content_type: application/zip
