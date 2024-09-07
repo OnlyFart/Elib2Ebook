@@ -33,7 +33,7 @@ jobs:
     name: push docker image to hub
     runs-on: ubuntu-latest
     needs: check_version
-    if: ${{ needs.check_version.outputs.LAST_TAG == needs.check_version.outputs.VERSION }}
+    if: ${{ needs.check_version.outputs.LAST_TAG != needs.check_version.outputs.VERSION }}
     strategy:
       matrix:
         folder: [Elib2EbookCli, Elib2EbookWeb]
