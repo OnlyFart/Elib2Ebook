@@ -16,19 +16,17 @@ jobs:
         id: get-version
         with:
           proj-path: Core/Core.csproj
+        env:
+          VERSION: ${{ steps.get-version.outputs.version }}
           
       - name: "get-last-release"
         id: last_release
         uses: InsonusK/get-latest-release@v1.0.1
         with:
           myToken: ${{ github.token }}
-
-      - name: "set-vars"
-        id: set_vars
         env:
           LAST_TAG: ${{ steps.last_release.outputs.tag_name }}
-          VERSION: ${{ steps.get-version.outputs.version }}
-          
+         
   push_to_registry:
     name: push docker image to hub
     runs-on: ubuntu-latest
