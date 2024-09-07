@@ -7,9 +7,33 @@ on:
     branches: [ master ]
     
 jobs:
+  check_version:
+    name: Check version
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: kzrnm/get-net-sdk-project-versions-action@v1
+        id: get-version
+        with:
+          proj-path: Core/Core.csproj
+          
+      - name: "get-last-release"
+        id: last_release
+        uses: InsonusK/get-latest-release@v1.0.1
+        with:
+          myToken: ${{ github.token }}
+
+      - name: "set-vars"
+        id: set_vars
+        env:
+          LAST_TAG: ${{ steps.last_release.outputs.tag_name }}
+          VERSION: ${{ steps.get-version.outputs.version }}
+          
   push_to_registry:
     name: push docker image to hub
     runs-on: ubuntu-latest
+    needs: check_version
+    if: ${{ jobs.steps.set_vars.env.LAST_TAG != steps.get-version.outputs.VERSION }}
           
     steps:
       - name: Set up QEMU
@@ -27,28 +51,15 @@ jobs:
           username: ${{secrets.DOCKERHUB_USERNAME}}
           password: ${{secrets.DOCKERHUB_TOKEN}}
 
-      - uses: kzrnm/get-net-sdk-project-versions-action@v1
-        id: get-version
-        with:
-          proj-path: Core/Core.csproj
-          
-      - name: "get-last-release"
-        id: last_release
-        uses: InsonusK/get-latest-release@v1.0.1
-        with:
-          myToken: ${{ github.token }}
-
       - name: build and push docker image to registry
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64, linux/arm64
           file: "Elib2EbookCli/Dockerfile"
           push: true
-          tags: onlyfart/elib2ebookcli:${{steps.get-version.outputs.version}}
+          tags: onlyfart/elib2ebookcli:${{ jobs.steps.set_vars.env.LAST_TAG }}
 
       - name: build and push docker image to registry
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64, linux/arm64
@@ -57,16 +68,14 @@ jobs:
           tags: onlyfart/elib2ebookcli:latest
           
       - name: build and push docker image to registry
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64, linux/arm64
           file: "Elib2EbookWeb/Dockerfile"
           push: true
-          tags: onlyfart/elib2ebookweb:${{steps.get-version.outputs.version}}
+          tags: onlyfart/elib2ebookweb:${{ jobs.steps.set_vars.env.LAST_TAG }}
 
       - name: build and push docker image to registry
-        if: ${{ steps.last_release.outputs.tag_name != steps.get-version.outputs.version }}
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64, linux/arm64
