@@ -42,12 +42,12 @@ jobs:
         -p:PublishSingleFile=true -p:DebugType=embedded
         -p:EnableCompressionInSingleFile=true --use-current-runtime Elib2EbookCli
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: Elib2Ebook-${{ matrix.os }}-min
         path: ${{ github.workspace }}/dist/min
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: Elib2Ebook-${{ matrix.os }}-portable
         path: ${{ github.workspace }}/dist/portable
@@ -70,7 +70,7 @@ jobs:
 
       - name: "get-last-release"
         id: last_release
-        uses: InsonusK/get-latest-release@v1.0.1
+        uses: InsonusK/get-latest-release@v1.1.0
         with:
           myToken: ${{ github.token }}
           
