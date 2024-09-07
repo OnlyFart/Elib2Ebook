@@ -58,14 +58,14 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64, linux/arm64
-          file: "${{ matrix.version }}/Dockerfile"
+          file: "${{ matrix.package }}/Dockerfile"
           push: true
-          tags: onlyfart/${{ matrix.version }}:${{ needs.check_version.outputs.VERSION }}
+          tags: onlyfart/${{ matrix.package }}:${{ needs.check_version.outputs.VERSION }}
 
       - name: build and push docker image to registry
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64, linux/arm64
-          file: "${{ matrix.version }}/Dockerfile"
+          file: "${{ matrix.package }}/Dockerfile"
           push: true
-          tags: onlyfart/${{ matrix.version }}:latest
+          tags: onlyfart/${{ matrix.package }}:latest
