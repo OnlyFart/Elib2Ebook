@@ -132,7 +132,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
     
   upload_release:
-    needs: [create_release]
+    needs: [build, create_release]
     runs-on: ubuntu-latest
     strategy:
       matrix:
