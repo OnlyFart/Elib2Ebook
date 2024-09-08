@@ -111,7 +111,7 @@ jobs:
           platforms: linux/amd64, linux/arm64
           file: "${{ matrix.folder }}/Dockerfile"
           push: true
-          tags: onlyfart/${{ steps.string.outputs.lowercase }}:${{ needs.check_version.outputs.VERSION }},onlyfart/${{ steps.string.outputs.lowercase }}:latest
+          tags: ${{secrets.DOCKERHUB_NAMESPACE}}/${{ steps.string.outputs.lowercase }}:${{ needs.check_version.outputs.VERSION }},${{secrets.DOCKERHUB_NAMESPACE}}/${{ steps.string.outputs.lowercase }}:latest
           
   create_release:
     needs: check_version
