@@ -141,7 +141,7 @@ jobs:
     
     steps:
       - name: download-artifact-${{ matrix.os }}-${{ matrix.version }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: Elib2Ebook-${{ matrix.os }}-${{ matrix.version }}
           path: ${{ github.workspace }}/${{ matrix.os }}-${{ matrix.version }} 
