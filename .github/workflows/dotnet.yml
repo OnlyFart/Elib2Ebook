@@ -54,6 +54,7 @@ jobs:
         
   check_version:
     name: Check version
+    needs: build
     runs-on: ubuntu-latest
     outputs:
       VERSION: ${{ steps.get-version.outputs.version }}
@@ -113,7 +114,7 @@ jobs:
           tags: onlyfart/${{ steps.string.outputs.lowercase }}:${{ needs.check_version.outputs.VERSION }},onlyfart/${{ steps.string.outputs.lowercase }}:latest
           
   create_release:
-    needs: [ build, check_version ]
+    needs: check_version
     runs-on: ubuntu-latest
     if: ${{ needs.check_version.outputs.LAST_TAG != needs.check_version.outputs.VERSION }}
     outputs:
@@ -132,7 +133,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
     
   upload_release:
-    needs: [build, create_release]
+    needs: create_release
     runs-on: ubuntu-latest
     strategy:
       matrix:
