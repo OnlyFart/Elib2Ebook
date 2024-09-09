@@ -39,6 +39,11 @@ public class StrokiMtsGetter : GetterBase {
     
     public override async Task<Book> Get(Uri url) {
         var id = GetId(url);
+        if (url.GetSegment(1) == "audiobook") {
+            throw new Exception("Указана ссылка на аудиокнигу. Укажите ссылку на текстовую версию");
+        }
+        
+        
         var fileMeta = await GetFileMeta(id);
         var fileUrl = await GetFileUrl(fileMeta);
 
