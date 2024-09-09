@@ -15,9 +15,9 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Setup .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
         
@@ -64,7 +64,7 @@ jobs:
       - name: check repository
         uses: actions/checkout@v4
 
-      - uses: kzrnm/get-net-sdk-project-versions-action@v1
+      - uses: kzrnm/get-net-sdk-project-versions-action@v2
         id: get-version
         with:
           proj-path: Core/Core.csproj
@@ -101,7 +101,7 @@ jobs:
           password: ${{secrets.DOCKERHUB_TOKEN}}
 
       - id: string
-        uses: ASzc/change-string-case-action@v2
+        uses: ASzc/change-string-case-action@v6
         with:
           string: ${{ matrix.folder }}
 
