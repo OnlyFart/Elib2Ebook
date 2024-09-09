@@ -50,7 +50,7 @@ public class StrokiMtsGetter : GetterBase {
         Console.WriteLine($"Оригинальный файл доступен по ссылке {fileUrl.Url}");
 
         if (fileUrl.Url.AsUri().GetFileName().EndsWith(".pdf")) {
-            throw new Exception("Эта книга в формате PDF. Можете скачать ее по ссылке выше");
+            throw new Exception($"Эта книга в формате PDF. Можете скачать ее по ссылке {fileUrl.Url}");
         }
         
         var details = await GetBook(id);

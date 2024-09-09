@@ -65,7 +65,7 @@
                     Snackbar.Add($"Генерация книги {GetBookName(url, _shortBook).CoverQuotes()} завершена", Severity.Success);
                 } catch (Exception ex) {
                     logger.LogInformation($"Генерация книги {GetBookName(url, _shortBook).CoverQuotes()} завершилась с ошибкой. {ex}");
-                    Snackbar.Add($"Генерация книги {GetBookName(url, _shortBook).CoverQuotes()} завершилась с ошибкой. {ex}", Severity.Error);
+                    Snackbar.Add($"Генерация книги {GetBookName(url, _shortBook).CoverQuotes()} завершилась с ошибкой. {ex.Message}", Severity.Error);
                 }
             }
         } catch (Exception ex) {
