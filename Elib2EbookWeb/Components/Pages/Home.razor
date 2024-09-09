@@ -5,7 +5,7 @@
 @using Core.Misc.TempFolder
 @using Core.Types.Book
 @rendermode InteractiveServer
-@inject IJSRuntime jsRuntime
+@inject IJSRuntime JsRuntime
 @inject ISnackbar Snackbar
 
 <PageTitle>Elib2Ebook</PageTitle>
@@ -59,7 +59,7 @@
                     foreach (var fileName in Directory.GetFiles(tempSave.Path)) {
                         await using var file = File.OpenRead(fileName);
                         using var streamRef = new DotNetStreamReference(file);
-                        await jsRuntime.InvokeVoidAsync("downloadFileFromStream", Path.GetFileName(file.Name), streamRef);
+                        await JsRuntime.InvokeVoidAsync("downloadFileFromStream", Path.GetFileName(file.Name), streamRef);
                     }
 
                     Snackbar.Add($"Генерация книги {GetBookName(url, _shortBook).CoverQuotes()} завершена", Severity.Success);
