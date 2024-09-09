@@ -100,6 +100,10 @@ public class MyBookGetter : GetterBase {
         url = GetMainUrl(url);
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         var details = GetNextData<MyBookBook>(doc, "book");
+
+        if (details.Type == "audio") {
+            throw new Exception("Указана ссылка на аудиокнигу. Укажите ссылку на текстовую версию");
+        }
         
         var book = new Book(url) {
             Cover = await GetCover(details),

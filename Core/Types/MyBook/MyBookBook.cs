@@ -17,4 +17,7 @@ public class MyBookBook {
     
     [JsonPropertyName("authors")]
     public MyBookAuthor[] Authors { get; set; }
+    
+    [JsonPropertyName("type")]
+    public string Type { get; set; }
 }
