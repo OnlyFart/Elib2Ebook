@@ -8,11 +8,13 @@
         <MudItem sm="7" md="7" xl="7">
             <MudCardContent>
                 <MudLink Href="@Book.Url.ToString()" Target="_blank"><MudText Typo="Typo.h5">@Book.Title</MudText></MudLink>
-
-                @if (Book.Author?.Url == default) {
-                    <MudText Typo="Typo.subtitle2">Автор: @Book.Author.Name</MudText>
-                } else {
-                    <MudText Typo="Typo.subtitle2">Автор: <MudLink Href="@Book.Author.Url.ToString()" Target="_blank">@Book.Author.Name</MudLink></MudText>
+                
+                @if (Book.Author != default) {
+                    @if (Book.Author.Url == default) {
+                        <MudText Typo="Typo.subtitle2">Автор: @Book.Author.Name</MudText>
+                    } else {
+                        <MudText Typo="Typo.subtitle2">Автор: <MudLink Href="@Book.Author.Url.ToString()" Target="_blank">@Book.Author.Name</MudLink></MudText>
+                    }
                 }
 
                 @if (Book.Seria != default) {
