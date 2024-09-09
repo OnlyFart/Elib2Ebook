@@ -146,7 +146,7 @@ docker run --rm -p 8080:8080 onlyfart/elib2ebookweb
 ```
 
 ## Скриншоты
-<img width="828" alt="image" src="https://github.com/user-attachments/assets/804f3326-3823-45c8-85e9-5fe8a203a39f">
+<img width="819" alt="image" src="https://github.com/user-attachments/assets/05acc9fd-3cff-4137-af14-5826193f693f">
 
 
 
