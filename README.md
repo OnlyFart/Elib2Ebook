@@ -3,8 +3,8 @@
 [![GitHub Stars](https://img.shields.io/github/stars/OnlyFart/Elib2Ebook.svg?style=flat-square)](https://github.com/OnlyFart/Elib2Ebook/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/OnlyFart/Elib2Ebook.svg?style=flat-square)](https://github.com/OnlyFart/Elib2Ebook/network)
 [![GitHub tag](https://img.shields.io/github/v/tag/OnlyFart/Elib2Ebook.svg?style=flat-square)](https://github.com/OnlyFart/Elib2Ebook/releases/latest)
-![Docker Pulls](https://img.shields.io/docker/pulls/onlyfart/elib2ebookcli?style=flat-square&label=Cli%20Pulls)
-![Docker Pulls](https://img.shields.io/docker/pulls/onlyfart/elib2ebookweb?style=flat-square&label=Web%20Pulls)
+![Docker Pulls](https://img.shields.io/docker/pulls/onlyfart/elib2ebookcli?style=flat-square&label=cli%20Pulls)
+![Docker Pulls](https://img.shields.io/docker/pulls/onlyfart/elib2ebookweb?style=flat-square&label=web%20Pulls)
 ![GitHub downloads](https://img.shields.io/github/downloads/onlyfart/elib2ebook/total?style=flat-square)
 
 
