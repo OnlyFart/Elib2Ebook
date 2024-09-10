@@ -148,7 +148,7 @@ public abstract class GetterBase : IDisposable {
         return Task.CompletedTask;
     }
 
-    public void Dispose() {
+    public virtual void Dispose() {
         Config?.Dispose();
     }
 }

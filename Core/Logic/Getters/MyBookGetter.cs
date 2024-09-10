@@ -277,7 +277,7 @@ public class MyBookGetter : GetterBase {
         return string.IsNullOrWhiteSpace(author.Url) ? new Author(author.Name) : new Author(author.Name, SystemUrl.MakeRelativeUri(author.Url));
     }
     
-    public new void Dispose() {
+    public override void Dispose() {
         base.Dispose();
         _apiClient?.Dispose();
     }

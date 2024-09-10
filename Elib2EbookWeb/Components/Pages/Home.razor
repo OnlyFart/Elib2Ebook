@@ -29,7 +29,7 @@
     private Book? _shortBook;
     
     private async Task OnClick(Options options, ILogger logger) {
-        using var tempSave = TempFolderFactory.Create("Books", true);
+        using var tempSave = TempFolderFactory.Create("Books_" + Guid.NewGuid(), true);
 
         options.Timeout = 10;
         options.SavePath = tempSave.Path;
