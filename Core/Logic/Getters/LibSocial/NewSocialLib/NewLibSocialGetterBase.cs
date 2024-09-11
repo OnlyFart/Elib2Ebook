@@ -155,7 +155,7 @@ public abstract class NewLibSocialGetterBase : GetterBase{
             result = result.Where(c => c.Branches.Any(b => b.BranchId.ToString() == bid)).ToList();
         }
         
-        return SliceToc(result);
+        return SliceToc(result, c => c.Name);
     }
 
     private Author GetAuthor(RanobeLibBookDetails details) {

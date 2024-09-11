@@ -78,7 +78,7 @@ public class JaomixGetter : GetterBase {
         var chapters = ParseChapters(doc, url).ToList();
         Config.Logger.LogInformation($"Получено {chapters.Count} глав");
         
-        return SliceToc(chapters);
+        return SliceToc(chapters, c => c.Title);
     }
         
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {

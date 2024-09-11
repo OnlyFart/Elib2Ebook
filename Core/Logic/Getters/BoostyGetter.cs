@@ -103,7 +103,7 @@ public class BoostyGetter : GetterBase {
         }
 
         result.Reverse();
-        return SliceToc(result);
+        return SliceToc(result, c => c.Title);
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {

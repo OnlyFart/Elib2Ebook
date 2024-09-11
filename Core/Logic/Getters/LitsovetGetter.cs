@@ -72,7 +72,7 @@ public class LitsovetGetter : GetterBase {
                 : new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.GetText().ReplaceNewLine()));
         }
         
-        return SliceToc(result);
+        return SliceToc(result, c => c.Title);
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {

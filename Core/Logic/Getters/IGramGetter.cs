@@ -106,7 +106,7 @@ public class IGramGetter : GetterBase {
         var response = await Config.Client.GetAsync(SystemUrl.MakeRelativeUri($"/api/v1/book/{GetInternalId(doc)}/chapters"));
 
         var content = await response.Content.ReadAsStringAsync();
-        return SliceToc(content.Deserialize<IEnumerable<LitexitChapter>>().OrderBy(c => c.Id).ToList());
+        return SliceToc(content.Deserialize<IEnumerable<LitexitChapter>>().OrderBy(c => c.Id).ToList(), c => c.Title);
     }
 
     private static Author GetAuthor(HtmlDocument doc, Uri uri) {

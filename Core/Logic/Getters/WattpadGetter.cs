@@ -49,14 +49,14 @@ public class WattpadGetter : GetterBase {
             return result;
         }
             
-        foreach (var group in SliceToc(wattpadInfo.Parts)) {
-            Config.Logger.LogInformation($"Загружаю главу {group.GetTitle().CoverQuotes()}");
+        foreach (var group in SliceToc(wattpadInfo.Parts, c => c.FullName)) {
+            Config.Logger.LogInformation($"Загружаю главу {group.FullName.CoverQuotes()}");
             var chapter = new Chapter();
                 
             var chapterDoc = await GetChapter(group);
             chapter.Images = await GetImages(chapterDoc, group.Url);
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;
-            chapter.Title = group.GetTitle();
+            chapter.Title = group.FullName;
 
             result.Add(chapter);
         }

@@ -81,7 +81,7 @@ public class DreameGetter : GetterBase {
 
     private async Task<IEnumerable<DreameChapter>> GetToc(string bookId) {
         var response = await Config.Client.GetFromJsonWithTriesAsync<DreameApiResponse<DreameCatalog>>(_apiUrl.MakeRelativeUri($"novel/getcatelog?channel=dreamepmian-173&product=1&osType=2&nid={bookId}"));
-        return SliceToc(response.Data.Pager.ChapterList);
+        return SliceToc(response.Data.Pager.ChapterList, c => c.Title);
     }
 
     private Author GetAuthor(HtmlDocument doc, DreameNovel data) {

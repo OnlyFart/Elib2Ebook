@@ -41,7 +41,7 @@ public class RanobeGetter : GetterBase {
             return result;
         }
             
-        foreach (var ranobeChapter in SliceToc(ranobeBook.Chapters.Reverse().ToList())) {
+        foreach (var ranobeChapter in SliceToc(ranobeBook.Chapters.Reverse().ToList(), c => c.Title)) {
             Config.Logger.LogInformation($"Загружаю главу {ranobeChapter.Title.CoverQuotes()}");
             var chapter = new Chapter();
             var doc = await GetChapter(url, ranobeChapter.Url);

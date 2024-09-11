@@ -58,7 +58,7 @@ public abstract class HotNovelPubGetterBase : GetterBase {
             return result;
         }
         
-        foreach (var ezChapter in SliceToc(toc)) {
+        foreach (var ezChapter in SliceToc(toc, c => c.Title)) {
             var title = ezChapter.Title.Trim();
             Config.Logger.LogInformation($"Загружаю главу {title.CoverQuotes()}");
             

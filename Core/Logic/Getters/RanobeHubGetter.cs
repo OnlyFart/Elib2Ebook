@@ -82,7 +82,7 @@ public class RanobeHubGetter : GetterBase {
     private async Task<IEnumerable<RanobeHubChapter>> GetToc(HtmlDocument doc) {
         var internalId = doc.QuerySelector("html[data-id]").Attributes["data-id"].Value;
         var response = await Config.Client.GetFromJsonAsync<RanobeHubApiResponse>(SystemUrl.MakeRelativeUri($"/api/ranobe/{internalId}/contents"));
-        return SliceToc(response?.Volumes.SelectMany(t => t.Chapters).ToList());
+        return SliceToc(response?.Volumes.SelectMany(t => t.Chapters).ToList(), c => c.Name);
     }
     
     private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {

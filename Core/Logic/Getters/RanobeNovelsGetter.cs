@@ -83,7 +83,7 @@ public class RanobeNovelsGetter : GetterBase {
             result.AddRange(toc.Select((a, i) => new UrlChapter(SystemUrl.MakeRelativeUri(a.PostName), $"Глава {offset + i + 1}")));
         }
 
-        return SliceToc(result).ToList();
+        return SliceToc(result, c => c.Title).ToList();
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {

@@ -87,7 +87,7 @@ public class BookstimeGetter : GetterBase {
             .Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.GetText().ReplaceNewLine()))
             .ToList();
         
-        return SliceToc(result);
+        return SliceToc(result, c => c.Title);
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {

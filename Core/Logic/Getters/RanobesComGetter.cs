@@ -161,6 +161,6 @@ public class RanobesComGetter : GetterBase {
         Config.Logger.LogInformation($"Получено {result.Count} глав");
 
         result.Reverse();
-        return SliceToc(result);
+        return SliceToc(result, c => c.Title);
     }
 }

@@ -105,14 +105,14 @@ public abstract class OldLibSocialGetterBase : GetterBase {
                 .Key
             : int.Parse(bidId);
 
-        foreach (var ranobeChapter in SliceToc(data.Chapters.List.Where(c => c.BranchId == branchId).ToList())) {
-            Config.Logger.LogInformation($"Загружаю главу {ranobeChapter.GetName()}");
+        foreach (var ranobeChapter in SliceToc(data.Chapters.List.Where(c => c.BranchId == branchId).ToList(), c => c.Name)) {
+            Config.Logger.LogInformation($"Загружаю главу {ranobeChapter.Name}");
             var chapter = new Chapter();
             
             var chapterDoc = await GetChapter(url, ranobeChapter, data.User);
             chapter.Images = await GetImages(chapterDoc, SystemUrl);
             chapter.Content = chapterDoc.DocumentNode.InnerHtml;
-            chapter.Title = ranobeChapter.GetName();
+            chapter.Title = ranobeChapter.Name;
 
             result.Add(chapter);
         }

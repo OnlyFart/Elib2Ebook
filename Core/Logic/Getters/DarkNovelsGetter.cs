@@ -139,7 +139,7 @@ public class DarkNovelsGetter : GetterBase {
 
     private async Task<IEnumerable<DarkNovelsChapter>> GetToc(string bookId) {
         return await Config.Client.GetFromJsonAsync<DarkNovelsData<DarkNovelsChapter[]>>(_apiUrl.MakeRelativeUri($"/v2/toc/{bookId}"))
-            .ContinueWith(t => SliceToc(t.Result?.Data.Where(c => !c.Title.StartsWith("Volume:")).ToList()));
+            .ContinueWith(t => SliceToc(t.Result?.Data.Where(c => !c.Title.StartsWith("Volume:")).ToList(), c => c.Title));
     }
 
     private async Task FillChapter(string bookId, DarkNovelsChapter darkNovelsChapter, Chapter chapter) {

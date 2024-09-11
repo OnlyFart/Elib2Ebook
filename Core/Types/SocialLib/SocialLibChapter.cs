@@ -18,7 +18,5 @@ public class SocialLibChapter {
     [JsonPropertyName("branch_id")]
     public int? BranchId { get; set; }
 
-    public string GetName() {
-        return $"Том {ChapterVolume} Глава {ChapterNumber} {ChapterName}".Trim();
-    }
+    public string Name => $"Том {ChapterVolume} Глава {ChapterNumber} {ChapterName}".Trim();
 }

@@ -46,7 +46,7 @@ public abstract class FreedomGetterBase : GetterBase{
             .Reverse()
             .ToList();
         
-        return SliceToc(result);
+        return SliceToc(result, c => c.Title);
     }
     
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri uri) {

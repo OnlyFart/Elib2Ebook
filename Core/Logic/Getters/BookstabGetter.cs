@@ -54,7 +54,7 @@ public class BookstabGetter : GetterBase {
             return result;
         }
 
-        foreach (var bookChapter in SliceToc(response.Book.ChaptersShow)) {
+        foreach (var bookChapter in SliceToc(response.Book.ChaptersShow, c => c.Title)) {
             var chapter = new Chapter {
                 Title = bookChapter.Title
             };

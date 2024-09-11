@@ -88,7 +88,7 @@ public class YounettranslateGetter : GetterBase {
             result.AddRange(links);
         }
 
-        return SliceToc(result);
+        return SliceToc(result, c => c.Title);
     }
 
     private async Task<HtmlDocument> GetChapter(UrlChapter urlChapter) {

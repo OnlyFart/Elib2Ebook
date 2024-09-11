@@ -97,7 +97,7 @@ public class LitLifeGetter : GetterBase {
             .Select(a => new UrlChapter(SystemUrl.MakeRelativeUri(a.Attributes["href"].Value), a.RemoveNodes("span").GetText().ReplaceNewLine()))
             .ToList();
 
-        return SliceToc(result);
+        return SliceToc(result, c => c.Title);
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(string id) {

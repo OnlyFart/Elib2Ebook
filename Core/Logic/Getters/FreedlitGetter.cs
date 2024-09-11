@@ -77,7 +77,7 @@ public class FreedlitGetter : GetterBase{
         var response = await Config.Client.PostAsJsonAsync(SystemUrl.MakeRelativeUri("/api/bookpage/get-chapters"), new { book_id = book.Id });
         var data = await response.Content.ReadFromJsonAsync<FreedlitApiResponse<FreedlitItemsContent<FreedlitChapter>>>();
         
-        return SliceToc(data.Success.Items);
+        return SliceToc(data.Success.Items, c => c.Header);
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(FreedlitBook book) {

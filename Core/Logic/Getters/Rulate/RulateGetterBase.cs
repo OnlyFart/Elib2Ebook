@@ -140,6 +140,6 @@ public abstract class RulateGetterBase : GetterBase {
             .Select(chapter => new IdChapter(chapter.Attributes["data-id"].Value, chapter.GetTextBySelector("td.t")))
             .ToList();
         
-        return SliceToc(result);
+        return SliceToc(result, c => c.Title);
     }
 }

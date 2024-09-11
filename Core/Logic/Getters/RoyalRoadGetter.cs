@@ -73,7 +73,7 @@ public class RoyalRoadGetter : GetterBase {
             .Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.GetText()))
             .ToList();
         
-        return SliceToc(result);
+        return SliceToc(result, c => c.Title);
     }
 
     private Author GetAuthor(HtmlDocument doc, Uri url) {

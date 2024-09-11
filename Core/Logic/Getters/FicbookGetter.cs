@@ -105,6 +105,6 @@ public class FicbookGetter : GetterBase {
             }
         }
         
-        return SliceToc(result);
+        return SliceToc(result, c => c.Title);
     }
 }

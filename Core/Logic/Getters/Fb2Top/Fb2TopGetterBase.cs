@@ -66,7 +66,7 @@ public abstract class Fb2TopGetterBase : GetterBase {
 
     private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
         var urlChapters = doc.QuerySelectorAll("div.card-body li a").Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.GetText())).ToList();
-        return SliceToc(urlChapters);
+        return SliceToc(urlChapters, c => c.Title);
     }
 
     private static Seria GetSeria(HtmlDocument doc, Uri url) {

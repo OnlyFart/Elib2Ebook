@@ -118,7 +118,7 @@ public class HogwartsNetGetter : GetterBase {
             result.Add(new UrlChapter(chapterUrl, chapterTitle));
         }
 
-        return SliceToc(result);
+        return SliceToc(result, c => c.Title);
     }
 
     private static Seria GetSeria(HtmlDocument doc, Uri url) {

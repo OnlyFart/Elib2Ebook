@@ -60,7 +60,7 @@ public class WuxiaWorldGetter : GetterBase {
             result.AddRange(toc.Select((a, i) => new UrlChapter(url.MakeRelativeUri(a.PostName), $"Глава {offset + i + 1}")));
         }
 
-        return SliceToc(result);
+        return SliceToc(result, c => c.Title);
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {

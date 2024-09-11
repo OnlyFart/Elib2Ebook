@@ -154,7 +154,7 @@ public class LitgorodGetter : GetterBase {
             .Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), string.IsNullOrWhiteSpace(a.GetText()) ? "Без названия" : a.GetText()))
             .ToList();
         
-        return SliceToc(result);
+        return SliceToc(result, c => c.Title);
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {

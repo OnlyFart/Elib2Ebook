@@ -16,13 +16,27 @@
             </MudToggleGroup>
         </MudStack>
         
+
         <MudTextField @bind-Value="@_options.Login" Label="Логин" Variant="Variant.Outlined"/>
         <MudTextField @bind-Value="@_options.Password" Label="Пароль"  Variant="Variant.Outlined" InputType="@_passwordInput" Adornment="Adornment.End" AdornmentIcon="@_passwordInputIcon" OnAdornmentClick="ShowPassword" AdornmentAriaLabel="Показать пароль" />
+        
+        
+        @if (_startEndCSwitcher) {
+            <div class="d-flex gap-x-4">
+                <MudTextField T="string" Label="Глава от" Variant="Variant.Outlined" @bind-Value="@_options.StartName"/>
+                <MudTextField T="string" Label="Глава до" Variant="Variant.Outlined" @bind-Value="@_options.EndName"/>
+            </div>
+        } else {
+            <div HtmlTag="div" Class="d-flex gap-x-4">
+                <MudTextField T="int?" Label="Глава от" Variant="Variant.Outlined" @bind-Value="@_options.Start"/>
+                <MudTextField T="int?" Label="Глава до" Variant="Variant.Outlined" @bind-Value="@_options.End"/>
+            </div>
+        }
 
-        <div class="d-flex gap-x-4">
-            <MudTextField T="int?" Label="Глава от" Variant="Variant.Outlined" @bind-Value="@_options.Start"/>
-            <MudTextField T="int?" Label="Глава до" Variant="Variant.Outlined" @bind-Value="@_options.End"/>
-        </div>
+        <MudRadioGroup T="bool" ValueChanged="OnSwitch" Class="justify-center align-center">
+            <MudRadio Value="false" Color="Color.Primary" Dense="true">По номеру</MudRadio>
+            <MudRadio Value="true" Color="Color.Secondary" Dense="true">По названию</MudRadio>
+        </MudRadioGroup>
     </MudForm>
 </MudPaper>
 
@@ -54,6 +68,7 @@
     private ActionLogger? _logger;
     private bool _onGenerate;
     private string? _log;
+    private bool _startEndCSwitcher;
     
     private bool _isShow;
     private InputType _passwordInput = InputType.Password;
@@ -104,4 +119,14 @@
         await OnClick(_options, _logger);
         _onGenerate = false;
     }
+
+    private void OnSwitch(bool obj) {
+        _startEndCSwitcher = obj;
+        
+        _options.Start = default;
+        _options.End = default;
+        _options.StartName = default;
+        _options.EndName = default;
+    }
+    
 }

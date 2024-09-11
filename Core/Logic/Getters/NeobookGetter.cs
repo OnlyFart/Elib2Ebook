@@ -85,7 +85,7 @@ public class NeobookGetter : GetterBase {
             return result;
         }
 
-        foreach (var neobookChapter in SliceToc(data.Chapters)) {
+        foreach (var neobookChapter in SliceToc(data.Chapters, c => c.Title)) {
             Config.Logger.LogInformation($"Загружаю главу {neobookChapter.Title.CoverQuotes()}");
             var chapter = new Chapter {
                 Title = neobookChapter.Title

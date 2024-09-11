@@ -11,9 +11,7 @@ public class WattpadPart {
     [JsonPropertyName("title")]
     public string Title { private get; set; }
 
-    public string GetTitle() {
-        return Title.Replace("\r", " ").CollapseWhitespace().Trim();
-    }
+    public string FullName => Title.Replace("\r", " ").CollapseWhitespace().Trim();
 
     public Uri Url => new($"https://www.wattpad.com/apiv2/storytext?id={Id}");
 }

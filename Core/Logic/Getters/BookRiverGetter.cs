@@ -159,7 +159,7 @@ public class BookriverGetter : GetterBase {
     private async Task<IEnumerable<BookRiverChapter>> GetToc(string bookId) {
         var response = await Config.Client.GetWithTriesAsync(_apiUrl.MakeRelativeUri($"/api/v1/books/chapters/text/published?bookId={bookId}"));
         var content = await response.Content.ReadAsStringAsync();
-        return SliceToc(content.Deserialize<BookRiverApiResponse<BookRiverChapter[]>>().Data);
+        return SliceToc(content.Deserialize<BookRiverApiResponse<BookRiverChapter[]>>().Data, c => c.Name);
     }
 
     private Task<Image> GetCover(HtmlDocument doc, Uri uri) {

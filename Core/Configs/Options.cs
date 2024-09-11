@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using CommandLine;
 
 namespace Core.Configs; 
@@ -42,7 +43,13 @@ public class Options {
     
     [Option("end", Required = false, HelpText = "Конечный номер главы")]
     public int? End { get; set; }
+
+    [Option("start-name", Required = false, HelpText = "Стартовое название главы")]
+    public string StartName { get; set; }
     
+    [Option("end-name", Required = false, HelpText = "Конечное название главы")]
+    public string EndName { get; set; }
+
     [Option("temp", Required = false, HelpText = "Папка для временного хранения картинок")]
     public string TempPath { get; set; }
     

@@ -122,7 +122,7 @@ public abstract class RenovelsGetterBase : GetterBase {
             result.AddRange(response!.Content);
 
             if (response.Content.Length < 40) {
-                return SliceToc(result.Where(c => !c.IsPaid || c.IsBought == true).ToList());
+                return SliceToc(result.Where(c => !c.IsPaid || c.IsBought == true).ToList(), c => c.Name);
             }
         }
     }

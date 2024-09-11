@@ -97,7 +97,7 @@ public abstract class LitnetGetterBase : GetterBase {
         var chapters = string.Join("&", contents.Select(t => $"chapter_ids[]={t.Id}"));
         var url = ApiIp.MakeRelativeUri($"/v1/book/get-chapters-texts/?{chapters}&app=android&device_id={DeviceId}&sign={GetSign(token)}&user_token={token}");
         var data = await GetApiData<LitnetChapterResponse[]>(url);
-        return SliceToc(data);
+        return SliceToc(data, c => c.Text);
     }
 
     private async Task<T> GetApiData<T>(Uri uri) {

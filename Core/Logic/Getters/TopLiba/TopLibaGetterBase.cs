@@ -120,7 +120,7 @@ public abstract class TopLibaGetterBase : GetterBase {
     private async Task<IEnumerable<string>> GetToc(string bookId) {
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"/reader/{bookId}"));
         var result = new Regex("capters: \\[(?<chapters>.*?)\\]").Match(doc.Text).Groups["chapters"].Value.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim('\"')).ToList();
-        return SliceToc(result);
+        return SliceToc(result, c => c);
     }
 
     private static string GetToken(HtmlDocument doc) {

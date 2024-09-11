@@ -92,7 +92,7 @@ public class NovelTranslateGetter : GetterBase {
         }
 
         chapters.Reverse();
-        return SliceToc(chapters);
+        return SliceToc(chapters, c => c.Title);
     }
 
     private static string GetAnnotation(HtmlDocument doc) {

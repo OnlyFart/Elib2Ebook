@@ -66,7 +66,7 @@ public class ReadMangaGetter : GetterBase {
             .Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.GetText().ReplaceNewLine()))
             .Reverse()
             .ToList();
-        return SliceToc(result);
+        return SliceToc(result, c => c.Title);
     }
 
     private async Task<HtmlDocument> GetChapter(UrlChapter urlChapter) {

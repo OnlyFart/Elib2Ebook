@@ -74,10 +74,11 @@ public abstract class NovelxoGetterBase : GetterBase {
             }
 
             var chapterDoc = sb.AsHtmlDoc();
-            var chapter = new Chapter();
-            chapter.Title = doc.GetTextBySelector("h2.chapter-title");
-            chapter.Images = await GetImages(chapterDoc, start);
-            chapter.Content = chapterDoc.DocumentNode.InnerHtml;
+            var chapter = new Chapter {
+                Title = doc.GetTextBySelector("h2.chapter-title"),
+                Images = await GetImages(chapterDoc, start),
+                Content = chapterDoc.DocumentNode.InnerHtml
+            };
 
             result.Add(chapter);
             

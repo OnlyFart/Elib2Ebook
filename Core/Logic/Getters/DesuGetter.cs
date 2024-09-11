@@ -84,7 +84,7 @@ public class DesuGetter : GetterBase {
             .Reverse()
             .ToList();
 
-        return SliceToc(result);
+        return SliceToc(result, c => c.Title);
     }
 
     private async Task<HtmlDocument> GetChapter(UrlChapter urlChapter) {

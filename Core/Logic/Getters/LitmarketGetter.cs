@@ -139,7 +139,7 @@ public class LitmarketGetter : GetterBase {
             ];
         }
 
-        return SliceToc(toc).ToList();
+        return SliceToc(toc, c => c.Chunk.Mods[0].Text).ToList();
     }
 
     private async Task<List<Chapter>> FillChapters(List<Block> toc, Block[] blocks, Uri bookUri, long eBookId) {

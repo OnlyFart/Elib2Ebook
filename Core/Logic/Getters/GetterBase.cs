@@ -112,9 +112,33 @@ public abstract class GetterBase : IDisposable {
         return Task.CompletedTask;
     }
 
-    protected IEnumerable<T> SliceToc<T>(ICollection<T> toc) {
+    private static int GetIndexByName<T>(ICollection<T> toc, Func<T, string> selector, string name) {
+        var result = toc
+            .Select((chapter, index) => new { chapter, index })
+            .FirstOrDefault(c => string.Equals(selector(c.chapter)?.Trim(), name, StringComparison.InvariantCultureIgnoreCase))
+            ?.index;
+
+        if (!result.HasValue) {
+            throw new Exception($"Глава с названием {name.CoverQuotes()} не найдена");
+        }
+        
+        return result.Value + 1;
+    }
+
+    protected IEnumerable<T> SliceToc<T>(ICollection<T> toc, Func<T, string> selector) {
         var start = Config.Options.Start;
         var end = Config.Options.End;
+
+        var startName = (Config.Options.StartName ?? string.Empty).Trim();
+        var endName = (Config.Options.EndName ?? string.Empty).Trim();
+
+        if (!string.IsNullOrWhiteSpace(startName)) {
+            start = GetIndexByName(toc, selector, startName);
+        }
+        
+        if (!string.IsNullOrWhiteSpace(endName)) {
+            end = GetIndexByName(toc, selector, endName);
+        }
 
         if (start.HasValue && end.HasValue) {
             var startIndex = start.Value >= 0 ? start.Value : toc.Count + start.Value + 1; 

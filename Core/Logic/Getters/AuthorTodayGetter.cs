@@ -189,6 +189,6 @@ public class AuthorTodayGetter : GetterBase {
             }
         }
 
-        return SliceToc(result);
+        return SliceToc(result, c => c.Title);
     }
 }
