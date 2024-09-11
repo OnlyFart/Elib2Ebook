@@ -96,14 +96,27 @@ public class MyBookGetter : GetterBase {
             .Deserialize<T>();
     }
 
-    public override async Task<Book> Get(Uri url) {
-        url = GetMainUrl(url);
+    private async Task<MyBookBook> GetDetails(Uri url) {
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
         var details = GetNextData<MyBookBook>(doc, "book");
 
         if (details.Type == "audio") {
+            var bookId = details.Connected?.Id ?? details.MapFiles.FirstOrDefault(b => b.Book != default)?.Book;
+            if (bookId != default) {
+                var apiUrl = SystemUrl.MakeRelativeUri($"/api/v1/books/{bookId}/");
+                SetAuthHeader("GET", apiUrl);
+                return await _apiClient.GetFromJsonAsync<MyBookBook>(apiUrl);
+            }
+            
             throw new Exception("Указана ссылка на аудиокнигу. Укажите ссылку на текстовую версию");
         }
+
+        return details;
+    }
+
+    public override async Task<Book> Get(Uri url) {
+        url = GetMainUrl(url);
+        var details = await GetDetails(url);
         
         var book = new Book(url) {
             Cover = await GetCover(details),

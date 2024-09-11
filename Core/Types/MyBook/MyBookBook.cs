@@ -3,6 +3,9 @@ using System.Text.Json.Serialization;
 namespace Core.Types.MyBook; 
 
 public class MyBookBook {
+    [JsonPropertyName("id")]
+    public long Id { get; set; }
+    
     [JsonPropertyName("annotation")]
     public string Annotation { get; set; }
     
@@ -20,4 +23,10 @@ public class MyBookBook {
     
     [JsonPropertyName("type")]
     public string Type { get; set; }
+    
+    [JsonPropertyName("mapfiles")]
+    public MyBookMapFile[] MapFiles { get; set; }
+    
+    [JsonPropertyName("connected_book")]
+    public MyBookBook Connected { get; set; }
 }
