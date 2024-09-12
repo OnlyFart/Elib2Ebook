@@ -98,7 +98,7 @@ public class StrokiMtsGetter : GetterBase {
             return result;
         }
         
-        var response = await Config.Client.GetAsync(url);
+        var response = await Config.Client.GetWithTriesAsync(url);
         var epubBook = EpubReader.Read(await response.Content.ReadAsStreamAsync(), false, Encoding.UTF8);
         var current = epubBook.TableOfContents.First();
         
@@ -221,22 +221,22 @@ public class StrokiMtsGetter : GetterBase {
     }
 
     private async Task<StrokiMtsFile> GetFileMeta(string id) {
-        var json = await SendAsync<StrokiMtsApiResponse<StrokiMtsFiles>>(GetMessage(SystemUrl.MakeRelativeUri("/api/books/files").AppendQueryParameter("bookId", id), "5.0", "5.0"));
+        var json = await SendAsync<StrokiMtsApiResponse<StrokiMtsFiles>>(() => GetMessage(SystemUrl.MakeRelativeUri("/api/books/files").AppendQueryParameter("bookId", id), "5.0", "5.0"));
         return json.Data.Full?.FirstOrDefault() ?? json.Data.Preview;
     }
     
     private async Task<StrokiMtsFileUrl> GetFileUrl(StrokiMtsFile file) {
-        var json = await SendAsync<StrokiMtsApiResponse<StrokiMtsFileUrl>>(GetMessage(SystemUrl.MakeRelativeUri($"api/books/files/data/link/{file.FileId}"), "5.0", "5.0"));
+        var json = await SendAsync<StrokiMtsApiResponse<StrokiMtsFileUrl>>(() => GetMessage(SystemUrl.MakeRelativeUri($"api/books/files/data/link/{file.FileId}"), "5.0", "5.0"));
         return json.Data;
     }
 
     private async Task<StrokiMtsBookItem> GetBook(string id) {
-        var json = await SendAsync<StrokiMtsApiResponse<StrokiMtsApiMultiResponse>>(GetMessage(SystemUrl.MakeRelativeUri($"/api/books/multi/{id}"), "5.38.0", "5.3"));
+        var json = await SendAsync<StrokiMtsApiResponse<StrokiMtsApiMultiResponse>>(() => GetMessage(SystemUrl.MakeRelativeUri($"/api/books/multi/{id}"), "5.38.0", "5.3"));
         return json.Data.Items.FirstOrDefault(i => i.TextBook != default).TextBook;
     }
 
-    private async Task<T> SendAsync<T>(HttpRequestMessage message) {
-        var response = await Config.Client.SendAsync(message);
+    private async Task<T> SendAsync<T>(Func<HttpRequestMessage> message) {
+        var response = await Config.Client.SendWithTriesAsync(message);
         if (response.StatusCode != HttpStatusCode.OK) {
             throw new Exception(await response.Content.ReadAsStringAsync());
         }

@@ -28,6 +28,8 @@ internal static class Program {
                         foreach (var format in options.Format) {
                             await BuilderProvider.Get(format, options, logger).Build(book);
                         }
+                    } catch (TaskCanceledException) {
+                        logger.LogInformation("Сервер не успевает ответить. Попробуйте увеличить Timeout с помощью параметра -t");
                     } catch (Exception ex) {
                         logger.LogInformation($"Генерация книги {url} завершилась с ошибкой. {ex}");
                     }

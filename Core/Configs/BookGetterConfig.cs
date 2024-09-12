@@ -14,6 +14,7 @@ public class BookGetterConfig : IDisposable {
 
     private class RedirectHandler : HttpClientHandler {
         private readonly ILogger _logger;
+        public int Delay { get; set; }
 
         public RedirectHandler(ILogger logger) {
             _logger = logger;
@@ -34,9 +35,17 @@ public class BookGetterConfig : IDisposable {
             } catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException) {
                 _logger.LogInformation("Сервер не успевает ответить. Попробуйте увеличить Timeout с помощью параметра -t");
                 throw;
+            } catch (TaskCanceledException ex) {
+                _logger.LogInformation(ex, "Сервер не успевает ответить. Попробуйте увеличить Timeout с помощью параметра -t");
+                throw;
             } catch (Exception ex) {
                 _logger.LogInformation(ex.Message);
                 throw;
+            } finally {
+                if (Delay > 0) {
+                    _logger.LogInformation($"Жду {Delay} секунд(-ы)");
+                    await Task.Delay(TimeSpan.FromSeconds(Delay), cancellationToken);
+                }
             }
         }
     }
@@ -80,6 +89,7 @@ public class BookGetterConfig : IDisposable {
             CookieContainer = container,
             Proxy = null,
             UseProxy = false,
+            Delay = options.Delay
         };
 
         if (!string.IsNullOrEmpty(options.Proxy)) {
@@ -89,6 +99,7 @@ public class BookGetterConfig : IDisposable {
 
         var client = new HttpClient(handler);
         client.Timeout = TimeSpan.FromSeconds(options.Timeout);
+        
         return client;
     }
 }
