@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
@@ -46,6 +48,7 @@ public class BookmateGetter : GetterBase {
             Author = GetAuthor(details),
             CoAuthors = GetCoAuthors(details),
             Annotation = details.Annotation,
+            Lang = details.Language
         };
         
         return book;
@@ -82,11 +85,12 @@ public class BookmateGetter : GetterBase {
         if (Config.Options.NoChapters) {
             return result;
         }
-        
+
         var response = await Config.Client.GetAsync($"https://api.bookmate.ru/api/v5/books/{id}/content/v4");
+
         var epubBook = EpubReader.Read(await response.Content.ReadAsStreamAsync(), false, Encoding.UTF8);
         var current = epubBook.TableOfContents.First();
-        
+
         do {
             Config.Logger.LogInformation($"Загружаю главу {current.Title.CoverQuotes()}");
 
@@ -206,8 +210,16 @@ public class BookmateGetter : GetterBase {
     }
     
     private async Task<BookmateBook> GetBook(string id) {
-        var response = await Config.Client.GetFromJsonAsync<BookmateBookResponse>($"https://api.bookmate.ru/api/v5/books/{id}".AsUri());
-        return response.Book;
+        try {
+            var response = await Config.Client.GetFromJsonAsync<BookmateBookResponse>($"https://api.bookmate.ru/api/v5/books/{id}".AsUri());
+            return response.Book;
+        } catch (HttpRequestException ex) {
+            if (ex.StatusCode == HttpStatusCode.Unauthorized) {
+                throw new Exception("Авторизационный токен невалиден. Требуется обновление");
+            }
+
+            throw;
+        }
     }
     
 }
