@@ -17,6 +17,7 @@ using Core.Types.Litres.Requests;
 using Core.Types.Litres.Response;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
@@ -227,13 +228,17 @@ public class LitresGetter : GetterBase {
 
     private async Task<HttpResponseMessage> GetBookResponse(string bookId) {
         if (_authData != null) {
-            var response = await Config.Client.GetAsync(GetFullUri(bookId, "download_book_subscr"));
+            var uri = GetFullUri(bookId, "download_book_subscr");
+            var response = await Config.Client.GetAsync(uri);
             if (response.StatusCode == HttpStatusCode.OK && response.Headers.AcceptRanges.Any()) {
+                Config.Logger.LogInformation($"Оригинальный файл доступен по ссылке {uri}");
                 return response;
             }
 
-            response = await Config.Client.GetAsync(GetFullUri(bookId, "catalit_download_book"));
+            uri = GetFullUri(bookId, "catalit_download_book");
+            response = await Config.Client.GetAsync(uri);
             if (response.StatusCode == HttpStatusCode.OK && response.Headers.AcceptRanges.Any()) {
+                Config.Logger.LogInformation($"Оригинальный файл доступен по ссылке {uri}");
                 return response;
             }
         }
