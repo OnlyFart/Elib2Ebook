@@ -27,7 +27,7 @@ public class BookGetterConfig : IDisposable {
                 if (responseMessage is {
                         StatusCode: HttpStatusCode.Redirect or HttpStatusCode.PermanentRedirect or HttpStatusCode.MovedPermanently or HttpStatusCode.Moved, Headers.Location: not null
                     }) {
-                    request = new HttpRequestMessage(HttpMethod.Get, responseMessage.Headers.Location);
+                    request = new HttpRequestMessage(request.Method, responseMessage.Headers.Location);
                     responseMessage = await base.SendAsync(request, cancellationToken);
                 }
 
