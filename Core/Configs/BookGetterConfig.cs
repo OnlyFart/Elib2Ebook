@@ -12,12 +12,11 @@ namespace Core.Configs;
 public class BookGetterConfig : IDisposable {
     public readonly ILogger Logger;
 
-    private class RedirectHandler : DelegatingHandler {
+    private class RedirectHandler : HttpClientHandler {
         private readonly ILogger _logger;
 
-        public RedirectHandler(HttpMessageHandler innerHandler, ILogger logger) {
+        public RedirectHandler(ILogger logger) {
             _logger = logger;
-            InnerHandler = innerHandler;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) {
@@ -73,7 +72,7 @@ public class BookGetterConfig : IDisposable {
     }
     
     private static HttpClient GetClient(Options options, CookieContainer container, ILogger logger) {
-        var handler = new HttpClientHandler {
+        var handler = new RedirectHandler(logger) {
             AutomaticDecompression = DecompressionMethods.GZip | 
                                      DecompressionMethods.Deflate |
                                      DecompressionMethods.Brotli,
@@ -88,7 +87,7 @@ public class BookGetterConfig : IDisposable {
             handler.UseProxy = true;
         }
 
-        var client = new HttpClient(new RedirectHandler(handler, logger));
+        var client = new HttpClient(handler);
         client.Timeout = TimeSpan.FromSeconds(options.Timeout);
         return client;
     }
