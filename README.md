@@ -19,6 +19,7 @@
 * https://bookinbook.ru/
 * https://bookhamster.ru/
 * https://bookinist.pw/
+* https://bookmate.ru/
 * https://booknet.com/
 * https://booknet.ua/
 * https://bookriver.ru/
