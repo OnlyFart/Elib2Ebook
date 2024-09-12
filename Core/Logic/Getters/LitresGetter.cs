@@ -242,8 +242,10 @@ public class LitresGetter : GetterBase {
                 return response;
             }
         }
-        
-        return await Config.Client.GetAsync(GetShortUri(bookId));
+
+        var shortUri = GetShortUri(bookId);
+        Config.Logger.LogInformation($"Оригинальный файл доступен по ссылке {shortUri}");
+        return await Config.Client.GetAsync(shortUri);
     }
 
     private async Task<LitresBook> GetBook(string bookId) {
