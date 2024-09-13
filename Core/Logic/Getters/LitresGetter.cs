@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using Core.Types.Litres;
 using Core.Types.Litres.Requests;
 using Core.Types.Litres.Response;
@@ -109,7 +110,6 @@ public class LitresGetter : GetterBase {
 
         var book = new Book(SystemUrl.MakeRelativeUri(bookId)) {
             Cover = await GetCover(art.Cover),
-            Chapters = await FillChapters(bookId, art.Title),
             Title = art.Title,
             Author = await GetAuthor(art),
             CoAuthors = await GetCoAuthors(art),
@@ -117,6 +117,18 @@ public class LitresGetter : GetterBase {
             Seria = GetSeria(art)
         };
         
+        var bookResponse = await GetBookResponse(bookId);
+        if (bookResponse.StatusCode == HttpStatusCode.OK) {
+            book.OriginalFile = new ShortFile(bookResponse.Content.Headers.ContentDisposition?.FileName?.Trim('\"') ?? bookResponse.RequestMessage.RequestUri.GetFileName(), await bookResponse.Content.ReadAsByteArrayAsync());
+
+            try {
+                var litresBook = await GetBook(book.OriginalFile.Bytes);
+                book.Chapters = await FillChapters(litresBook, art.Title);
+            } catch (Exception) {
+                Config.Logger.LogInformation($"Не удалось обработать оригинальный файл {book.OriginalFile.Name}");
+            }
+        }
+
         return book;
     }
 
@@ -172,13 +184,11 @@ public class LitresGetter : GetterBase {
         return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(imagePath.AsUri()) : Task.FromResult(default(Image));
     }
 
-    private async Task<IEnumerable<Chapter>> FillChapters(string bookId, string title) {
+    private async Task<IEnumerable<Chapter>> FillChapters(LitresBook book, string title) {
         var result = new List<Chapter>();
         if (Config.Options.NoChapters) {
             return result;
         }
-        
-        var book = await GetBook(bookId);
         
         foreach (var section in book.Content.QuerySelectorAll("section")) {
             if (section.QuerySelector("> section") != null) {
@@ -248,17 +258,12 @@ public class LitresGetter : GetterBase {
         return await Config.Client.GetAsync(shortUri);
     }
 
-    private async Task<LitresBook> GetBook(string bookId) {
-        var response = await GetBookResponse(bookId);
-
+    private async Task<LitresBook> GetBook(byte[] bytes) {
         var result = new LitresBook();
-
-        if (response.StatusCode != HttpStatusCode.OK) {
-            return result;
-        }
         
         var map = new Dictionary<string, byte[]>();
-        using var zip = new ZipArchive(await response.Content.ReadAsStreamAsync());
+        using var bookMs = new MemoryStream(bytes);
+        using var zip = new ZipArchive(bookMs);
 
         foreach (var entry in zip.Entries) {
             using var ms = new MemoryStream();

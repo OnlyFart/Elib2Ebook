@@ -28,18 +28,30 @@ public abstract class BuilderBase {
     /// <summary>
     /// Получение имени файла
     /// </summary>
-    /// <param name="name"></param>
+    /// <param name="book"></param>
     /// <returns></returns>
-    protected virtual string GetFileName(string name) => $"{name}.{Extension}".RemoveInvalidChars();
+    protected virtual string GetFileName(Book book) => $"{GetTitle(book)}.{Extension}".RemoveInvalidChars();
+    
+    /// <summary>
+    /// Получение полного названия книги
+    /// </summary>
+    /// <param name="book"></param>
+    /// <returns></returns>
+    protected virtual string GetTitle(Book book) => $"{book.Author.Name} - {book.Title}".Crop(100);
+
+    
+    protected virtual bool PreCheck(Book book) => true;
 
     /// <summary>
     ///  Создание  файла
     /// </summary>
     /// <param name="book">Книга</param>
     public async Task Build(Book book) {
-        var title = $"{book.Author.Name} - {book.Title}".Crop(100);
+        if (!PreCheck(book)) {
+            return;
+        }
         
-        var fileName = GetFileName(title);
+        var fileName = GetFileName(book);
         
         if (!string.IsNullOrWhiteSpace(Options.SavePath)) {
             if (!Directory.Exists(Options.SavePath)) {
@@ -53,7 +65,7 @@ public abstract class BuilderBase {
         await BuildInternal(book, fileName);
         
         if (Options.Cover) {
-            await SaveCover(Options.SavePath, book.Cover, title);
+            await SaveCover(Options.SavePath, book.Cover, GetTitle(book));
         }
         
         Logger.LogInformation($"Книга {fileName.CoverQuotes()} успешно сохранена");

@@ -10,6 +10,7 @@ using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
 using Core.Types.Bookmate;
+using Core.Types.Common;
 using EpubSharp;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
@@ -43,13 +44,16 @@ public class BookmateGetter : GetterBase {
         var details = await GetBook(id);
         var book = new Book(url) {
             Cover = await GetCover(details),
-            Chapters = await FillChapters(id),
             Title = details.Title,
             Author = GetAuthor(details),
             CoAuthors = GetCoAuthors(details),
             Annotation = details.Annotation,
             Lang = details.Language
         };
+        
+        var response = await Config.Client.GetAsync($"https://api.bookmate.ru/api/v5/books/{id}/content/v4");
+        book.OriginalFile = new ShortFile(response.Content.Headers.ContentDisposition.FileName.Trim('\"'), await response.Content.ReadAsByteArrayAsync());
+        book.Chapters = await FillChapters(book.OriginalFile);
         
         return book;
     }
@@ -80,15 +84,13 @@ public class BookmateGetter : GetterBase {
         return doc;
     }
 
-    private async Task<IEnumerable<Chapter>> FillChapters(string id) {
+    private async Task<IEnumerable<Chapter>> FillChapters(ShortFile file) {
         var result = new List<Chapter>();
         if (Config.Options.NoChapters) {
             return result;
         }
 
-        var response = await Config.Client.GetAsync($"https://api.bookmate.ru/api/v5/books/{id}/content/v4");
-
-        var epubBook = EpubReader.Read(await response.Content.ReadAsStreamAsync(), false, Encoding.UTF8);
+        var epubBook = EpubReader.Read(file.Bytes, Encoding.UTF8);
         var current = epubBook.TableOfContents.First();
 
         do {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Core.Types.Common;
 
 namespace Core.Types.Book; 
 
@@ -43,6 +44,11 @@ public class Book {
     /// Url расположения книги
     /// </summary>
     public Uri Url { get; set; }
+    
+    /// <summary>
+    /// Оригинальный файл с книгой
+    /// </summary>
+    public ShortFile OriginalFile { get; set; }
 
     /// <summary>
     /// Язык книги

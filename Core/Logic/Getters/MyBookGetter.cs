@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using Core.Types.MyBook;
 using EpubSharp;
 using HtmlAgilityPack;
@@ -120,11 +121,21 @@ public class MyBookGetter : GetterBase {
         
         var book = new Book(url) {
             Cover = await GetCover(details),
-            Chapters = await FillChapters(details),
             Title = details.Name,
             Author = GetAuthor(details),
             Annotation = details.Annotation,
         };
+        
+        var bookUrl = SystemUrl.MakeRelativeUri(details.BookFile);
+        
+        SetAuthHeader("GET", bookUrl);
+        using var response = await _apiClient.GetAsync(bookUrl);
+        if (response.StatusCode != HttpStatusCode.OK) {
+            throw new Exception("Не удалось получить книгу");
+        }
+
+        book.OriginalFile = new ShortFile(bookUrl.GetFileName(), await response.Content.ReadAsByteArrayAsync());
+        book.Chapters = await FillChapters(book.OriginalFile);
 
         return book;
     }
@@ -155,21 +166,13 @@ public class MyBookGetter : GetterBase {
         return doc;
     }
 
-    private async Task<IEnumerable<Chapter>> FillChapters(MyBookBook details) {
+    private async Task<IEnumerable<Chapter>> FillChapters(ShortFile shortFile) {
         var result = new List<Chapter>();
         if (Config.Options.NoChapters) {
             return result;
         }
         
-        var bookUrl = SystemUrl.MakeRelativeUri(details.BookFile);
-        
-        SetAuthHeader("GET", bookUrl);
-        using var response = await _apiClient.GetAsync(bookUrl);
-        if (response.StatusCode != HttpStatusCode.OK) {
-            throw new Exception("Не удалось получить книгу");
-        }
-        
-        var epubBook = EpubReader.Read(await response.Content.ReadAsStreamAsync(), false, Encoding.UTF8);
+        var epubBook = EpubReader.Read(shortFile.Bytes, Encoding.UTF8);
         var current = epubBook.TableOfContents.First();
         
         do {

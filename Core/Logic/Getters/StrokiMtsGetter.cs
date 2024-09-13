@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using Core.Types.StrokiMts;
 using EpubSharp;
 using HtmlAgilityPack;
@@ -48,21 +49,26 @@ public class StrokiMtsGetter : GetterBase {
         var fileUrl = await GetFileUrl(fileMeta);
         
         Config.Logger.LogInformation($"Оригинальный файл доступен по ссылке {fileUrl.Url}");
-
-        if (fileUrl.Url.AsUri().GetFileName().EndsWith(".pdf")) {
-            throw new Exception($"Эта книга в формате PDF. Можете скачать ее по ссылке {fileUrl.Url}");
-        }
         
         var details = await GetBook(id);
         var book = new Book(url) {
             Cover = await GetCover(details),
-            Chapters = await FillChapters(fileUrl.Url.AsUri()),
             Title = details.Title,
             Author = GetAuthor(details),
             CoAuthors = GetCoAuthors(details),
             Annotation = details.Annotation,
         };
         
+        var response = await Config.Client.GetWithTriesAsync(fileUrl.Url.AsUri());
+
+        book.OriginalFile = new ShortFile(fileUrl.Url.AsUri().GetFileName(), await response.Content.ReadAsByteArrayAsync());
+        
+        if (fileUrl.Url.AsUri().GetFileName().EndsWith(".pdf")) {
+            Config.Logger.LogInformation("Эта книга в формате pdf. Обработка для этого формата недоступна");
+        } else {
+            book.Chapters = await FillChapters(book.OriginalFile);
+        }
+
         return book;
     }
     
@@ -92,14 +98,13 @@ public class StrokiMtsGetter : GetterBase {
         return doc;
     }
 
-    private async Task<IEnumerable<Chapter>> FillChapters(Uri url) {
+    private async Task<IEnumerable<Chapter>> FillChapters(ShortFile file) {
         var result = new List<Chapter>();
         if (Config.Options.NoChapters) {
             return result;
         }
         
-        var response = await Config.Client.GetWithTriesAsync(url);
-        var epubBook = EpubReader.Read(await response.Content.ReadAsStreamAsync(), false, Encoding.UTF8);
+        var epubBook = EpubReader.Read(file.Bytes, Encoding.UTF8);
         var current = epubBook.TableOfContents.First();
         
         do {
