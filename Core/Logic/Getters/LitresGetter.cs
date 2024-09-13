@@ -139,10 +139,19 @@ public class LitresGetter : GetterBase {
         var result = new List<ShortFile>();
         
         if (_authData != default) {
-            var files = await GetResponse<LitresFiles[]>("https://api.litres.ru/foundation/api/arts/69646621/files/grouped".AsUri());
+            if (Config.Options.Additional) {
+                var files = await GetResponse<LitresFiles[]>("https://api.litres.ru/foundation/api/arts/69646621/files/grouped".AsUri());
 
-            foreach (var litresFile in files.SelectMany(f => f.Files).Where(f => !string.IsNullOrWhiteSpace(f.Extension))) {
-                using var bookResponse = await GetBookResponse(bookId, litresFile.Extension);
+                foreach (var litresFile in files.SelectMany(f => f.Files).Where(f => !string.IsNullOrWhiteSpace(f.Extension))) {
+                    using var bookResponse = await GetBookResponse(bookId, litresFile.Extension);
+                    if (bookResponse != default) {
+                        var originalFile = new ShortFile(bookResponse.Content.Headers.ContentDisposition?.FileName?.Trim('\"') ?? bookResponse.RequestMessage.RequestUri.GetFileName(),
+                            await bookResponse.Content.ReadAsByteArrayAsync());
+                        result.Add(originalFile);
+                    }
+                }
+            } else {
+                using var bookResponse = await GetBookResponse(bookId, "fb3");
                 if (bookResponse != default) {
                     var originalFile = new ShortFile(bookResponse.Content.Headers.ContentDisposition?.FileName?.Trim('\"') ?? bookResponse.RequestMessage.RequestUri.GetFileName(), await bookResponse.Content.ReadAsByteArrayAsync());
                     result.Add(originalFile);
