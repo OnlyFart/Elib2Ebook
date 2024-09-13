@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
@@ -41,6 +42,7 @@ public class MyBookGetter : GetterBase {
 
     public override Task Init() {
         _apiClient = new HttpClient();
+        _apiClient.Timeout = Config.Client.Timeout;
         _apiClient.DefaultRequestHeaders.Add("User-Agent", "MyBook/6.6.0 (iPhone; iOS 16.0.3; Scale/3.00)");
         _apiClient.DefaultRequestHeaders.Add("Accept", "application/json; version=4");
         return Task.CompletedTask;
@@ -103,16 +105,20 @@ public class MyBookGetter : GetterBase {
 
         if (details.Type == "audio") {
             var bookId = details.Connected?.Id ?? details.MapFiles.FirstOrDefault(b => b.Book != default)?.Book;
-            if (bookId != default) {
-                var apiUrl = SystemUrl.MakeRelativeUri($"/api/v1/books/{bookId}/");
-                SetAuthHeader("GET", apiUrl);
-                return await _apiClient.GetFromJsonAsync<MyBookBook>(apiUrl);
+            if (bookId.HasValue) {
+                return await GetDetailsApi(bookId.Value);
             }
             
             throw new Exception("Указана ссылка на аудиокнигу. Укажите ссылку на текстовую версию");
         }
 
         return details;
+    }
+
+    private async Task<MyBookBook> GetDetailsApi(long bookId) {
+        var apiUrl = SystemUrl.MakeRelativeUri($"/api/v1/books/{bookId}/");
+        SetAuthHeader("GET", apiUrl);
+        return await _apiClient.GetFromJsonAsync<MyBookBook>(apiUrl);
     }
 
     public override async Task<Book> Get(Uri url) {
@@ -137,7 +143,29 @@ public class MyBookGetter : GetterBase {
         book.AdditionalFiles = [new ShortFile(bookUrl.GetFileName(), await response.Content.ReadAsByteArrayAsync())];
         book.Chapters = await FillChapters(book.AdditionalFiles[0]);
 
+        if (Config.Options.Additional && details.Connected is { Type: "audio" }) {
+            book.AdditionalFiles.AddRange(await GetAudio(details.Connected.Id));
+        }
+        
         return book;
+    }
+
+    private async Task<List<ShortFile>> GetAudio(long bookId) {
+        var result = new List<ShortFile>();
+        var details = await GetDetailsApi(bookId);
+        var files = details.Files.Where(node => node is JsonObject).Select(node => node.Deserialize<MyBookFile>()).ToList();
+
+        for (int i = 0; i < files.Count; i++) {
+            var file = files[i];
+            var url = SystemUrl.MakeRelativeUri(file.Url);
+
+            Config.Logger.LogInformation($"Звгружаю дополнительный файл {i + 1}/{files.Count} {url}");
+            SetAuthHeader("GET", url);
+            using var response = await _apiClient.GetAsync(url);
+            result.Add(new ShortFile($"{file.Title}.mp3", await response.Content.ReadAsByteArrayAsync()));
+            Config.Logger.LogInformation($"Дополнительный файл {i + 1}/{files.Count} {url} загружен");
+        }
+        return result;
     }
 
     private static HtmlDocument SliceBook(EpubBook epubBook, EpubChapter epubChapter) {

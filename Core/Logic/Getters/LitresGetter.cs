@@ -102,7 +102,7 @@ public class LitresGetter : GetterBase {
 
     public override async Task<Book> Get(Uri url) {
         var bookId = GetBookId(url);
-        
+
         var payload = LitresPayload.Create(DateTime.Now, _authData.Sid, SECRET_KEY, APP);
         payload.Requests.Add(new LitresBrowseArtsRequest([bookId]));
 
@@ -116,26 +116,26 @@ public class LitresGetter : GetterBase {
             Annotation = art.Annotation,
             Seria = GetSeria(art)
         };
-        
 
-            book.AdditionalFiles = await GetOriginalFiles(bookId);
-            var fb3File = book.AdditionalFiles.FirstOrDefault(f => f.Name.EndsWith("fb3"));
 
-            if (fb3File == default) {
-                Config.Logger.LogInformation("Нет файла fb3. Обработка невозможна");
-            } else {
-                try {
-                    var litresBook = await GetBook(fb3File.Bytes);
-                    book.Chapters = await FillChapters(litresBook, art.Title);
-                } catch (Exception) {
-                    Config.Logger.LogInformation($"Не удалось обработать оригинальный файл {fb3File.Name}");
-                }
+        book.AdditionalFiles = await GetAdditionalFiles(bookId);
+        var fb3File = book.AdditionalFiles.FirstOrDefault(f => f.Name.EndsWith("fb3"));
+
+        if (fb3File == default) {
+            Config.Logger.LogInformation("Нет файла fb3. Обработка невозможна");
+        } else {
+            try {
+                var litresBook = await GetBook(fb3File.Bytes);
+                book.Chapters = await FillChapters(litresBook, art.Title);
+            } catch (Exception) {
+                Config.Logger.LogInformation($"Не удалось обработать оригинальный файл {fb3File.Name}");
             }
+        }
 
-            return book;
+        return book;
     }
 
-    private async Task<List<ShortFile>> GetOriginalFiles(string bookId) {
+    private async Task<List<ShortFile>> GetAdditionalFiles(string bookId) {
         var result = new List<ShortFile>();
         
         if (_authData != default) {

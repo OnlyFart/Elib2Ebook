@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace Core.Types.MyBook; 
@@ -29,4 +30,7 @@ public class MyBookBook {
     
     [JsonPropertyName("connected_book")]
     public MyBookBook Connected { get; set; }
+    
+    [JsonPropertyName("bookfiles")]
+    public JsonNode[] Files { get; set; }
 }
