@@ -10,7 +10,7 @@ namespace Core.Logic.Builders;
 public class AdditionaFileBuilder  {
     private readonly Options _options;
     private readonly ILogger _logger;
-    private const string ADDITIONAL_PATH = "AdditionaFiles";
+    private const string ADDITIONAL_PATH = "AdditionalFiles";
     
     public AdditionaFileBuilder(Options options, ILogger logger) {
         _options = options;
