@@ -44,11 +44,11 @@ public class Book {
     /// Url расположения книги
     /// </summary>
     public Uri Url { get; set; }
-    
+
     /// <summary>
-    /// Оригинальный файл с книгой
+    /// Дополнительные файлы
     /// </summary>
-    public ShortFile OriginalFile { get; set; }
+    public List<ShortFile> AdditionalFiles { get; set; } = new();
 
     /// <summary>
     /// Язык книги

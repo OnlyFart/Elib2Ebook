@@ -134,8 +134,8 @@ public class MyBookGetter : GetterBase {
             throw new Exception("Не удалось получить книгу");
         }
 
-        book.OriginalFile = new ShortFile(bookUrl.GetFileName(), await response.Content.ReadAsByteArrayAsync());
-        book.Chapters = await FillChapters(book.OriginalFile);
+        book.AdditionalFiles = [new ShortFile(bookUrl.GetFileName(), await response.Content.ReadAsByteArrayAsync())];
+        book.Chapters = await FillChapters(book.AdditionalFiles[0]);
 
         return book;
     }

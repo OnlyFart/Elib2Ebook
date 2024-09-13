@@ -52,8 +52,8 @@ public class BookmateGetter : GetterBase {
         };
         
         var response = await Config.Client.GetAsync($"https://api.bookmate.ru/api/v5/books/{id}/content/v4");
-        book.OriginalFile = new ShortFile(response.Content.Headers.ContentDisposition.FileName.Trim('\"'), await response.Content.ReadAsByteArrayAsync());
-        book.Chapters = await FillChapters(book.OriginalFile);
+        book.AdditionalFiles = [new ShortFile(response.Content.Headers.ContentDisposition.FileName.Trim('\"'), await response.Content.ReadAsByteArrayAsync())];
+        book.Chapters = await FillChapters(book.AdditionalFiles[0]);
         
         return book;
     }

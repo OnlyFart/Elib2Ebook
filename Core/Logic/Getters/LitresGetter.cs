@@ -38,13 +38,13 @@ public class LitresGetter : GetterBase {
         return (long)javaSpan.TotalMilliseconds / 1000;
     }
 
-    private Uri GetFullUri(string bookId, string path) {
+    private Uri GetFullUri(string bookId, string path, string extension) {
         var ts = GetCurrentMilli();
 
         var inputBytes = Encoding.ASCII.GetBytes($"{ts}:{bookId}:{SECRET_KEY}");
         var hashBytes = MD5.HashData(inputBytes);
 
-        return new($"https://catalit.litres.ru/pages/{path}/?type=fb3&art={bookId}&sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
+        return new($"https://catalit.litres.ru/pages/{path}/?type={extension}&art={bookId}&sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
     }
 
     private LitresAuthResponseData _authData = new(){
@@ -117,20 +117,45 @@ public class LitresGetter : GetterBase {
             Seria = GetSeria(art)
         };
         
-        var bookResponse = await GetBookResponse(bookId);
-        if (bookResponse.StatusCode == HttpStatusCode.OK) {
-            book.OriginalFile = new ShortFile(bookResponse.Content.Headers.ContentDisposition?.FileName?.Trim('\"') ?? bookResponse.RequestMessage.RequestUri.GetFileName(), await bookResponse.Content.ReadAsByteArrayAsync());
 
-            try {
-                var litresBook = await GetBook(book.OriginalFile.Bytes);
-                book.Chapters = await FillChapters(litresBook, art.Title);
-            } catch (Exception) {
-                Config.Logger.LogInformation($"Не удалось обработать оригинальный файл {book.OriginalFile.Name}");
+            book.AdditionalFiles = await GetOriginalFiles(bookId);
+            var fb3File = book.AdditionalFiles.FirstOrDefault(f => f.Name.EndsWith("fb3"));
+
+            if (fb3File == default) {
+                Config.Logger.LogInformation("Нет файла fb3. Обработка невозможна");
+            } else {
+                try {
+                    var litresBook = await GetBook(fb3File.Bytes);
+                    book.Chapters = await FillChapters(litresBook, art.Title);
+                } catch (Exception) {
+                    Config.Logger.LogInformation($"Не удалось обработать оригинальный файл {fb3File.Name}");
+                }
             }
+
+            return book;
+    }
+
+    private async Task<List<ShortFile>> GetOriginalFiles(string bookId) {
+        var result = new List<ShortFile>();
+        
+        if (_authData != default) {
+            var files = await GetResponse<LitresFiles[]>("https://api.litres.ru/foundation/api/arts/69646621/files/grouped".AsUri());
+
+            foreach (var litresFile in files.SelectMany(f => f.Files).Where(f => !string.IsNullOrWhiteSpace(f.Extension))) {
+                using var bookResponse = await GetBookResponse(bookId, litresFile.Extension);
+                if (bookResponse != default) {
+                    var originalFile = new ShortFile(bookResponse.Content.Headers.ContentDisposition?.FileName?.Trim('\"') ?? bookResponse.RequestMessage.RequestUri.GetFileName(), await bookResponse.Content.ReadAsByteArrayAsync());
+                    result.Add(originalFile);
+                }
+            }
+        } else {
+            var response = await GetShortBook(bookId);
+            var originalFile = new ShortFile(response.Content.Headers.ContentDisposition?.FileName?.Trim('\"') ?? response.RequestMessage.RequestUri.GetFileName(), await response.Content.ReadAsByteArrayAsync());
+            result.Add(originalFile);
         }
 
-        return book;
-    }
+        return result;
+    } 
 
     private static string GetBookId(Uri url) {
         var art = url.GetQueryParameter("art");
@@ -236,23 +261,27 @@ public class LitresGetter : GetterBase {
         return images;
     }
 
-    private async Task<HttpResponseMessage> GetBookResponse(string bookId) {
+    private async Task<HttpResponseMessage> GetBookResponse(string bookId, string extension) {
         if (_authData != null) {
-            var uri = GetFullUri(bookId, "download_book_subscr");
+            var uri = GetFullUri(bookId, "download_book_subscr", extension);
             var response = await Config.Client.GetAsync(uri);
             if (response.StatusCode == HttpStatusCode.OK && response.Headers.AcceptRanges.Any()) {
-                Config.Logger.LogInformation($"Оригинальный файл доступен по ссылке {uri}");
+                Config.Logger.LogInformation($"Оригинальный файл формата {extension} доступен по ссылке {uri}");
                 return response;
             }
 
-            uri = GetFullUri(bookId, "catalit_download_book");
+            uri = GetFullUri(bookId, "catalit_download_book", extension);
             response = await Config.Client.GetAsync(uri);
             if (response.StatusCode == HttpStatusCode.OK && response.Headers.AcceptRanges.Any()) {
-                Config.Logger.LogInformation($"Оригинальный файл доступен по ссылке {uri}");
+                Config.Logger.LogInformation($"Оригинальный файл формата {extension} доступен по ссылке {uri}");
                 return response;
             }
         }
 
+        return default;
+    }
+
+    private async Task<HttpResponseMessage> GetShortBook(string bookId) {
         var shortUri = GetShortUri(bookId);
         Config.Logger.LogInformation($"Оригинальный файл доступен по ссылке {shortUri}");
         return await Config.Client.GetAsync(shortUri);

@@ -171,3 +171,4 @@ docker run --rm -p 8080:8080 onlyfart/elib2ebookweb
 | --start-name   | Стартовое имя главы                                                                       |
 | --end-name     | Конечное имя главы                                                                        |
 | --no-chapters  | Не загружать главы                                                                        |
+| --additional   | Сохранить дополнительные файлы                                                            |

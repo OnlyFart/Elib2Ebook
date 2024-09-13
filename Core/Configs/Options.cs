@@ -61,6 +61,9 @@ public class Options {
     
     [Option("no-chapters", Required = false, HelpText = "Не загружать главы", Default = false)]
     public bool NoChapters { get; set; }
+    
+    [Option("additional", Required = false, HelpText = "Сохранить дополнительные файлы", Default = false)]
+    public bool Additional { get; set; }
 
     public string ResourcesPath => "Patterns";
 }

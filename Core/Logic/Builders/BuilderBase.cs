@@ -39,18 +39,11 @@ public abstract class BuilderBase {
     /// <returns></returns>
     protected virtual string GetTitle(Book book) => $"{book.Author.Name} - {book.Title}".Crop(100);
 
-    
-    protected virtual bool PreCheck(Book book) => true;
-
     /// <summary>
     ///  Создание  файла
     /// </summary>
     /// <param name="book">Книга</param>
     public async Task Build(Book book) {
-        if (!PreCheck(book)) {
-            return;
-        }
-        
         var fileName = GetFileName(book);
         
         if (!string.IsNullOrWhiteSpace(Options.SavePath)) {

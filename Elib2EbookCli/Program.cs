@@ -2,6 +2,7 @@
 using CommandLine;
 using Core.Configs;
 using Core.Extensions;
+using Core.Logic.Builders;
 using Core.Misc;
 using Microsoft.Extensions.Logging;
 
@@ -27,6 +28,10 @@ internal static class Program {
                         var book = await getter.Get(url.AsUri());
                         foreach (var format in options.Format) {
                             await BuilderProvider.Get(format, options, logger).Build(book);
+                        }
+
+                        if (options.Additional) {
+                            await new AdditionaFileBuilder(options, logger).Build(book);
                         }
                     } catch (TaskCanceledException) {
                         logger.LogInformation("Сервер не успевает ответить. Попробуйте увеличить Timeout с помощью параметра -t");
