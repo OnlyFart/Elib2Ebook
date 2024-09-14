@@ -28,7 +28,7 @@ public class CbzBuilder : BuilderBase {
             }
 
             foreach (var image in chapter.Images) {
-                var entry = archive.CreateEntry($"{++c}.{image.Extension}", CompressionLevel.Optimal);
+                var entry = archive.CreateEntry($"{++c}{image.Extension}", CompressionLevel.Optimal);
                 await using var entryStream = entry.Open();
                 await using var fileStream = image.GetStream();
                 await fileStream.CopyToAsync(entryStream);

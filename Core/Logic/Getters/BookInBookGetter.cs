@@ -103,9 +103,9 @@ public class BookInBookGetter : GetterBase {
         return default;
     }
     
-    private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
+    private Task<TempFile> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("img.book-cover__image")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(TempFile));
     }
     
     private static Author GetAuthor(HtmlDocument doc, Uri uri) {

@@ -96,7 +96,7 @@ public class YounettranslateGetter : GetterBase {
         return doc.QuerySelector("div.postdata-content").RemoveNodes(n => n.InnerText.Contains("ЗАПРЕЩЕНО ПУБЛИКОВАТЬ")).InnerHtml.AsHtmlDoc();
     }
 
-    private async Task<Image> GetCover(Uri bookUri) {
+    private async Task<TempFile> GetCover(Uri bookUri) {
         var doc = await Config.Client.GetHtmlDocWithTriesAsync("https://younettranslate.com/projects/".AsUri());
         
         var imagePath = doc.QuerySelector($"div.category-item a[href='{bookUri}'] img")?.Attributes["src"]?.Value;

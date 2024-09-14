@@ -10,6 +10,7 @@ using System.Xml.Linq;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 
@@ -25,7 +26,7 @@ public class Fb2Builder : BuilderBase {
     private readonly XElement _titleInfo;
     private readonly XElement _body;
     private readonly XElement _documentInfo;
-    private readonly List<Image> _images = new();
+    private readonly List<TempFile> _images = new();
 
     private readonly Dictionary<string, string> _map = new() {
         {"strong", "strong"},
@@ -95,15 +96,15 @@ public class Fb2Builder : BuilderBase {
         return title;
     }
 
-    private static async Task WriteBinary(XmlWriter writer, Image image) {
+    private static async Task WriteBinary(XmlWriter writer, TempFile tempFile) {
         const int bufferSize = 1000;
         var buffer = new byte[bufferSize];
         int readBytes;
 
-        await using var inputFile = image.GetStream();
+        await using var inputFile = tempFile.GetStream();
         await writer.WriteStartElementAsync(null, "binary", null);
-        await writer.WriteAttributeStringAsync(null, "id", null, image.Name);
-        await writer.WriteAttributeStringAsync(null, "content-type", null, "image/" + image.Extension);
+        await writer.WriteAttributeStringAsync(null, "id", null, tempFile.FullName);
+        await writer.WriteAttributeStringAsync(null, "content-type", null, "image/" + tempFile.Extension.TrimStart('.'));
         using var br = new BinaryReader(inputFile);
 
         do {
@@ -156,12 +157,12 @@ public class Fb2Builder : BuilderBase {
     /// </summary>
     /// <param name="cover">Обложка</param>
     /// <returns></returns>
-    private void WithCover(Image cover) {
+    private void WithCover(TempFile cover) {
         if (cover != default) {
             var coverPage = CreateXElement("coverpage");
             
             var imageElem = CreateXElement("image");
-            imageElem.SetAttributeValue(_xlink + "href", "#" + cover.Name);
+            imageElem.SetAttributeValue(_xlink + "href", "#" + cover.FullName);
             
             coverPage.Add(imageElem);
             _titleInfo.Add(coverPage);

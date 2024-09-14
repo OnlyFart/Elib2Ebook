@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using Core.Types.DarkNovels;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
@@ -125,7 +126,7 @@ public class DarkNovelsGetter : GetterBase {
         return result;
     }
 
-    private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
+    private Task<TempFile> GetCover(HtmlDocument doc, Uri bookUri) {
         var imagePath = doc.QuerySelector("div.book-cover-container img")?.Attributes["data-src"]?.Value;
         if (string.IsNullOrWhiteSpace(imagePath)) {
             var match = new Regex("\"image\": \"(?<url>.*?)\"").Match(doc.Text);
@@ -134,7 +135,7 @@ public class DarkNovelsGetter : GetterBase {
             }
         }
 
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(TempFile));
     }
 
     private async Task<IEnumerable<DarkNovelsChapter>> GetToc(string bookId) {

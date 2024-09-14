@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using EpubSharp;
 using EpubSharp.Format;
 using Microsoft.Extensions.Logging;
@@ -17,7 +18,7 @@ public class EpubBuilder : BuilderBase {
     
     private readonly EpubWriter _writer;
 
-    private List<Image> Images { get; set; } = new();
+    private List<TempFile> Images { get; set; } = new();
 
     public EpubBuilder(Options options, ILogger logger) : base(options, logger) {
         _writer = new EpubWriter();
@@ -76,7 +77,7 @@ public class EpubBuilder : BuilderBase {
         _writer.SetTitle(book.Title);
         
         if (book.Cover != null) {
-            _writer.SetCover(book.Cover.Content, GetImageFormat(book.Cover.Name));
+            _writer.SetCover(book.Cover.Content, GetImageFormat(book.Cover.FullName));
         }
         
         if (!string.IsNullOrWhiteSpace(book.Annotation)) {
@@ -90,7 +91,7 @@ public class EpubBuilder : BuilderBase {
         var pattern = FileProvider.Instance.ReadAllText($"{Options.ResourcesPath}/ChapterPattern.xhtml");
         foreach (var chapter in book.Chapters.Where(c => c.IsValid)) {
             foreach (var image in chapter.Images) {
-                _writer.AddFile(image.Name, Array.Empty<byte>(), GetImageFormat(image.Name).ToEpubContentType());
+                _writer.AddFile(image.FullName, Array.Empty<byte>(), GetImageFormat(image.FullName).ToEpubContentType());
                 Images.Add(image);
             }
             
@@ -103,6 +104,6 @@ public class EpubBuilder : BuilderBase {
 
     protected override async Task BuildInternal(Book book, string fileName) {
         Write(book);
-        await _writer.Write(fileName, Images.Select(image => new FileMeta(image.Name, image.FilePath)));
+        await _writer.Write(fileName, Images.Select(image => new FileMeta(image.FullName, image.FilePath)));
     }
 }

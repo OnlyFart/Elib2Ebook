@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Microsoft.Extensions.Logging;
@@ -59,9 +60,9 @@ public class HubBookGetter : GetterBase {
         return new[] { chapter };
     }
 
-    private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
+    private Task<TempFile> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("div.b-book-image img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(TempFile));
     }
     
     private static Author GetAuthor(HtmlDocument doc, Uri uri) {

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using Core.Types.Neobook;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
@@ -123,8 +124,8 @@ public class NeobookGetter : GetterBase {
         return chapter.Data.Html.AsHtmlDoc();
     }
 
-    private Task<Image> GetCover(NeobookPostData data) {
+    private Task<TempFile> GetCover(NeobookPostData data) {
         var imagePath = data.Attachment?.Cover?.GetValueOrDefault("l");
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(imagePath.AsUri()) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(imagePath.AsUri()) : Task.FromResult(default(TempFile));
     }
 }

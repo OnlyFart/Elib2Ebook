@@ -8,6 +8,7 @@ using System.Web;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using Core.Types.Freedlit;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
@@ -116,7 +117,7 @@ public class FreedlitGetter : GetterBase{
         return doc.QuerySelector("body").InnerHtml.AsHtmlDoc();
     }
 
-    private Task<Image> GetCover(FreedlitBook book) {
-        return !string.IsNullOrWhiteSpace(book.Cover) ? SaveImage(SystemUrl.MakeRelativeUri($"/storage/{book.Cover}")) : Task.FromResult(default(Image));
+    private Task<TempFile> GetCover(FreedlitBook book) {
+        return !string.IsNullOrWhiteSpace(book.Cover) ? SaveImage(SystemUrl.MakeRelativeUri($"/storage/{book.Cover}")) : Task.FromResult(default(TempFile));
     }
 }

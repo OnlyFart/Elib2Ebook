@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using Core.Types.RanobeOvh;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
@@ -97,7 +98,7 @@ public abstract class RanobeOvhGetterBase : GetterBase {
         return new Author(translator.Name, SystemUrl.MakeRelativeUri($"/translator/{translator.Slug}"));
     }
 
-    private Task<Image> GetCover(RanobeOvhManga manga, Uri uri) {
-        return !string.IsNullOrWhiteSpace(manga.Poster) ? SaveImage(uri.MakeRelativeUri(manga.Poster)) : Task.FromResult(default(Image));
+    private Task<TempFile> GetCover(RanobeOvhManga manga, Uri uri) {
+        return !string.IsNullOrWhiteSpace(manga.Poster) ? SaveImage(uri.MakeRelativeUri(manga.Poster)) : Task.FromResult(default(TempFile));
     }
 }

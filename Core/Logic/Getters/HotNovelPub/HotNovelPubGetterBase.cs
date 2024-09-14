@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using Core.Types.HotNovelPub;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
@@ -97,8 +98,8 @@ public abstract class HotNovelPubGetterBase : GetterBase {
         return new Author(book.Authorize.Name, SystemUrl.MakeRelativeUri(book.Authorize.Slug));
     }
 
-    private Task<Image> GetCover(HotNovelPubBook book) {
-        return !string.IsNullOrWhiteSpace(book.Image) ? SaveImage(SystemUrl.MakeRelativeUri(book.Image)) : Task.FromResult(default(Image));
+    private Task<TempFile> GetCover(HotNovelPubBook book) {
+        return !string.IsNullOrWhiteSpace(book.Image) ? SaveImage(SystemUrl.MakeRelativeUri(book.Image)) : Task.FromResult(default(TempFile));
     }
 
     private async Task<HotNovelPubBookResponse> GetBook(string id) {

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using Core.Types.Dreame;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
@@ -91,7 +92,7 @@ public class DreameGetter : GetterBase {
             new Author(data.AuthorName);
     }
 
-    private Task<Image> GetCover(string url) {
-        return !string.IsNullOrWhiteSpace(url) ? SaveImage(url.AsUri()) : Task.FromResult(default(Image));
+    private Task<TempFile> GetCover(string url) {
+        return !string.IsNullOrWhiteSpace(url) ? SaveImage(url.AsUri()) : Task.FromResult(default(TempFile));
     }
 }

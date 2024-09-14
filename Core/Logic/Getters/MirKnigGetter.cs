@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Microsoft.Extensions.Logging;
@@ -66,7 +67,7 @@ public class MirKnigGetter : GetterBase {
         return new Author(a.GetText(), url.MakeRelativeUri(a.Attributes["href"].Value));
     }
         
-    private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
+    private Task<TempFile> GetCover(HtmlDocument doc, Uri bookUri) {
         var thumb = doc.QuerySelector("div.cover div.thumb");
         var imagePath = string.Empty;
         if (thumb != default) {
@@ -79,7 +80,7 @@ public class MirKnigGetter : GetterBase {
             }
         }
         
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(TempFile));
     }
     
     

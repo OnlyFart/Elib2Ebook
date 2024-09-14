@@ -104,9 +104,9 @@ public abstract class RulateGetterBase : GetterBase {
         return def;
     }
         
-    private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
+    private Task<TempFile> GetCover(HtmlDocument doc, Uri bookUri) {
         var imagePath = doc.QuerySelector("div.slick img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(TempFile));
     }
         
     private async Task<List<Chapter>> FillChapters(HtmlDocument doc, Uri bookUri, string bookId) {

@@ -38,4 +38,7 @@ public class AuthorTodayBookDetails {
     
     [JsonPropertyName("CoAuthorUserName")]
     public string CoAuthorUserName { get; set; }
+    
+    [JsonPropertyName("galleryImages")]
+    public AuthorTodayImage[] GalleryImages { get; set; }
 }

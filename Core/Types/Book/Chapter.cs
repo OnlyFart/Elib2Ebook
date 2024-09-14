@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Core.Types.Common;
 
 namespace Core.Types.Book; 
 
@@ -16,7 +17,7 @@ public class Chapter {
     /// <summary>
     /// Изображения из части
     /// </summary>
-    public IEnumerable<Image> Images { get; set; } = new List<Image>();
+    public IEnumerable<TempFile> Images { get; set; } = new List<TempFile>();
 
     /// <summary>
     /// Валидна ли часть

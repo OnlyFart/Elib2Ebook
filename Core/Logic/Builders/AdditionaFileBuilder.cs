@@ -17,7 +17,7 @@ public class AdditionaFileBuilder  {
     }
 
     public async Task Build(Book book) {
-        if (book.AdditionalFiles.Count == 0) {
+        if (book.AdditionalFiles.Collection.Count == 0) {
             _logger.LogInformation("Нет дополнительных файлов");
             return;
         }
@@ -31,11 +31,18 @@ public class AdditionaFileBuilder  {
             Directory.CreateDirectory(additionalPath);
         }
         
-        foreach (var file in book.AdditionalFiles) {
-            var fileName = Path.Combine(additionalPath, file.Name);
-            _logger.LogInformation($"Начинаю сохранение дополнительного файла {fileName.CoverQuotes()}");
-            await File.WriteAllBytesAsync(fileName, file.Bytes);
-            _logger.LogInformation($"Cохранение дополнительного файла {fileName.CoverQuotes()} завершено");
+        foreach (var files in book.AdditionalFiles.Collection) {
+            var subPath = Path.Combine(additionalPath, files.Key);
+            if (!Directory.Exists(subPath)) {
+                Directory.CreateDirectory(subPath);
+            }
+            
+            foreach (var file in files.Value) {
+                var fileName = Path.Combine(subPath, file.FullName);
+                _logger.LogInformation($"Начинаю сохранение дополнительного файла {fileName.CoverQuotes()}");
+                await File.WriteAllBytesAsync(fileName, file.Content);
+                _logger.LogInformation($"Cохранение дополнительного файла {fileName.CoverQuotes()} завершено");
+            }
         }
         
     }

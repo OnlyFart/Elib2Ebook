@@ -83,8 +83,8 @@ public class RoyalRoadGetter : GetterBase {
             new Author(a.GetText(), SystemUrl.MakeRelativeUri(a.Attributes["href"].Value));
     }
 
-    private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
+    private Task<TempFile> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("div.cover-art-container img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(TempFile));
     }
 }

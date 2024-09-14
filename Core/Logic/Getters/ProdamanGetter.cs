@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Microsoft.Extensions.Logging;
@@ -254,8 +255,8 @@ public class ProdamanGetter : GetterBase {
         return result;
     }
 
-    private Task<Image> GetCover(HtmlDocument doc, Uri url) {
+    private Task<TempFile> GetCover(HtmlDocument doc, Uri url) {
         var imagePath = doc.QuerySelector("div[itemprop=aggregateRating] img[itemprop=image]")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(url.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(url.MakeRelativeUri(imagePath)) : Task.FromResult(default(TempFile));
     }
 }

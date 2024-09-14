@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -140,18 +141,19 @@ public class MyBookGetter : GetterBase {
             throw new Exception("Не удалось получить книгу");
         }
 
-        book.AdditionalFiles = [new ShortFile(bookUrl.GetFileName(), await response.Content.ReadAsByteArrayAsync())];
-        book.Chapters = await FillChapters(book.AdditionalFiles[0]);
+        var origBook = await TempFile.Create(bookUrl, Config.TempFolder.Path, bookUrl.GetFileName(), await response.Content.ReadAsStreamAsync());
+        book.AdditionalFiles.AddBook(origBook);
+        book.Chapters = await FillChapters(origBook);
 
         if (Config.Options.Additional && details.Connected is { Type: "audio" }) {
-            book.AdditionalFiles.AddRange(await GetAudio(details.Connected.Id));
+            book.AdditionalFiles.AddAudio(await GetAudio(details.Connected.Id));
         }
         
         return book;
     }
 
-    private async Task<List<ShortFile>> GetAudio(long bookId) {
-        var result = new List<ShortFile>();
+    private async Task<List<TempFile>> GetAudio(long bookId) {
+        var result = new List<TempFile>();
         var details = await GetDetailsApi(bookId);
         var files = details.Files.Where(node => node is JsonObject).Select(node => node.Deserialize<MyBookFile>()).ToList();
 
@@ -161,10 +163,15 @@ public class MyBookGetter : GetterBase {
 
             Config.Logger.LogInformation($"Звгружаю дополнительный файл {i + 1}/{files.Count} {url}");
             SetAuthHeader("GET", url);
+
+            var name = file.Title;
+            var ext = Path.GetExtension(name);
+            
             using var response = await _apiClient.GetAsync(url);
-            result.Add(new ShortFile($"{file.Title}.mp3", await response.Content.ReadAsByteArrayAsync()));
+            result.Add(await TempFile.Create(url, Config.TempFolder.Path, $"{file.Order}_{name}{ext}", await response.Content.ReadAsStreamAsync()));
             Config.Logger.LogInformation($"Дополнительный файл {i + 1}/{files.Count} {url} загружен");
         }
+        
         return result;
     }
 
@@ -194,13 +201,13 @@ public class MyBookGetter : GetterBase {
         return doc;
     }
 
-    private async Task<IEnumerable<Chapter>> FillChapters(ShortFile shortFile) {
+    private async Task<IEnumerable<Chapter>> FillChapters(TempFile shortFile) {
         var result = new List<Chapter>();
         if (Config.Options.NoChapters) {
             return result;
         }
         
-        var epubBook = EpubReader.Read(shortFile.Bytes, Encoding.UTF8);
+        var epubBook = EpubReader.Read(shortFile.GetStream(), true, Encoding.UTF8);
         var current = epubBook.TableOfContents.First();
         
         do {
@@ -219,8 +226,8 @@ public class MyBookGetter : GetterBase {
         return result;
     }
 
-    private async Task<IEnumerable<Image>> GetImages(HtmlDocument doc, EpubBook book) {
-        var images = new List<Image>();
+    private async Task<IEnumerable<TempFile>> GetImages(HtmlDocument doc, EpubBook book) {
+        var images = new List<TempFile>();
         foreach (var img in doc.QuerySelectorAll("img")) {
             var path = img.Attributes["src"]?.Value;
             if (string.IsNullOrWhiteSpace(path)) {
@@ -239,8 +246,8 @@ public class MyBookGetter : GetterBase {
                 continue;
             }
             
-            var image = await Image.Create(null, Config.TempFolder.Path, t.Href, t.Content);
-            img.Attributes["src"].Value = image.Name;
+            var image = await TempFile.Create(null, Config.TempFolder.Path, t.Href, t.Content);
+            img.Attributes["src"].Value = image.FullName;
             images.Add(image);
         }
 
@@ -308,8 +315,8 @@ public class MyBookGetter : GetterBase {
 
     }
 
-    private Task<Image> GetCover(MyBookBook book) {
-        return !string.IsNullOrWhiteSpace(book.Cover) ? SaveImage($"https://i3.mybook.io/p/x378/{book.Cover.TrimStart('/')}".AsUri()) : Task.FromResult(default(Image));
+    private Task<TempFile> GetCover(MyBookBook book) {
+        return !string.IsNullOrWhiteSpace(book.Cover) ? SaveImage($"https://i3.mybook.io/p/x378/{book.Cover.TrimStart('/')}".AsUri()) : Task.FromResult(default(TempFile));
     }
     
     private Author GetAuthor(MyBookBook book) {

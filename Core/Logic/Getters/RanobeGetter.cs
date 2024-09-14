@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using Core.Types.Ranobe;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
@@ -70,8 +71,8 @@ public class RanobeGetter : GetterBase {
             .Deserialize<T>();
     }
         
-    private Task<Image> GetCover(RanobeBook book, Uri bookUri) {
+    private Task<TempFile> GetCover(RanobeBook book, Uri bookUri) {
         var imagePath = book.Image?.Url ?? book.Images.MaxBy(t => t.Height)?.Url;
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(TempFile));
     }
 }

@@ -8,6 +8,7 @@ using System.Web;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using Core.Types.Litmarket;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
@@ -117,9 +118,9 @@ public class LitmarketGetter : GetterBase {
         }
     }
 
-    private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
+    private Task<TempFile> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("div.front img")?.Attributes["data-src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(uri.MakeRelativeUri(imagePath.AsUri().AbsolutePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(uri.MakeRelativeUri(imagePath.AsUri().AbsolutePath)) : Task.FromResult(default(TempFile));
     }
 
     private List<Block> GetToc(Response response, string title) {

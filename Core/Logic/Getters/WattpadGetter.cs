@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using Core.Types.Wattpad;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
@@ -73,7 +74,7 @@ public class WattpadGetter : GetterBase {
         return doc;
     }
 
-    private Task<Image> GetCover(WattpadInfo wattpadInfo) {
-        return !string.IsNullOrWhiteSpace(wattpadInfo.Cover) ? SaveImage(wattpadInfo.Cover.AsUri()) : Task.FromResult(default(Image));
+    private Task<TempFile> GetCover(WattpadInfo wattpadInfo) {
+        return !string.IsNullOrWhiteSpace(wattpadInfo.Cover) ? SaveImage(wattpadInfo.Cover.AsUri()) : Task.FromResult(default(TempFile));
     }
 }

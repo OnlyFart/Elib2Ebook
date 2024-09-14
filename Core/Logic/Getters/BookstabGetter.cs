@@ -8,6 +8,7 @@ using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
 using Core.Types.Bookstab;
+using Core.Types.Common;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 
@@ -88,8 +89,8 @@ public class BookstabGetter : GetterBase {
         }
     }
 
-    private Task<Image> GetCover(BookstabApiResponse response) {
+    private Task<TempFile> GetCover(BookstabApiResponse response) {
         var imagePath = response.Book.Image;
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(_apiUrl.MakeRelativeUri($"/storage/{imagePath}")) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(_apiUrl.MakeRelativeUri($"/storage/{imagePath}")) : Task.FromResult(default(TempFile));
     }
 }

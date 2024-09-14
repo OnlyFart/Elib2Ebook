@@ -10,6 +10,7 @@ using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
 using Core.Types.Bookriver;
+using Core.Types.Common;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Microsoft.Extensions.Logging;
@@ -162,8 +163,8 @@ public class BookriverGetter : GetterBase {
         return SliceToc(content.Deserialize<BookRiverApiResponse<BookRiverChapter[]>>().Data, c => c.Name);
     }
 
-    private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
+    private Task<TempFile> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("img[itemprop=contentUrl]")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(TempFile));
     }
 }

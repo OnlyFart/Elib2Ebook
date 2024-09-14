@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using Core.Types.RanobeHub;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
@@ -85,8 +86,8 @@ public class RanobeHubGetter : GetterBase {
         return SliceToc(response?.Volumes.SelectMany(t => t.Chapters).ToList(), c => c.Name);
     }
     
-    private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
+    private Task<TempFile> GetCover(HtmlDocument doc, Uri bookUri) {
         var imagePath = doc.QuerySelector("div.poster-slider img")?.Attributes["data-src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(TempFile));
     }
 }

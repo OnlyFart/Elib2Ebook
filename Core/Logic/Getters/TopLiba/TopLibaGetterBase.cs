@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Microsoft.Extensions.Logging;
@@ -20,7 +21,7 @@ public abstract class TopLibaGetterBase : GetterBase {
 
     protected abstract Seria GetSeria(HtmlDocument doc, Uri url);
 
-    protected abstract Task<Image> GetCover(HtmlDocument doc, Uri uri);
+    protected abstract Task<TempFile> GetCover(HtmlDocument doc, Uri uri);
     
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);

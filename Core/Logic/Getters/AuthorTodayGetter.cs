@@ -10,6 +10,7 @@ using Core.Configs;
 using Core.Extensions;
 using Core.Types.AuthorToday;
 using Core.Types.Book;
+using Core.Types.Common;
 using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters;
@@ -87,7 +88,21 @@ public class AuthorTodayGetter : GetterBase {
             Seria = GetSeria(details)
         };
 
+        await FillAdditional(book, details);
+
         return book;
+    }
+
+    private async Task FillAdditional(Book book, AuthorTodayBookDetails details) {
+        if (!Config.Options.Additional || details.GalleryImages == default || details.GalleryImages.Length == 0) {
+            return;
+        }
+
+        Config.Logger.LogInformation("Загружаю дополнительные иллюстрации");
+        foreach (var image in details.GalleryImages) {
+            book.AdditionalFiles.AddImage(await SaveImage(SystemUrl.MakeRelativeUri(image.Url)));
+        }
+        Config.Logger.LogInformation("Дополнительные иллюстрации загружены");
     }
 
     private HttpRequestMessage GetDefaultMessage(Uri uri, Uri host, HttpContent content = null) {
@@ -138,8 +153,8 @@ public class AuthorTodayGetter : GetterBase {
         };
     }
 
-    private Task<Image> GetCover(AuthorTodayBookDetails book) {
-        return !string.IsNullOrWhiteSpace(book.CoverUrl) ? SaveImage(book.CoverUrl.AsUri()) : Task.FromResult(default(Image));
+    private Task<TempFile> GetCover(AuthorTodayBookDetails book) {
+        return !string.IsNullOrWhiteSpace(book.CoverUrl) ? SaveImage(book.CoverUrl.AsUri()) : Task.FromResult(default(TempFile));
     }
 
     protected override HttpRequestMessage GetImageRequestMessage(Uri uri) {

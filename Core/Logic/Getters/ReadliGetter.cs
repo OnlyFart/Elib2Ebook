@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Microsoft.Extensions.Logging;
@@ -81,9 +82,9 @@ public class ReadliGetter : GetterBase {
         return url;
     }
 
-    private Task<Image> GetCover(HtmlNode doc, Uri bookUri) {
+    private Task<TempFile> GetCover(HtmlNode doc, Uri bookUri) {
         var imagePath = doc.QuerySelector("img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(TempFile));
     }
 
     private async Task AddChapter(ICollection<Chapter> chapters, Chapter chapter, StringBuilder text) {

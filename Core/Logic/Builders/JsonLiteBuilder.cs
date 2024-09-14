@@ -5,16 +5,17 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Core.Configs;
 using Core.Types.Book;
+using Core.Types.Common;
 using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Builders;
 
-public class ShortImageConverter : JsonConverter<Image> {
-    public override Image Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-        return JsonSerializer.Deserialize<Image>(ref reader, options);
+public class ShortImageConverter : JsonConverter<TempFile> {
+    public override TempFile Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+        return JsonSerializer.Deserialize<TempFile>(ref reader, options);
     }
 
-    public override void Write(Utf8JsonWriter writer, Image value, JsonSerializerOptions options) {
+    public override void Write(Utf8JsonWriter writer, TempFile value, JsonSerializerOptions options) {
         writer.WriteStartObject();
         
         if (value.Url != default) {
@@ -22,7 +23,7 @@ public class ShortImageConverter : JsonConverter<Image> {
         }
 
         writer.WriteString(nameof(value.Directory), value.Directory);
-        writer.WriteString(nameof(value.Name), value.Name);
+        writer.WriteString(nameof(value.FullName), value.FullName);
         writer.WriteString(nameof(value.FilePath), value.FilePath);
         writer.WriteEndObject();
     }

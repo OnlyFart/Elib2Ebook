@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using Core.Types.Renovels;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
@@ -108,9 +109,9 @@ public abstract class RenovelsGetterBase : GetterBase {
         return GetChapterAsHtml(response);
     }
 
-    private Task<Image> GetCover(RenovelsContent book, Uri bookUri) {
+    private Task<TempFile> GetCover(RenovelsContent book, Uri bookUri) {
         var imagePath = book.Img.GetValueOrDefault("high", null) ?? book.Img.FirstOrDefault().Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(TempFile));
     }
 
     private async Task<IEnumerable<RenovelsChapter>> GetToc(RenovelsContent content) {

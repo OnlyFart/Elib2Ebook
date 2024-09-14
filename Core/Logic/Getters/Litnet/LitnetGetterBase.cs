@@ -12,6 +12,7 @@ using System.Web;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using Core.Types.Litnet;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
@@ -171,8 +172,8 @@ public abstract class LitnetGetterBase : GetterBase {
             string.Join("", book.Annotation.Split("\n", StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim().CoverTag("p")));
     }
     
-    private Task<Image> GetCover(LitnetBookResponse book) {
-        return !string.IsNullOrWhiteSpace(book.Cover) ? SaveImage(book.Cover.AsUri()) : Task.FromResult(default(Image));
+    private Task<TempFile> GetCover(LitnetBookResponse book) {
+        return !string.IsNullOrWhiteSpace(book.Cover) ? SaveImage(book.Cover.AsUri()) : Task.FromResult(default(TempFile));
     }
     
     protected override HttpRequestMessage GetImageRequestMessage(Uri uri) {

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using Core.Types.SocialLib;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
@@ -169,8 +170,8 @@ public abstract class NewLibSocialGetterBase : GetterBase{
             .Select(author => new Author(author.Name, SystemUrl.MakeRelativeUri($"/ru/people/{author.SlugUrl}"))).ToList();
     }
     
-    private Task<Image> GetCover(RanobeLibBookDetails details) {
-        return !string.IsNullOrWhiteSpace(details.Data.Cover.Default) ? SaveImage(details.Data.Cover.Default.AsUri()) : Task.FromResult(default(Image));
+    private Task<TempFile> GetCover(RanobeLibBookDetails details) {
+        return !string.IsNullOrWhiteSpace(details.Data.Cover.Default) ? SaveImage(details.Data.Cover.Default.AsUri()) : Task.FromResult(default(TempFile));
     }
 
     protected override HttpRequestMessage GetImageRequestMessage(Uri uri) {

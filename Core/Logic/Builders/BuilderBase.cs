@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Builders; 
@@ -70,12 +71,12 @@ public abstract class BuilderBase {
     /// <param name="directory"></param>
     /// <param name="cover"></param>
     /// <param name="name"></param>
-    private async Task SaveCover(string directory, Image cover, string name) {
+    private async Task SaveCover(string directory, TempFile cover, string name) {
         if (cover == null) {
             return;
         }
         
-        var fileName = $"{name}_cover.{cover.Extension}".RemoveInvalidChars();
+        var fileName = $"{name}_cover{cover.Extension}".RemoveInvalidChars();
 
         if (!string.IsNullOrWhiteSpace(directory)) {
             if (!Directory.Exists(directory)) {
