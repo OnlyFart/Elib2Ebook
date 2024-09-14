@@ -4,6 +4,9 @@ using System.Text.Json.Serialization;
 namespace Core.Types.StrokiMts;
 
 public class StrokiMtsBookItem {
+    [JsonPropertyName("id")]
+    public long Id { get; set; }
+    
     [JsonPropertyName("annotation")]
     public string Annotation { get; set; }
     

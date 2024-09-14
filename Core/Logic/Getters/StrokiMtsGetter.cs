@@ -41,38 +41,66 @@ public class StrokiMtsGetter : GetterBase {
     public override async Task<Book> Get(Uri url) {
         var id = GetId(url);
         
-        if (url.GetSegment(1) != "books") {
+        if (url.GetSegment(1) != "book") {
             throw new Exception("Указана ссылка не на текстовую версию. Укажите ссылку на текстовую версию");
         }
         
         var fileMeta = await GetFileMeta(id);
-        var fileUrl = await GetFileUrl(fileMeta);
+        var fileUrl = await GetFileUrl(fileMeta.FirstOrDefault());
         
         Config.Logger.LogInformation($"Оригинальный файл доступен по ссылке {fileUrl.Url}");
         
         var details = await GetBook(id);
+        var textVersion = details.Items.FirstOrDefault(d => d.TextBook != default).TextBook;
+        
         var book = new Book(url) {
-            Cover = await GetCover(details),
-            Title = details.Title,
-            Author = GetAuthor(details),
-            CoAuthors = GetCoAuthors(details),
-            Annotation = details.Annotation,
+            Cover = await GetCover(textVersion),
+            Title = textVersion.Title,
+            Author = GetAuthor(textVersion),
+            CoAuthors = GetCoAuthors(textVersion),
+            Annotation = textVersion.Annotation,
         };
         
         var response = await Config.Client.GetWithTriesAsync(fileUrl.Url.AsUri());
 
         var origBook = await TempFile.Create(fileUrl.Url.AsUri(), Config.TempFolder.Path, fileUrl.Url.AsUri().GetFileName(), await response.Content.ReadAsByteArrayAsync());
         book.AdditionalFiles.AddBook(origBook);
+        book.AdditionalFiles.AddAudio(await GetAudio(details));
         
-        if (fileUrl.Url.AsUri().GetFileName().EndsWith(".pdf")) {
-            Config.Logger.LogInformation("Эта книга в формате pdf. Обработка для этого формата недоступна");
+        if (!fileUrl.Url.AsUri().GetFileName().EndsWith(".epub")) {
+            Config.Logger.LogInformation("Эта книга не в формате epub. Обработка для этого формата недоступна");
         } else {
             book.Chapters = await FillChapters(origBook);
         }
 
         return book;
     }
-    
+
+    private async Task<List<TempFile>> GetAudio(StrokiMtsApiMultiResponse details) {
+        var result = new List<TempFile>();
+
+        var detail = details.Items.FirstOrDefault(d => d.AudioBook != default);
+        if (!Config.Options.Additional || detail == default) {
+            return result;
+        }
+
+        var audio = detail.AudioBook;
+
+        var fileMetas = await GetFileMeta(audio.Id.ToString());
+
+        for (var i = 0; i < fileMetas.Length; i++) {
+            var meta = fileMetas[i];
+            var fileUrl = await GetFileUrl(meta);
+
+            Config.Logger.LogInformation($"Звгружаю аудиоверсию {i + 1}/{fileMetas.Length} {fileUrl.Url}");
+            var response = await Config.Client.GetWithTriesAsync(fileUrl.Url.AsUri());
+            result.Add(await TempFile.Create(fileUrl.Url.AsUri(), Config.TempFolder.Path, $"{i}_{fileUrl.Url.AsUri().GetFileName()}", await response.Content.ReadAsByteArrayAsync()));
+            Config.Logger.LogInformation($"Аудиоверсия {i + 1}/{fileMetas.Length} {fileUrl.Url} загружена");
+        }
+
+        return result;
+    }
+
     private static HtmlDocument SliceBook(EpubBook epubBook, EpubChapter epubChapter) {
         var doc = new HtmlDocument();
 
@@ -226,9 +254,9 @@ public class StrokiMtsGetter : GetterBase {
         return book.Authors.Skip(1).Select(author => new Author(author.Name, SystemUrl.MakeRelativeUri(author.FriendlyUrl))).ToList();
     }
 
-    private async Task<StrokiMtsFile> GetFileMeta(string id) {
+    private async Task<StrokiMtsFile[]> GetFileMeta(string id) {
         var json = await SendAsync<StrokiMtsApiResponse<StrokiMtsFiles>>(() => GetMessage(SystemUrl.MakeRelativeUri("/api/books/files").AppendQueryParameter("bookId", id), "5.0", "5.0"));
-        return json.Data.Full?.FirstOrDefault() ?? json.Data.Preview;
+        return json.Data.Full?.Length > 0 ? json.Data.Full : [json.Data.Preview];
     }
     
     private async Task<StrokiMtsFileUrl> GetFileUrl(StrokiMtsFile file) {
@@ -236,9 +264,9 @@ public class StrokiMtsGetter : GetterBase {
         return json.Data;
     }
 
-    private async Task<StrokiMtsBookItem> GetBook(string id) {
+    private async Task<StrokiMtsApiMultiResponse> GetBook(string id) {
         var json = await SendAsync<StrokiMtsApiResponse<StrokiMtsApiMultiResponse>>(() => GetMessage(SystemUrl.MakeRelativeUri($"/api/books/multi/{id}"), "5.38.0", "5.3"));
-        return json.Data.Items.FirstOrDefault(i => i.TextBook != default).TextBook;
+        return json.Data;
     }
 
     private async Task<T> SendAsync<T>(Func<HttpRequestMessage> message) {
