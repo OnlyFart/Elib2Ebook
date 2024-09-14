@@ -141,7 +141,7 @@ public class MyBookGetter : GetterBase {
             throw new Exception("Не удалось получить книгу");
         }
 
-        var origBook = await TempFile.Create(bookUrl, Config.TempFolder.Path, bookUrl.GetFileName(), await response.Content.ReadAsByteArrayAsync());
+        var origBook = await TempFile.Create(bookUrl, Config.TempFolder.Path, bookUrl.GetFileName(), await response.Content.ReadAsStreamAsync());
         book.AdditionalFiles.AddBook(origBook);
         book.Chapters = await FillChapters(origBook);
 

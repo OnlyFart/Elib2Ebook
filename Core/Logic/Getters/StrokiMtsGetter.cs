@@ -94,7 +94,7 @@ public class StrokiMtsGetter : GetterBase {
 
             Config.Logger.LogInformation($"Звгружаю аудиоверсию {i + 1}/{fileMetas.Length} {fileUrl.Url}");
             var response = await Config.Client.GetWithTriesAsync(fileUrl.Url.AsUri());
-            result.Add(await TempFile.Create(fileUrl.Url.AsUri(), Config.TempFolder.Path, $"{i}_{fileUrl.Url.AsUri().GetFileName()}", await response.Content.ReadAsByteArrayAsync()));
+            result.Add(await TempFile.Create(fileUrl.Url.AsUri(), Config.TempFolder.Path, $"{i}_{fileUrl.Url.AsUri().GetFileName()}", await response.Content.ReadAsStreamAsync()));
             Config.Logger.LogInformation($"Аудиоверсия {i + 1}/{fileMetas.Length} {fileUrl.Url} загружена");
         }
 
