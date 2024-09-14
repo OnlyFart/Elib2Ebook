@@ -6,6 +6,7 @@ using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
 using Core.Types.Boosty;
+using Core.Types.Common;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Microsoft.Extensions.Logging;

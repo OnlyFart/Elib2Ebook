@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using Core.Types.MyBook;
 using EpubSharp;
 using HtmlAgilityPack;
@@ -139,11 +140,12 @@ public class MyBookGetter : GetterBase {
             throw new Exception("Не удалось получить книгу");
         }
 
-        book.AdditionalFiles = [await TempFile.Create(bookUrl, Config.TempFolder.Path, bookUrl.GetFileName(), await response.Content.ReadAsByteArrayAsync())];
-        book.Chapters = await FillChapters(book.AdditionalFiles[0]);
+        var origBook = await TempFile.Create(bookUrl, Config.TempFolder.Path, bookUrl.GetFileName(), await response.Content.ReadAsByteArrayAsync());
+        book.AdditionalFiles.AddBook(origBook);
+        book.Chapters = await FillChapters(origBook);
 
         if (Config.Options.Additional && details.Connected is { Type: "audio" }) {
-            book.AdditionalFiles.AddRange(await GetAudio(details.Connected.Id));
+            book.AdditionalFiles.AddAudio(await GetAudio(details.Connected.Id));
         }
         
         return book;

@@ -48,7 +48,7 @@ public class Book {
     /// <summary>
     /// Дополнительные файлы
     /// </summary>
-    public List<TempFile> AdditionalFiles { get; set; } = new();
+    public AdditionalFileCollection AdditionalFiles { get; set; } = new();
 
     /// <summary>
     /// Язык книги

@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using Core.Types.DarkNovels;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;

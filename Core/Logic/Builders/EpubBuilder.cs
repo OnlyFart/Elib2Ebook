@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using EpubSharp;
 using EpubSharp.Format;
 using Microsoft.Extensions.Logging;
@@ -90,7 +91,7 @@ public class EpubBuilder : BuilderBase {
         var pattern = FileProvider.Instance.ReadAllText($"{Options.ResourcesPath}/ChapterPattern.xhtml");
         foreach (var chapter in book.Chapters.Where(c => c.IsValid)) {
             foreach (var image in chapter.Images) {
-                _writer.AddFile(image.Name, Array.Empty<byte>(), GetImageFormat(image.FullName).ToEpubContentType());
+                _writer.AddFile(image.FullName, Array.Empty<byte>(), GetImageFormat(image.FullName).ToEpubContentType());
                 Images.Add(image);
             }
             

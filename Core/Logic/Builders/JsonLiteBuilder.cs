@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Core.Configs;
 using Core.Types.Book;
+using Core.Types.Common;
 using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Builders;
@@ -22,7 +23,7 @@ public class ShortImageConverter : JsonConverter<TempFile> {
         }
 
         writer.WriteString(nameof(value.Directory), value.Directory);
-        writer.WriteString(nameof(value.Name), value.FullName);
+        writer.WriteString(nameof(value.FullName), value.FullName);
         writer.WriteString(nameof(value.FilePath), value.FilePath);
         writer.WriteEndObject();
     }

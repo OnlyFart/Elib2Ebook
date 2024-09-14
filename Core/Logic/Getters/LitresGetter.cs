@@ -118,8 +118,8 @@ public class LitresGetter : GetterBase {
         };
 
 
-        book.AdditionalFiles = await GetAdditionalFiles(bookId);
-        var fb3File = book.AdditionalFiles.FirstOrDefault(f => f.Extension == ".fb3");
+        book.AdditionalFiles.AddBook(await GetAdditionalFiles(bookId));
+        var fb3File = book.AdditionalFiles.GetBooks().FirstOrDefault(f => f.Extension == ".fb3");
 
         if (fb3File == default) {
             Config.Logger.LogInformation("Нет файла fb3. Обработка невозможна");

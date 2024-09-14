@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Core.Types.Book; 
+namespace Core.Types.Common; 
 
 public class TempFile {
     public string Name;

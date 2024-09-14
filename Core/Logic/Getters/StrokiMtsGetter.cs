@@ -61,12 +61,13 @@ public class StrokiMtsGetter : GetterBase {
         
         var response = await Config.Client.GetWithTriesAsync(fileUrl.Url.AsUri());
 
-        book.AdditionalFiles = [await TempFile.Create(fileUrl.Url.AsUri(), Config.TempFolder.Path, fileUrl.Url.AsUri().GetFileName(), await response.Content.ReadAsByteArrayAsync())];
+        var origBook = await TempFile.Create(fileUrl.Url.AsUri(), Config.TempFolder.Path, fileUrl.Url.AsUri().GetFileName(), await response.Content.ReadAsByteArrayAsync());
+        book.AdditionalFiles.AddBook(origBook);
         
         if (fileUrl.Url.AsUri().GetFileName().EndsWith(".pdf")) {
             Config.Logger.LogInformation("Эта книга в формате pdf. Обработка для этого формата недоступна");
         } else {
-            book.Chapters = await FillChapters(book.AdditionalFiles[0]);
+            book.Chapters = await FillChapters(origBook);
         }
 
         return book;

@@ -1,10 +1,6 @@
 name: .NET
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+on: push
 
 jobs:
   build:
@@ -56,6 +52,7 @@ jobs:
     name: Check version
     needs: build
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
     outputs:
       VERSION: ${{ steps.get-version.outputs.version }}
       LAST_TAG: ${{ steps.last_release.outputs.tag_name }}

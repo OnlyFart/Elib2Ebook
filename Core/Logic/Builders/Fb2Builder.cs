@@ -10,6 +10,7 @@ using System.Xml.Linq;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
+using Core.Types.Common;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 
