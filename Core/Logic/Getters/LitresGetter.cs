@@ -156,9 +156,11 @@ public class LitresGetter : GetterBase {
                     result.Add(originalFile);
                 }
             }
-        } else {
+        }
+
+        if (_authData == default || result.Count == 0) {
             var response = await GetShortBook(bookId);
-            var originalFile = await TempFile.Create(response.RequestMessage.RequestUri, Config.TempFolder.Path, response.Content.Headers.ContentDisposition?.FileName?.Trim('\"') ?? response.RequestMessage.RequestUri.GetFileName(), await response.Content.ReadAsStreamAsync());;
+            var originalFile = await TempFile.Create(response.RequestMessage.RequestUri, Config.TempFolder.Path, response.Content.Headers.ContentDisposition?.FileName?.Trim('\"') ?? response.RequestMessage.RequestUri.GetFileName(), await response.Content.ReadAsStreamAsync());
             result.Add(originalFile);
         }
 
