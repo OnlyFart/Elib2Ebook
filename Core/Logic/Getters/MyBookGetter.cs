@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -162,8 +163,12 @@ public class MyBookGetter : GetterBase {
 
             Config.Logger.LogInformation($"Звгружаю дополнительный файл {i + 1}/{files.Count} {url}");
             SetAuthHeader("GET", url);
+
+            var name = file.Title;
+            var ext = Path.GetExtension(name);
+            
             using var response = await _apiClient.GetAsync(url);
-            result.Add(await TempFile.Create(url, Config.TempFolder.Path, $"{file.Order}_{file.Title}.mp3", await response.Content.ReadAsStreamAsync()));
+            result.Add(await TempFile.Create(url, Config.TempFolder.Path, $"{file.Order}_{name}{ext}", await response.Content.ReadAsStreamAsync()));
             Config.Logger.LogInformation($"Дополнительный файл {i + 1}/{files.Count} {url} загружен");
         }
         
