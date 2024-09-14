@@ -88,7 +88,21 @@ public class AuthorTodayGetter : GetterBase {
             Seria = GetSeria(details)
         };
 
+        await FillAdditional(book, details);
+
         return book;
+    }
+
+    private async Task FillAdditional(Book book, AuthorTodayBookDetails details) {
+        if (!Config.Options.Additional || details.GalleryImages == default || details.GalleryImages.Length == 0) {
+            return;
+        }
+
+        Config.Logger.LogInformation("Загружаю дополнительные иллюстрации");
+        foreach (var image in details.GalleryImages) {
+            book.AdditionalFiles.AddImage(await SaveImage(SystemUrl.MakeRelativeUri(image.Url)));
+        }
+        Config.Logger.LogInformation("Дополнительные иллюстрации загружены");
     }
 
     private HttpRequestMessage GetDefaultMessage(Uri uri, Uri host, HttpContent content = null) {
