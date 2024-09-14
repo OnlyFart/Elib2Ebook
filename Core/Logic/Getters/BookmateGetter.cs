@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -50,9 +51,11 @@ public class BookmateGetter : GetterBase {
             Annotation = details.Annotation,
             Lang = details.Language
         };
-        
-        var response = await Config.Client.GetAsync($"https://api.bookmate.ru/api/v5/books/{id}/content/v4");
-        book.AdditionalFiles = [new ShortFile(response.Content.Headers.ContentDisposition.FileName.Trim('\"'), await response.Content.ReadAsByteArrayAsync())];
+
+        var requestUri = $"https://api.bookmate.ru/api/v5/books/{id}/content/v4".AsUri();
+        var response = await Config.Client.GetAsync(requestUri);
+
+        book.AdditionalFiles = [await TempFile.Create(url, Config.TempFolder.Path, response.Content.Headers.ContentDisposition.FileName.Trim('\"'), await response.Content.ReadAsStreamAsync())];
         book.Chapters = await FillChapters(book.AdditionalFiles[0]);
         
         return book;
@@ -84,13 +87,13 @@ public class BookmateGetter : GetterBase {
         return doc;
     }
 
-    private async Task<IEnumerable<Chapter>> FillChapters(ShortFile file) {
+    private async Task<IEnumerable<Chapter>> FillChapters(TempFile file) {
         var result = new List<Chapter>();
         if (Config.Options.NoChapters) {
             return result;
         }
 
-        var epubBook = EpubReader.Read(file.Bytes, Encoding.UTF8);
+        var epubBook = EpubReader.Read(file.GetStream(), true, Encoding.UTF8);
         var current = epubBook.TableOfContents.First();
 
         do {
@@ -109,8 +112,8 @@ public class BookmateGetter : GetterBase {
         return result;
     }
 
-    private async Task<IEnumerable<Image>> GetImages(HtmlDocument doc, EpubBook book) {
-        var images = new List<Image>();
+    private async Task<IEnumerable<TempFile>> GetImages(HtmlDocument doc, EpubBook book) {
+        var images = new List<TempFile>();
         foreach (var img in doc.QuerySelectorAll("img")) {
             var path = img.Attributes["src"]?.Value;
             if (string.IsNullOrWhiteSpace(path)) {
@@ -129,8 +132,8 @@ public class BookmateGetter : GetterBase {
                 continue;
             }
             
-            var image = await Image.Create(null, Config.TempFolder.Path, t.Href, t.Content);
-            img.Attributes["src"].Value = image.Name;
+            var image = await TempFile.Create(null, Config.TempFolder.Path, t.Href, t.Content);
+            img.Attributes["src"].Value = image.FullName;
             images.Add(image);
         }
 
@@ -197,9 +200,9 @@ public class BookmateGetter : GetterBase {
         return parent;
     }
     
-    private Task<Image> GetCover(BookmateBook book) {
+    private Task<TempFile> GetCover(BookmateBook book) {
         var url = book.Cover.Large ?? book.Cover.Small;
-        return !string.IsNullOrWhiteSpace(url) ? SaveImage(SystemUrl.MakeRelativeUri(url)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(url) ? SaveImage(SystemUrl.MakeRelativeUri(url)) : Task.FromResult(default(TempFile));
     }
     
     private Author GetAuthor(BookmateBook book) {

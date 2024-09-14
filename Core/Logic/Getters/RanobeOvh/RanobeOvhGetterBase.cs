@@ -97,7 +97,7 @@ public abstract class RanobeOvhGetterBase : GetterBase {
         return new Author(translator.Name, SystemUrl.MakeRelativeUri($"/translator/{translator.Slug}"));
     }
 
-    private Task<Image> GetCover(RanobeOvhManga manga, Uri uri) {
-        return !string.IsNullOrWhiteSpace(manga.Poster) ? SaveImage(uri.MakeRelativeUri(manga.Poster)) : Task.FromResult(default(Image));
+    private Task<TempFile> GetCover(RanobeOvhManga manga, Uri uri) {
+        return !string.IsNullOrWhiteSpace(manga.Poster) ? SaveImage(uri.MakeRelativeUri(manga.Poster)) : Task.FromResult(default(TempFile));
     }
 }

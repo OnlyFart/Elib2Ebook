@@ -91,7 +91,7 @@ public class DreameGetter : GetterBase {
             new Author(data.AuthorName);
     }
 
-    private Task<Image> GetCover(string url) {
-        return !string.IsNullOrWhiteSpace(url) ? SaveImage(url.AsUri()) : Task.FromResult(default(Image));
+    private Task<TempFile> GetCover(string url) {
+        return !string.IsNullOrWhiteSpace(url) ? SaveImage(url.AsUri()) : Task.FromResult(default(TempFile));
     }
 }

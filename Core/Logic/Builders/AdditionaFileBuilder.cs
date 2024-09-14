@@ -32,9 +32,9 @@ public class AdditionaFileBuilder  {
         }
         
         foreach (var file in book.AdditionalFiles) {
-            var fileName = Path.Combine(additionalPath, file.Name);
+            var fileName = Path.Combine(additionalPath, file.FullName);
             _logger.LogInformation($"Начинаю сохранение дополнительного файла {fileName.CoverQuotes()}");
-            await File.WriteAllBytesAsync(fileName, file.Bytes);
+            await File.WriteAllBytesAsync(fileName, file.Content);
             _logger.LogInformation($"Cохранение дополнительного файла {fileName.CoverQuotes()} завершено");
         }
         

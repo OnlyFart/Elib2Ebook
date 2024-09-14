@@ -169,8 +169,8 @@ public abstract class NewLibSocialGetterBase : GetterBase{
             .Select(author => new Author(author.Name, SystemUrl.MakeRelativeUri($"/ru/people/{author.SlugUrl}"))).ToList();
     }
     
-    private Task<Image> GetCover(RanobeLibBookDetails details) {
-        return !string.IsNullOrWhiteSpace(details.Data.Cover.Default) ? SaveImage(details.Data.Cover.Default.AsUri()) : Task.FromResult(default(Image));
+    private Task<TempFile> GetCover(RanobeLibBookDetails details) {
+        return !string.IsNullOrWhiteSpace(details.Data.Cover.Default) ? SaveImage(details.Data.Cover.Default.AsUri()) : Task.FromResult(default(TempFile));
     }
 
     protected override HttpRequestMessage GetImageRequestMessage(Uri uri) {

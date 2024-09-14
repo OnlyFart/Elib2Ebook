@@ -104,8 +104,8 @@ public class RomfantGetter : GetterBase {
         return pages.Any() ? pages.Max() : 1;
     }
 
-    private Task<Image> GetCover(HtmlDocument doc) {
+    private Task<TempFile> GetCover(HtmlDocument doc) {
         var imagePath = doc.QuerySelector("div.subscribe img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(SystemUrl.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(SystemUrl.MakeRelativeUri(imagePath)) : Task.FromResult(default(TempFile));
     }
 }

@@ -117,9 +117,9 @@ public class LitmarketGetter : GetterBase {
         }
     }
 
-    private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
+    private Task<TempFile> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("div.front img")?.Attributes["data-src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(uri.MakeRelativeUri(imagePath.AsUri().AbsolutePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(uri.MakeRelativeUri(imagePath.AsUri().AbsolutePath)) : Task.FromResult(default(TempFile));
     }
 
     private List<Block> GetToc(Response response, string title) {

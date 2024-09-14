@@ -64,9 +64,9 @@ public class OnlineKnigiGetter : GetterBase {
          return int.Parse(doc.QuerySelector("li.last a").Attributes["href"].Value.AsUri().GetQueryParameter("page"));
     }
 
-    private Task<Image> GetCover(HtmlDocument doc) {
+    private Task<TempFile> GetCover(HtmlDocument doc) {
         var imagePath = doc.QuerySelector("meta[property=og:image]")?.Attributes["content"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(SystemUrl.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(SystemUrl.MakeRelativeUri(imagePath)) : Task.FromResult(default(TempFile));
     }
     
     private static Author GetAuthor(HtmlDocument doc, Uri uri) {

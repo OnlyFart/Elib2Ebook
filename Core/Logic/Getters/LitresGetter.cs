@@ -119,24 +119,24 @@ public class LitresGetter : GetterBase {
 
 
         book.AdditionalFiles = await GetAdditionalFiles(bookId);
-        var fb3File = book.AdditionalFiles.FirstOrDefault(f => f.Name.EndsWith("fb3"));
+        var fb3File = book.AdditionalFiles.FirstOrDefault(f => f.Extension == ".fb3");
 
         if (fb3File == default) {
             Config.Logger.LogInformation("Нет файла fb3. Обработка невозможна");
         } else {
             try {
-                var litresBook = await GetBook(fb3File.Bytes);
+                var litresBook = await GetBook(fb3File.GetStream());
                 book.Chapters = await FillChapters(litresBook, art.Title);
             } catch (Exception) {
-                Config.Logger.LogInformation($"Не удалось обработать оригинальный файл {fb3File.Name}");
+                Config.Logger.LogInformation($"Не удалось обработать оригинальный файл {fb3File.FullName}");
             }
         }
 
         return book;
     }
 
-    private async Task<List<ShortFile>> GetAdditionalFiles(string bookId) {
-        var result = new List<ShortFile>();
+    private async Task<List<TempFile>> GetAdditionalFiles(string bookId) {
+        var result = new List<TempFile>();
         
         if (_authData != default) {
             if (Config.Options.Additional) {
@@ -145,21 +145,20 @@ public class LitresGetter : GetterBase {
                 foreach (var litresFile in files.SelectMany(f => f.Files).Where(f => !string.IsNullOrWhiteSpace(f.Extension))) {
                     using var bookResponse = await GetBookResponse(bookId, litresFile.Extension);
                     if (bookResponse != default) {
-                        var originalFile = new ShortFile(bookResponse.Content.Headers.ContentDisposition?.FileName?.Trim('\"') ?? bookResponse.RequestMessage.RequestUri.GetFileName(),
-                            await bookResponse.Content.ReadAsByteArrayAsync());
+                        var originalFile = await TempFile.Create(bookResponse.RequestMessage.RequestUri, Config.TempFolder.Path, bookResponse.Content.Headers.ContentDisposition?.FileName?.Trim('\"') ?? bookResponse.RequestMessage.RequestUri.GetFileName(), await bookResponse.Content.ReadAsStreamAsync());
                         result.Add(originalFile);
                     }
                 }
             } else {
                 using var bookResponse = await GetBookResponse(bookId, "fb3");
                 if (bookResponse != default) {
-                    var originalFile = new ShortFile(bookResponse.Content.Headers.ContentDisposition?.FileName?.Trim('\"') ?? bookResponse.RequestMessage.RequestUri.GetFileName(), await bookResponse.Content.ReadAsByteArrayAsync());
+                    var originalFile = await TempFile.Create(bookResponse.RequestMessage.RequestUri, Config.TempFolder.Path, bookResponse.Content.Headers.ContentDisposition?.FileName?.Trim('\"') ?? bookResponse.RequestMessage.RequestUri.GetFileName(), await bookResponse.Content.ReadAsStreamAsync());;
                     result.Add(originalFile);
                 }
             }
         } else {
             var response = await GetShortBook(bookId);
-            var originalFile = new ShortFile(response.Content.Headers.ContentDisposition?.FileName?.Trim('\"') ?? response.RequestMessage.RequestUri.GetFileName(), await response.Content.ReadAsByteArrayAsync());
+            var originalFile = await TempFile.Create(response.RequestMessage.RequestUri, Config.TempFolder.Path, response.Content.Headers.ContentDisposition?.FileName?.Trim('\"') ?? response.RequestMessage.RequestUri.GetFileName(), await response.Content.ReadAsStreamAsync());;
             result.Add(originalFile);
         }
 
@@ -214,8 +213,8 @@ public class LitresGetter : GetterBase {
         return result;
     }
     
-    private Task<Image> GetCover(string imagePath) {
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(imagePath.AsUri()) : Task.FromResult(default(Image));
+    private Task<TempFile> GetCover(string imagePath) {
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(imagePath.AsUri()) : Task.FromResult(default(TempFile));
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(LitresBook book, string title) {
@@ -242,8 +241,8 @@ public class LitresGetter : GetterBase {
         return result;
     }
 
-    private async Task<IEnumerable<Image>> GetImages(HtmlNode doc, LitresBook book) {
-        var images = new List<Image>();
+    private async Task<IEnumerable<TempFile>> GetImages(HtmlNode doc, LitresBook book) {
+        var images = new List<TempFile>();
         foreach (var img in doc.QuerySelectorAll("img")) {
             var path = img.Attributes["src"]?.Value;
             if (string.IsNullOrWhiteSpace(path)) {
@@ -262,8 +261,8 @@ public class LitresGetter : GetterBase {
             }
 
             var fileName = t.Target.Split("/").Last().Trim('/');
-            var image = await Image.Create(null, Config.TempFolder.Path, fileName, t.Content);
-            img.Attributes["src"].Value = image.Name;
+            var image = await TempFile.Create(null, Config.TempFolder.Path, fileName, t.Content);
+            img.Attributes["src"].Value = image.FullName;
             images.Add(image);
         }
 
@@ -296,12 +295,11 @@ public class LitresGetter : GetterBase {
         return await Config.Client.GetAsync(shortUri);
     }
 
-    private async Task<LitresBook> GetBook(byte[] bytes) {
+    private async Task<LitresBook> GetBook(Stream stream) {
         var result = new LitresBook();
         
         var map = new Dictionary<string, byte[]>();
-        using var bookMs = new MemoryStream(bytes);
-        using var zip = new ZipArchive(bookMs);
+        using var zip = new ZipArchive(stream);
 
         foreach (var entry in zip.Entries) {
             using var ms = new MemoryStream();

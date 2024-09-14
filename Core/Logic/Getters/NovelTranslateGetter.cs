@@ -99,9 +99,9 @@ public class NovelTranslateGetter : GetterBase {
         return doc.QuerySelector("div.description-summary div.summary__content > p")?.InnerHtml;
     }
 
-    private Task<Image> GetCover(HtmlDocument doc, Uri uri) {
+    private Task<TempFile> GetCover(HtmlDocument doc, Uri uri) {
         var imagePath = doc.QuerySelector("div.summary_image img")?.Attributes["data-lazy-src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(TempFile));
     }
     
     private static Author GetAuthor(HtmlDocument doc, Uri uri) {

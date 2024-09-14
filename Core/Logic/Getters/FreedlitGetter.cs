@@ -116,7 +116,7 @@ public class FreedlitGetter : GetterBase{
         return doc.QuerySelector("body").InnerHtml.AsHtmlDoc();
     }
 
-    private Task<Image> GetCover(FreedlitBook book) {
-        return !string.IsNullOrWhiteSpace(book.Cover) ? SaveImage(SystemUrl.MakeRelativeUri($"/storage/{book.Cover}")) : Task.FromResult(default(Image));
+    private Task<TempFile> GetCover(FreedlitBook book) {
+        return !string.IsNullOrWhiteSpace(book.Cover) ? SaveImage(SystemUrl.MakeRelativeUri($"/storage/{book.Cover}")) : Task.FromResult(default(TempFile));
     }
 }

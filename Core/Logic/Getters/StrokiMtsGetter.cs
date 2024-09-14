@@ -61,7 +61,7 @@ public class StrokiMtsGetter : GetterBase {
         
         var response = await Config.Client.GetWithTriesAsync(fileUrl.Url.AsUri());
 
-        book.AdditionalFiles = [new ShortFile(fileUrl.Url.AsUri().GetFileName(), await response.Content.ReadAsByteArrayAsync())];
+        book.AdditionalFiles = [await TempFile.Create(fileUrl.Url.AsUri(), Config.TempFolder.Path, fileUrl.Url.AsUri().GetFileName(), await response.Content.ReadAsByteArrayAsync())];
         
         if (fileUrl.Url.AsUri().GetFileName().EndsWith(".pdf")) {
             Config.Logger.LogInformation("Эта книга в формате pdf. Обработка для этого формата недоступна");
@@ -98,13 +98,13 @@ public class StrokiMtsGetter : GetterBase {
         return doc;
     }
 
-    private async Task<IEnumerable<Chapter>> FillChapters(ShortFile file) {
+    private async Task<IEnumerable<Chapter>> FillChapters(TempFile file) {
         var result = new List<Chapter>();
         if (Config.Options.NoChapters) {
             return result;
         }
         
-        var epubBook = EpubReader.Read(file.Bytes, Encoding.UTF8);
+        var epubBook = EpubReader.Read(file.GetStream(), true, Encoding.UTF8);
         var current = epubBook.TableOfContents.First();
         
         do {
@@ -123,8 +123,8 @@ public class StrokiMtsGetter : GetterBase {
         return result;
     }
 
-    private async Task<IEnumerable<Image>> GetImages(HtmlDocument doc, EpubBook book) {
-        var images = new List<Image>();
+    private async Task<IEnumerable<TempFile>> GetImages(HtmlDocument doc, EpubBook book) {
+        var images = new List<TempFile>();
         foreach (var img in doc.QuerySelectorAll("img")) {
             var path = img.Attributes["src"]?.Value;
             if (string.IsNullOrWhiteSpace(path)) {
@@ -143,8 +143,8 @@ public class StrokiMtsGetter : GetterBase {
                 continue;
             }
             
-            var image = await Image.Create(null, Config.TempFolder.Path, t.Href, t.Content);
-            img.Attributes["src"].Value = image.Name;
+            var image = await TempFile.Create(null, Config.TempFolder.Path, t.Href, t.Content);
+            img.Attributes["src"].Value = image.FullName;
             images.Add(image);
         }
 
@@ -211,9 +211,9 @@ public class StrokiMtsGetter : GetterBase {
         return parent;
     }
     
-    private Task<Image> GetCover(StrokiMtsBookItem book) {
+    private Task<TempFile> GetCover(StrokiMtsBookItem book) {
         var url = book.ImageUrl.TryGetValue("extraLarge", out var item) ? item : book.ImageUrl.FirstOrDefault().Value;
-        return !string.IsNullOrWhiteSpace(url) ? SaveImage(SystemUrl.MakeRelativeUri(url)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(url) ? SaveImage(SystemUrl.MakeRelativeUri(url)) : Task.FromResult(default(TempFile));
     }
     
     private Author GetAuthor(StrokiMtsBookItem book) {

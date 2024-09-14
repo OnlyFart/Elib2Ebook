@@ -88,8 +88,8 @@ public class BookstabGetter : GetterBase {
         }
     }
 
-    private Task<Image> GetCover(BookstabApiResponse response) {
+    private Task<TempFile> GetCover(BookstabApiResponse response) {
         var imagePath = response.Book.Image;
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(_apiUrl.MakeRelativeUri($"/storage/{imagePath}")) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(_apiUrl.MakeRelativeUri($"/storage/{imagePath}")) : Task.FromResult(default(TempFile));
     }
 }

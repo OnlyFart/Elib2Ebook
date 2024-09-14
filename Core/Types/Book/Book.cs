@@ -28,7 +28,7 @@ public class Book {
     /// <summary>
     /// Обложка
     /// </summary>
-    public Image Cover { get; set; }
+    public TempFile Cover { get; set; }
     
     /// <summary>
     /// Серия
@@ -48,7 +48,7 @@ public class Book {
     /// <summary>
     /// Дополнительные файлы
     /// </summary>
-    public List<ShortFile> AdditionalFiles { get; set; } = new();
+    public List<TempFile> AdditionalFiles { get; set; } = new();
 
     /// <summary>
     /// Язык книги

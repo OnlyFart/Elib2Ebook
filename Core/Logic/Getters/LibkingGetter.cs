@@ -36,9 +36,9 @@ public class LibkingGetter : GetterBase {
         return a == default ? new Author("LibKing") : new Author(a.GetText(), SystemUrl.MakeRelativeUri(a.Attributes["href"].Value));
     }
 
-    private Task<Image> GetCover(HtmlDocument doc, Uri bookUri) {
+    private Task<TempFile> GetCover(HtmlDocument doc, Uri bookUri) {
         var imagePath = doc.QuerySelector("div.mov-img img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(TempFile));
     }
 
     private async Task AddChapter(ICollection<Chapter> chapters, Chapter chapter, StringBuilder text) {

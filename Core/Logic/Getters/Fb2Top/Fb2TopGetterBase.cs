@@ -88,8 +88,8 @@ public abstract class Fb2TopGetterBase : GetterBase {
             new Author("Fb2Top");
     }
 
-    private Task<Image> GetCover(HtmlDocument doc, Uri url) {
+    private Task<TempFile> GetCover(HtmlDocument doc, Uri url) {
         var imagePath = doc.QuerySelector("img.book-info-poster-img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(url.MakeRelativeUri(imagePath.HtmlDecode())) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(url.MakeRelativeUri(imagePath.HtmlDecode())) : Task.FromResult(default(TempFile));
     }
 }

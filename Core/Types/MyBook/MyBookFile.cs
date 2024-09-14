@@ -8,4 +8,7 @@ public class MyBookFile {
     
     [JsonPropertyName("title")]
     public string Title { get; set; }
+    
+    [JsonPropertyName("order")]
+    public int Order { get; set; }
 }

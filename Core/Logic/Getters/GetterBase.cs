@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -45,7 +46,7 @@ public abstract class GetterBase : IDisposable {
     /// </summary>
     /// <param name="uri"></param>
     /// <returns></returns>
-    protected async Task<Image> SaveImage(Uri uri) {
+    protected async Task<TempFile> SaveImage(Uri uri) {
         try {
             Config.Logger.LogInformation($"Загружаю картинку {uri}");
             using var response = await Config.Client.SendWithTriesAsync(() => GetImageRequestMessage(uri));
@@ -55,7 +56,11 @@ public abstract class GetterBase : IDisposable {
             }
             
             await using var stream = await response.Content.ReadAsStreamAsync();
-            return await Image.Create(uri, Config.TempFolder.Path, uri.GetFileName(), stream);
+
+            var extension = Path.GetExtension(uri.GetFileName());
+            var fullName = Guid.NewGuid() + (string.IsNullOrWhiteSpace(extension) ? ".jpg" : extension); 
+            
+            return await TempFile.Create(uri, Config.TempFolder.Path, fullName, stream);
 
         } catch (Exception) {
             return default;
@@ -67,8 +72,8 @@ public abstract class GetterBase : IDisposable {
     /// </summary>
     /// <param name="doc"></param>
     /// <param name="baseUri"></param>
-    protected async Task<IEnumerable<Image>> GetImages(HtmlDocument doc, Uri baseUri) {
-        var images = new ConcurrentBag<Tuple<Image, int>>();
+    protected async Task<IEnumerable<TempFile>> GetImages(HtmlDocument doc, Uri baseUri) {
+        var images = new ConcurrentBag<Tuple<TempFile, int>>();
         var toRemove = new ConcurrentBag<HtmlNode>();
         var tuples = doc.QuerySelectorAll("img, image").Select((img, i) => Tuple.Create(img, i));
         await Parallel.ForEachAsync(tuples, async (t, _) => {
@@ -97,7 +102,7 @@ public abstract class GetterBase : IDisposable {
             }
 
             img.Attributes.RemoveAll();
-            img.Attributes.Add("src", image.Name);
+            img.Attributes.Add("src", image.FullName);
             images.Add(Tuple.Create(image, t.Item2));
         });
 

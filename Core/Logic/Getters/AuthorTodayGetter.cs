@@ -138,8 +138,8 @@ public class AuthorTodayGetter : GetterBase {
         };
     }
 
-    private Task<Image> GetCover(AuthorTodayBookDetails book) {
-        return !string.IsNullOrWhiteSpace(book.CoverUrl) ? SaveImage(book.CoverUrl.AsUri()) : Task.FromResult(default(Image));
+    private Task<TempFile> GetCover(AuthorTodayBookDetails book) {
+        return !string.IsNullOrWhiteSpace(book.CoverUrl) ? SaveImage(book.CoverUrl.AsUri()) : Task.FromResult(default(TempFile));
     }
 
     protected override HttpRequestMessage GetImageRequestMessage(Uri uri) {

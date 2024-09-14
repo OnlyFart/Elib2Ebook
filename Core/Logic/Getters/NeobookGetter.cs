@@ -123,8 +123,8 @@ public class NeobookGetter : GetterBase {
         return chapter.Data.Html.AsHtmlDoc();
     }
 
-    private Task<Image> GetCover(NeobookPostData data) {
+    private Task<TempFile> GetCover(NeobookPostData data) {
         var imagePath = data.Attachment?.Cover?.GetValueOrDefault("l");
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(imagePath.AsUri()) : Task.FromResult(default(Image));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(imagePath.AsUri()) : Task.FromResult(default(TempFile));
     }
 }
