@@ -61,7 +61,7 @@ public abstract class RenovelsGetterBase : GetterBase {
         var book = new Book(SystemUrl.MakeRelativeUri($"/{Segment}/{bookId}")) {
             Cover = await GetCover(content, url),
             Chapters = await FillChapters(content, url),
-            Title = content.RusName,
+            Title = content.MainName ?? content.SecondaryName ?? content.AnotherName,
             Author = GetAuthor(content),
             Annotation = content.Description
         };
@@ -118,11 +118,12 @@ public abstract class RenovelsGetterBase : GetterBase {
         var result = new List<RenovelsChapter>();
         
         for (var i = 1;; i++) {
-            var uri = _apiUrl.MakeRelativeUri($"/api/titles/chapters/?branch_id={content.Branches[0].Id}&ordering=index&user_data=1&count=40&page={i}");
+            var uri = _apiUrl.MakeRelativeUri($"/api/titles/chapters/?branch_id={content.Branches[0].Id}&ordering=-index&user_data=1&count=40&page={i}");
             var response = await Config.Client.GetFromJsonAsync<RenovelsApiResponse<RenovelsChapter[]>>(uri);
             result.AddRange(response!.Content);
 
             if (response.Content.Length < 40) {
+                result.Reverse();
                 return SliceToc(result.Where(c => !c.IsPaid || c.IsBought == true).ToList(), c => c.Name);
             }
         }
