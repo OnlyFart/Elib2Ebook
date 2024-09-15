@@ -161,7 +161,7 @@ public class MyBookGetter : GetterBase {
             var file = files[i];
             var url = SystemUrl.MakeRelativeUri(file.Url);
 
-            Config.Logger.LogInformation($"Звгружаю дополнительный файл {i + 1}/{files.Count} {url}");
+            Config.Logger.LogInformation($"Звгружаю аудиофайл {i + 1}/{files.Count} {url}");
             SetAuthHeader("GET", url);
 
             var name = file.Title;
@@ -169,7 +169,7 @@ public class MyBookGetter : GetterBase {
             
             using var response = await _apiClient.GetAsync(url);
             result.Add(await TempFile.Create(url, Config.TempFolder.Path, $"{file.Order}_{name}{ext}", await response.Content.ReadAsStreamAsync()));
-            Config.Logger.LogInformation($"Дополнительный файл {i + 1}/{files.Count} {url} загружен");
+            Config.Logger.LogInformation($"Аудиофайл файл {i + 1}/{files.Count} {url} загружен");
         }
         
         return result;
