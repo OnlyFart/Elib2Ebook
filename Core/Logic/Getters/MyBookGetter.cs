@@ -165,7 +165,7 @@ public class MyBookGetter : GetterBase {
             SetAuthHeader("GET", url);
 
             var name = file.Title;
-            var ext = Path.GetExtension(name);
+            var ext = Path.GetExtension(url.GetFileName());
             
             using var response = await _apiClient.GetAsync(url);
             result.Add(await TempFile.Create(url, Config.TempFolder.Path, $"{file.Order}_{name}{ext}", await response.Content.ReadAsStreamAsync()));
