@@ -161,7 +161,7 @@ public class MyBookGetter : GetterBase {
             var file = files[i];
             var url = SystemUrl.MakeRelativeUri(file.Url);
 
-            Config.Logger.LogInformation($"Звгружаю аудиофайл {i + 1}/{files.Count} {url}");
+            Config.Logger.LogInformation($"Загружаю аудиофайл {i + 1}/{files.Count} {url}");
             SetAuthHeader("GET", url);
 
             var name = file.Title;
