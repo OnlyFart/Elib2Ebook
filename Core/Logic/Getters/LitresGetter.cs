@@ -53,6 +53,7 @@ public class LitresGetter : GetterBase {
 
     public override async Task Authorize() {
         if (!Config.HasCredentials) {
+            Config.Client.DefaultRequestHeaders.Add("Session-Id", _authData.Sid);
             return;
         }
         
@@ -67,6 +68,7 @@ public class LitresGetter : GetterBase {
         var saveCreds = $"{directory}/{Config.Options.Login.RemoveInvalidChars()}";
         if (File.Exists(saveCreds)) {
             _authData = await File.ReadAllTextAsync(saveCreds).ContinueWith(t => t.Result.Deserialize<LitresAuthResponseData>());
+            Config.Client.DefaultRequestHeaders.Add("Session-Id", _authData.Sid);
             return;
         }
 
@@ -78,7 +80,8 @@ public class LitresGetter : GetterBase {
         if (!_authData.Success) {
             throw new Exception($"Не удалось авторизоваться. {_authData.ErrorMessage}");
         }
-
+        
+        Config.Client.DefaultRequestHeaders.Add("Session-Id", _authData.Sid);
         await File.WriteAllTextAsync(saveCreds, JsonSerializer.Serialize(_authData));
     }
 
