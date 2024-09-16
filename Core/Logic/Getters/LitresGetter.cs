@@ -89,6 +89,10 @@ public class LitresGetter : GetterBase {
     
     private async Task<T> GetResponse<T>(Uri url) {
         var resp = await Config.Client.GetWithTriesAsync(url);
+        if (resp == default) {
+            return default;
+        }
+        
         return await resp.Content.ReadAsStringAsync().ContinueWith(t => t.Result.Deserialize<LitresStaticResponse<T>>().Payload.Data);
     }
 
@@ -116,8 +120,7 @@ public class LitresGetter : GetterBase {
             Annotation = art.Annotation,
             Seria = GetSeria(art)
         };
-
-
+        
         book.AdditionalFiles.AddBook(await GetAdditionalFiles(bookId));
         var fb3File = book.AdditionalFiles.GetBooks().FirstOrDefault(f => f.Extension == ".fb3");
 
