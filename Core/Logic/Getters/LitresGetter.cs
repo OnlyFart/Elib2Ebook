@@ -140,7 +140,7 @@ public class LitresGetter : GetterBase {
         
         if (_authData != default) {
             if (Config.Options.Additional) {
-                var files = await GetResponse<LitresFiles[]>("https://api.litres.ru/foundation/api/arts/69646621/files/grouped".AsUri());
+                var files = await GetResponse<LitresFiles[]>($"https://api.litres.ru/foundation/api/arts/{bookId}/files/grouped".AsUri());
 
                 foreach (var litresFile in files.SelectMany(f => f.Files).Where(f => !string.IsNullOrWhiteSpace(f.Extension))) {
                     using var bookResponse = await GetBookResponse(bookId, litresFile.Extension);
