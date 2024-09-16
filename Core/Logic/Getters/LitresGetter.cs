@@ -145,27 +145,28 @@ public class LitresGetter : GetterBase {
                 foreach (var litresFile in files.SelectMany(f => f.Files).Where(f => !string.IsNullOrWhiteSpace(f.Extension))) {
                     using var bookResponse = await GetBookResponse(bookId, litresFile.Extension);
                     if (bookResponse != default) {
-                        var originalFile = await TempFile.Create(bookResponse.RequestMessage.RequestUri, Config.TempFolder.Path, bookResponse.Content.Headers.ContentDisposition?.FileName?.Trim('\"') ?? bookResponse.RequestMessage.RequestUri.GetFileName(), await bookResponse.Content.ReadAsStreamAsync());
-                        result.Add(originalFile);
+                        result.Add(await CreateTempFile(bookResponse));
                     }
                 }
             } else {
                 using var bookResponse = await GetBookResponse(bookId, "fb3");
                 if (bookResponse != default) {
-                    var originalFile = await TempFile.Create(bookResponse.RequestMessage.RequestUri, Config.TempFolder.Path, bookResponse.Content.Headers.ContentDisposition?.FileName?.Trim('\"') ?? bookResponse.RequestMessage.RequestUri.GetFileName(), await bookResponse.Content.ReadAsStreamAsync());;
-                    result.Add(originalFile);
+                    result.Add(await CreateTempFile(bookResponse));
                 }
             }
         }
 
         if (_authData == default || result.Count == 0) {
             var response = await GetShortBook(bookId);
-            var originalFile = await TempFile.Create(response.RequestMessage.RequestUri, Config.TempFolder.Path, response.Content.Headers.ContentDisposition?.FileName?.Trim('\"') ?? response.RequestMessage.RequestUri.GetFileName(), await response.Content.ReadAsStreamAsync());
-            result.Add(originalFile);
+            result.Add(await CreateTempFile(response));
         }
 
         return result;
-    } 
+    }
+
+    private async Task<TempFile> CreateTempFile(HttpResponseMessage response) {
+        return await TempFile.Create(response.RequestMessage.RequestUri, Config.TempFolder.Path, response.Content.Headers.ContentDisposition?.FileName?.Trim('\"') ?? response.RequestMessage.RequestUri.GetFileName(), await response.Content.ReadAsStreamAsync());
+    }
 
     private static string GetBookId(Uri url) {
         var art = url.GetQueryParameter("art");
