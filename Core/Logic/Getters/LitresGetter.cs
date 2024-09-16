@@ -147,9 +147,16 @@ public class LitresGetter : GetterBase {
         if (_authData != default) {
             if (Config.Options.Additional) {
                 var files = await GetResponse<LitresFiles[]>($"https://api.litres.ru/foundation/api/arts/{bookId}/files/grouped".AsUri());
-
-                foreach (var litresFile in files.SelectMany(f => f.Files).Where(f => !string.IsNullOrWhiteSpace(f.Extension))) {
-                    using var bookResponse = await GetBookResponse(bookId, litresFile.Extension);
+                var extensions = files.SelectMany(f => f.Files).Where(f => !string.IsNullOrWhiteSpace(f.Extension)).Select(f => f.Extension).ToList();
+                if (extensions.Count == 0) {
+                    // -Видишь суслика?
+                    // -Нет.
+                    // -И я не вижу. А он есть!
+                    extensions = ["fb2.zip", "html", "html.zip", "txt.zip", "rtf.zip", "a4.pdf", "a6.pdf", "epub", "ios.epub", "fb3", "azw3"];
+                }
+                
+                foreach (var extension in extensions) {
+                    using var bookResponse = await GetBookResponse(bookId, extension);
                     if (bookResponse != default) {
                         result.Add(await CreateTempFile(bookResponse));
                     }
