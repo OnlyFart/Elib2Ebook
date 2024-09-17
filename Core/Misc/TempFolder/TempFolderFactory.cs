@@ -11,7 +11,7 @@ public class TempFolderFactory {
     /// <param name="remove">Need remove?</param>
     /// <returns>New instance of temporary folder</returns>
     public static TempFolder Create(string? path, bool remove) {
-        path ??= Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())).FullName;
+        path ??= Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), $"{Path.GetRandomFileName()}_e2e_temp")).FullName;
         if (!Directory.Exists(path)) {
             Directory.CreateDirectory(path);
         }
