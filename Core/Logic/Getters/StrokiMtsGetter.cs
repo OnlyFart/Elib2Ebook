@@ -63,7 +63,7 @@ public class StrokiMtsGetter : GetterBase {
         
         var response = await Config.Client.GetWithTriesAsync(fileUrl.Url.AsUri());
 
-        var origBook = await TempFile.Create(fileUrl.Url.AsUri(), Config.TempFolder.Path, fileUrl.Url.AsUri().GetFileName(), await response.Content.ReadAsByteArrayAsync());
+        var origBook = await TempFile.Create(fileUrl.Url.AsUri(), Config.TempFolder.Path, fileUrl.Url.AsUri().GetFileName(), await response.Content.ReadAsStreamAsync());
         book.AdditionalFiles.AddBook(origBook);
         book.AdditionalFiles.AddAudio(await GetAudio(details));
         
