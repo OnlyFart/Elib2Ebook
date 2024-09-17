@@ -32,7 +32,7 @@ public class Options {
     [Option('c', "cover", Required = false, HelpText = "Сохранить обложку книги в отдельный файл")]
     public bool Cover { get; set; }
     
-    [Option('t', "timeout", Required = false, HelpText = "Timeout для запросов в секундах", Default = 5)]
+    [Option('t', "timeout", Required = false, HelpText = "Timeout для запросов в секундах", Default = 30)]
     public int Timeout { get; set; }
     
     [Option('d', "delay", Required = false, HelpText = "Задержка между запросами в секундах", Default = 0)]
