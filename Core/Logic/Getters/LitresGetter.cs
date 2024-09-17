@@ -47,7 +47,7 @@ public class LitresGetter : GetterBase {
         // Текстовая книга
         if (art.ArtType == 0) {
             if (file == default) {
-                var uri = new Uri($"https://catalit.litres.ru/pages/download_book_j?art={art.Id}&sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
+                var uri = new Uri($"https://catalit.litres.ru/pages/{path}?art={art.Id}&sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
                 return uri.AppendQueryParameter("type", "fb3");
             }
             
@@ -175,7 +175,7 @@ public class LitresGetter : GetterBase {
                         }
                     }
                 }
-            } else {
+            } else if (art.ArtType == 0) {
                 using var fileResponse = await GetFileResponse(art, null);
                 if (fileResponse != default) {
                     var tempFile = await CreateTempFile(fileResponse);
@@ -185,7 +185,7 @@ public class LitresGetter : GetterBase {
             }
         }
 
-        if (_authData == default || book.AdditionalFiles.GetBooks().Count == 0) {
+        if (_authData == default || (book.AdditionalFiles.GetBooks().Count == 0 && art.ArtType == 0)) {
             var fileResponse = await GetShortBook(art);
             if (fileResponse != default) {
                 book.AdditionalFiles.AddBook(await CreateTempFile(fileResponse));
