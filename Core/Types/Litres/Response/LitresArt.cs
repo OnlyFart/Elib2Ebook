@@ -25,5 +25,5 @@ public class LitresArt {
     public LitresArt[] LinkedArts { get; set; }
     
     [JsonPropertyName("art_type")]
-    public int ArtType { get; set; }
+    public LitresArtTypeEnum ArtType { get; set; }
 }

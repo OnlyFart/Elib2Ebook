@@ -45,7 +45,7 @@ public class LitresGetter : GetterBase {
         var hashBytes = MD5.HashData(inputBytes);
         
         // Текстовая книга
-        if (art.ArtType == 0) {
+        if (art.ArtType != LitresArtTypeEnum.Audio) {
             if (file == default) {
                 var uri = new Uri($"https://catalit.litres.ru/pages/{path}?art={art.Id}&sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
                 return uri.AppendQueryParameter("type", "fb3");
@@ -168,14 +168,14 @@ public class LitresGetter : GetterBase {
                     using var fileResponse = await GetFileResponse(art, file);
                     if (fileResponse != default) {
                         var tempFile = await CreateTempFile(fileResponse);
-                        if (art.ArtType == 0) {
+                        if (art.ArtType != LitresArtTypeEnum.Audio) {
                             book.AdditionalFiles.AddBook(tempFile);
                         } else {
                             book.AdditionalFiles.AddAudio(tempFile);
                         }
                     }
                 }
-            } else if (art.ArtType == 0) {
+            } else if (art.ArtType != LitresArtTypeEnum.Audio) {
                 using var fileResponse = await GetFileResponse(art, null);
                 if (fileResponse != default) {
                     var tempFile = await CreateTempFile(fileResponse);
@@ -185,7 +185,7 @@ public class LitresGetter : GetterBase {
             }
         }
 
-        if (_authData == default || (book.AdditionalFiles.GetBooks().Count == 0 && art.ArtType == 0)) {
+        if (_authData == default || (book.AdditionalFiles.GetBooks().Count == 0 && art.ArtType != LitresArtTypeEnum.Audio)) {
             var fileResponse = await GetShortBook(art);
             if (fileResponse != default) {
                 book.AdditionalFiles.AddBook(await CreateTempFile(fileResponse));
