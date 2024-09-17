@@ -46,12 +46,11 @@ public class LitresGetter : GetterBase {
         
         // Текстовая книга
         if (art.ArtType != LitresArtTypeEnum.Audio) {
+            var result = new Uri($"https://catalit.litres.ru/pages/{path}?art={art.Id}&sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
             if (file == default) {
-                var uri = new Uri($"https://catalit.litres.ru/pages/{path}?art={art.Id}&sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
-                return uri.AppendQueryParameter("type", "fb3");
+                return result.AppendQueryParameter("type", "fb3");
             }
             
-            var result = new Uri($"https://catalit.litres.ru/pages/{path}?art={art.Id}&sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
             result = result.AppendQueryParameter("file", file.Id);
             if (!string.IsNullOrWhiteSpace(file.Extension)) {
                 result = result.AppendQueryParameter("type", file.Extension);
