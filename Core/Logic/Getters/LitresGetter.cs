@@ -38,21 +38,28 @@ public class LitresGetter : GetterBase {
         return (long)javaSpan.TotalMilliseconds / 1000;
     }
 
-    private Uri GetFullUri(string bookId, LitresFile file) {
+    private Uri GetFullUri(string bookId, string path, LitresFile file) {
         var ts = GetCurrentMilli();
 
         var inputBytes = Encoding.ASCII.GetBytes($"{ts}:{bookId}:{SECRET_KEY}");
         var hashBytes = MD5.HashData(inputBytes);
 
-        var result = new Uri($"https://catalit.litres.ru/pages/download_book_j?art={bookId}&sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
         if (file == default) {
-            result = result.AppendQueryParameter("type", "fb3");
-        } else {
-            result = result.AppendQueryParameter("file", file.Id);
-            if (!string.IsNullOrWhiteSpace(file.Extension)) {
-                result = result.AppendQueryParameter("type", file.Extension);
-            }
+            var uri = new Uri($"https://catalit.litres.ru/pages/download_book_j?art={bookId}&sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
+            return uri.AppendQueryParameter("type", "fb3");
         }
+
+        if (file.Mime.StartsWith("audio")) {
+            var uri = new Uri($"https://mvideo.litres.ru/pages/download_book_subscr/{bookId}/{file.Id}.mp3?sid={_authData.Sid}");
+            return uri;
+        }
+
+        var result = new Uri($"https://catalit.litres.ru/pages/{path}?art={bookId}&sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
+        result = result.AppendQueryParameter("file", file.Id);
+        if (!string.IsNullOrWhiteSpace(file.Extension)) {
+            result = result.AppendQueryParameter("type", file.Extension);
+        }
+
 
         return result;
     }
@@ -133,8 +140,8 @@ public class LitresGetter : GetterBase {
             Annotation = art.Annotation,
             Seria = GetSeria(art)
         };
-        
-        book.AdditionalFiles.AddBook(await GetBooks(bookId));
+
+        await FillAdditional(book, bookId);
         var fb3File = book.AdditionalFiles.GetBooks().FirstOrDefault(f => f.Extension == ".fb3");
 
         if (fb3File == default) {
@@ -151,33 +158,38 @@ public class LitresGetter : GetterBase {
         return book;
     }
 
-    private async Task<List<TempFile>> GetBooks(string bookId) {
-        var result = new List<TempFile>();
-        
+    private async Task FillAdditional(Book book, string bookId) {
         if (_authData != default) {
             if (Config.Options.Additional) {
                 var files = await GetResponse<LitresFiles[]>($"https://api.litres.ru/foundation/api/arts/{bookId}/files/grouped".AsUri());
 
                 foreach (var file in files.SelectMany(f => f.Files)) {
-                    using var bookResponse = await GetBookResponse(bookId, file);
-                    if (bookResponse != default) {
-                        result.Add(await CreateTempFile(bookResponse));
+                    using var fileResponse = await GetFileResponse(bookId, file);
+                    if (fileResponse != default) {
+                        var tempFile = await CreateTempFile(fileResponse);
+                        if (file.Mime.StartsWith("audio")) {
+                            book.AdditionalFiles.AddAudio(tempFile);
+                        } else {
+                            book.AdditionalFiles.AddBook(tempFile);
+                        }
                     }
                 }
             } else {
-                using var bookResponse = await GetBookResponse(bookId, null);
-                if (bookResponse != default) {
-                    result.Add(await CreateTempFile(bookResponse));
+                using var fileResponse = await GetFileResponse(bookId, null);
+                if (fileResponse != default) {
+                    var tempFile = await CreateTempFile(fileResponse);
+                    book.AdditionalFiles.AddBook(tempFile);
+
                 }
             }
         }
 
-        if (_authData == default || result.Count == 0) {
-            var response = await GetShortBook(bookId);
-            result.Add(await CreateTempFile(response));
+        if (_authData == default || book.AdditionalFiles.GetBooks().Count == 0) {
+            var fileResponse = await GetShortBook(bookId);
+            if (fileResponse != default) {
+                book.AdditionalFiles.AddBook(await CreateTempFile(fileResponse));
+            }
         }
-
-        return result;
     }
 
     private async Task<TempFile> CreateTempFile(HttpResponseMessage response) {
@@ -189,11 +201,7 @@ public class LitresGetter : GetterBase {
         if (!string.IsNullOrWhiteSpace(art)) {
             return art;
         }
-
-        if (url.GetSegment(1) == "audiobook") {
-            throw new Exception("Указана ссылка на аудиокнигу. Укажите ссылку на текстовую версию");
-        }
-
+        
         art = url.GetSegment(url.Segments.Length - 1).Split("-").Last();
         if (long.TryParse(art, out _)) {
             return art;
@@ -288,12 +296,19 @@ public class LitresGetter : GetterBase {
         return images;
     }
 
-    private async Task<HttpResponseMessage> GetBookResponse(string bookId, LitresFile file) {
+    private async Task<HttpResponseMessage> GetFileResponse(string bookId, LitresFile file) {
         if (_authData != null) {
-            var uri = GetFullUri(bookId, file);
+            var uri = GetFullUri(bookId, "download_book_j", file);
             var response = await Config.Client.GetAsync(uri);
             if (response.StatusCode == HttpStatusCode.OK && response.Headers.AcceptRanges.Any()) {
-                Config.Logger.LogInformation($"Оригинальный файл доступен по ссылке {uri}");
+                Config.Logger.LogInformation($"Дополнительный файл доступен по ссылке {uri}");
+                return response;
+            }
+            
+            uri = GetFullUri(bookId, "download_book_subscr", file);
+            response = await Config.Client.GetAsync(uri);
+            if (response.StatusCode == HttpStatusCode.OK && response.Headers.AcceptRanges.Any()) {
+                Config.Logger.LogInformation($"Дополнительный файл доступен по ссылке {uri}");
                 return response;
             }
         }
@@ -303,7 +318,7 @@ public class LitresGetter : GetterBase {
 
     private async Task<HttpResponseMessage> GetShortBook(string bookId) {
         var shortUri = GetShortUri(bookId);
-        Config.Logger.LogInformation($"Оригинальный файл доступен по ссылке {shortUri}");
+        Config.Logger.LogInformation($"Дополнительный файл доступен по ссылке {shortUri}");
         return await Config.Client.GetAsync(shortUri);
     }
 
