@@ -17,6 +17,8 @@ public static class HttpClientExtensions {
     }
 
     public static async Task<HttpResponseMessage> GetWithTriesAsync(this HttpClient client, Uri url, TimeSpan errorTimeout = default) {
+        Exception lastEx = null;
+        
         for (var i = 0; i < MAX_TRY_COUNT; i++) {
             try {
                 var response = await client.GetAsync(url);
@@ -27,15 +29,22 @@ public static class HttpClientExtensions {
                 }
 
                 return response;
-            } catch (Exception) {
+            } catch (Exception ex) {
+                lastEx = ex;
                 await Task.Delay(GetTimeout(errorTimeout));
             }
+        }
+
+        if (lastEx != null) {
+            throw lastEx;
         }
 
         return default;
     }
 
     public static async Task<HttpResponseMessage> SendWithTriesAsync(this HttpClient client, Func<HttpRequestMessage> message, TimeSpan errorTimeout = default) {
+        Exception lastEx = null;
+        
         for (var i = 0; i < MAX_TRY_COUNT; i++) {
             try { 
                 var response = await client.SendAsync(message());
@@ -51,10 +60,16 @@ public static class HttpClientExtensions {
             }
         }
 
+        if (lastEx != null) {
+            throw lastEx;
+        }
+
         return default;
     }
         
     public static async Task<HttpResponseMessage> PostWithTriesAsync(this HttpClient client, Uri url, HttpContent content, TimeSpan errorTimeout = default) {
+        Exception lastEx = null;
+        
         for (var i = 0; i < MAX_TRY_COUNT; i++) {
             try { 
                 var response = await client.PostAsync(url, content);
@@ -72,6 +87,10 @@ public static class HttpClientExtensions {
             } catch (Exception) {
                 await Task.Delay(GetTimeout(errorTimeout));
             }
+        }
+
+        if (lastEx != null) {
+            throw lastEx;
         }
 
         return default;
