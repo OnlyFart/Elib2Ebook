@@ -24,7 +24,7 @@ namespace Core.Logic.Getters;
 
 public class LitresGetter : GetterBase {
     private const string SECRET_KEY = "AsAAfdV000-1kksn6591x:[}A{}<><DO#Brn`BnB6E`^s\"ivP:RY'4|v\"h/r^]";
-    private const string APP = "4";
+    private const string APP = "13";
     
     public LitresGetter(BookGetterConfig config) : base(config) { }
 
@@ -38,13 +38,23 @@ public class LitresGetter : GetterBase {
         return (long)javaSpan.TotalMilliseconds / 1000;
     }
 
-    private Uri GetFullUri(string bookId, string path, string extension) {
+    private Uri GetFullUri(string bookId, LitresFile file) {
         var ts = GetCurrentMilli();
 
         var inputBytes = Encoding.ASCII.GetBytes($"{ts}:{bookId}:{SECRET_KEY}");
         var hashBytes = MD5.HashData(inputBytes);
 
-        return new($"https://catalit.litres.ru/pages/{path}/?type={extension}&art={bookId}&sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
+        var result = new Uri($"https://catalit.litres.ru/pages/download_book_j?art={bookId}&sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
+        if (file == default) {
+            result = result.AppendQueryParameter("type", "fb3");
+        } else {
+            result = result.AppendQueryParameter("file", file.Id);
+            if (!string.IsNullOrWhiteSpace(file.Extension)) {
+                result = result.AppendQueryParameter("type", file.Extension);
+            }
+        }
+
+        return result;
     }
 
     private LitresAuthResponseData _authData = new(){
@@ -114,7 +124,7 @@ public class LitresGetter : GetterBase {
         payload.Requests.Add(new LitresBrowseArtsRequest([bookId]));
 
         var art = await GetResponse<LitresArts>(payload).ContinueWith(t => t.Result.Arts[0]);
-
+        
         var book = new Book(SystemUrl.MakeRelativeUri(bookId)) {
             Cover = await GetCover(art.Cover),
             Title = art.Title,
@@ -124,11 +134,11 @@ public class LitresGetter : GetterBase {
             Seria = GetSeria(art)
         };
         
-        book.AdditionalFiles.AddBook(await GetAdditionalFiles(bookId));
+        book.AdditionalFiles.AddBook(await GetBooks(bookId));
         var fb3File = book.AdditionalFiles.GetBooks().FirstOrDefault(f => f.Extension == ".fb3");
 
         if (fb3File == default) {
-            Config.Logger.LogInformation("Нет файла fb3. Обработка невозможна");
+            Config.Logger.LogInformation("Нет файла fb3. Сформировать файл книги невозможно");
         } else {
             try {
                 var litresBook = await GetBook(fb3File.GetStream());
@@ -141,28 +151,21 @@ public class LitresGetter : GetterBase {
         return book;
     }
 
-    private async Task<List<TempFile>> GetAdditionalFiles(string bookId) {
+    private async Task<List<TempFile>> GetBooks(string bookId) {
         var result = new List<TempFile>();
         
         if (_authData != default) {
             if (Config.Options.Additional) {
                 var files = await GetResponse<LitresFiles[]>($"https://api.litres.ru/foundation/api/arts/{bookId}/files/grouped".AsUri());
-                var extensions = files.SelectMany(f => f.Files).Where(f => !string.IsNullOrWhiteSpace(f.Extension)).Select(f => f.Extension).ToList();
-                if (extensions.Count == 0) {
-                    // -Видишь суслика?
-                    // -Нет.
-                    // -И я не вижу. А он есть!
-                    extensions = ["fb2.zip", "html", "html.zip", "txt.zip", "rtf.zip", "a4.pdf", "a6.pdf", "epub", "ios.epub", "fb3", "azw3"];
-                }
-                
-                foreach (var extension in extensions) {
-                    using var bookResponse = await GetBookResponse(bookId, extension);
+
+                foreach (var file in files.SelectMany(f => f.Files)) {
+                    using var bookResponse = await GetBookResponse(bookId, file);
                     if (bookResponse != default) {
                         result.Add(await CreateTempFile(bookResponse));
                     }
                 }
             } else {
-                using var bookResponse = await GetBookResponse(bookId, "fb3");
+                using var bookResponse = await GetBookResponse(bookId, null);
                 if (bookResponse != default) {
                     result.Add(await CreateTempFile(bookResponse));
                 }
@@ -285,19 +288,12 @@ public class LitresGetter : GetterBase {
         return images;
     }
 
-    private async Task<HttpResponseMessage> GetBookResponse(string bookId, string extension) {
+    private async Task<HttpResponseMessage> GetBookResponse(string bookId, LitresFile file) {
         if (_authData != null) {
-            var uri = GetFullUri(bookId, "download_book_subscr", extension);
+            var uri = GetFullUri(bookId, file);
             var response = await Config.Client.GetAsync(uri);
             if (response.StatusCode == HttpStatusCode.OK && response.Headers.AcceptRanges.Any()) {
-                Config.Logger.LogInformation($"Оригинальный файл формата {extension} доступен по ссылке {uri}");
-                return response;
-            }
-
-            uri = GetFullUri(bookId, "catalit_download_book", extension);
-            response = await Config.Client.GetAsync(uri);
-            if (response.StatusCode == HttpStatusCode.OK && response.Headers.AcceptRanges.Any()) {
-                Config.Logger.LogInformation($"Оригинальный файл формата {extension} доступен по ссылке {uri}");
+                Config.Logger.LogInformation($"Оригинальный файл доступен по ссылке {uri}");
                 return response;
             }
         }
