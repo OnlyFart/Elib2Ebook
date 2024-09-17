@@ -49,11 +49,11 @@ public static class StringExtensions {
     /// <returns></returns>
     public static string RemoveInvalidChars(this string self) {
         var sb = new StringBuilder(self);
-        foreach (var invalidFileNameChar in Path.GetInvalidFileNameChars().Union(new[]{'"'})) {
+        foreach (var invalidFileNameChar in Path.GetInvalidFileNameChars().Union(['"'])) {
             sb.Replace(invalidFileNameChar, ' ');
         }
 
-        return sb.ToString();
+        return sb.ToString().Trim('.').Trim();
     }
 
     /// <summary>
