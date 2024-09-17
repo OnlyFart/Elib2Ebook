@@ -8,7 +8,4 @@ public class LitresFile {
     
     [JsonPropertyName("id")]
     public long Id { get; set; }
-    
-    [JsonPropertyName("mime")]
-    public string Mime { get; set; }
 }

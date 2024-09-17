@@ -30,7 +30,7 @@ public class LitresGetter : GetterBase {
 
     protected override Uri SystemUrl => new("https://www.litres.ru");
     
-    private static Uri GetShortUri(string bookId) => new($"https://catalit.litres.ru/pub/t/{bookId}.fb3");
+    private static Uri GetShortUri(LitresArt art) => new($"https://catalit.litres.ru/pub/t/{art.Id}.fb3");
 
     private static long GetCurrentMilli()  {
         var jan1970 = new DateTime(1970, 1, 1, 0, 0, 0,DateTimeKind.Utc);
@@ -38,30 +38,30 @@ public class LitresGetter : GetterBase {
         return (long)javaSpan.TotalMilliseconds / 1000;
     }
 
-    private Uri GetFullUri(string bookId, string path, LitresFile file) {
+    private Uri GetFullUri(LitresArt art, string path, LitresFile file) {
         var ts = GetCurrentMilli();
 
-        var inputBytes = Encoding.ASCII.GetBytes($"{ts}:{bookId}:{SECRET_KEY}");
+        var inputBytes = Encoding.ASCII.GetBytes($"{ts}:{art.Id}:{SECRET_KEY}");
         var hashBytes = MD5.HashData(inputBytes);
+        
+        // Текстовая книга
+        if (art.ArtType == 0) {
+            if (file == default) {
+                var uri = new Uri($"https://catalit.litres.ru/pages/download_book_j?art={art.Id}&sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
+                return uri.AppendQueryParameter("type", "fb3");
+            }
+            
+            var result = new Uri($"https://catalit.litres.ru/pages/{path}?art={art.Id}&sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
+            result = result.AppendQueryParameter("file", file.Id);
+            if (!string.IsNullOrWhiteSpace(file.Extension)) {
+                result = result.AppendQueryParameter("type", file.Extension);
+            }
 
-        if (file == default) {
-            var uri = new Uri($"https://catalit.litres.ru/pages/download_book_j?art={bookId}&sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
-            return uri.AppendQueryParameter("type", "fb3");
+            return result;
         }
-
-        if (file.Mime.StartsWith("audio")) {
-            var uri = new Uri($"https://mvideo.litres.ru/pages/download_book_subscr/{bookId}/{file.Id}.mp3?sid={_authData.Sid}");
-            return uri;
-        }
-
-        var result = new Uri($"https://catalit.litres.ru/pages/{path}?art={bookId}&sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
-        result = result.AppendQueryParameter("file", file.Id);
-        if (!string.IsNullOrWhiteSpace(file.Extension)) {
-            result = result.AppendQueryParameter("type", file.Extension);
-        }
-
-
-        return result;
+        
+        // Аудиокнига
+        return new Uri($"https://mvideo.litres.ru/pages/download_book_subscr/{art.Id}/{file.Id}.mp3?sid={_authData.Sid}");
     }
 
     private LitresAuthResponseData _authData = new(){
@@ -127,10 +127,7 @@ public class LitresGetter : GetterBase {
     public override async Task<Book> Get(Uri url) {
         var bookId = GetBookId(url);
 
-        var payload = LitresPayload.Create(DateTime.Now, _authData.Sid, SECRET_KEY, APP);
-        payload.Requests.Add(new LitresBrowseArtsRequest([bookId]));
-
-        var art = await GetResponse<LitresArts>(payload).ContinueWith(t => t.Result.Arts[0]);
+        var art = await GetResponse<LitresArt>($"https://api.litres.ru/foundation/api/arts/{bookId}".AsUri());
         
         var book = new Book(SystemUrl.MakeRelativeUri(bookId)) {
             Cover = await GetCover(art.Cover),
@@ -140,8 +137,12 @@ public class LitresGetter : GetterBase {
             Annotation = art.Annotation,
             Seria = GetSeria(art)
         };
-
-        await FillAdditional(book, bookId);
+        
+        await FillAdditional(book, art);
+        foreach (var linked in art.LinkedArts ?? []) {
+            await FillAdditional(book, linked);
+        }
+        
         var fb3File = book.AdditionalFiles.GetBooks().FirstOrDefault(f => f.Extension == ".fb3");
 
         if (fb3File == default) {
@@ -158,24 +159,24 @@ public class LitresGetter : GetterBase {
         return book;
     }
 
-    private async Task FillAdditional(Book book, string bookId) {
+    private async Task FillAdditional(Book book, LitresArt art) {
         if (_authData != default) {
             if (Config.Options.Additional) {
-                var files = await GetResponse<LitresFiles[]>($"https://api.litres.ru/foundation/api/arts/{bookId}/files/grouped".AsUri());
+                var files = await GetResponse<LitresFiles[]>($"https://api.litres.ru/foundation/api/arts/{art.Id}/files/grouped".AsUri());
 
                 foreach (var file in files.SelectMany(f => f.Files)) {
-                    using var fileResponse = await GetFileResponse(bookId, file);
+                    using var fileResponse = await GetFileResponse(art, file);
                     if (fileResponse != default) {
                         var tempFile = await CreateTempFile(fileResponse);
-                        if (file.Mime.StartsWith("audio")) {
-                            book.AdditionalFiles.AddAudio(tempFile);
-                        } else {
+                        if (art.ArtType == 0) {
                             book.AdditionalFiles.AddBook(tempFile);
+                        } else {
+                            book.AdditionalFiles.AddAudio(tempFile);
                         }
                     }
                 }
             } else {
-                using var fileResponse = await GetFileResponse(bookId, null);
+                using var fileResponse = await GetFileResponse(art, null);
                 if (fileResponse != default) {
                     var tempFile = await CreateTempFile(fileResponse);
                     book.AdditionalFiles.AddBook(tempFile);
@@ -185,7 +186,7 @@ public class LitresGetter : GetterBase {
         }
 
         if (_authData == default || book.AdditionalFiles.GetBooks().Count == 0) {
-            var fileResponse = await GetShortBook(bookId);
+            var fileResponse = await GetShortBook(art);
             if (fileResponse != default) {
                 book.AdditionalFiles.AddBook(await CreateTempFile(fileResponse));
             }
@@ -221,7 +222,7 @@ public class LitresGetter : GetterBase {
     }
     
     private async Task<Author> GetAuthor(LitresArt art) {
-        var person = art.Persons.FirstOrDefault(a => a.Type == "0");
+        var person = art.Persons.FirstOrDefault(a => a.Role == "author");
         var author = person == null ? default : await GetResponse<LitresPerson<long>>($"https://api.litres.ru/foundation/api/persons/{person.Id}".AsUri());
         return author == default ? 
             new Author("Litres") : 
@@ -230,7 +231,7 @@ public class LitresGetter : GetterBase {
     
     private async Task<IEnumerable<Author>> GetCoAuthors(LitresArt art) {
         var result = new List<Author>();
-        foreach (var person in art.Persons.Where(a => a.Type == "0").Skip(1)) {
+        foreach (var person in art.Persons.Where(a => a.Role == "author").Skip(1)) {
             var author = person == null ? default : await GetResponse<LitresPerson<long>>($"https://api.litres.ru/foundation/api/persons/{person.Id}".AsUri());
             if (author != default) {
                 result.Add(new Author(author.FullName, SystemUrl.MakeRelativeUri(author.Url)));
@@ -241,7 +242,7 @@ public class LitresGetter : GetterBase {
     }
     
     private Task<TempFile> GetCover(string imagePath) {
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(imagePath.AsUri()) : Task.FromResult(default(TempFile));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(SystemUrl.MakeRelativeUri(imagePath)) : Task.FromResult(default(TempFile));
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(LitresBook book, string title) {
@@ -296,16 +297,16 @@ public class LitresGetter : GetterBase {
         return images;
     }
 
-    private async Task<HttpResponseMessage> GetFileResponse(string bookId, LitresFile file) {
+    private async Task<HttpResponseMessage> GetFileResponse(LitresArt art, LitresFile file) {
         if (_authData != null) {
-            var uri = GetFullUri(bookId, "download_book_j", file);
+            var uri = GetFullUri(art, "download_book_j", file);
             var response = await Config.Client.GetAsync(uri);
             if (response.StatusCode == HttpStatusCode.OK && response.Headers.AcceptRanges.Any()) {
                 Config.Logger.LogInformation($"Дополнительный файл доступен по ссылке {uri}");
                 return response;
             }
             
-            uri = GetFullUri(bookId, "download_book_subscr", file);
+            uri = GetFullUri(art, "download_book_subscr", file);
             response = await Config.Client.GetAsync(uri);
             if (response.StatusCode == HttpStatusCode.OK && response.Headers.AcceptRanges.Any()) {
                 Config.Logger.LogInformation($"Дополнительный файл доступен по ссылке {uri}");
@@ -316,8 +317,8 @@ public class LitresGetter : GetterBase {
         return default;
     }
 
-    private async Task<HttpResponseMessage> GetShortBook(string bookId) {
-        var shortUri = GetShortUri(bookId);
+    private async Task<HttpResponseMessage> GetShortBook(LitresArt art) {
+        var shortUri = GetShortUri(art);
         Config.Logger.LogInformation($"Дополнительный файл доступен по ссылке {shortUri}");
         return await Config.Client.GetAsync(shortUri);
     }

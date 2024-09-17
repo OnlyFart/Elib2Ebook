@@ -9,8 +9,8 @@ public class LitresPerson<TId> {
     [JsonPropertyName("full_name")]
     public string FullName { get; set; }
     
-    [JsonPropertyName("type")]
-    public string Type { get; set; }
+    [JsonPropertyName("role")]
+    public string Role { get; set; }
     
     [JsonPropertyName("url")]
     public string Url { get; set; }
