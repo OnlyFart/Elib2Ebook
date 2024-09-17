@@ -55,7 +55,8 @@ public static class HttpClientExtensions {
                 }
 
                 return response;
-            } catch (Exception) {
+            } catch (Exception ex) {
+                lastEx = ex;
                 await Task.Delay(GetTimeout(errorTimeout));
             }
         }
@@ -84,7 +85,8 @@ public static class HttpClientExtensions {
                 }
                     
                 return response;
-            } catch (Exception) {
+            } catch (Exception ex) {
+                lastEx = ex;
                 await Task.Delay(GetTimeout(errorTimeout));
             }
         }
