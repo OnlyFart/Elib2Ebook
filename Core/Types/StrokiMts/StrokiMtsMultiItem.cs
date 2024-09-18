@@ -8,4 +8,10 @@ public class StrokiMtsMultiItem {
     
     [JsonPropertyName("audioBook")]
     public StrokiMtsBookItem AudioBook { get; set; }
+    
+    [JsonPropertyName("comics")]
+    public StrokiMtsBookItem ComicBook { get; set; }
+    
+    [JsonPropertyName("pressa")]
+    public StrokiMtsBookItem PressBook { get; set; }
 }

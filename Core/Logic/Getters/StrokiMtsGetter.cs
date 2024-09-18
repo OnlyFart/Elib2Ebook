@@ -42,29 +42,30 @@ public class StrokiMtsGetter : GetterBase {
     public override async Task<Book> Get(Uri url) {
         var id = GetId(url);
         
-        if (url.GetSegment(1) != "book") {
-            throw new Exception("Указана ссылка не на текстовую версию. Укажите ссылку на текстовую версию");
+        var details = await GetBook(id);
+        var detailBook = details.Items.FirstOrDefault(d => d.TextBook != default)?.TextBook ??
+                         details.Items.FirstOrDefault(d => d.AudioBook != default)?.AudioBook ??
+                         details.Items.FirstOrDefault(d => d.ComicBook != default)?.ComicBook ??
+                         details.Items.FirstOrDefault(d => d.PressBook != default)?.PressBook;
+
+        if (detailBook == default) {
+            throw new Exception("Не удалось получить книгу");
         }
         
-        var fileMeta = await GetFileMeta(id);
-        var fileUrl = await GetFileUrl(fileMeta.FirstOrDefault());
-        
-        Config.Logger.LogInformation($"Оригинальный файл доступен по ссылке {fileUrl.Url}");
-        
-        var details = await GetBook(id);
-        var textVersion = details.Items.FirstOrDefault(d => d.TextBook != default).TextBook;
-        
         var book = new Book(url) {
-            Cover = await GetCover(textVersion),
-            Title = textVersion.Title,
-            Author = GetAuthor(textVersion),
-            CoAuthors = GetCoAuthors(textVersion),
-            Annotation = textVersion.Annotation,
+            Cover = await GetCover(detailBook),
+            Title = detailBook.Title,
+            Author = GetAuthor(detailBook),
+            CoAuthors = GetCoAuthors(detailBook),
+            Annotation = detailBook.Annotation,
         };
         
-        var response = await Config.Client.GetWithTriesAsync(fileUrl.Url.AsUri());
-
-        var origBook = await TempFile.Create(fileUrl.Url.AsUri(), Config.TempFolder.Path, fileUrl.Url.AsUri().GetFileName(), await response.Content.ReadAsStreamAsync());
+        var origBook = await GetOriginalFile(id);
+        if (origBook.Extension == ".epub") {
+            book.Chapters = await FillChapters(origBook);
+        } else {
+            Config.Logger.LogInformation("Эта книга не в формате epub. Получить главы невозможно");
+        }
 
         if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Book)) {
             book.AdditionalFiles.AddBook(origBook);
@@ -73,21 +74,23 @@ public class StrokiMtsGetter : GetterBase {
         if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Audio)) {
             book.AdditionalFiles.AddAudio(await GetAudio(details));
         }
-
-        if (!fileUrl.Url.AsUri().GetFileName().EndsWith(".epub")) {
-            Config.Logger.LogInformation("Эта книга не в формате epub. Обработка для этого формата недоступна");
-        } else {
-            book.Chapters = await FillChapters(origBook);
-        }
-
+        
         return book;
+    }
+
+    private async Task<TempFile> GetOriginalFile(string bookId) {
+        var fileMeta = await GetFileMeta(bookId);
+        var fileUrl = await GetFileUrl(fileMeta.FirstOrDefault());
+        var response = await Config.Client.GetWithTriesAsync(fileUrl.Url.AsUri());
+        Config.Logger.LogInformation($"Оригинальный файл доступен по ссылке {fileUrl.Url.AsUri()}");
+        return await TempFile.Create(fileUrl.Url.AsUri(), Config.TempFolder.Path, fileUrl.Url.AsUri().GetFileName(), await response.Content.ReadAsStreamAsync());
     }
 
     private async Task<List<TempFile>> GetAudio(StrokiMtsApiMultiResponse details) {
         var result = new List<TempFile>();
 
         var detail = details.Items.FirstOrDefault(d => d.AudioBook != default);
-        if (!Config.Options.HasAdditionalType(AdditionalTypeEnum.Audio) || detail == default) {
+        if (detail == default) {
             return result;
         }
 
@@ -254,7 +257,7 @@ public class StrokiMtsGetter : GetterBase {
     
     private Author GetAuthor(StrokiMtsBookItem book) {
         var author = book.Authors.FirstOrDefault();
-        return new Author(author.Name, SystemUrl.MakeRelativeUri(author.FriendlyUrl));
+        return author == default ? new Author("Stroki") : new Author(author.Name, SystemUrl.MakeRelativeUri(author.FriendlyUrl));
     }
     
     private IEnumerable<Author> GetCoAuthors(StrokiMtsBookItem book) {
