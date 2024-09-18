@@ -32,7 +32,7 @@ public class AdditionaFileBuilder  {
 
         CreateDirectory(additionalPath);
 
-        if (_options.HasAdditionalType(AdditionalTypeEnum.Image)) {
+        if (_options.HasAdditionalType(AdditionalTypeEnum.Images)) {
             _logger.LogInformation("Начинаю сохранение изображений из книги");
             foreach (var chapter in book.Chapters ?? []) {
                 if (!chapter.Images.Any()) {
@@ -40,7 +40,7 @@ public class AdditionaFileBuilder  {
                     continue;
                 }
 
-                var subPath = Path.Combine(additionalPath, AdditionalFileCollection.IMAGES_KEY, chapter.Title.RemoveInvalidChars());
+                var subPath = Path.Combine(additionalPath, AdditionalTypeEnum.Images.ToString(), chapter.Title.RemoveInvalidChars());
                 CreateDirectory(subPath);
 
                 _logger.LogInformation($"Начинаю сохранение изображений из части {chapter.Title.CoverQuotes()}");
@@ -56,7 +56,7 @@ public class AdditionaFileBuilder  {
             _logger.LogInformation("Сохранение изображений из книги завешено");
 
             if (book.Cover != default) {
-                var subPath = Path.Combine(additionalPath, AdditionalFileCollection.IMAGES_KEY);
+                var subPath = Path.Combine(additionalPath, AdditionalTypeEnum.Images.ToString());
                 CreateDirectory(subPath);
 
                 var fileName = Path.Combine(subPath, $"Cover{Path.GetExtension(book.Cover.FullName)}");
@@ -70,7 +70,7 @@ public class AdditionaFileBuilder  {
         }
         
         foreach (var files in book.AdditionalFiles.Collection) {
-            var subPath = Path.Combine(additionalPath, files.Key);
+            var subPath = Path.Combine(additionalPath, files.Key.ToString());
             CreateDirectory(subPath);
             
             foreach (var file in files.Value) {

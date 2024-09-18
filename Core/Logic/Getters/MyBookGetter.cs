@@ -144,14 +144,14 @@ public class MyBookGetter : GetterBase {
 
         var origBook = await TempFile.Create(bookUrl, Config.TempFolder.Path, bookUrl.GetFileName(), await response.Content.ReadAsStreamAsync());
 
-        if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Book)) {
-            book.AdditionalFiles.AddBook(origBook);
+        if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Books)) {
+            book.AdditionalFiles.Add(AdditionalTypeEnum.Books, origBook);
         }
 
         book.Chapters = await FillChapters(origBook);
 
         if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Audio) && details.Connected is { Type: "audio" }) {
-            book.AdditionalFiles.AddAudio(await GetAudio(details.Connected.Id));
+            book.AdditionalFiles.Add(AdditionalTypeEnum.Audio, await GetAudio(details.Connected.Id));
         }
         
         return book;

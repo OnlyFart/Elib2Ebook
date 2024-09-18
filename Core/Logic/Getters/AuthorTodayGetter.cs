@@ -95,13 +95,13 @@ public class AuthorTodayGetter : GetterBase {
     }
 
     private async Task FillAdditional(Book book, AuthorTodayBookDetails details) {
-        if (!Config.Options.HasAdditionalType(AdditionalTypeEnum.Image) || details.GalleryImages == default || details.GalleryImages.Length == 0) {
+        if (!Config.Options.HasAdditionalType(AdditionalTypeEnum.Images) || details.GalleryImages == default || details.GalleryImages.Length == 0) {
             return;
         }
 
         Config.Logger.LogInformation("Загружаю дополнительные иллюстрации");
         foreach (var image in details.GalleryImages) {
-            book.AdditionalFiles.AddImage(await SaveImage(SystemUrl.MakeRelativeUri(image.Url)));
+            book.AdditionalFiles.Add(AdditionalTypeEnum.Images, await SaveImage(SystemUrl.MakeRelativeUri(image.Url)));
         }
         Config.Logger.LogInformation("Дополнительные иллюстрации загружены");
     }

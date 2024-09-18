@@ -66,7 +66,7 @@ public class Options {
     [Option("additional", Required = false, HelpText = "Сохранить дополнительные файлы", Default = false)]
     public bool Additional { get; set; }
 
-    [Option("additional-types", Required = false, HelpText = "Типы дополнительных файлов. Допустимые значения: book, audio, image", Separator = ',')]
+    [Option("additional-types", Required = false, HelpText = "Типы дополнительных файлов. Допустимые значения: books, audio, images", Separator = ',')]
     public IEnumerable<AdditionalTypeEnum> AdditionalTypes { get; set; }
     
     public bool HasAdditionalType(AdditionalTypeEnum type) => Additional && (AdditionalTypes == default || !AdditionalTypes.Any() || AdditionalTypes.Contains(type));

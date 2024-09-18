@@ -143,7 +143,7 @@ public class LitresGetter : GetterBase {
             await FillAdditional(book, linked);
         }
         
-        var fb3File = book.AdditionalFiles.GetBooks().FirstOrDefault(f => f.Extension == ".fb3");
+        var fb3File = book.AdditionalFiles.Get(AdditionalTypeEnum.Books).FirstOrDefault(f => f.Extension == ".fb3");
 
         if (fb3File == default) {
             Config.Logger.LogInformation("Нет файла fb3. Сформировать файл книги невозможно");
@@ -161,7 +161,7 @@ public class LitresGetter : GetterBase {
 
     private async Task FillAdditional(Book book, LitresArt art) {
         if (_authData != default) {
-            var type = art.ArtType == LitresArtTypeEnum.Audio ? AdditionalTypeEnum.Audio : AdditionalTypeEnum.Book;
+            var type = art.ArtType == LitresArtTypeEnum.Audio ? AdditionalTypeEnum.Audio : AdditionalTypeEnum.Books;
             
             if (Config.Options.HasAdditionalType(type)) {
                 var files = await GetResponse<LitresFiles[]>($"https://api.litres.ru/foundation/api/arts/{art.Id}/files/grouped".AsUri());
@@ -171,9 +171,9 @@ public class LitresGetter : GetterBase {
                     if (fileResponse != default) {
                         var tempFile = await CreateTempFile(fileResponse);
                         if (art.ArtType != LitresArtTypeEnum.Audio) {
-                            book.AdditionalFiles.AddBook(tempFile);
+                            book.AdditionalFiles.Add(AdditionalTypeEnum.Books, tempFile);
                         } else {
-                            book.AdditionalFiles.AddAudio(tempFile);
+                            book.AdditionalFiles.Add(AdditionalTypeEnum.Audio, tempFile);
                         }
                     }
                 }
@@ -181,16 +181,16 @@ public class LitresGetter : GetterBase {
                 using var fileResponse = await GetFileResponse(art, null);
                 if (fileResponse != default) {
                     var tempFile = await CreateTempFile(fileResponse);
-                    book.AdditionalFiles.AddBook(tempFile);
+                    book.AdditionalFiles.Add(AdditionalTypeEnum.Books, tempFile);
 
                 }
             }
         }
 
-        if (_authData == default || (book.AdditionalFiles.GetBooks().Count == 0 && art.ArtType != LitresArtTypeEnum.Audio)) {
+        if (_authData == default || (book.AdditionalFiles.Get(AdditionalTypeEnum.Books).Count == 0 && art.ArtType != LitresArtTypeEnum.Audio)) {
             var fileResponse = await GetShortBook(art);
             if (fileResponse != default) {
-                book.AdditionalFiles.AddBook(await CreateTempFile(fileResponse));
+                book.AdditionalFiles.Add(AdditionalTypeEnum.Books, await CreateTempFile(fileResponse));
             }
         }
     }

@@ -57,8 +57,8 @@ public class BookmateGetter : GetterBase {
 
         var originalBook = await TempFile.Create(url, Config.TempFolder.Path, response.Content.Headers.ContentDisposition.FileName.Trim('\"'), await response.Content.ReadAsStreamAsync());
 
-        if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Book)) {
-            book.AdditionalFiles.AddBook(originalBook);
+        if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Books)) {
+            book.AdditionalFiles.Add(AdditionalTypeEnum.Books, originalBook);
         }
 
         book.Chapters = await FillChapters(originalBook);

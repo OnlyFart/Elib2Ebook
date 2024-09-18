@@ -67,12 +67,12 @@ public class StrokiMtsGetter : GetterBase {
             Config.Logger.LogInformation("Эта книга не в формате epub. Получить главы невозможно");
         }
 
-        if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Book)) {
-            book.AdditionalFiles.AddBook(origBook);
+        if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Books)) {
+            book.AdditionalFiles.Add(AdditionalTypeEnum.Books, origBook);
         }
 
         if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Audio)) {
-            book.AdditionalFiles.AddAudio(await GetAudio(details));
+            book.AdditionalFiles.Add(AdditionalTypeEnum.Audio, await GetAudio(details));
         }
         
         return book;
