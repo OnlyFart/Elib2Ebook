@@ -87,7 +87,7 @@ public class StrokiMtsGetter : GetterBase {
         var result = new List<TempFile>();
 
         var detail = details.Items.FirstOrDefault(d => d.AudioBook != default);
-        if (!Config.Options.Additional || detail == default) {
+        if (!Config.Options.HasAdditionalType(AdditionalTypeEnum.Audio) || detail == default) {
             return result;
         }
 

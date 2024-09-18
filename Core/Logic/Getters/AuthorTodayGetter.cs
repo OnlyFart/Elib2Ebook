@@ -8,6 +8,7 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
+using Core.Misc;
 using Core.Types.AuthorToday;
 using Core.Types.Book;
 using Core.Types.Common;
@@ -94,7 +95,7 @@ public class AuthorTodayGetter : GetterBase {
     }
 
     private async Task FillAdditional(Book book, AuthorTodayBookDetails details) {
-        if (!Config.Options.Additional || details.GalleryImages == default || details.GalleryImages.Length == 0) {
+        if (!Config.Options.HasAdditionalType(AdditionalTypeEnum.Image) || details.GalleryImages == default || details.GalleryImages.Length == 0) {
             return;
         }
 
