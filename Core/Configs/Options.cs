@@ -1,6 +1,7 @@
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
+using System.Linq;
 using CommandLine;
+using Core.Misc;
 
 namespace Core.Configs; 
 
@@ -64,6 +65,11 @@ public class Options {
     
     [Option("additional", Required = false, HelpText = "Сохранить дополнительные файлы", Default = false)]
     public bool Additional { get; set; }
+
+    [Option("additional-types", Required = false, HelpText = "Типы дополнительных файлов. Допустимые значения: book, audio, image", Separator = ',')]
+    public IEnumerable<AdditionalTypeEnum> AdditionalTypes { get; set; }
+    
+    public bool HasAdditionalType(AdditionalTypeEnum type) => Additional && (AdditionalTypes == default || !AdditionalTypes.Any() || AdditionalTypes.Contains(type));
 
     public string ResourcesPath => "Patterns";
 }

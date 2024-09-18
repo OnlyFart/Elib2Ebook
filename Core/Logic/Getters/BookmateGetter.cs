@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -9,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
+using Core.Misc;
 using Core.Types.Book;
 using Core.Types.Bookmate;
 using Core.Types.Common;
@@ -56,7 +56,11 @@ public class BookmateGetter : GetterBase {
         var response = await Config.Client.GetAsync(requestUri);
 
         var originalBook = await TempFile.Create(url, Config.TempFolder.Path, response.Content.Headers.ContentDisposition.FileName.Trim('\"'), await response.Content.ReadAsStreamAsync());
-        book.AdditionalFiles.AddBook(originalBook);
+
+        if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Book)) {
+            book.AdditionalFiles.AddBook(originalBook);
+        }
+
         book.Chapters = await FillChapters(originalBook);
         
         return book;

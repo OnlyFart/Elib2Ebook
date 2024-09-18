@@ -12,6 +12,7 @@ using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
+using Core.Misc;
 using Core.Types.Book;
 using Core.Types.Common;
 using Core.Types.MyBook;
@@ -142,10 +143,14 @@ public class MyBookGetter : GetterBase {
         }
 
         var origBook = await TempFile.Create(bookUrl, Config.TempFolder.Path, bookUrl.GetFileName(), await response.Content.ReadAsStreamAsync());
-        book.AdditionalFiles.AddBook(origBook);
+
+        if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Book)) {
+            book.AdditionalFiles.AddBook(origBook);
+        }
+
         book.Chapters = await FillChapters(origBook);
 
-        if (Config.Options.Additional && details.Connected is { Type: "audio" }) {
+        if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Audio) && details.Connected is { Type: "audio" }) {
             book.AdditionalFiles.AddAudio(await GetAudio(details.Connected.Id));
         }
         

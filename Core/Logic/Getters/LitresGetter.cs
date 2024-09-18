@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
+using Core.Misc;
 using Core.Types.Book;
 using Core.Types.Common;
 using Core.Types.Litres;
@@ -160,7 +161,9 @@ public class LitresGetter : GetterBase {
 
     private async Task FillAdditional(Book book, LitresArt art) {
         if (_authData != default) {
-            if (Config.Options.Additional) {
+            var type = art.ArtType == LitresArtTypeEnum.Audio ? AdditionalTypeEnum.Audio : AdditionalTypeEnum.Book;
+            
+            if (Config.Options.HasAdditionalType(type)) {
                 var files = await GetResponse<LitresFiles[]>($"https://api.litres.ru/foundation/api/arts/{art.Id}/files/grouped".AsUri());
 
                 foreach (var file in files.SelectMany(f => f.Files)) {

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
+using Core.Misc;
 using Core.Types.Book;
 using Microsoft.Extensions.Logging;
 
@@ -30,35 +31,39 @@ public class AdditionaFileBuilder  {
         }
 
         CreateDirectory(additionalPath);
-        
-        _logger.LogInformation("Начинаю сохранение изображений из книги");
-        foreach (var chapter in book.Chapters ?? []) {
-            if (!chapter.Images.Any()) {
-                _logger.LogInformation($"В главе {chapter.Title.CoverQuotes()} нет изображений");
-                continue;
-            }
-            
-            var subPath = Path.Combine(additionalPath, AdditionalFileCollection.IMAGES_KEY, chapter.Title.RemoveInvalidChars());
-            CreateDirectory(subPath);
-            
-            _logger.LogInformation($"Начинаю сохранение изображений из части {chapter.Title.CoverQuotes()}");
-            var c = 0;
-            foreach (var image in chapter.Images) {
-                var fileName = Path.Combine(subPath, $"{++c}{Path.GetExtension(image.FullName)}");
-                await File.WriteAllBytesAsync(fileName, image.Content);
-            }
-            _logger.LogInformation($"Cохранение изображений из части {chapter.Title.CoverQuotes()} завершено");
-        }
-        _logger.LogInformation("Сохранение изображений из книги завешено");
 
-        if (book.Cover != default) {
-            var subPath = Path.Combine(additionalPath, AdditionalFileCollection.IMAGES_KEY);
-            CreateDirectory(subPath);
-            
-            var fileName = Path.Combine(subPath, $"Cover{Path.GetExtension(book.Cover.FullName)}");
-            await File.WriteAllBytesAsync(fileName, book.Cover.Content);
+        if (_options.HasAdditionalType(AdditionalTypeEnum.Image)) {
+            _logger.LogInformation("Начинаю сохранение изображений из книги");
+            foreach (var chapter in book.Chapters ?? []) {
+                if (!chapter.Images.Any()) {
+                    _logger.LogInformation($"В главе {chapter.Title.CoverQuotes()} нет изображений");
+                    continue;
+                }
+
+                var subPath = Path.Combine(additionalPath, AdditionalFileCollection.IMAGES_KEY, chapter.Title.RemoveInvalidChars());
+                CreateDirectory(subPath);
+
+                _logger.LogInformation($"Начинаю сохранение изображений из части {chapter.Title.CoverQuotes()}");
+                var c = 0;
+                foreach (var image in chapter.Images) {
+                    var fileName = Path.Combine(subPath, $"{++c}{Path.GetExtension(image.FullName)}");
+                    await File.WriteAllBytesAsync(fileName, image.Content);
+                }
+
+                _logger.LogInformation($"Cохранение изображений из части {chapter.Title.CoverQuotes()} завершено");
+            }
+
+            _logger.LogInformation("Сохранение изображений из книги завешено");
+
+            if (book.Cover != default) {
+                var subPath = Path.Combine(additionalPath, AdditionalFileCollection.IMAGES_KEY);
+                CreateDirectory(subPath);
+
+                var fileName = Path.Combine(subPath, $"Cover{Path.GetExtension(book.Cover.FullName)}");
+                await File.WriteAllBytesAsync(fileName, book.Cover.Content);
+            }
         }
-        
+
         if (book.AdditionalFiles.Collection.Count == 0) {
             _logger.LogInformation("Нет дополнительных файлов");
             return;

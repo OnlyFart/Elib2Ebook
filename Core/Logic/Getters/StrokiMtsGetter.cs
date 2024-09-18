@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
+using Core.Misc;
 using Core.Types.Book;
 using Core.Types.Common;
 using Core.Types.StrokiMts;
@@ -64,9 +65,15 @@ public class StrokiMtsGetter : GetterBase {
         var response = await Config.Client.GetWithTriesAsync(fileUrl.Url.AsUri());
 
         var origBook = await TempFile.Create(fileUrl.Url.AsUri(), Config.TempFolder.Path, fileUrl.Url.AsUri().GetFileName(), await response.Content.ReadAsStreamAsync());
-        book.AdditionalFiles.AddBook(origBook);
-        book.AdditionalFiles.AddAudio(await GetAudio(details));
-        
+
+        if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Book)) {
+            book.AdditionalFiles.AddBook(origBook);
+        }
+
+        if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Audio)) {
+            book.AdditionalFiles.AddAudio(await GetAudio(details));
+        }
+
         if (!fileUrl.Url.AsUri().GetFileName().EndsWith(".epub")) {
             Config.Logger.LogInformation("Эта книга не в формате epub. Обработка для этого формата недоступна");
         } else {
