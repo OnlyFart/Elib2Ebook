@@ -8,4 +8,7 @@ public class BookmateBookResponse {
     
     [JsonPropertyName("audiobook")]
     public BookmateBook AudioBook { get; set; }
+    
+    [JsonPropertyName("comicbook")]
+    public BookmateComic Comicbook { get; set; }
 }

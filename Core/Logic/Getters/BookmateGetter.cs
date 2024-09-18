@@ -45,20 +45,20 @@ public class BookmateGetter : GetterBase {
         url = SystemUrl.MakeRelativeUri($"/{path}/{id}");
         
         var bookResponse = await GetBookResponse(path, id);
-        var details = bookResponse.Book ?? bookResponse.AudioBook;
+        var details = (BookmateBookBase)bookResponse.Book ?? (BookmateBookBase)bookResponse.AudioBook ?? bookResponse.Comicbook;
         
         var book = new Book(url) {
             Cover = await GetCover(details),
             Title = details.Title,
             Author = GetAuthor(details),
-            CoAuthors = GetCoAuthors(details),
             Annotation = details.Annotation,
             Lang = details.Language
         };
         
-        var originalBook = await GetBookFile(bookResponse);
-
-        if (originalBook != default) {
+        if (path == "comicbooks") {
+            book.Chapters = await FillChaptersComic(bookResponse);
+        } else {
+            var originalBook = await GetEpubFile(bookResponse);
             book.Chapters = await FillChapters(originalBook);
             
             if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Books)) {
@@ -72,7 +72,30 @@ public class BookmateGetter : GetterBase {
         
         return book;
     }
-    
+
+    private async Task<IEnumerable<Chapter>> FillChaptersComic(BookmateBookResponse bookResponse) {
+        if (Config.Options.NoChapters || string.IsNullOrWhiteSpace(bookResponse.Comicbook?.UUID)) {
+            return [];
+        }
+        
+        var metadata = await Config.Client.GetFromJsonAsync<BookmateComicMetadata>($"https://api.bookmate.ru/api/v5/comicbooks/{bookResponse.Comicbook.UUID}/metadata.json");
+        
+        var sb = new StringBuilder();
+        
+        foreach (var page in metadata.Pages) {
+            sb.Append($"<img src=\"{page.Content.Uri.Image}\" />");
+        }
+
+        var doc = sb.AsHtmlDoc();
+        var chapter = new Chapter {
+            Images = await GetImages(doc, SystemUrl),
+            Content = doc.DocumentNode.InnerHtml,
+            Title = bookResponse.Comicbook.Title
+        };
+
+        return [chapter];
+    }
+
     private static HtmlDocument SliceBook(EpubBook epubBook, EpubChapter epubChapter) {
         var doc = new HtmlDocument();
 
@@ -212,30 +235,26 @@ public class BookmateGetter : GetterBase {
         return parent;
     }
     
-    private Task<TempFile> GetCover(BookmateBook book) {
+    private Task<TempFile> GetCover(BookmateBookBase book) {
         var url = book.Cover.Large ?? book.Cover.Small;
         return !string.IsNullOrWhiteSpace(url) ? SaveImage(SystemUrl.MakeRelativeUri(url)) : Task.FromResult(default(TempFile));
     }
     
-    private Author GetAuthor(BookmateBook book) {
-        var author = book.Authors?.FirstOrDefault();
+    private Author GetAuthor(BookmateBookBase book) {
+        var author = book.GetAuthor();
         return author == default ? new Author("Bookmate") : new Author(author.Name, SystemUrl.MakeRelativeUri($"/authors/{author.Uuid}"));
     }
     
-    private IEnumerable<Author> GetCoAuthors(BookmateBook book) {
-        return book.Authors?.Skip(1).Select(author => new Author(author.Name, SystemUrl.MakeRelativeUri($"/authors/{author.Uuid}"))).ToList();
-    }
 
-    private async Task<TempFile> GetBookFile(BookmateBookResponse bookResponse) {
+    private async Task<TempFile> GetEpubFile(BookmateBookResponse bookResponse) {
         var id = bookResponse.Book?.UUID ?? bookResponse.AudioBook?.LinkedBooks?.FirstOrDefault();
         if (string.IsNullOrWhiteSpace(id)) {
             return default;
         }
         
         var requestUri = $"https://api.bookmate.ru/api/v5/books/{id}/content/v4".AsUri();
-        var response = await Config.Client.GetAsync(requestUri);
-
-        return await TempFile.Create(requestUri, Config.TempFolder.Path, response.Content.Headers.ContentDisposition.FileName.Trim('\"'), await response.Content.ReadAsStreamAsync());
+        var epubResponse = await Config.Client.GetAsync(requestUri);
+        return await TempFile.Create(requestUri, Config.TempFolder.Path, epubResponse.Content.Headers.ContentDisposition.FileName.Trim('\"'), await epubResponse.Content.ReadAsStreamAsync());
     }
     
     private async Task<List<TempFile>> GetAudio(BookmateBookResponse bookResponse) {
@@ -280,9 +299,11 @@ public class BookmateGetter : GetterBase {
     private async Task<BookmateBookResponse> GetBookResponse(string path, string id) {
         try {
             var response = await Config.Client.GetFromJsonAsync<BookmateBookResponse>($"https://api.bookmate.ru/api/v5/{path}/{id}".AsUri());
-            return response.AudioBook?.LinkedBooks?.Length > 0 ? 
-                await Config.Client.GetFromJsonAsync<BookmateBookResponse>($"https://api.bookmate.ru/api/v5/books/{response.AudioBook.LinkedBooks[0]}".AsUri()) : 
-                response;
+            if (response.AudioBook?.LinkedBooks?.Length > 0) {
+                return await Config.Client.GetFromJsonAsync<BookmateBookResponse>($"https://api.bookmate.ru/api/v5/books/{response.AudioBook.LinkedBooks[0]}".AsUri());
+            }
+
+            return response;
         } catch (HttpRequestException ex) {
             if (ex.StatusCode == HttpStatusCode.Unauthorized) {
                 throw new Exception("Авторизационный токен невалиден. Требуется обновление");
