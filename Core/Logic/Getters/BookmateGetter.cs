@@ -40,9 +40,13 @@ public class BookmateGetter : GetterBase {
     
     public override async Task<Book> Get(Uri url) {
         var id = GetId(url);
-        url = SystemUrl.MakeRelativeUri($"/books/{id}");
+
+        var path = url.GetSegment(1);
+        url = SystemUrl.MakeRelativeUri($"/{path}/{id}");
         
-        var details = await GetBook(id);
+        var bookResponse = await GetBookResponse(path, id);
+        var details = bookResponse.Book ?? bookResponse.AudioBook;
+        
         var book = new Book(url) {
             Cover = await GetCover(details),
             Title = details.Title,
@@ -51,17 +55,20 @@ public class BookmateGetter : GetterBase {
             Annotation = details.Annotation,
             Lang = details.Language
         };
+        
+        var originalBook = await GetBookFile(bookResponse);
 
-        var requestUri = $"https://api.bookmate.ru/api/v5/books/{id}/content/v4".AsUri();
-        var response = await Config.Client.GetAsync(requestUri);
-
-        var originalBook = await TempFile.Create(url, Config.TempFolder.Path, response.Content.Headers.ContentDisposition.FileName.Trim('\"'), await response.Content.ReadAsStreamAsync());
-
-        if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Books)) {
-            book.AdditionalFiles.Add(AdditionalTypeEnum.Books, originalBook);
+        if (originalBook != default) {
+            book.Chapters = await FillChapters(originalBook);
+            
+            if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Books)) {
+                book.AdditionalFiles.Add(AdditionalTypeEnum.Books, originalBook);
+            }
         }
 
-        book.Chapters = await FillChapters(originalBook);
+        if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Audio)) {
+            book.AdditionalFiles.Add(AdditionalTypeEnum.Audio, await GetAudio(bookResponse));
+        }
         
         return book;
     }
@@ -149,10 +156,10 @@ public class BookmateGetter : GetterBase {
         var chapter = new HtmlDocument();
 
         var book = SliceBook(epubBook, epubChapter);
-        var startNode = book.QuerySelector($"#{epubChapter.HashLocation}");
+        var startNode = string.IsNullOrWhiteSpace(epubChapter.HashLocation) ? book.DocumentNode : book.QuerySelector($"#{epubChapter.HashLocation}");
         var needStop = false;
 
-        var layer = startNode.ParentNode.CloneNode(false);
+        var layer = (startNode.ParentNode ?? startNode).CloneNode(false);
         do {
             var clone = CloneNode(startNode, epubChapter.Next?.HashLocation, ref needStop);
             if (clone != default) {
@@ -211,18 +218,71 @@ public class BookmateGetter : GetterBase {
     }
     
     private Author GetAuthor(BookmateBook book) {
-        var author = book.Authors.FirstOrDefault();
-        return new Author(author.Name, SystemUrl.MakeRelativeUri($"/authors/{author.Uuid}"));
+        var author = book.Authors?.FirstOrDefault();
+        return author == default ? new Author("Bookmate") : new Author(author.Name, SystemUrl.MakeRelativeUri($"/authors/{author.Uuid}"));
     }
     
     private IEnumerable<Author> GetCoAuthors(BookmateBook book) {
-        return book.Authors.Skip(1).Select(author => new Author(author.Name, SystemUrl.MakeRelativeUri($"/authors/{author.Uuid}"))).ToList();
+        return book.Authors?.Skip(1).Select(author => new Author(author.Name, SystemUrl.MakeRelativeUri($"/authors/{author.Uuid}"))).ToList();
+    }
+
+    private async Task<TempFile> GetBookFile(BookmateBookResponse bookResponse) {
+        var id = bookResponse.Book?.UUID ?? bookResponse.AudioBook?.LinkedBooks?.FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(id)) {
+            return default;
+        }
+        
+        var requestUri = $"https://api.bookmate.ru/api/v5/books/{id}/content/v4".AsUri();
+        var response = await Config.Client.GetAsync(requestUri);
+
+        return await TempFile.Create(requestUri, Config.TempFolder.Path, response.Content.Headers.ContentDisposition.FileName.Trim('\"'), await response.Content.ReadAsStreamAsync());
     }
     
-    private async Task<BookmateBook> GetBook(string id) {
+    private async Task<List<TempFile>> GetAudio(BookmateBookResponse bookResponse) {
+        var result = new List<TempFile>();
+        var id = bookResponse.AudioBook?.UUID ?? bookResponse.Book?.LinkedAudio?.FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(id)) {
+            return result;
+        }
+        
+        var playlist = await GetPlayList(id);
+        
+        if (playlist.Tracks.Length == 0) {
+            return result;
+        }
+
+        for (var i = 0; i < playlist.Tracks.Length; i++) {
+            var track = playlist.Tracks[i];
+            var url = track.Offline.Max.Url.Replace(".m3u8", ".m4a");
+
+            Config.Logger.LogInformation($"Загружаю аудиоверсию {i + 1}/{playlist.Tracks.Length} {url}");
+            var response = await Config.Client.GetWithTriesAsync(url.AsUri());
+            result.Add(await TempFile.Create(url.AsUri(), Config.TempFolder.Path, $"{i}_{url.AsUri().GetFileName()}", await response.Content.ReadAsStreamAsync()));
+            Config.Logger.LogInformation($"Аудиоверсия {i + 1}/{playlist.Tracks.Length} {url} загружена");
+        }
+
+        return result;
+    }
+
+    private async Task<BookmatePlaylist> GetPlayList(string id) {
         try {
-            var response = await Config.Client.GetFromJsonAsync<BookmateBookResponse>($"https://api.bookmate.ru/api/v5/books/{id}".AsUri());
-            return response.Book;
+            var response = await Config.Client.GetFromJsonAsync<BookmatePlaylist>($"https://api.bookmate.ru/api/v5/audiobooks/{id}/playlists.json".AsUri());
+            return response;
+        } catch (HttpRequestException ex) {
+            if (ex.StatusCode == HttpStatusCode.Unauthorized) {
+                throw new Exception("Авторизационный токен невалиден. Требуется обновление");
+            }
+
+            throw;
+        }
+    }
+    
+    private async Task<BookmateBookResponse> GetBookResponse(string path, string id) {
+        try {
+            var response = await Config.Client.GetFromJsonAsync<BookmateBookResponse>($"https://api.bookmate.ru/api/v5/{path}/{id}".AsUri());
+            return response.AudioBook?.LinkedBooks?.Length > 0 ? 
+                await Config.Client.GetFromJsonAsync<BookmateBookResponse>($"https://api.bookmate.ru/api/v5/books/{response.AudioBook.LinkedBooks[0]}".AsUri()) : 
+                response;
         } catch (HttpRequestException ex) {
             if (ex.StatusCode == HttpStatusCode.Unauthorized) {
                 throw new Exception("Авторизационный токен невалиден. Требуется обновление");

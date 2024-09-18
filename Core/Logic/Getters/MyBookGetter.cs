@@ -263,10 +263,10 @@ public class MyBookGetter : GetterBase {
         var chapter = new HtmlDocument();
 
         var book = SliceBook(epubBook, epubChapter);
-        var startNode = book.QuerySelector($"#{epubChapter.HashLocation}");
+        var startNode = string.IsNullOrWhiteSpace(epubChapter.HashLocation) ? book.DocumentNode : book.QuerySelector($"#{epubChapter.HashLocation}");
         var needStop = false;
 
-        var layer = startNode.ParentNode.CloneNode(false);
+        var layer = (startNode.ParentNode ?? startNode).CloneNode(false);
         do {
             var clone = CloneNode(startNode, epubChapter.Next?.HashLocation, ref needStop);
             if (clone != default) {
