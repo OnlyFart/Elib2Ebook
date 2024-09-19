@@ -11,6 +11,7 @@
     <ItemGroup>
         <PackageReference Include="AngleSharp" Version="1.1.2" />
         <PackageReference Include="CommandLineParser" Version="2.9.1" />
+        <PackageReference Include="Haukcode.WkHtmlToPdfDotNet" Version="1.5.93" />
         <PackageReference Include="HtmlAgilityPack" Version="1.11.65" />
         <PackageReference Include="HtmlAgilityPack.CssSelectors.NetCore" Version="1.2.1" />
         <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="8.0.0" />
@@ -18,6 +19,7 @@
         <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
         <PackageReference Include="OAuth.DotNetCore" Version="3.0.1" />
+        <PackageReference Include="SkiaSharp" Version="2.88.8" />
     </ItemGroup>
 
     <ItemGroup>

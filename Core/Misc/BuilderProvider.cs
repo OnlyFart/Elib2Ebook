@@ -13,6 +13,7 @@ public class BuilderProvider {
             "json" => new JsonBuilder(options, logger),
             "cbz" => new CbzBuilder(options, logger),
             "txt" => new TxtBuilder(options, logger),
+            "pdf" => new PdfBuilder(options, logger),
             "json_lite" => new JsonLiteBuilder(options, logger),
             _ => throw new ArgumentException("Неизвестный формат", nameof(format))
         };
