@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Misc;
 
-public class BuilderProvider {
+public static class BuilderProvider {
     public static BuilderBase Get(string format, Options options, ILogger logger) {
         return format.Trim().ToLower() switch {
             "fb2" => new Fb2Builder(options, logger),

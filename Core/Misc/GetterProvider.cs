@@ -6,7 +6,7 @@ using Core.Logic.Getters;
 
 namespace Core.Misc;
 
-public class GetterProvider {
+public static class GetterProvider {
     public static GetterBase Get(BookGetterConfig config, Uri url) {
         return Assembly.GetAssembly(typeof(GetterBase))!.GetTypes()
                    .Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(GetterBase)))

@@ -10,6 +10,7 @@ using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
 using Core.Types.Common;
+using EpubSharp;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Microsoft.Extensions.Logging;
@@ -130,6 +131,32 @@ public abstract class GetterBase : IDisposable {
         
         return result.Value + 1;
     }
+    
+    private static HtmlDocument SliceBook(EpubBook epubBook, EpubChapter epubChapter) {
+        var doc = new HtmlDocument();
+
+        var startChapter = epubBook.Resources.Html.First(h => h.AbsolutePath == epubChapter.AbsolutePath);
+        var startIndex = epubBook.Resources.Html.IndexOf(startChapter);
+        
+        var chapter = epubBook.Resources.Html[startIndex].TextContent.AsHtmlDoc();
+        foreach (var node in chapter.QuerySelector("body").ChildNodes) {
+            doc.DocumentNode.AppendChild(node);
+        }
+        
+        for (var i = startIndex + 1; i < epubBook.Resources.Html.Count; i++) {
+            var chapterContent = epubBook.Resources.Html[i];
+            if (chapterContent.AbsolutePath == epubChapter.Next?.AbsolutePath) {
+                break;
+            }
+            
+            chapter = chapterContent.TextContent.AsHtmlDoc();
+            foreach (var node in chapter.QuerySelector("body").ChildNodes) {
+                doc.DocumentNode.AppendChild(node);
+            }
+        }
+        
+        return doc;
+    }
 
     protected IEnumerable<T> SliceToc<T>(ICollection<T> toc, Func<T, string> selector) {
         var start = Config.Options.Start;
@@ -164,6 +191,67 @@ public abstract class GetterBase : IDisposable {
         }
         
         return toc;
+    }
+
+    protected static HtmlDocument GetContent(EpubBook epubBook, EpubChapter epubChapter) {
+        var chapter = new HtmlDocument();
+
+        var book = SliceBook(epubBook, epubChapter);
+        var startNode = string.IsNullOrWhiteSpace(epubChapter.HashLocation) ? book.DocumentNode : book.QuerySelector($"#{epubChapter.HashLocation}");
+        var needStop = false;
+
+        var layer = (startNode.ParentNode ?? startNode).CloneNode(false);
+        do {
+            var clone = CloneNode(startNode, epubChapter.Next?.HashLocation, ref needStop);
+            if (clone != default) {
+                layer.AppendChild(clone);
+            }
+
+            do {
+                if (startNode.NextSibling == default) {
+                    if (startNode.ParentNode == default || startNode.ParentNode.Name == "#document") {
+                        startNode = default;
+                    } else {
+                        var layerClone = layer.CloneNode(true);
+                        layer = startNode.ParentNode.CloneNode(false);
+                        layer.AppendChild(layerClone);
+                        startNode = startNode.ParentNode;
+                    }
+                } else {
+                    startNode = startNode.NextSibling;
+                    break;
+                }
+            } while (startNode != default);
+        } while (startNode != default && !needStop);
+
+        chapter.DocumentNode.AppendChild(layer);
+
+        return chapter;
+    }
+
+    private static HtmlNode CloneNode(HtmlNode node, string stopId, ref bool needStop) {
+        if (!string.IsNullOrWhiteSpace(stopId) && node.Name != "#document" && node.Id == stopId) {
+            needStop = true;
+            return default;
+        }
+
+
+        if (!node.HasChildNodes) {
+            return node.CloneNode(true);
+        }
+
+        var parent = node.CloneNode(false);
+
+        foreach (var child in node.ChildNodes) {
+            var clone = CloneNode(child, stopId, ref needStop);
+            if (needStop || clone == default) {
+                return parent;
+            }
+
+            parent.ChildNodes.Add(clone);
+        }
+
+        return parent;
     }
 
     public abstract Task<Book> Get(Uri url);
