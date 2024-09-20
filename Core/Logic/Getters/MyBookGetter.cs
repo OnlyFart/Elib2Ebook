@@ -6,7 +6,6 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
@@ -16,7 +15,6 @@ using Core.Misc;
 using Core.Types.Book;
 using Core.Types.Common;
 using Core.Types.MyBook;
-using EpubSharp;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Microsoft.Extensions.Logging;
@@ -148,7 +146,7 @@ public class MyBookGetter : GetterBase {
             book.AdditionalFiles.Add(AdditionalTypeEnum.Books, origBook);
         }
 
-        book.Chapters = await FillChapters(origBook);
+        book.Chapters = await FillChaptersFromEpub(origBook);
 
         if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Audio) && details.Connected is { Type: "audio" }) {
             book.AdditionalFiles.Add(AdditionalTypeEnum.Audio, await GetAudio(details.Connected.Id));
@@ -178,60 +176,6 @@ public class MyBookGetter : GetterBase {
         }
         
         return result;
-    }
-
-    private async Task<IEnumerable<Chapter>> FillChapters(TempFile shortFile) {
-        var result = new List<Chapter>();
-        if (Config.Options.NoChapters) {
-            return result;
-        }
-
-        await using var stream = shortFile.GetStream();
-        var epubBook = EpubReader.Read(stream, true, Encoding.UTF8);
-        var current = epubBook.TableOfContents.First();
-        
-        do {
-            Config.Logger.LogInformation($"Загружаю главу {current.Title.CoverQuotes()}");
-
-            var chapter = new Chapter {
-                Title = current.Title
-            };
-
-            var content = GetContent(epubBook, current);
-            chapter.Images = await GetImages(content, epubBook);
-            chapter.Content = content.DocumentNode.RemoveNodes("h1, h2, h3").InnerHtml;
-            result.Add(chapter);
-        } while ((current = current.Next) != default);
-
-        return result;
-    }
-
-    private async Task<IEnumerable<TempFile>> GetImages(HtmlDocument doc, EpubBook book) {
-        var images = new List<TempFile>();
-        foreach (var img in doc.QuerySelectorAll("img")) {
-            var path = img.Attributes["src"]?.Value;
-            if (string.IsNullOrWhiteSpace(path)) {
-                img.Remove();
-                continue;
-            }
-
-            var t = book.Resources.Images.FirstOrDefault(i => i.Href == path);
-            if (t == default) {
-                img.Remove();
-                continue;
-            }
-
-            if (t.Content == null || t.Content.Length == 0) {
-                img.Remove();
-                continue;
-            }
-            
-            var image = await TempFile.Create(null, Config.TempFolder.Path, t.Href, t.Content);
-            img.Attributes["src"].Value = image.FullName;
-            images.Add(image);
-        }
-
-        return images;
     }
 
     private Task<TempFile> GetCover(MyBookBook book) {

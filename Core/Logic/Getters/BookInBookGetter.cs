@@ -59,11 +59,11 @@ public class BookInBookGetter : GetterBase {
     }
     
     private async Task<HtmlDocument> GetChapter(Uri url) {
-
         var sb = new StringBuilder();
+        
         for (var i = 1; ; i++) {
             var uri = SystemUrl.MakeRelativeUri($"read?id={url.GetQueryParameter("id")}&chapter={url.GetQueryParameter("chapter")}&page={i}");
-            var response = await Config.Client.GetWithTriesAsync(uri, TimeSpan.FromMilliseconds(100));
+            using var response = await Config.Client.GetWithTriesAsync(uri, TimeSpan.FromMilliseconds(100));
             if (response == default) {
                 return sb.AsHtmlDoc();
             }

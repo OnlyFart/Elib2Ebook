@@ -13,9 +13,6 @@ using Core.Misc;
 using Core.Types.Book;
 using Core.Types.Common;
 using Core.Types.StrokiMts;
-using EpubSharp;
-using HtmlAgilityPack;
-using HtmlAgilityPack.CssSelectors.NetCore;
 using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters;
@@ -62,7 +59,7 @@ public class StrokiMtsGetter : GetterBase {
         
         var origBook = await GetOriginalFile(id);
         if (origBook.Extension == ".epub") {
-            book.Chapters = await FillChapters(origBook);
+            book.Chapters = await FillChaptersFromEpub(origBook);
         } else {
             Config.Logger.LogInformation("Эта книга не в формате epub. Получить главы невозможно");
         }
@@ -109,60 +106,6 @@ public class StrokiMtsGetter : GetterBase {
         }
 
         return result;
-    }
-
-    private async Task<IEnumerable<Chapter>> FillChapters(TempFile file) {
-        var result = new List<Chapter>();
-        if (Config.Options.NoChapters) {
-            return result;
-        }
-
-        await using var stream = file.GetStream();
-        var epubBook = EpubReader.Read(stream, true, Encoding.UTF8);
-        var current = epubBook.TableOfContents.First();
-        
-        do {
-            Config.Logger.LogInformation($"Загружаю главу {current.Title.CoverQuotes()}");
-
-            var chapter = new Chapter {
-                Title = current.Title
-            };
-
-            var content = GetContent(epubBook, current);
-            chapter.Images = await GetImages(content, epubBook);
-            chapter.Content = content.DocumentNode.RemoveNodes("h1, h2, h3").InnerHtml;
-            result.Add(chapter);
-        } while ((current = current.Next) != default);
-
-        return result;
-    }
-
-    private async Task<IEnumerable<TempFile>> GetImages(HtmlDocument doc, EpubBook book) {
-        var images = new List<TempFile>();
-        foreach (var img in doc.QuerySelectorAll("img")) {
-            var path = img.Attributes["src"]?.Value;
-            if (string.IsNullOrWhiteSpace(path)) {
-                img.Remove();
-                continue;
-            }
-
-            var t = book.Resources.Images.FirstOrDefault(i => i.AbsolutePath.EndsWith(path.Trim('.')));
-            if (t == default) {
-                img.Remove();
-                continue;
-            }
-
-            if (t.Content == null || t.Content.Length == 0) {
-                img.Remove();
-                continue;
-            }
-            
-            var image = await TempFile.Create(null, Config.TempFolder.Path, t.Href, t.Content);
-            img.Attributes["src"].Value = image.FullName;
-            images.Add(image);
-        }
-
-        return images;
     }
     
     private Task<TempFile> GetCover(StrokiMtsBookItem book) {

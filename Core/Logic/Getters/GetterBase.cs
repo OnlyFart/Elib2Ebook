@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
@@ -54,6 +55,7 @@ public abstract class GetterBase : IDisposable {
             using var response = await Config.Client.SendWithTriesAsync(() => GetImageRequestMessage(uri));
             Config.Logger.LogInformation($"Загружена картинка {response.RequestMessage!.RequestUri}");
             if (response is not { StatusCode: HttpStatusCode.OK }) {
+                Console.WriteLine(response.StatusCode);
                 return default;
             }
             
@@ -63,8 +65,8 @@ public abstract class GetterBase : IDisposable {
             var fullName = Guid.NewGuid() + (string.IsNullOrWhiteSpace(extension) ? ".jpg" : extension); 
             
             return await TempFile.Create(uri, Config.TempFolder.Path, fullName, stream);
-
-        } catch (Exception) {
+        } catch (Exception ex) {
+            Console.WriteLine(ex);
             return default;
         }
     }
@@ -157,6 +159,60 @@ public abstract class GetterBase : IDisposable {
         
         return doc;
     }
+    
+    protected async Task<IEnumerable<Chapter>> FillChaptersFromEpub(TempFile shortFile) {
+        var result = new List<Chapter>();
+        if (Config.Options.NoChapters) {
+            return result;
+        }
+
+        await using var stream = shortFile.GetStream();
+        var epubBook = EpubReader.Read(stream, true, Encoding.UTF8);
+        var current = epubBook.TableOfContents.First();
+        
+        do {
+            Config.Logger.LogInformation($"Загружаю главу {current.Title.CoverQuotes()}");
+
+            var chapter = new Chapter {
+                Title = current.Title
+            };
+
+            var content = GetContent(epubBook, current);
+            chapter.Images = await GetImages(content, epubBook);
+            chapter.Content = content.DocumentNode.RemoveNodes("h1, h2, h3").InnerHtml;
+            result.Add(chapter);
+        } while ((current = current.Next) != default);
+
+        return result;
+    }
+    
+    private async Task<IEnumerable<TempFile>> GetImages(HtmlDocument doc, EpubBook book) {
+        var images = new List<TempFile>();
+        foreach (var img in doc.QuerySelectorAll("img")) {
+            var path = img.Attributes["src"]?.Value;
+            if (string.IsNullOrWhiteSpace(path)) {
+                img.Remove();
+                continue;
+            }
+
+            var t = book.Resources.Images.FirstOrDefault(i => i.AbsolutePath.EndsWith(path.Trim('.')));
+            if (t == default) {
+                img.Remove();
+                continue;
+            }
+
+            if (t.Content == null || t.Content.Length == 0) {
+                img.Remove();
+                continue;
+            }
+            
+            var image = await TempFile.Create(null, Config.TempFolder.Path, t.Href, t.Content);
+            img.Attributes["src"].Value = image.FullName;
+            images.Add(image);
+        }
+
+        return images;
+    }
 
     protected IEnumerable<T> SliceToc<T>(ICollection<T> toc, Func<T, string> selector) {
         var start = Config.Options.Start;
@@ -193,7 +249,7 @@ public abstract class GetterBase : IDisposable {
         return toc;
     }
 
-    protected static HtmlDocument GetContent(EpubBook epubBook, EpubChapter epubChapter) {
+    private static HtmlDocument GetContent(EpubBook epubBook, EpubChapter epubChapter) {
         var chapter = new HtmlDocument();
 
         var book = SliceBook(epubBook, epubChapter);

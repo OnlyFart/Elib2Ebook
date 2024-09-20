@@ -102,7 +102,7 @@ public class LitmirGetter : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(string bookId, int page) {
-        var response = await Config.Client.GetWithTriesAsync(SystemUrl.MakeRelativeUri($"/br/?b={bookId}&p={page}"));
+        using var response = await Config.Client.GetWithTriesAsync(SystemUrl.MakeRelativeUri($"/br/?b={bookId}&p={page}"));
         if (response == default) {
             return default;
         }
