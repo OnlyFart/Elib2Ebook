@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Core.Types.Common; 
 
-public class TempFile {
+public class TempFile : IDisposable {
     public string Name;
 
     public string Extension;
@@ -55,5 +55,11 @@ public class TempFile {
 
     public Stream GetStream() {
         return File.OpenRead(FilePath);
+    }
+
+    public void Dispose() {
+        if (File.Exists(FilePath)) {
+            File.Delete(FilePath);
+        }
     }
 }

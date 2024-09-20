@@ -1,10 +1,12 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Core.Misc;
 using Core.Types.Common;
 
 namespace Core.Types.Book;
 
-public class AdditionalFileCollection {
+public class AdditionalFileCollection : IDisposable {
     public Dictionary<AdditionalTypeEnum, List<TempFile>> Collection { get; set; } = new();
 
     public void Add(AdditionalTypeEnum type, TempFile file) {
@@ -24,5 +26,11 @@ public class AdditionalFileCollection {
 
     public List<TempFile> Get(AdditionalTypeEnum type) {
         return Collection.TryGetValue(type, out var result) ? result : [];
-    } 
+    }
+
+    public void Dispose() {
+        foreach (var file in Collection.SelectMany(pair => pair.Value)) {
+            file.Dispose();
+        }
+    }
 }

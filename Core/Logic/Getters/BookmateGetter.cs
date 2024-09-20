@@ -102,7 +102,8 @@ public class BookmateGetter : GetterBase {
             return result;
         }
 
-        var epubBook = EpubReader.Read(file.GetStream(), true, Encoding.UTF8);
+        await using var stream = file.GetStream();
+        var epubBook = EpubReader.Read(stream, true, Encoding.UTF8);
         var current = epubBook.TableOfContents.First();
 
         do {

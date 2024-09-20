@@ -32,7 +32,7 @@ internal static class Program {
                 foreach (var url in options.Url) {
                     logger.LogInformation($"Начинаю генерацию книги {url.CoverQuotes()}");
                     try {
-                        var book = await getter.Get(url.AsUri());
+                        using var book = await getter.Get(url.AsUri());
                         foreach (var format in options.Format) {
                             await BuilderProvider.Get(format, options, logger).Build(book);
                         }

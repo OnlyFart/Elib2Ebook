@@ -149,7 +149,8 @@ public class LitresGetter : GetterBase {
             Config.Logger.LogInformation("Нет файла fb3. Сформировать файл книги невозможно");
         } else {
             try {
-                var litresBook = await GetBook(fb3File.GetStream());
+                await using var stream = fb3File.GetStream();
+                var litresBook = await GetBook(stream);
                 book.Chapters = await FillChapters(litresBook, art.Title);
             } catch (Exception) {
                 Config.Logger.LogInformation($"Не удалось обработать оригинальный файл {fb3File.FullName}");

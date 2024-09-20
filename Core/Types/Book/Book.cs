@@ -4,7 +4,7 @@ using Core.Types.Common;
 
 namespace Core.Types.Book; 
 
-public class Book {
+public class Book : IDisposable {
     /// <summary>
     /// Название книги
     /// </summary>
@@ -57,5 +57,10 @@ public class Book {
 
     public Book(Uri url) {
         Url = url;
+    }
+
+    public void Dispose() {
+        Cover?.Dispose();
+        AdditionalFiles?.Dispose();
     }
 }

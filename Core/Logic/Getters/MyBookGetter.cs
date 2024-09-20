@@ -185,8 +185,9 @@ public class MyBookGetter : GetterBase {
         if (Config.Options.NoChapters) {
             return result;
         }
-        
-        var epubBook = EpubReader.Read(shortFile.GetStream(), true, Encoding.UTF8);
+
+        await using var stream = shortFile.GetStream();
+        var epubBook = EpubReader.Read(stream, true, Encoding.UTF8);
         var current = epubBook.TableOfContents.First();
         
         do {
