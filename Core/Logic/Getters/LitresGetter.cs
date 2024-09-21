@@ -86,7 +86,11 @@ public class LitresGetter : GetterBase {
         if (File.Exists(saveCreds)) {
             _authData = await File.ReadAllTextAsync(saveCreds).ContinueWith(t => t.Result.Deserialize<LitresAuthResponseData>());
             Config.Client.DefaultRequestHeaders.Add("Session-Id", _authData.Sid);
-            return;
+            using var me = await Config.Client.GetAsync("https://api.litres.ru/foundation/api/users/me/detailed");
+
+            if (me.StatusCode == HttpStatusCode.OK) {
+                return;
+            }
         }
 
         var payload = LitresPayload.Create(DateTime.Now, string.Empty, SECRET_KEY, APP);
