@@ -53,7 +53,7 @@ public static class StringExtensions {
             sb.Replace(invalidFileNameChar, ' ');
         }
 
-        return sb.ToString().Trim('.').Trim();
+        return sb.ToString().Trim().Trim('.').Trim();
     }
 
     /// <summary>

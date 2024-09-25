@@ -38,7 +38,7 @@ public abstract class BuilderBase {
     /// </summary>
     /// <param name="book"></param>
     /// <returns></returns>
-    protected virtual string GetTitle(Book book) => $"{book.Author.Name} - {book.Title}".Crop(100);
+    protected virtual string GetTitle(Book book) => $"{book.Author.Name.RemoveInvalidChars()} - {book.Title.RemoveInvalidChars()}".Crop(100);
 
     /// <summary>
     ///  Создание  файла
