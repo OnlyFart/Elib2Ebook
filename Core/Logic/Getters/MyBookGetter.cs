@@ -108,8 +108,6 @@ public class MyBookGetter : GetterBase {
             if (bookId.HasValue) {
                 return await GetDetailsApi(bookId.Value);
             }
-            
-            throw new Exception("Указана ссылка на аудиокнигу. Укажите ссылку на текстовую версию");
         }
 
         return details;
@@ -135,21 +133,29 @@ public class MyBookGetter : GetterBase {
         var bookUrl = SystemUrl.MakeRelativeUri(details.BookFile);
         
         SetAuthHeader("GET", bookUrl);
-        using var response = await _apiClient.GetAsync(bookUrl);
-        if (response.StatusCode != HttpStatusCode.OK) {
-            throw new Exception("Не удалось получить книгу");
+        if (details.Type != "audio") {
+            using var response = await _apiClient.GetAsync(bookUrl);
+            if (response.StatusCode != HttpStatusCode.OK) {
+                throw new Exception("Не удалось получить книгу");
+            }
+
+            var origBook = await TempFile.Create(bookUrl, Config.TempFolder.Path, bookUrl.GetFileName(), await response.Content.ReadAsStreamAsync());
+
+            if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Books)) {
+                book.AdditionalFiles.Add(AdditionalTypeEnum.Books, origBook);
+            }
+
+            book.Chapters = await FillChaptersFromEpub(origBook);
         }
 
-        var origBook = await TempFile.Create(bookUrl, Config.TempFolder.Path, bookUrl.GetFileName(), await response.Content.ReadAsStreamAsync());
-
-        if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Books)) {
-            book.AdditionalFiles.Add(AdditionalTypeEnum.Books, origBook);
-        }
-
-        book.Chapters = await FillChaptersFromEpub(origBook);
-
-        if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Audio) && details.Connected is { Type: "audio" }) {
-            book.AdditionalFiles.Add(AdditionalTypeEnum.Audio, await GetAudio(details.Connected.Id));
+        if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Audio)) {
+            if (details.Type == "audio") {
+                book.AdditionalFiles.Add(AdditionalTypeEnum.Audio, await GetAudio(details.Id));
+            }
+            
+            if (details.Connected is { Type: "audio" }) {
+                book.AdditionalFiles.Add(AdditionalTypeEnum.Audio, await GetAudio(details.Connected.Id));
+            }
         }
         
         return book;
@@ -160,7 +166,7 @@ public class MyBookGetter : GetterBase {
         var details = await GetDetailsApi(bookId);
         var files = details.Files.Where(node => node is JsonObject).Select(node => node.Deserialize<MyBookFile>()).ToList();
 
-        for (int i = 0; i < files.Count; i++) {
+        for (var i = 0; i < files.Count; i++) {
             var file = files[i];
             var url = SystemUrl.MakeRelativeUri(file.Url);
 
