@@ -55,11 +55,13 @@ public class BookmateGetter : GetterBase {
         if (path == "comicbooks") {
             book.Chapters = await FillChaptersComic(bookResponse);
         } else {
-            var originalBook = await GetEpubFile(bookResponse);
-            book.Chapters = await FillChaptersFromEpub(originalBook);
-            
-            if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Books)) {
-                book.AdditionalFiles.Add(AdditionalTypeEnum.Books, originalBook);
+            var textBook = await GetEpubFile(bookResponse);
+            if (textBook != default) {
+                book.Chapters = await FillChaptersFromEpub(textBook);
+
+                if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Books)) {
+                    book.AdditionalFiles.Add(AdditionalTypeEnum.Books, textBook);
+                }
             }
         }
 
