@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using Core.Configs;
 using Core.Extensions;
 using Core.Types.Book;
@@ -137,7 +138,7 @@ public abstract class GetterBase : IDisposable {
     private static HtmlDocument SliceBook(EpubBook epubBook, EpubChapter epubChapter) {
         var doc = new HtmlDocument();
 
-        var startChapter = epubBook.Resources.Html.First(h => h.AbsolutePath == epubChapter.AbsolutePath);
+        var startChapter = epubBook.Resources.Html.First(h => HttpUtility.UrlDecode(h.AbsolutePath) == HttpUtility.UrlDecode(epubChapter.AbsolutePath));
         var startIndex = epubBook.Resources.Html.IndexOf(startChapter);
         
         var chapter = epubBook.Resources.Html[startIndex].TextContent.AsHtmlDoc();
@@ -168,20 +169,46 @@ public abstract class GetterBase : IDisposable {
 
         await using var stream = shortFile.GetStream();
         var epubBook = EpubReader.Read(stream, true, Encoding.UTF8);
-        var current = epubBook.TableOfContents.First();
-        
-        do {
-            Config.Logger.LogInformation($"Загружаю главу {current.Title.CoverQuotes()}");
 
+        if (epubBook.TableOfContents.Count > 0) {
+            var current = epubBook.TableOfContents.First();
+
+            do {
+                Config.Logger.LogInformation($"Загружаю главу {current.Title.CoverQuotes()}");
+
+                var chapter = new Chapter {
+                    Title = current.Title
+                };
+
+                var content = GetContent(epubBook, current);
+                chapter.Images = await GetImages(content, epubBook);
+                chapter.Content = content.DocumentNode.RemoveNodes("h1, h2, h3").InnerHtml;
+                result.Add(chapter);
+            } while ((current = current.Next) != default);
+        } else {
+            Config.Logger.LogInformation($"Загружаю главу {epubBook.Title.CoverQuotes()}");
+
+            var sb = new StringBuilder();
+            foreach (var textFile in epubBook.SpecialResources.HtmlInReadingOrder) {
+                var textFileDoc = textFile.TextContent.AsHtmlDoc();
+                var body = textFileDoc.DocumentNode.QuerySelector("body");
+                if (body != default) {
+                    textFileDoc = body.InnerHtml.AsHtmlDoc();
+                }
+
+                sb.Append(textFileDoc.DocumentNode.InnerHtml);
+
+            }
+            
             var chapter = new Chapter {
-                Title = current.Title
+                Title = epubBook.Title
             };
-
-            var content = GetContent(epubBook, current);
+            
+            var content = sb.AsHtmlDoc();
             chapter.Images = await GetImages(content, epubBook);
-            chapter.Content = content.DocumentNode.RemoveNodes("h1, h2, h3").InnerHtml;
+            chapter.Content = content.DocumentNode.InnerHtml;
             result.Add(chapter);
-        } while ((current = current.Next) != default);
+        }
 
         return result;
     }

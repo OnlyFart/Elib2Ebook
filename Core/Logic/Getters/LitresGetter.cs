@@ -61,7 +61,7 @@ public class LitresGetter : GetterBase {
         }
         
         // Аудиокнига
-        return new Uri($"https://mvideo.litres.ru/pages/download_book_subscr/{art.Id}/{file.Id}.mp3?sid={_authData.Sid}");
+        return new Uri($"https://ios.litres.ru/pages/{path}/{art.Id}/{file.Id}.mp3?sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
     }
 
     private LitresAuthResponseData _authData = new(){
@@ -312,8 +312,15 @@ public class LitresGetter : GetterBase {
                 Config.Logger.LogInformation($"Дополнительный файл доступен по ссылке {uri}");
                 return response;
             }
-            
+
             uri = GetFullUri(art, "download_book_subscr", file);
+            response = await Config.Client.GetAsync(uri);
+            if (response.StatusCode == HttpStatusCode.OK && response.Headers.AcceptRanges.Any()) {
+                Config.Logger.LogInformation($"Дополнительный файл доступен по ссылке {uri}");
+                return response;
+            }
+            
+            uri = GetFullUri(art, "download_my_book_j", file);
             response = await Config.Client.GetAsync(uri);
             if (response.StatusCode == HttpStatusCode.OK && response.Headers.AcceptRanges.Any()) {
                 Config.Logger.LogInformation($"Дополнительный файл доступен по ссылке {uri}");
