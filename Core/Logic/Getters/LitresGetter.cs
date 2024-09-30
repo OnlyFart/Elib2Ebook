@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -39,7 +40,7 @@ public class LitresGetter : GetterBase {
         return (long)javaSpan.TotalMilliseconds / 1000;
     }
 
-    private Uri GetFullUri(LitresArt art, string path, LitresFile file) {
+    private Uri GetFullUri(LitresArt art, string path, LitresFile file, string host = null) {
         var ts = GetCurrentMilli();
 
         var inputBytes = Encoding.ASCII.GetBytes($"{ts}:{art.Id}:{SECRET_KEY}");
@@ -47,7 +48,7 @@ public class LitresGetter : GetterBase {
         
         // Текстовая книга
         if (art.ArtType != LitresArtTypeEnum.Audio) {
-            var result = new Uri($"https://catalit.litres.ru/pages/{path}?art={art.Id}&sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
+            var result = new Uri($"https://{host ?? "catalit.litres.ru"}/pages/{path}?art={art.Id}&sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
             if (file == default) {
                 return result.AppendQueryParameter("type", "fb3");
             }
@@ -61,12 +62,14 @@ public class LitresGetter : GetterBase {
         }
         
         // Аудиокнига
-        return new Uri($"https://ios.litres.ru/pages/{path}/{art.Id}/{file.Id}.mp3?sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
+        return new Uri($"https://{host ?? "ios.litres.ru"}/pages/{path}/{art.Id}/{file.Id}.mp3?sid={_authData.Sid}&uilang=ru&libapp={APP}&timestamp={ts}&md5={Convert.ToHexString(hashBytes).ToLower()}");
     }
 
     private LitresAuthResponseData _authData = new(){
         Sid = "6ufp4b2wbx1acc4k1f0wdo571762c0fn"
     };
+
+    private LitresMe _me;
 
     public override async Task Authorize() {
         if (!Config.HasCredentials) {
@@ -87,8 +90,9 @@ public class LitresGetter : GetterBase {
             _authData = await File.ReadAllTextAsync(saveCreds).ContinueWith(t => t.Result.Deserialize<LitresAuthResponseData>());
             Config.Client.DefaultRequestHeaders.Add("Session-Id", _authData.Sid);
             
-            using var me = await Config.Client.GetAsync("https://api.litres.ru/foundation/api/users/me/detailed");
-            if (me.StatusCode == HttpStatusCode.OK) {
+            var checkResponse = await Config.Client.GetFromJsonAsync<LitresStaticResponse<LitresMe>>("https://api.litres.ru/foundation/api/users/me/detailed");
+            if (checkResponse?.Payload?.Data != default) {
+                _me = checkResponse.Payload.Data;
                 return;
             }
         }
@@ -102,6 +106,12 @@ public class LitresGetter : GetterBase {
             throw new Exception($"Не удалось авторизоваться. {_authData.ErrorMessage}");
         }
         
+        var meResponse = await Config.Client.GetFromJsonAsync<LitresStaticResponse<LitresMe>>("https://api.litres.ru/foundation/api/users/me/detailed");
+        if (meResponse?.Payload?.Data == default) {
+            return;
+        }
+
+        _me = meResponse.Payload.Data;
         Config.Client.DefaultRequestHeaders.Add("Session-Id", _authData.Sid);
         await File.WriteAllTextAsync(saveCreds, JsonSerializer.Serialize(_authData));
     }
@@ -175,11 +185,7 @@ public class LitresGetter : GetterBase {
                     using var fileResponse = await GetFileResponse(art, file);
                     if (fileResponse != default) {
                         var tempFile = await CreateTempFile(fileResponse);
-                        if (art.ArtType != LitresArtTypeEnum.Audio) {
-                            book.AdditionalFiles.Add(AdditionalTypeEnum.Books, tempFile);
-                        } else {
-                            book.AdditionalFiles.Add(AdditionalTypeEnum.Audio, tempFile);
-                        }
+                        book.AdditionalFiles.Add(art.ArtType != LitresArtTypeEnum.Audio ? AdditionalTypeEnum.Books : AdditionalTypeEnum.Audio, tempFile);
                     }
                 }
             } else if (art.ArtType != LitresArtTypeEnum.Audio) {
@@ -305,26 +311,22 @@ public class LitresGetter : GetterBase {
     }
 
     private async Task<HttpResponseMessage> GetFileResponse(LitresArt art, LitresFile file) {
-        if (_authData != null) {
-            var uri = GetFullUri(art, "download_book_j", file);
-            var response = await Config.Client.GetAsync(uri);
-            if (response.StatusCode == HttpStatusCode.OK && response.Headers.AcceptRanges.Any()) {
-                Config.Logger.LogInformation($"Дополнительный файл доступен по ссылке {uri}");
-                return response;
-            }
+        var paths = new []{"download_book_j", "download_book_subscr", "download_my_book_j"};
+        var hosts = new List<string> { null };
+        if (_me.PartnerSubscriptions?.Subscriptions != default) {
+            hosts.AddRange(_me.PartnerSubscriptions.Subscriptions.Where(s => s.IsActive && s.Type == (art.ArtType == LitresArtTypeEnum.Audio ? "audio" : "text")).Select(s => s.Host).Distinct());
+        }
 
-            uri = GetFullUri(art, "download_book_subscr", file);
-            response = await Config.Client.GetAsync(uri);
-            if (response.StatusCode == HttpStatusCode.OK && response.Headers.AcceptRanges.Any()) {
-                Config.Logger.LogInformation($"Дополнительный файл доступен по ссылке {uri}");
-                return response;
-            }
-            
-            uri = GetFullUri(art, "download_my_book_j", file);
-            response = await Config.Client.GetAsync(uri);
-            if (response.StatusCode == HttpStatusCode.OK && response.Headers.AcceptRanges.Any()) {
-                Config.Logger.LogInformation($"Дополнительный файл доступен по ссылке {uri}");
-                return response;
+        if (_authData != null) {
+            foreach (var host in hosts) {
+                foreach (var path in paths) {
+                    var uri = GetFullUri(art, path, file, host);
+                    var response = await Config.Client.GetAsync(uri);
+                    if (response.StatusCode == HttpStatusCode.OK && response.Headers.AcceptRanges.Count != 0) {
+                        Config.Logger.LogInformation($"Дополнительный файл доступен по ссылке {uri}");
+                        return response;
+                    }
+                }
             }
         }
 

@@ -16,10 +16,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters;
 
-public class BookmateGetter : GetterBase {
-    public BookmateGetter(BookGetterConfig config) : base(config) { }
+public class BooksYandexGetter : GetterBase {
+    public BooksYandexGetter(BookGetterConfig config) : base(config) { }
 
-    protected override Uri SystemUrl => new("https://bookmate.ru/");
+    protected override Uri SystemUrl => new("https://books.yandex.ru/");
 
     protected override string GetId(Uri url) {
         return url.GetSegment(2);
