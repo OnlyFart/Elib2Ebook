@@ -106,13 +106,13 @@ public class LitresGetter : GetterBase {
             throw new Exception($"Не удалось авторизоваться. {_authData.ErrorMessage}");
         }
         
+        Config.Client.DefaultRequestHeaders.Add("Session-Id", _authData.Sid);
         var meResponse = await Config.Client.GetFromJsonAsync<LitresStaticResponse<LitresMe>>("https://api.litres.ru/foundation/api/users/me/detailed");
         if (meResponse?.Payload?.Data == default) {
             return;
         }
 
         _me = meResponse.Payload.Data;
-        Config.Client.DefaultRequestHeaders.Add("Session-Id", _authData.Sid);
         await File.WriteAllTextAsync(saveCreds, JsonSerializer.Serialize(_authData));
     }
 
