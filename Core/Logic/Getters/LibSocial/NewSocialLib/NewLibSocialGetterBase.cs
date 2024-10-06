@@ -67,9 +67,9 @@ public abstract class NewLibSocialGetterBase : GetterBase{
         var redirectUri = SystemUrl.MakeRelativeUri("/ru/front/auth/oauth/callback");
         
         var challenge = Challenge(secret);
-
-        await Config.Client.GetAsync(AuthHost.MakeRelativeUri($"/auth/oauth/authorize?client_id=1&code_challenge={challenge}&code_challenge_method=S256&prompt=consent&redirect_uri={redirectUri}&response_type=code&scope=&state={state}"));
-        var loginForm = await Config.Client.GetHtmlDocWithTriesAsync(AuthHost.MakeRelativeUri("/auth/login-form"));
+        var challengeUrl = AuthHost.MakeRelativeUri($"/auth/oauth/authorize?scope=&client_id=1&response_type=code&redirect_uri={redirectUri}&state={state}&code_challenge={challenge}&code_challenge_method=S256&prompt=consent");
+        
+        var loginForm = await Config.Client.GetHtmlDocWithTriesAsync(challengeUrl);
 
         var payload = new Dictionary<string, string> {
             { "_token", loginForm.QuerySelector("input[name=_token]").Attributes["value"].Value },
@@ -77,7 +77,8 @@ public abstract class NewLibSocialGetterBase : GetterBase{
             { "password", Config.Options.Password },
         };
         
-        var login = await Config.Client.PostHtmlDocWithTriesAsync(AuthHost.MakeRelativeUri("/auth/login"), new FormUrlEncodedContent(payload));
+        await Config.Client.PostHtmlDocWithTriesAsync(AuthHost.MakeRelativeUri("/auth/login"), new FormUrlEncodedContent(payload));
+        var login = await Config.Client.GetHtmlDocWithTriesAsync(challengeUrl);
         var error = login.QuerySelector(".form-field__error");
         if (error != default && !string.IsNullOrWhiteSpace(error.InnerText)) {
             throw new Exception($"Не удалось авторизоваться. {error.InnerText}");
