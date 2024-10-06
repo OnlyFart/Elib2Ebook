@@ -115,7 +115,9 @@ public class BooksYandexGetter : GetterBase {
         
         var requestUri = $"https://api.bookmate.ru/api/v5/books/{id}/content/v4".AsUri();
         var epubResponse = await Config.Client.GetAsync(requestUri);
-        return await TempFile.Create(requestUri, Config.TempFolder.Path, epubResponse.Content.Headers.ContentDisposition.FileName.Trim('\"'), await epubResponse.Content.ReadAsStreamAsync());
+        return epubResponse.StatusCode == HttpStatusCode.OK
+            ? await TempFile.Create(requestUri, Config.TempFolder.Path, epubResponse.Content.Headers.ContentDisposition.FileName.Trim('\"'), await epubResponse.Content.ReadAsStreamAsync())
+            : default;
     }
     
     private async Task<List<TempFile>> GetAudio(BookmateBookResponse bookResponse) {
@@ -161,7 +163,10 @@ public class BooksYandexGetter : GetterBase {
         try {
             var response = await Config.Client.GetFromJsonAsync<BookmateBookResponse>($"https://api.bookmate.ru/api/v5/{path}/{id}".AsUri());
             if (response.AudioBook?.LinkedBooks?.Length > 0) {
-                return await Config.Client.GetFromJsonAsync<BookmateBookResponse>($"https://api.bookmate.ru/api/v5/books/{response.AudioBook.LinkedBooks[0]}".AsUri());
+                var linkedResponse = await Config.Client.GetAsync($"https://api.bookmate.ru/api/v5/books/{response.AudioBook.LinkedBooks[0]}".AsUri());
+                if (linkedResponse.StatusCode == HttpStatusCode.OK) {
+                    return await linkedResponse.Content.ReadFromJsonAsync<BookmateBookResponse>();
+                }
             }
 
             return response;
