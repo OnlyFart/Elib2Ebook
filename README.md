@@ -31,6 +31,7 @@
 * https://dreame.com/
 * https://erolate.com/
 * https://eznovels.com/
+* https://fanficus.com/
 * https://fb2.top/
 * https://ficbook.net/
 * https://fictionbook.ru/
