@@ -29,7 +29,7 @@
     private Book? _shortBook;
     
     private async Task OnClick(Options options, ILogger logger) {
-        using var tempSave = TempFolderFactory.Create("Books_" + Guid.NewGuid(), true);
+        using var tempSave = TempFolderFactory.Create("Books_" + Guid.NewGuid());
 
         options.Timeout = 10;
         options.SavePath = tempSave.Path;
@@ -49,7 +49,7 @@
                     StateHasChanged();
                     getterConfig.Options.NoChapters = false;
 
-                    var book = await getter.Get(url.AsUri());
+                    using var book = await getter.Get(url.AsUri());
                     foreach (var format in options.Format) {
                         await BuilderProvider.Get(format, options, logger).Build(book);
                     }

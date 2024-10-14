@@ -32,13 +32,17 @@ internal static class Program {
                 foreach (var url in options.Url) {
                     logger.LogInformation($"Начинаю генерацию книги {url.CoverQuotes()}");
                     try {
-                        using var book = await getter.Get(url.AsUri());
+                        var book = await getter.Get(url.AsUri());
                         foreach (var format in options.Format) {
                             await BuilderProvider.Get(format, options, logger).Build(book);
                         }
 
                         if (options.Additional) {
                             await new AdditionaFileBuilder(options, logger).Build(book);
+                        }
+
+                        if (!options.SaveTemp) {
+                            book.Dispose();
                         }
                     } catch (TaskCanceledException) {
                         logger.LogInformation("Сервер не успевает ответить. Попробуйте увеличить Timeout с помощью параметра -t");

@@ -77,7 +77,7 @@ public class BookGetterConfig : IDisposable {
         var cookieContainer = new CookieContainer();
         var client = GetClient(options, cookieContainer, logger);
 
-        return new BookGetterConfig(options, client, cookieContainer, TempFolderFactory.Create(options.TempPath, !options.SaveTemp), logger); 
+        return new BookGetterConfig(options, client, cookieContainer, TempFolderFactory.Create(options.TempPath), logger); 
     }
     
     private static HttpClient GetClient(Options options, CookieContainer container, ILogger logger) {
