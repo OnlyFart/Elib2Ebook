@@ -25,6 +25,7 @@ public class ShortImageConverter : JsonConverter<TempFile> {
         writer.WriteString(nameof(value.Directory), value.Directory);
         writer.WriteString(nameof(value.FullName), value.FullName);
         writer.WriteString(nameof(value.FilePath), value.FilePath);
+        writer.WriteString(nameof(value.Size), value.Size.ToString());
         writer.WriteEndObject();
     }
 }
