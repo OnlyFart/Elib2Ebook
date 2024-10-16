@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -49,7 +50,7 @@ public class LitsovetGetter : GetterBase {
 
         var book = new Book(url) {
             Cover = await GetCover(doc, url),
-            Chapters = await FillChapters(doc, url),
+            Chapters = await FillChapters(url),
             Title = doc.GetTextBySelector("h1"),
             Author = GetAuthor(doc),
             Annotation = doc.QuerySelector("div.book-informate div.item-descr")?.InnerHtml
@@ -60,28 +61,30 @@ public class LitsovetGetter : GetterBase {
 
     private Author GetAuthor(HtmlDocument doc) {
         var a = doc.QuerySelector("div.p-book-author a");
-        return new Author(a.GetText(), SystemUrl.MakeRelativeUri(a.Attributes["href"].Value));
+        return new Author(a.QuerySelector("span").GetText(), SystemUrl.MakeRelativeUri(a.Attributes["href"].Value));
     }
     
-    private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
+    private async Task<IEnumerable<UrlChapter>> GetToc(Uri url) {
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url.AppendSegment("/read/"));
+        
         var result = new List<UrlChapter>();
-        foreach (var block in doc.QuerySelectorAll("div.card-glava div.item-center")) {
-            var a = block.QuerySelector("a");
-            result.Add(a == default
-                ? new UrlChapter(null, block.GetTextBySelector("div.item-name span"))
-                : new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.GetText().ReplaceNewLine()));
+        foreach (var a in doc.QuerySelectorAll("div.book-navi-list li a")) {
+            var href = a.Attributes["onclick"]?.Value?.Split(" ").FirstOrDefault(s => s.Contains("books"))?.Trim('\'');
+            result.Add(string.IsNullOrEmpty(href)
+                ? new UrlChapter(null, a.GetText().ReplaceNewLine())
+                : new UrlChapter(url.MakeRelativeUri(href), a.GetText().ReplaceNewLine()));
         }
         
         return SliceToc(result, c => c.Title);
     }
 
-    private async Task<IEnumerable<Chapter>> FillChapters(HtmlDocument doc, Uri url) {
+    private async Task<IEnumerable<Chapter>> FillChapters(Uri url) {
         var result = new List<Chapter>();
         if (Config.Options.NoChapters) {
             return result;
         }
             
-        foreach (var urlChapter in GetToc(doc, url)) {
+        foreach (var urlChapter in await GetToc(url)) {
             Config.Logger.LogInformation($"Загружаю главу {urlChapter.Title.CoverQuotes()}");
             var chapter = new Chapter {
                 Title = urlChapter.Title
