@@ -18,6 +18,8 @@ public class TempFile : IDisposable {
     public string FullName => $"{Name}{Extension}";
     
     public string FilePath => Path.Combine(Directory, FullName);
+
+    public long Size => Content.Length;
     
     private TempFile(Uri url, string directory, string name, string extension) {
         Directory = directory;
