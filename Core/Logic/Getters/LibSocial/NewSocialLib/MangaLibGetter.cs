@@ -3,7 +3,7 @@ using Core.Configs;
 
 namespace Core.Logic.Getters.LibSocial.NewSocialLib;
 
-public class MangaLibGetter : MangalibLibGetterBase {
+public class MangaLibGetter : MangaLibGetterBase {
     public MangaLibGetter(BookGetterConfig config) : base(config) { }
 
     protected override Uri ImagesHost => new("https://img33.imgslib.link/");
