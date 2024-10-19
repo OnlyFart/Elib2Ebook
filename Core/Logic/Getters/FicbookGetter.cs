@@ -23,10 +23,10 @@ public class FicbookGetter : GetterBase {
         url = SystemUrl.MakeRelativeUri($"/readfic/{GetId(url)}");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
 
-        var title = doc.GetTextBySelector("h1.mb-10");
+        var title = doc.GetTextBySelector("h1");
         var book = new Book(url) {
             Cover = await GetCover(doc, url),
-            Chapters = await FillChapters(doc, url, title),
+           // Chapters = await FillChapters(doc, url, title),
             Title = title,
             Author = GetAuthor(doc, url),
             Annotation = doc.QuerySelector("div[itemprop=description]")?.InnerHtml
