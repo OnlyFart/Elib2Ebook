@@ -31,14 +31,14 @@ public abstract class BuilderBase {
     /// </summary>
     /// <param name="book"></param>
     /// <returns></returns>
-    protected virtual string GetFileName(Book book) => $"{GetTitle(book)}.{Extension}".RemoveInvalidChars();
+    protected virtual string GetFileName(Book book) => $"{GetTitle(book)}.{Extension}";
     
     /// <summary>
     /// Получение полного названия книги
     /// </summary>
     /// <param name="book"></param>
     /// <returns></returns>
-    protected virtual string GetTitle(Book book) => $"{book.Author.Name.RemoveInvalidChars()} - {book.Title.RemoveInvalidChars()}".Crop(100);
+    protected virtual string GetTitle(Book book) => BookNameBuilder.Build(Options.BookNamePattern, book);
 
     /// <summary>
     ///  Создание  файла
@@ -76,7 +76,7 @@ public abstract class BuilderBase {
             return;
         }
         
-        var fileName = $"{name}_cover{cover.Extension}".RemoveInvalidChars();
+        var fileName = $"{name}_cover{cover.Extension}";
 
         if (!string.IsNullOrWhiteSpace(directory)) {
             if (!Directory.Exists(directory)) {

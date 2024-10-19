@@ -25,7 +25,7 @@ public class AdditionaFileBuilder  {
     }
 
     public async Task Build(Book book) {
-        var additionalPath = $"{book.Author.Name} - {book.Title}".Crop(100).RemoveInvalidChars();
+        var additionalPath = BookNameBuilder.Build(_options.BookNamePattern, book);
         if (!string.IsNullOrWhiteSpace(_options.SavePath)) {
             additionalPath = Path.Combine(_options.SavePath, additionalPath);
         }

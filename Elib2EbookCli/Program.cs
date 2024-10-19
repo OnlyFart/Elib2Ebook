@@ -15,13 +15,23 @@ internal static class Program {
         Console.OutputEncoding = Encoding.UTF8;
         
         var logger = new ConsoleLogger();
+
+        var parserResult = new Parser(with => with.CaseInsensitiveEnumValues = true).ParseArguments<Options>(args);
         
-        await new Parser(with => with.CaseInsensitiveEnumValues = true).ParseArguments<Options>(args)
+        await parserResult
             .WithNotParsed(errors => {
                 var sentenceBuilder = SentenceBuilder.Create();
                 foreach (var error in errors) {
                     logger.LogInformation(sentenceBuilder.FormatError(error));
                 }
+                
+                var helpText = HelpText.AutoBuild(parserResult, h => {
+                    h.Heading = string.Empty; //change header
+                    h.Copyright = string.Empty; //change copyright text
+                    return h;
+                }, e => e);
+                
+                logger.LogInformation(helpText);
             })
             .WithParsedAsync(async options => {
                 using var getterConfig = BookGetterConfig.GetDefault(options, logger); 
