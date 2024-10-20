@@ -148,7 +148,7 @@ public class AuthorTodayGetter : GetterBase {
         }
 
         return new Seria {
-            Name = book.SeriesTitle,
+            Name = book.SeriesTitle.Trim(),
             Number = book.SeriesWorkNumber.HasValue ? book.SeriesWorkNumber.ToString() : string.Empty,
             Url = SystemUrl.MakeRelativeUri($"/work/series/{book.SeriesId}")
         };

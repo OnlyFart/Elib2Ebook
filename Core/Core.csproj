@@ -18,6 +18,7 @@
         <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.1" />
         <PackageReference Include="OAuth.DotNetCore" Version="3.0.1" />
+        <PackageReference Include="StringTokenFormatter" Version="9.0.1" />
     </ItemGroup>
 
     <ItemGroup>

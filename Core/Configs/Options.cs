@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.JavaScript;
 using CommandLine;
-using Core.Logic;
 using Core.Misc;
 
 namespace Core.Configs; 
@@ -71,7 +69,7 @@ public class Options {
     [Option("additional-types", Required = false, HelpText = "Типы дополнительных файлов. Допустимые значения: books, audio, images", Separator = ',')]
     public IEnumerable<AdditionalTypeEnum> AdditionalTypes { get; set; }
     
-    [Option("book-name-pattern", Required = false, HelpText = "Шаблон имени файла. Допустимые значения: {author}, {title}, {seria}, {seria_number}", Default = "{" + BookNameBuilder.AUTHOR_PATTERN + "} - {" + BookNameBuilder.TITLE_PATTERN + "}")]
+    [Option("book-name-pattern", Required = false, HelpText = "Шаблон имени файла.", Default = "{Author.Name} - {Book.Title}")]
     public string BookNamePattern { get; set; }
     
     public bool HasAdditionalType(AdditionalTypeEnum type) => Additional && (AdditionalTypes == default || !AdditionalTypes.Any() || AdditionalTypes.Contains(type));

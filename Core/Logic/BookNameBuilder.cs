@@ -1,30 +1,23 @@
-using System.Collections.Generic;
 using Core.Extensions;
 using Core.Types.Book;
+using StringTokenFormatter;
 
 namespace Core.Logic;
 
 public class BookNameBuilder {
-    public const string TITLE_PATTERN = "title";
-    
-    public const string AUTHOR_PATTERN = "author";
-    
-    public const string SERIA_PATTERN = "seria";
-    
-    public const string SERIA_NUMBER_PATTERN = "seria_number";
-
     public static string Build(string pattern, Book book) {
-        var map = new Dictionary<string, string> {
-            { TITLE_PATTERN, book.Title },
-            { AUTHOR_PATTERN, book.Author.Name },
-            { SERIA_PATTERN, book.Seria?.Name },
-            { SERIA_NUMBER_PATTERN, book.Seria?.Number },
-        };
-        
-        foreach (var (key, value) in map) {
-            pattern = pattern.Replace("{" + key + "}", value.RemoveInvalidChars());
+        var resolver = new InterpolatedStringResolver(StringTokenFormatterSettings.Default);
+        var combinedContainer = resolver
+            .Builder()
+            .AddPrefixedObject("Book", book)
+            .AddPrefixedObject("Author", book.Author)
+            .AddPrefixedSingle("Seria", "HasSeria", book.Seria is not null);
+
+        if (book.Seria is not null) {
+             combinedContainer.AddPrefixedObject("Seria", book.Seria);
         }
 
-        return pattern.RemoveInvalidChars().Crop(100);
+        
+        return resolver.FromContainer(pattern, combinedContainer.CombinedResult()).RemoveInvalidChars();
     }
 }
