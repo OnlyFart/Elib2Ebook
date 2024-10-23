@@ -46,7 +46,7 @@ public class AdditionaFileBuilder  {
                 _logger.LogInformation($"Начинаю сохранение изображений из части {chapter.Title.CoverQuotes()}");
                 var c = 0;
                 foreach (var image in chapter.Images) {
-                    var fileName = Path.Combine(subPath, $"{++c}{Path.GetExtension(image.FullName)}");
+                    var fileName = Path.Combine(subPath, $"{++c}{Path.GetExtension(image.FullName)}".RemoveInvalidChars());
                     await File.WriteAllBytesAsync(fileName, image.Content);
                 }
 
@@ -59,7 +59,7 @@ public class AdditionaFileBuilder  {
                 var subPath = Path.Combine(additionalPath, AdditionalTypeEnum.Images.ToString());
                 CreateDirectory(subPath);
 
-                var fileName = Path.Combine(subPath, $"Cover{Path.GetExtension(book.Cover.FullName)}");
+                var fileName = Path.Combine(subPath, $"Cover{Path.GetExtension(book.Cover.FullName)}".RemoveInvalidChars());
                 await File.WriteAllBytesAsync(fileName, book.Cover.Content);
             }
         }
@@ -74,7 +74,7 @@ public class AdditionaFileBuilder  {
             CreateDirectory(subPath);
             
             foreach (var file in files.Value) {
-                var fileName = Path.Combine(subPath, file.FullName);
+                var fileName = Path.Combine(subPath, file.FullName.RemoveInvalidChars());
                 _logger.LogInformation($"Начинаю сохранение дополнительного файла {fileName.CoverQuotes()}");
                 await File.WriteAllBytesAsync(fileName, file.Content);
                 _logger.LogInformation($"Cохранение дополнительного файла {fileName.CoverQuotes()} завершено");
