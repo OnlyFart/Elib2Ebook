@@ -327,11 +327,14 @@ public abstract class GetterBase : IDisposable {
 
         foreach (var child in node.ChildNodes) {
             var clone = CloneNode(child, stopId, ref needStop);
-            if (needStop || clone == default) {
-                return parent;
+
+            if (clone != default) {
+                parent.ChildNodes.Add(clone);
             }
 
-            parent.ChildNodes.Add(clone);
+            if (needStop) {
+                return parent;
+            }
         }
 
         return parent;

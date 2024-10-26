@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
 
-namespace Core.Types.Bookmate;
+namespace Core.Types.BookYandex;
 
-public class BookmateCover {
+public class BooksYandexCover {
     [JsonPropertyName("large")]
     public string Large { get; set; }
     

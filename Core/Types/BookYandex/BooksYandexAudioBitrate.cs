@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
 
-namespace Core.Types.Bookmate;
+namespace Core.Types.BookYandex;
 
-public class BookmateAudioBitrate {
+public class BooksYandexAudioBitrate {
     [JsonPropertyName("url")]
     public string Url { get; set; }
 }

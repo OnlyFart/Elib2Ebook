@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
 
-namespace Core.Types.Bookmate;
+namespace Core.Types.BookYandex;
 
-public class BookmateAuthor {
+public class BooksYandexAuthor {
     [JsonPropertyName("name")]
     public string Name { get; set; }
     

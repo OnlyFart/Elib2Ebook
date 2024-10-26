@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
 
-namespace Core.Types.Bookmate;
+namespace Core.Types.BookYandex;
 
-public class BookmateUri {
+public class BooksYandexUri {
     [JsonPropertyName("Image")]
     public string Image { get; set; }
     

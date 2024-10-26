@@ -1,13 +1,13 @@
 using System.Text.Json.Serialization;
 
-namespace Core.Types.Bookmate;
+namespace Core.Types.BookYandex;
 
-public class BookmateBookResponse {
+public class BooksYandexResponse {
     [JsonPropertyName("book")]
-    public BookmateBook Book { get; set; }
+    public BooksYandexBook Book { get; set; }
     
     [JsonPropertyName("audiobook")]
-    public BookmateBook AudioBook { get; set; }
+    public BooksYandexBook AudioBook { get; set; }
     
     [JsonPropertyName("comicbook")]
     public BookmateComic Comicbook { get; set; }

@@ -1,7 +1,7 @@
 using System.Linq;
 using System.Text.Json.Serialization;
 
-namespace Core.Types.Bookmate;
+namespace Core.Types.BookYandex;
 
 public abstract class BookmateBookBase {
     [JsonPropertyName("uuid")]
@@ -11,7 +11,7 @@ public abstract class BookmateBookBase {
     public string Annotation { get; set; }
     
     [JsonPropertyName("cover")]
-    public BookmateCover Cover { get; set; }
+    public BooksYandexCover Cover { get; set; }
     
     [JsonPropertyName("title")]
     public string Title { get; set; }
@@ -24,24 +24,27 @@ public abstract class BookmateBookBase {
     
     [JsonPropertyName("linked_audiobook_uuids")]
     public string[] LinkedAudio { get; set; }
+    
+    [JsonPropertyName("source_type")]
+    public string SourceType { get; set; }
 
-    public abstract BookmateAuthor GetAuthor();
+    public abstract BooksYandexAuthor GetAuthor();
 }
 
-public class BookmateBook : BookmateBookBase {
+public class BooksYandexBook : BookmateBookBase {
     [JsonPropertyName("authors_objects")]
-    public BookmateAuthor[] AuthorsObjects { get; set; }
+    public BooksYandexAuthor[] AuthorsObjects { get; set; }
 
-    public override BookmateAuthor GetAuthor() {
+    public override BooksYandexAuthor GetAuthor() {
         return AuthorsObjects?.FirstOrDefault();
     }
 }
 
 public class BookmateComic : BookmateBookBase {
     [JsonPropertyName("authors")]
-    public BookmateAuthor[] Authors { get; set; }
+    public BooksYandexAuthor[] Authors { get; set; }
 
-    public override BookmateAuthor GetAuthor() {
+    public override BooksYandexAuthor GetAuthor() {
         return Authors?.FirstOrDefault();
     }
 }
