@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -19,22 +18,13 @@ namespace Core.Logic.Getters.BooksYandex;
 public class BooksYandexBooksGetter : BooksYandexGetterBase {
     public BooksYandexBooksGetter(BookGetterConfig config) : base(config) { }
     
-    protected override string[] Paths => ["books", "audio", "serials"];
+    protected override string[] Paths => ["books", "audiobooks", "serials"];
 
     protected override async Task<IEnumerable<Chapter>> FillChapters(Book book, BooksYandexResponse response) {
-        var id = response.Book?.UUID ?? response.AudioBook?.LinkedBooks?.FirstOrDefault();
-        if (string.IsNullOrWhiteSpace(id)) {
-            return [];
-        }
-
         if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Audio)) {
             book.AdditionalFiles.Add(AdditionalTypeEnum.Audio, await GetAudio(response));
         }
 
-        return await GetChapters(book, response);
-    }
-
-    private async Task<IEnumerable<Chapter>> GetChapters(Book book, BooksYandexResponse response) {
         var id = response.Book?.UUID ?? response.AudioBook?.LinkedBooks?.FirstOrDefault();
         if (string.IsNullOrWhiteSpace(id)) {
             return [];
