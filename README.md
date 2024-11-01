@@ -61,6 +61,7 @@
 * https://mlate.ru/
 * https://mybook.ru/
 * https://neobook.org/
+* https://novelhall.com/
 * https://noveltranslate.com/
 * https://novelxo.com/
 * https://online-knigi.com.ua/
