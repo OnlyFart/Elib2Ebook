@@ -15,7 +15,7 @@ namespace Core.Logic.Getters;
 public class NovelhallGetter : GetterBase {
     public NovelhallGetter(BookGetterConfig config) : base(config) { }
 
-    protected override Uri SystemUrl => new("https://novelhall.com/");
+    protected override Uri SystemUrl => new("https://www.novelhall.com/");
 
     protected override string GetId(Uri url) {
         return url.GetSegment(1);

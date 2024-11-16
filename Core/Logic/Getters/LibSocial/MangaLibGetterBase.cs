@@ -4,7 +4,7 @@ using Core.Extensions;
 using Core.Types.SocialLib;
 using HtmlAgilityPack;
 
-namespace Core.Logic.Getters.LibSocial.NewSocialLib; 
+namespace Core.Logic.Getters.LibSocial; 
 
 public abstract class MangaLibGetterBase : NewLibSocialGetterBase {
     protected MangaLibGetterBase(BookGetterConfig config) : base(config) { }

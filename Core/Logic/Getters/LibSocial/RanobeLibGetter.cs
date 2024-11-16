@@ -10,7 +10,7 @@ using Core.Types.SocialLib;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 
-namespace Core.Logic.Getters.LibSocial.NewSocialLib; 
+namespace Core.Logic.Getters.LibSocial; 
 
 public class RanobeLibGetter : NewLibSocialGetterBase {
     public RanobeLibGetter(BookGetterConfig config) : base(config) { }

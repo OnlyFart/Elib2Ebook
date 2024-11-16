@@ -1,7 +1,7 @@
 using System;
 using Core.Configs;
 
-namespace Core.Logic.Getters.LibSocial.NewSocialLib; 
+namespace Core.Logic.Getters.LibSocial; 
 
 public class SlashLibGetter : MangaLibGetter {
     public SlashLibGetter(BookGetterConfig config) : base(config) { }

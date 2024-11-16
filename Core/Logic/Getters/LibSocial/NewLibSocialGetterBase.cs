@@ -17,14 +17,14 @@ using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Microsoft.Extensions.Logging;
 
-namespace Core.Logic.Getters.LibSocial.NewSocialLib;
+namespace Core.Logic.Getters.LibSocial;
 
 public abstract class NewLibSocialGetterBase : GetterBase{
     protected NewLibSocialGetterBase(BookGetterConfig config) : base(config) { }
     
     private static Uri AuthHost => new("https://auth.lib.social/");
 
-    private static Uri ApiHost => new("https://api.lib.social/");
+    private static Uri ApiHost => new("https://api.mangalib.me/");
 
     private static Uri BaseImageHost => new("https://cover.imglib.info/");
     
