@@ -14,8 +14,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.RanobeOvh; 
 
-public class RanobeOvhGetter : RanobeOvhGetterBase {
-    public RanobeOvhGetter(BookGetterConfig config) : base(config) { }
+public class NovelOvhGetter : RanobeOvhGetterBase {
+    public NovelOvhGetter(BookGetterConfig config) : base(config) { }
     
     protected override Uri SystemUrl => new("https://novel.ovh/");
     
