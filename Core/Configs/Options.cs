@@ -26,6 +26,9 @@ public class Options {
         
     [Option("proxy", Required = false, HelpText = "Прокси в формате <host>:<port>")]
     public string Proxy { get; set; }
+    
+    [Option("flare", Required = false, HelpText = "Адрес flaresolverr")]
+    public string Flare { get; set; }
         
     [Option('s', "save", Required = false, HelpText = "Директория для сохранения книги")]
     public string SavePath { get; set; }

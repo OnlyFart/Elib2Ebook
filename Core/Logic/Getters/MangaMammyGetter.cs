@@ -31,7 +31,7 @@ public class MangaMammyGetter : GetterBase {
             Chapters = await FillChapters(doc, url),
             Title = doc.GetTextBySelector("h1"),
             Author = GetAuthor(doc, url),
-            Annotation = doc.QuerySelector("div.manga-excerpt").InnerHtml
+            Annotation = doc.QuerySelector("div.manga-excerpt")?.InnerHtml
         };
             
         return book;

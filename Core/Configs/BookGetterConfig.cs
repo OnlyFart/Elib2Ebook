@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Core.Extensions;
 using Core.Misc.TempFolder;
+using FlareSolverrSharp;
 using Microsoft.Extensions.Logging;
 
 namespace Core.Configs; 
@@ -97,7 +98,20 @@ public class BookGetterConfig : IDisposable {
             handler.UseProxy = true;
         }
 
+        if (!string.IsNullOrWhiteSpace(options.Flare)) {
+            var chandler = new ClearanceHandler(options.Flare) {
+                MaxTimeout = options.Timeout,
+                InnerHandler = handler
+            };
+            
+            var cclient = new HttpClient(chandler);
+            cclient.Timeout = TimeSpan.FromSeconds(options.Timeout);
+        
+            return cclient;
+        }
+
         var client = new HttpClient(handler);
+      
         client.Timeout = TimeSpan.FromSeconds(options.Timeout);
         
         return client;
