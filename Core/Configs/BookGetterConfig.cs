@@ -100,7 +100,7 @@ public class BookGetterConfig : IDisposable {
 
         if (!string.IsNullOrWhiteSpace(options.Flare)) {
             var chandler = new ClearanceHandler(options.Flare) {
-                MaxTimeout = options.Timeout,
+                MaxTimeout = options.Timeout * 1000,
                 InnerHandler = handler
             };
             
