@@ -104,6 +104,10 @@ public class BookGetterConfig : IDisposable {
                 InnerHandler = handler
             };
             
+            if (!string.IsNullOrEmpty(options.Proxy)) {
+                chandler.ProxyUrl = options.Proxy;
+            }
+            
             var cclient = new HttpClient(chandler);
             cclient.Timeout = TimeSpan.FromSeconds(options.Timeout);
         
