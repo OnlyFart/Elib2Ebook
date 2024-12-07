@@ -103,7 +103,7 @@ public abstract class LitnetGetterBase : GetterBase {
 
     private async Task<T> GetApiData<T>(Uri uri) {
         var response = await Config.Client.SendAsync(GetDefaultMessage(uri, ApiUrl));
-        if (response.StatusCode == HttpStatusCode.TooManyRequests) {
+        if (response.StatusCode == HttpStatusCode.Forbidden) {
             throw new Exception("Получен бан. Попробуйте позже.");
         }
 

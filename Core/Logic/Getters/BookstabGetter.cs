@@ -78,7 +78,7 @@ public class BookstabGetter : GetterBase {
     private async Task<HtmlDocument> GetChapter(int chapterId, string bookId) {
         while (true) {
             using var response = await Config.Client.GetAsync(_apiUrl.MakeRelativeUri($"/api/reader-get/{bookId}/{chapterId}"));
-            if (response.StatusCode == HttpStatusCode.TooManyRequests) {
+            if (response.StatusCode == HttpStatusCode.Forbidden) {
                 Config.Logger.LogInformation("Очень много запросов. Подождем...");
                 await Task.Delay(TimeSpan.FromSeconds(10));
                 continue;

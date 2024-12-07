@@ -32,6 +32,10 @@ public class BookGetterConfig : IDisposable {
                     responseMessage = await base.SendAsync(request, cancellationToken);
                 }
 
+                if (responseMessage.StatusCode == HttpStatusCode.TooManyRequests) {
+                    responseMessage.StatusCode = HttpStatusCode.Forbidden;
+                }
+
                 return responseMessage;
             } catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException) {
                 _logger.LogInformation("Сервер не успевает ответить. Попробуйте увеличить Timeout с помощью параметра -t");
