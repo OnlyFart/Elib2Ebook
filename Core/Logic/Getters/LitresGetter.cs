@@ -312,7 +312,7 @@ public class LitresGetter : GetterBase {
 
     private async Task<HttpResponseMessage> GetFileResponse(LitresArt art, LitresFile file) {
         var paths = new []{"download_book_j", "download_book_subscr", "download_my_book_j"};
-        var hosts = new List<string> { null };
+        var hosts = new List<string> { null, SystemUrl.Host };
         if (_me?.PartnerSubscriptions?.Subscriptions != default) {
             hosts.AddRange(_me.PartnerSubscriptions.Subscriptions.Where(s => s.IsActive && s.Type == (art.ArtType == LitresArtTypeEnum.Audio ? "audio" : "text")).Select(s => s.Host).Distinct());
         }
