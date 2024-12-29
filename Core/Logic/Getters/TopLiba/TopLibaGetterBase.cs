@@ -14,9 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.TopLiba; 
 
-public abstract class TopLibaGetterBase : GetterBase {
-    public TopLibaGetterBase(BookGetterConfig config) : base(config) { }
-
+public abstract class TopLibaGetterBase(BookGetterConfig config) : GetterBase(config) {
     protected override string GetId(Uri url) => url.GetSegment(2);
 
     protected abstract Seria GetSeria(HtmlDocument doc, Uri url);

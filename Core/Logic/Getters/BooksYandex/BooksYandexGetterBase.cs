@@ -13,7 +13,7 @@ using Core.Types.Common;
 
 namespace Core.Logic.Getters.BooksYandex;
 
-public abstract class BooksYandexGetterBase : GetterBase {
+public abstract class BooksYandexGetterBase(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://books.yandex.ru/");
     
     protected abstract string[] Paths { get; }
@@ -26,10 +26,6 @@ public abstract class BooksYandexGetterBase : GetterBase {
         return base.IsSameUrl(url) && Paths.Any(path => string.Equals(url.GetSegment(1), path, StringComparison.InvariantCultureIgnoreCase));
     }
 
-    protected BooksYandexGetterBase(BookGetterConfig config) : base(config) {
-        
-    }
-    
     public override Task Authorize() {
         var token = Config.Options.Login ?? Config.Options.Password;
         if (string.IsNullOrWhiteSpace(token)) {

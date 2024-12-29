@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class SamlibGetter : GetterBase {
+public class SamlibGetter(BookGetterConfig config) : GetterBase(config) {
     private const string START_BOOK_PATTERN = "Собственно произведение";
     private const string ABOUT_BLOCK_PATTERN = "Блок описания произведения";
     private const string END_BOOK_PATTERN = "-----------------------------------------------";
@@ -22,8 +22,7 @@ public class SamlibGetter : GetterBase {
     private const string END_LINK_BLOCK_PATTERN = "Подножие";
 
     private static Encoding _encoding = Encoding.GetEncoding(1251);
-        
-    public SamlibGetter(BookGetterConfig config) : base(config) { }
+
     protected override Uri SystemUrl => new("http://samlib.ru/");
     public override async Task<Book> Get(Uri url) {
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url, _encoding);

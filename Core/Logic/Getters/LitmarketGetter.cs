@@ -16,8 +16,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class LitmarketGetter : GetterBase {
-    public LitmarketGetter(BookGetterConfig config) : base(config) { }
+public class LitmarketGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://litmarket.ru");
     
     // cloudflare :(

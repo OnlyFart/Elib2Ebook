@@ -19,12 +19,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public abstract class GetterBase : IDisposable {
-    protected readonly BookGetterConfig Config;
-
-    protected GetterBase(BookGetterConfig config) {
-        Config = config;
-    }
+public abstract class GetterBase(BookGetterConfig config) : IDisposable {
+    protected readonly BookGetterConfig Config = config;
 
     protected abstract Uri SystemUrl { get; }
 

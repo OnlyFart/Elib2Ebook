@@ -8,9 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Builders; 
 
-public class TxtBuilder : BuilderBase {
-    public TxtBuilder(Options options, ILogger logger) : base(options, logger) { }
-
+public class TxtBuilder(Options options, ILogger logger) : BuilderBase(options, logger) {
     protected override string Extension => "txt";
 
     protected override async Task BuildInternal(Book book, string fileName) {

@@ -7,11 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Builders; 
 
-public class CbzBuilder : BuilderBase {
-    public CbzBuilder(Options options, ILogger logger) : base(options, logger) {
-        
-    }
-
+public class CbzBuilder(Options options, ILogger logger) : BuilderBase(options, logger) {
     protected override string Extension => "cbz";
 
     protected override async Task BuildInternal(Book book, string fileName) {

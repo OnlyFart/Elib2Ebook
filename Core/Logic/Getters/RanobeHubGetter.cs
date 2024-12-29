@@ -14,9 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class RanobeHubGetter : GetterBase {
-    public RanobeHubGetter(BookGetterConfig config) : base(config) { }
-    
+public class RanobeHubGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://ranobehub.org/");
     
     public override async Task<Book> Get(Uri url) {

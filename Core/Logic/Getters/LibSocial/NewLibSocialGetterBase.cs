@@ -19,9 +19,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.LibSocial;
 
-public abstract class NewLibSocialGetterBase : GetterBase{
-    protected NewLibSocialGetterBase(BookGetterConfig config) : base(config) { }
-    
+public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBase(config) {
     private static Uri AuthHost => new("https://auth.lib.social/");
 
     private static Uri ApiHost => new("https://api.mangalib.me/");

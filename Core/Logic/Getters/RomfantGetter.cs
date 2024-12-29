@@ -14,8 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class RomfantGetter : GetterBase {
-    public RomfantGetter(BookGetterConfig config) : base(config) { }
+public class RomfantGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://romfant.ru");
 
     /// <summary>

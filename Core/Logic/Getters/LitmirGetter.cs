@@ -13,8 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class LitmirGetter : GetterBase {
-    public LitmirGetter(BookGetterConfig config) : base(config) { }
+public class LitmirGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://litmir.me/");
 
     protected override string GetId(Uri url) => url.GetQueryParameter("b");

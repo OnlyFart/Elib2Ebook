@@ -11,9 +11,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class TwilightRussiaGetter : GetterBase {
-    public TwilightRussiaGetter(BookGetterConfig config) : base(config) { }
+public class TwilightRussiaGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://twilightrussia.ru/");
+    
     public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);
         url = SystemUrl.MakeRelativeUri($"/forum/{GetId(url)}");

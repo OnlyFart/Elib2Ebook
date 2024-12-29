@@ -16,8 +16,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class IGramGetter : GetterBase {
-    public IGramGetter(BookGetterConfig config) : base(config) { }
+public class IGramGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://i-gram.ru/");
 
     protected override string GetId(Uri url) => url.GetSegment(2);

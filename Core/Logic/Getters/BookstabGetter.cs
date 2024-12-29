@@ -14,8 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class BookstabGetter : GetterBase {
-    public BookstabGetter(BookGetterConfig config) : base(config) { }
+public class BookstabGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://bookstab.ru/");
 
     private Uri _apiUrl => new($"https://api.{SystemUrl.Host}/");

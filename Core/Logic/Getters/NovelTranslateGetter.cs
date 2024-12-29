@@ -11,8 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class NovelTranslateGetter : GetterBase {
-    public NovelTranslateGetter(BookGetterConfig config) : base(config) { }
+public class NovelTranslateGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://noveltranslate.com/");
 
     protected override string GetId(Uri url) {

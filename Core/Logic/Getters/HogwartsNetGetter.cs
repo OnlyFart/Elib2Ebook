@@ -14,8 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class HogwartsNetGetter : GetterBase {
-    public HogwartsNetGetter(BookGetterConfig config) : base(config) { }
+public class HogwartsNetGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://hogwartsnet.ru/");
     
     private static Encoding _encoding = Encoding.GetEncoding(1251);

@@ -17,8 +17,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class WuxiaWorldGetter : GetterBase {
-    public WuxiaWorldGetter(BookGetterConfig config) : base(config) { }
+public class WuxiaWorldGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://wuxiaworld.ru/");
     
     private async Task<Uri> GetMainUrl(Uri url) {

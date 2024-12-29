@@ -15,8 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters;
 
-public class NeobookGetter : GetterBase {
-    public NeobookGetter(BookGetterConfig config) : base(config) { }
+public class NeobookGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("http://neobook.org/");
 
     private Uri _apiUrl = new("https://api.neobook.org/");

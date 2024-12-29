@@ -16,9 +16,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.Rulate; 
 
-public abstract class RulateGetterBase : GetterBase {
-    public RulateGetterBase(BookGetterConfig config) : base(config) { }
-
+public abstract class RulateGetterBase(BookGetterConfig config) : GetterBase(config) {
     protected override string GetId(Uri url) => url.Segments.Length == 3 ? base.GetId(url) : url.GetSegment(2);
     
     protected abstract string Mature { get; }

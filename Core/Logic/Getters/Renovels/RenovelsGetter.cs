@@ -6,9 +6,7 @@ using HtmlAgilityPack;
 
 namespace Core.Logic.Getters.Renovels; 
 
-public class RenovelsGetter : RenovelsGetterBase {
-    public RenovelsGetter(BookGetterConfig config) : base(config) { }
-    
+public class RenovelsGetter(BookGetterConfig config) : RenovelsGetterBase(config) {
     protected override Uri SystemUrl => new("https://renovels.org/");
     
     protected override string Segment => "novel";

@@ -13,9 +13,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class ReadliGetter : GetterBase {
-    public ReadliGetter(BookGetterConfig config) : base(config) { }
+public class ReadliGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://readli.net");
+    
     public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);
 

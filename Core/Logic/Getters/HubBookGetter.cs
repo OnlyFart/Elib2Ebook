@@ -12,8 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class HubBookGetter : GetterBase {
-    public HubBookGetter(BookGetterConfig config) : base(config) { }
+public class HubBookGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://hub-book.com/");
 
     protected override string GetId(Uri url) => url.GetSegment(2);

@@ -9,15 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Builders;
 
-public class AdditionaFileBuilder  {
-    private readonly Options _options;
-    private readonly ILogger _logger;
-
-    public AdditionaFileBuilder(Options options, ILogger logger) {
-        _options = options;
-        _logger = logger;
-    }
-
+public class AdditionaFileBuilder(Options options, ILogger logger) {
     private void CreateDirectory(string directory) {
         if (!Directory.Exists(directory)) {
             Directory.CreateDirectory(directory);
@@ -25,35 +17,35 @@ public class AdditionaFileBuilder  {
     }
 
     public async Task Build(Book book) {
-        var additionalPath = BookNameBuilder.Build(_options.BookNamePattern, book);
-        if (!string.IsNullOrWhiteSpace(_options.SavePath)) {
-            additionalPath = Path.Combine(_options.SavePath, additionalPath);
+        var additionalPath = BookNameBuilder.Build(options.BookNamePattern, book);
+        if (!string.IsNullOrWhiteSpace(options.SavePath)) {
+            additionalPath = Path.Combine(options.SavePath, additionalPath);
         }
 
         CreateDirectory(additionalPath);
 
-        if (_options.HasAdditionalType(AdditionalTypeEnum.Images)) {
-            _logger.LogInformation("Начинаю сохранение изображений из книги");
+        if (options.HasAdditionalType(AdditionalTypeEnum.Images)) {
+            logger.LogInformation("Начинаю сохранение изображений из книги");
             foreach (var chapter in book.Chapters ?? []) {
                 if (!chapter.Images.Any()) {
-                    _logger.LogInformation($"В главе {chapter.Title.CoverQuotes()} нет изображений");
+                    logger.LogInformation($"В главе {chapter.Title.CoverQuotes()} нет изображений");
                     continue;
                 }
 
                 var subPath = Path.Combine(additionalPath, AdditionalTypeEnum.Images.ToString(), chapter.Title.RemoveInvalidChars());
                 CreateDirectory(subPath);
 
-                _logger.LogInformation($"Начинаю сохранение изображений из части {chapter.Title.CoverQuotes()}");
+                logger.LogInformation($"Начинаю сохранение изображений из части {chapter.Title.CoverQuotes()}");
                 var c = 0;
                 foreach (var image in chapter.Images) {
                     var fileName = Path.Combine(subPath, $"{++c}{Path.GetExtension(image.FullName)}".RemoveInvalidChars());
                     await File.WriteAllBytesAsync(fileName, image.Content);
                 }
 
-                _logger.LogInformation($"Cохранение изображений из части {chapter.Title.CoverQuotes()} завершено");
+                logger.LogInformation($"Cохранение изображений из части {chapter.Title.CoverQuotes()} завершено");
             }
 
-            _logger.LogInformation("Сохранение изображений из книги завешено");
+            logger.LogInformation("Сохранение изображений из книги завешено");
 
             if (book.Cover != default) {
                 var subPath = Path.Combine(additionalPath, AdditionalTypeEnum.Images.ToString());
@@ -65,7 +57,7 @@ public class AdditionaFileBuilder  {
         }
 
         if (book.AdditionalFiles.Collection.Count == 0) {
-            _logger.LogInformation("Нет дополнительных файлов");
+            logger.LogInformation("Нет дополнительных файлов");
             return;
         }
         
@@ -75,9 +67,9 @@ public class AdditionaFileBuilder  {
             
             foreach (var file in files.Value) {
                 var fileName = Path.Combine(subPath, file.FullName.RemoveInvalidChars());
-                _logger.LogInformation($"Начинаю сохранение дополнительного файла {fileName.CoverQuotes()}");
+                logger.LogInformation($"Начинаю сохранение дополнительного файла {fileName.CoverQuotes()}");
                 await File.WriteAllBytesAsync(fileName, file.Content);
-                _logger.LogInformation($"Cохранение дополнительного файла {fileName.CoverQuotes()} завершено");
+                logger.LogInformation($"Cохранение дополнительного файла {fileName.CoverQuotes()} завершено");
             }
         }
     }

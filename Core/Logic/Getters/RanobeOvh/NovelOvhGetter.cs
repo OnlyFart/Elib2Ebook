@@ -14,9 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.RanobeOvh; 
 
-public class NovelOvhGetter : RanobeOvhGetterBase {
-    public NovelOvhGetter(BookGetterConfig config) : base(config) { }
-    
+public class NovelOvhGetter(BookGetterConfig config) : RanobeOvhGetterBase(config) {
     protected override Uri SystemUrl => new("https://novel.ovh/");
     
     private static readonly Dictionary<string, string> RecursiveTag = new() {

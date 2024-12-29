@@ -16,9 +16,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class LitgorodGetter : GetterBase {
-    public LitgorodGetter(BookGetterConfig config) : base(config) { }
+public class LitgorodGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://litgorod.ru/");
+    
     public override async Task<Book> Get(Uri url) {
         url = SystemUrl.MakeRelativeUri($"/books/view/{GetId(url)}");
         Config.Client.DefaultRequestHeaders.Add("Referer", url.ToString());

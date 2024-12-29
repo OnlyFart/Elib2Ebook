@@ -17,9 +17,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters;
 
-public class StrokiMtsGetter : GetterBase {
-    public StrokiMtsGetter(BookGetterConfig config) : base(config) { }
-
+public class StrokiMtsGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://stroki.mts.ru/");
 
     protected override string GetId(Uri url) {

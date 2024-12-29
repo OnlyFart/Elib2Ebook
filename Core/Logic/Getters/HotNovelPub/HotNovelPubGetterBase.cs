@@ -14,8 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.HotNovelPub; 
 
-public abstract class HotNovelPubGetterBase : GetterBase {
-    public HotNovelPubGetterBase(BookGetterConfig config) : base(config) { }
+public abstract class HotNovelPubGetterBase(BookGetterConfig config) : GetterBase(config) {
     protected abstract string Lang { get; }
 
     private Uri _apiUrl => new($"https://api.{SystemUrl.Host}/");

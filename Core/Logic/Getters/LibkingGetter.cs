@@ -12,8 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters;
 
-public class LibkingGetter : GetterBase {
-    public LibkingGetter(BookGetterConfig config) : base(config) { }
+public class LibkingGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://libking.ru/");
 
     public override async Task<Book> Get(Uri url) {

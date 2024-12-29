@@ -14,8 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class DreameGetter : GetterBase {
-    public DreameGetter(BookGetterConfig config) : base(config) { }
+public class DreameGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://dreame.com/");
     
     private Uri _apiUrl => new($"https://wap-api.{SystemUrl.Host}/");

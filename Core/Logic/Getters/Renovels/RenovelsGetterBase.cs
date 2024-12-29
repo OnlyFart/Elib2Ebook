@@ -16,9 +16,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.Renovels; 
 
-public abstract class RenovelsGetterBase : GetterBase {
-    protected RenovelsGetterBase(BookGetterConfig config) : base(config) { }
-
+public abstract class RenovelsGetterBase(BookGetterConfig config) : GetterBase(config) {
     private Uri _apiUrl => new($"https://api.{SystemUrl.Host}/");
     
     protected abstract string Segment { get; }

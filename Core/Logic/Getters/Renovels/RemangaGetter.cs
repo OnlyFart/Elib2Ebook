@@ -9,9 +9,7 @@ using HtmlAgilityPack;
 
 namespace Core.Logic.Getters.Renovels; 
 
-public class RemangaGetter : RenovelsGetterBase {
-    public RemangaGetter(BookGetterConfig config) : base(config) { }
-    
+public class RemangaGetter(BookGetterConfig config) : RenovelsGetterBase(config) {
     protected override Uri SystemUrl => new("https://remanga.org/");
     
     protected override string Segment => "manga";

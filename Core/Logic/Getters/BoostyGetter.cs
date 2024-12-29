@@ -13,9 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters;
 
-public class BoostyGetter : GetterBase {
-    public BoostyGetter(BookGetterConfig config) : base(config) { }
-    
+public class BoostyGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://boosty.to/");
 
     private static Uri ApiUrl => new(" https://api.boosty.to/");

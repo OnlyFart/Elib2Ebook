@@ -13,8 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class BookurukGetter : GetterBase{
-    public BookurukGetter(BookGetterConfig config) : base(config) { }
+public class BookurukGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://bookuruk.com/");
 
     protected override string GetId(Uri url) {

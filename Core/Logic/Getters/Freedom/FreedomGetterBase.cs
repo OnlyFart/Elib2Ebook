@@ -12,9 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.Freedom; 
 
-public abstract class FreedomGetterBase : GetterBase{
-    protected FreedomGetterBase(BookGetterConfig config) : base(config) { }
-
+public abstract class FreedomGetterBase(BookGetterConfig config) : GetterBase(config) {
     public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);
         url = SystemUrl.MakeRelativeUri($"/ranobe/{GetId(url)}/");

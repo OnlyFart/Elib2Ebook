@@ -15,9 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters;
 
-public class MangaMammyGetter : GetterBase {
-    public MangaMammyGetter(BookGetterConfig config) : base(config) { }
-    
+public class MangaMammyGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://mangamammy.ru/");
     
     protected override string GetId(Uri url) => url.GetSegment(2);

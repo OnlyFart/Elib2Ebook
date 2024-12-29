@@ -14,8 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class MirKnigGetter : GetterBase {
-    public MirKnigGetter(BookGetterConfig config) : base(config) { }
+public class MirKnigGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://mir-knig.com/");
 
     protected override string GetId(Uri url) => base.GetId(url).Split('_').Last().Split('-').First();

@@ -13,16 +13,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Builders; 
 
-public class EpubBuilder : BuilderBase {
+public class EpubBuilder(Options options, ILogger logger) : BuilderBase(options, logger) {
     protected override string Extension => "epub";
     
-    private readonly EpubWriter _writer;
+    private readonly EpubWriter _writer = new();
 
     private List<TempFile> Images { get; set; } = new();
-
-    public EpubBuilder(Options options, ILogger logger) : base(options, logger) {
-        _writer = new EpubWriter();
-    }
 
     /// <summary>
     /// Создание Xhtml документа из кода части

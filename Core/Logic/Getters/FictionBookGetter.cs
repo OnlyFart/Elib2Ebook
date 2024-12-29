@@ -13,8 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class FictionBookGetter : GetterBase{
-    public FictionBookGetter(BookGetterConfig config) : base(config) { }
+public class FictionBookGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://fictionbook.ru");
     
     private Uri GetMainUrl(Uri url) {

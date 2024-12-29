@@ -13,8 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class AcomicsGetter : GetterBase {
-    public AcomicsGetter(BookGetterConfig config) : base(config) { }
+public class AcomicsGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://acomics.ru");
 
     protected override string GetId(Uri url) => url.GetSegment(1);

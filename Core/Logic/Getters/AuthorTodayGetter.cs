@@ -16,9 +16,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters;
 
-public class AuthorTodayGetter : GetterBase {
-    public AuthorTodayGetter(BookGetterConfig config) : base(config) { }
-
+public class AuthorTodayGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://author.today/");
     
     private Uri _apiUrl => new("https://api.author.today/");

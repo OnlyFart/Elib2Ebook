@@ -3,7 +3,6 @@ using Core.Configs;
 
 namespace Core.Logic.Getters.Freedom;
 
-public class FreedomGetter : FreedomGetterBase {
-    public FreedomGetter(BookGetterConfig config) : base(config) { }
+public class FreedomGetter(BookGetterConfig config) : FreedomGetterBase(config) {
     protected override Uri SystemUrl => new("https://ifreedom.su/");
 }

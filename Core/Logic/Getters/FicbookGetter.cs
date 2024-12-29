@@ -13,8 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class FicbookGetter : GetterBase {
-    public FicbookGetter(BookGetterConfig config) : base(config) { }
+public class FicbookGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://ficbook.net/");
 
     protected override string GetId(Uri url) => url.GetSegment(2);

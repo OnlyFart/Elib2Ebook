@@ -10,8 +10,7 @@ using HtmlAgilityPack.CssSelectors.NetCore;
 
 namespace Core.Logic.Getters.TopLiba; 
 
-public class BiglibaGetter : TopLibaGetterBase {
-    public BiglibaGetter(BookGetterConfig config) : base(config) { }
+public class BiglibaGetter(BookGetterConfig config) : TopLibaGetterBase(config) {
     protected override Uri SystemUrl => new("https://bigliba.com/");
 
     protected override Seria GetSeria(HtmlDocument doc, Uri url) {
