@@ -23,7 +23,7 @@ public abstract class RenovelsGetterBase : GetterBase {
     
     protected abstract string Segment { get; }
     
-    protected abstract HtmlDocument GetChapterAsHtml(RenovelsApiResponse<RenovelsChapter> response);
+    protected abstract HtmlDocument GetChapterAsHtml(RenovelsChapter response);
 
     protected override string GetId(Uri url) => url.GetSegment(2);
 
@@ -43,7 +43,7 @@ public abstract class RenovelsGetterBase : GetterBase {
             password = Config.Options.Password
         };
 
-        var response = await Config.Client.PostAsJsonAsync("https://api.recomics.org/api/users/login/".AsUri(), payload);
+        var response = await Config.Client.PostAsJsonAsync("https://api.renovels.org/api/users/login/".AsUri(), payload);
         var data = await response.Content.ReadFromJsonAsync<RenovelsApiResponse<JsonNode>>();
         if (string.IsNullOrWhiteSpace(data.Message)) {
             var auth = data.Content.Deserialize<RenovelsAuthResponse>();
@@ -70,17 +70,21 @@ public abstract class RenovelsGetterBase : GetterBase {
     }
     
     private Author GetAuthor(RenovelsContent content) {
-        if (content.Publishers.Length == 0) {
+        if (content.Branches.Length == 0) {
+            return new Author("Renovels");
+        }
+        
+        if (content.Branches[0].Publishers.Length == 0) {
             return new Author("Renovels");
         }
 
-        var author = content.Publishers[0];
+        var author = content.Branches[0].Publishers[0];
         return new Author(author.Name, SystemUrl.MakeRelativeUri($"/team/{author.Dir}"));
     }
 
     private async Task<RenovelsContent> GetContent(string bookId) {
-        var response = await Config.Client.GetFromJsonAsync<RenovelsApiResponse<RenovelsContent>>(_apiUrl.MakeRelativeUri($"/api/titles/{bookId}/"));
-        return response.Content;
+        var response = await Config.Client.GetFromJsonAsync<RenovelsContent>(_apiUrl.MakeRelativeUri($"/api/v2/titles/{bookId}/"));
+        return response;
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(RenovelsContent content, Uri url) {
@@ -91,8 +95,10 @@ public abstract class RenovelsGetterBase : GetterBase {
             
         foreach (var ranobeChapter in await GetToc(content)) {
             Config.Logger.LogInformation($"Загружаю главу {ranobeChapter.Title.CoverQuotes()}");
+            
             var chapter = new Chapter();
             var doc = await GetChapter(ranobeChapter);
+            
             chapter.Images = await GetImages(doc, url);
             chapter.Content = doc.DocumentNode.InnerHtml;
             chapter.Title = ranobeChapter.Title;
@@ -104,13 +110,13 @@ public abstract class RenovelsGetterBase : GetterBase {
     }
 
     private async Task<HtmlDocument> GetChapter(RenovelsChapter ranobeChapter) {
-        var makeRelativeUri = _apiUrl.MakeRelativeUri($"/api/titles/chapters/{ranobeChapter.Id}/");
-        var response = await Config.Client.GetFromJsonAsync<RenovelsApiResponse<RenovelsChapter>>(makeRelativeUri);
+        var makeRelativeUri = _apiUrl.MakeRelativeUri($"/api/v2/titles/chapters/{ranobeChapter.Id}/");
+        var response = await Config.Client.GetFromJsonAsync<RenovelsChapter>(makeRelativeUri);
         return GetChapterAsHtml(response);
     }
 
     private Task<TempFile> GetCover(RenovelsContent book, Uri bookUri) {
-        var imagePath = book.Img.GetValueOrDefault("high", null) ?? book.Img.FirstOrDefault().Value;
+        var imagePath = book.Cover.GetValueOrDefault("high", null) ?? book.Cover.FirstOrDefault().Value;
         return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(TempFile));
     }
 
@@ -118,11 +124,11 @@ public abstract class RenovelsGetterBase : GetterBase {
         var result = new List<RenovelsChapter>();
         
         for (var i = 1;; i++) {
-            var uri = _apiUrl.MakeRelativeUri($"/api/titles/chapters/?branch_id={content.Branches[0].Id}&ordering=-index&user_data=1&count=40&page={i}");
-            var response = await Config.Client.GetFromJsonAsync<RenovelsApiResponse<RenovelsChapter[]>>(uri);
-            result.AddRange(response!.Content);
+            var uri = _apiUrl.MakeRelativeUri($"/api/v2/titles/chapters/?branch_id={content.Branches[0].Id}&ordering=-index&user_data=1&count=40&page={i}");
+            var response = await Config.Client.GetFromJsonAsync<RenovelsTocResponse>(uri);
+            result.AddRange(response.Results);
 
-            if (response.Content.Length < 40) {
+            if (response.Results.Length < 40) {
                 result.Reverse();
                 return SliceToc(result.Where(c => !c.IsPaid || c.IsBought == true).ToList(), c => c.Name);
             }

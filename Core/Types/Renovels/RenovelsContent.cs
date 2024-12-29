@@ -4,8 +4,8 @@ using System.Text.Json.Serialization;
 namespace Core.Types.Renovels; 
 
 public class RenovelsContent {
-    [JsonPropertyName("img")]
-    public Dictionary<string, string> Img { get; set; }
+    [JsonPropertyName("cover")]
+    public Dictionary<string, string> Cover { get; set; }
     
     [JsonPropertyName("main_name")]
     public string MainName { get; set; }
@@ -21,7 +21,4 @@ public class RenovelsContent {
 
     [JsonPropertyName("branches")]
     public RenovelsBranch[] Branches { get; set; }
-    
-    [JsonPropertyName("publishers")]
-    public RenovelsPublisher[] Publishers { get; set; }
 }
