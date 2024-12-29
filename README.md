@@ -94,7 +94,7 @@
 
 Portable версии консольной утилиты запускаются без установленного NET Runtime. За настройку сборки Portalbe версий большая благодарность [@alfeg](https://github.com/alfeg)
 
-Для запуска не Portable версии консольной утилиты необходим установленный NET Runtime версии 8 или выше, который можно скачать с сайта Microsoft [здесь (на английском)](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
+Для запуска не Portable версии консольной утилиты необходим установленный NET Runtime версии 9 или выше, который можно скачать с сайта Microsoft [здесь (на английском)](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
 
 Web версия доступна для установки через [docker](https://www.docker.com)
 
