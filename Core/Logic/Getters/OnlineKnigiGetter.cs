@@ -12,8 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class OnlineKnigiGetter : GetterBase {
-    public OnlineKnigiGetter(BookGetterConfig config) : base(config) { }
+public class OnlineKnigiGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://online-knigi.com.ua/");
 
     protected override string GetId(Uri url) => url.GetSegment(2);

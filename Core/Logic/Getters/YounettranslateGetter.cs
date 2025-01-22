@@ -12,8 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters;
 
-public class YounettranslateGetter : GetterBase {
-    public YounettranslateGetter(BookGetterConfig config) : base(config) { }
+public class YounettranslateGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://younettranslate.com/");
 
     protected override string GetId(Uri url) {

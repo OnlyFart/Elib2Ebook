@@ -14,8 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class BookInBookGetter : GetterBase {
-    public BookInBookGetter(BookGetterConfig config) : base(config) { }
+public class BookInBookGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://bookinbook.ru/");
 
     protected override string GetId(Uri url) => url.GetQueryParameter("id");

@@ -12,8 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class BookinistGetter : GetterBase {
-    public BookinistGetter(BookGetterConfig config) : base(config) { }
+public class BookinistGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://bookinist.pw/");
     public override async Task<Book> Get(Uri url) {
         url = SystemUrl.MakeRelativeUri($"/book/{GetId(url)}");

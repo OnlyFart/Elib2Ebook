@@ -20,10 +20,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.Litnet;
 
-public abstract class LitnetGetterBase : GetterBase {
-    protected LitnetGetterBase(BookGetterConfig config) : base(config) { }
-
-    protected Uri ApiUrl => new($"https://api.{SystemUrl.Host}/");
+public abstract class LitnetGetterBase(BookGetterConfig config) : GetterBase(config) {
+    private Uri ApiUrl => new($"https://api.{SystemUrl.Host}/");
     
     //cloudflare :(
     protected virtual Uri ApiIp => ApiUrl;

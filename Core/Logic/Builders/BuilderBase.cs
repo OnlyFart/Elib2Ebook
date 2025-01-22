@@ -8,16 +8,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Builders; 
 
-public abstract class BuilderBase {
-    protected readonly Options Options;
-    protected readonly ILogger Logger;
+public abstract class BuilderBase(Options options, ILogger logger) {
+    protected readonly Options Options = options;
+    protected readonly ILogger Logger = logger;
 
     protected abstract string Extension { get;}
-
-    protected BuilderBase(Options options, ILogger logger) {
-        Options = options;
-        Logger = logger;
-    }
 
     /// <summary>
     ///  Создание файла

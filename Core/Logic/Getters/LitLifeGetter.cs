@@ -14,9 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters;
 
-public class LitLifeGetter : GetterBase {
-    public LitLifeGetter(BookGetterConfig config) : base(config) { }
-
+public class LitLifeGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://litlife.club/");
 
     protected override string GetId(Uri url) {

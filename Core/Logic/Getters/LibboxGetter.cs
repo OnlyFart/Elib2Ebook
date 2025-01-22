@@ -13,9 +13,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class LibboxGetter : GetterBase {
-    public LibboxGetter(BookGetterConfig config) : base(config) { }
+public class LibboxGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://libbox.ru/");
+    
     public override async Task<Book> Get(Uri url) {
         var bookId = GetId(url);
         url = SystemUrl.MakeRelativeUri($"/book/{bookId}");

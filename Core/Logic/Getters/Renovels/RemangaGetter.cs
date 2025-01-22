@@ -9,14 +9,15 @@ using HtmlAgilityPack;
 
 namespace Core.Logic.Getters.Renovels; 
 
-public class RemangaGetter : RenovelsGetterBase {
-    public RemangaGetter(BookGetterConfig config) : base(config) { }
+public class RemangaGetter(BookGetterConfig config) : RenovelsGetterBase(config) {
     protected override Uri SystemUrl => new("https://remanga.org/");
+    
     protected override string Segment => "manga";
-    protected override HtmlDocument GetChapterAsHtml(RenovelsApiResponse<RenovelsChapter> response) {
+    
+    protected override HtmlDocument GetChapterAsHtml(RenovelsChapter response) {
         var sb = new StringBuilder();
 
-        foreach (var obj in response.Content.Pages) {
+        foreach (var obj in response.Pages) {
             switch (obj) {
                 case JsonObject:
                     sb.Append($"<img src='{obj.Deserialize<RenovelsPage>().Link}'/>");

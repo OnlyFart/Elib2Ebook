@@ -9,9 +9,7 @@ using Core.Types.BookYandex;
 
 namespace Core.Logic.Getters.BooksYandex;
 
-public class BooksYandexComicsGetter : BooksYandexGetterBase {
-    public BooksYandexComicsGetter(BookGetterConfig config) : base(config) { }
-
+public class BooksYandexComicsGetter(BookGetterConfig config) : BooksYandexGetterBase(config) {
     protected override string[] Paths => ["comicbooks"];
 
     protected override async Task<IEnumerable<Chapter>> FillChapters(Book book, BooksYandexResponse response) {

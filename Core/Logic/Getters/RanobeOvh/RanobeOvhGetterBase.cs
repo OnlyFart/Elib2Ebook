@@ -15,9 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.RanobeOvh; 
 
-public abstract class RanobeOvhGetterBase : GetterBase {
-    protected RanobeOvhGetterBase(BookGetterConfig config) : base(config) { }
-
+public abstract class RanobeOvhGetterBase(BookGetterConfig config) : GetterBase(config) {
     protected override string GetId(Uri url) {
         return url.GetSegment(2);
     }

@@ -16,8 +16,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class FreedlitGetter : GetterBase{
-    public FreedlitGetter(BookGetterConfig config) : base(config) { }
+public class FreedlitGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://freedlit.space/");
 
     public override async Task Authorize() {

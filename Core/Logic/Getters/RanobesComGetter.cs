@@ -18,8 +18,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class RanobesComGetter : GetterBase {
-    public RanobesComGetter(BookGetterConfig config) : base(config) { }
+public class RanobesComGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://ranobes.com/");
 
     protected override string GetId(Uri url) => base.GetId(url).Split(".")[0];

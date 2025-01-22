@@ -15,9 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters;
 
-public class FanFicusGetter : GetterBase {
-    public FanFicusGetter(BookGetterConfig config) : base(config) { }
-
+public class FanFicusGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://fanficus.com/");
     
     private readonly Uri _apiHost = new("https://fanficus-server-mirror-879c30cd977f.herokuapp.com/");

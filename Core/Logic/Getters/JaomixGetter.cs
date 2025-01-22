@@ -13,8 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class JaomixGetter : GetterBase {
-    public JaomixGetter(BookGetterConfig config) : base(config) { }
+public class JaomixGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://jaomix.ru/");
 
     protected override string GetId(Uri url) => url.GetSegment(1);

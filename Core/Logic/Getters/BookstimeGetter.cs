@@ -17,9 +17,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class BookstimeGetter : GetterBase {
-    public BookstimeGetter(BookGetterConfig config) : base(config) { }
-    
+public class BookstimeGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://bookstime.ru/");
 
     protected override string GetId(Uri url) {

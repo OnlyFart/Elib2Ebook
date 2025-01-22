@@ -15,9 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.BooksYandex;
 
-public class BooksYandexBooksGetter : BooksYandexGetterBase {
-    public BooksYandexBooksGetter(BookGetterConfig config) : base(config) { }
-    
+public class BooksYandexBooksGetter(BookGetterConfig config) : BooksYandexGetterBase(config) {
     protected override string[] Paths => ["books", "audiobooks", "serials"];
 
     protected override async Task<IEnumerable<Chapter>> FillChapters(Book book, BooksYandexResponse response) {

@@ -12,9 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.LibSocial; 
 
-public class RanobeLibGetter : NewLibSocialGetterBase {
-    public RanobeLibGetter(BookGetterConfig config) : base(config) { }
-    
+public class RanobeLibGetter(BookGetterConfig config) : NewLibSocialGetterBase(config) {
     protected override Uri SystemUrl => new("https://ranobelib.me/");
     
     private static readonly Dictionary<string, string> RecursiveTag = new() {

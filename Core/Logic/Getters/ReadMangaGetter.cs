@@ -15,8 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class ReadMangaGetter : GetterBase {
-    public ReadMangaGetter(BookGetterConfig config) : base(config) { }
+public class ReadMangaGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://readmanga.live/");
 
     protected override string GetId(Uri url) => url.GetSegment(1);

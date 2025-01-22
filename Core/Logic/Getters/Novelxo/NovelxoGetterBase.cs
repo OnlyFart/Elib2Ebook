@@ -17,11 +17,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.Novelxo; 
 
-public abstract class NovelxoGetterBase : GetterBase {
+public abstract class NovelxoGetterBase(BookGetterConfig config) : GetterBase(config) {
     private static readonly byte[] Key = StringToByteArray("61626326312a7e235e325e2373305e3d295e5e3725623334");
     private static readonly byte[] IV = StringToByteArray("31323334353637383930383533373237");
-    
-    protected NovelxoGetterBase(BookGetterConfig config) : base(config) { }
 
     protected override string GetId(Uri url) => url.GetSegment(1);
 

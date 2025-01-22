@@ -22,8 +22,7 @@ using OAuth;
 
 namespace Core.Logic.Getters; 
 
-public class MyBookGetter : GetterBase {
-    public MyBookGetter(BookGetterConfig config) : base(config) { }
+public class MyBookGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://mybook.ru/");
 
     private const string CONSUMER_KEY = "830968793b2a44c688400319f4a77231";

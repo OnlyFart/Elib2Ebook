@@ -13,8 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class WattpadGetter : GetterBase {
-    public WattpadGetter(BookGetterConfig config) : base(config) { }
+public class WattpadGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://wattpad.com/");
 
     protected override string GetId(Uri url) => base.GetId(url).Split('-')[0];

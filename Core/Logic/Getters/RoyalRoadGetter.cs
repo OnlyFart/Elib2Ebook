@@ -12,8 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class RoyalRoadGetter : GetterBase {
-    public RoyalRoadGetter(BookGetterConfig config) : base(config) { }
+public class RoyalRoadGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://royalroad.com/");
 
     protected override string GetId(Uri url) => url.GetSegment(2);

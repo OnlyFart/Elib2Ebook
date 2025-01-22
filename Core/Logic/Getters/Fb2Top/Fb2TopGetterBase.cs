@@ -12,9 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters.Fb2Top; 
 
-public abstract class Fb2TopGetterBase : GetterBase {
-    protected Fb2TopGetterBase(BookGetterConfig config) : base(config) { }
-
+public abstract class Fb2TopGetterBase(BookGetterConfig config) : GetterBase(config) {
     protected override string GetId(Uri url) => url.GetSegment(1);
 
     public override async Task<Book> Get(Uri url) {

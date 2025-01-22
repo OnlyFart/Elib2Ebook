@@ -24,11 +24,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class LitresGetter : GetterBase {
+public class LitresGetter(BookGetterConfig config) : GetterBase(config) {
     private const string SECRET_KEY = "AsAAfdV000-1kksn6591x:[}A{}<><DO#Brn`BnB6E`^s\"ivP:RY'4|v\"h/r^]";
     private const string APP = "13";
-    
-    public LitresGetter(BookGetterConfig config) : base(config) { }
 
     protected override Uri SystemUrl => new("https://www.litres.ru");
     

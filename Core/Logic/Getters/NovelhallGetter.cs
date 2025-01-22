@@ -12,9 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters;
 
-public class NovelhallGetter : GetterBase {
-    public NovelhallGetter(BookGetterConfig config) : base(config) { }
-
+public class NovelhallGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://www.novelhall.com/");
 
     protected override string GetId(Uri url) {

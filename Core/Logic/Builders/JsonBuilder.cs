@@ -7,11 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Builders; 
 
-public class JsonBuilder : BuilderBase {
-    public JsonBuilder(Options options, ILogger logger) : base(options, logger) {
-        
-    }
-
+public class JsonBuilder(Options options, ILogger logger) : BuilderBase(options, logger) {
     protected override string Extension => "json";
 
     protected override async Task BuildInternal(Book book, string fileName) {

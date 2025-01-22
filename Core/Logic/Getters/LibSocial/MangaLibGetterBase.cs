@@ -6,9 +6,7 @@ using HtmlAgilityPack;
 
 namespace Core.Logic.Getters.LibSocial; 
 
-public abstract class MangaLibGetterBase : NewLibSocialGetterBase {
-    protected MangaLibGetterBase(BookGetterConfig config) : base(config) { }
-    
+public abstract class MangaLibGetterBase(BookGetterConfig config) : NewLibSocialGetterBase(config) {
     protected override HtmlDocument ResponseToHtmlDoc(SocialLibBookChapter chapterResponse) {
         var sb = new StringBuilder();
 

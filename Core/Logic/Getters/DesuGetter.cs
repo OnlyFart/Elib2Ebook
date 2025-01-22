@@ -15,8 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class DesuGetter : GetterBase {
-    public DesuGetter(BookGetterConfig config) : base(config) { }
+public class DesuGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://desu.me/");
 
     protected override string GetId(Uri url) {

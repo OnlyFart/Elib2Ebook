@@ -3,8 +3,6 @@ using Core.Configs;
 
 namespace Core.Logic.Getters.Novelxo; 
 
-public class NovelxoRuGetter : NovelxoGetterBase {
+public class NovelxoRuGetter(BookGetterConfig config) : NovelxoGetterBase(config) {
     protected override Uri SystemUrl => new("https://ru.novelxo.com");
-    
-    public NovelxoRuGetter(BookGetterConfig config) : base(config) { }
 }

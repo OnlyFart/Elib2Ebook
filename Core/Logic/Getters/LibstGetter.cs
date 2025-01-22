@@ -16,8 +16,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters; 
 
-public class LibstGetter : GetterBase {
-    public LibstGetter(BookGetterConfig config) : base(config) { }
+public class LibstGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://libst.ru/");
 
     protected override string GetId(Uri url) => url.GetQueryParameter("BookID") ?? base.GetId(url);

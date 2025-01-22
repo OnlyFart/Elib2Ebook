@@ -9,8 +9,7 @@ using HtmlAgilityPack;
 
 namespace Core.Logic.Getters.RanobeOvh; 
 
-public class MangaOvhGetter : RanobeOvhGetterBase {
-    public MangaOvhGetter(BookGetterConfig config) : base(config) { }
+public class MangaOvhGetter(BookGetterConfig config) : RanobeOvhGetterBase(config) {
     protected override Uri SystemUrl => new("https://manga.ovh/");
 
     protected override async Task<HtmlDocument> GetChapter(RanobeOvhChapterShort ranobeOvhChapterFull) {
