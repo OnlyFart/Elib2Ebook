@@ -49,27 +49,72 @@ internal static class Program {
                 await getter.Init();
                 await getter.Authorize();
 
-                foreach (var url in options.Url) {
-                    logger.LogInformation($"Начинаю генерацию книги {url.CoverQuotes()}");
-                    try {
-                        var book = await getter.Get(url.AsUri());
-                        foreach (var format in options.Format) {
-                            await BuilderProvider.Get(format, options, logger).Build(book);
-                        }
+                logger.LogInformation( GetterProvider.IsLibSocial( getter ) ? "lib.me" : "default" );
+                logger.LogInformation( options.SplitVolumes ? "split" : "monolit" );
 
-                        if (options.Additional) {
-                            await new AdditionaFileBuilder(options, logger).Build(book);
-                        }
+                if( GetterProvider.IsLibSocial( getter ) && options.SplitVolumes )
+                {
+                    foreach (var url in options.Url) {
+                        try {
+                            var originalBookNamePattern = options.BookNamePattern;
 
-                        if (!options.SaveTemp) {
-                            book.Dispose();
+                            var volumized = await getter.GetTocVolumized(url.AsUri());
+
+
+                            foreach (var volume in volumized)
+                            {
+                                var volume_number = (volume as dynamic).Number as string;
+
+                                options.Start = (volume as dynamic).Start;
+                                options.End = (volume as dynamic).End;
+                                options.BookNamePattern = string.Concat([volume_number, ". ", originalBookNamePattern]);
+
+                                var split_book = await getter.Get(url.AsUri());
+                                foreach (var format in options.Format) {
+                                    await BuilderProvider.Get(format, options, logger).Build(split_book);
+                                }
+                                if (!options.SaveTemp) {
+                                    split_book.Dispose();
+                                }
+                            }
+
+                            // var book = await getter.Get(url.AsUri());
+                            // if (options.Additional) {
+                            //     await new AdditionaFileBuilder(options, logger).Build(book);
+                            // }
+
+                        } catch (TaskCanceledException) {
+                            logger.LogInformation("Сервер не успевает ответить. Попробуйте увеличить Timeout с помощью параметра -t");
+                        } catch (Exception ex) {
+                            logger.LogInformation($"Генерация книги {url} завершилась с ошибкой. {ex}");
                         }
-                    } catch (TaskCanceledException) {
-                        logger.LogInformation("Сервер не успевает ответить. Попробуйте увеличить Timeout с помощью параметра -t");
-                    } catch (Exception ex) {
-                        logger.LogInformation($"Генерация книги {url} завершилась с ошибкой. {ex}");
                     }
                 }
+                else
+                {
+                    foreach (var url in options.Url) {
+                        logger.LogInformation($"Начинаю генерацию книги {url.CoverQuotes()}");
+                        try {
+                            var book = await getter.Get(url.AsUri());
+                            foreach (var format in options.Format) {
+                                await BuilderProvider.Get(format, options, logger).Build(book);
+                            }
+
+                            if (options.Additional) {
+                                await new AdditionaFileBuilder(options, logger).Build(book);
+                            }
+
+                            if (!options.SaveTemp) {
+                                book.Dispose();
+                            }
+                        } catch (TaskCanceledException) {
+                            logger.LogInformation("Сервер не успевает ответить. Попробуйте увеличить Timeout с помощью параметра -t");
+                        } catch (Exception ex) {
+                            logger.LogInformation($"Генерация книги {url} завершилась с ошибкой. {ex}");
+                        }
+                    }
+                }
+
             });
     }
 }

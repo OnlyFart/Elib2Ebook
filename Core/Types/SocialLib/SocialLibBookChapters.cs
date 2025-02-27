@@ -33,6 +33,9 @@ public class SocialLibBookChapter {
 
     [JsonPropertyName("number")]
     public string Number { get; set; }
+
+    [JsonPropertyName("item_number")]
+    public int ItemNumber { get; set; }
     
     [JsonPropertyName("branches")]
     public List<SocialLibChapterBranch> Branches { get; set; }

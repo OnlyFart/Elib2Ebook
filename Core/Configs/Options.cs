@@ -74,6 +74,12 @@ public class Options {
     
     [Option("book-name-pattern", Required = false, HelpText = "Шаблон имени файла.", Default = "{Author.Name} - {Book.Title}")]
     public string BookNamePattern { get; set; }
+
+    [Option("split-volumes", Required = false, HelpText = "Разбивать по томам с сайтов lib.me")]
+    public bool SplitVolumes { get; set; }
+
+    // [Option("split-chapters", Required = false, HelpText = "Разбивать по главам с сайтов lib.me")]
+    // public bool SplitChapters { get; set; }
     
     public bool HasAdditionalType(AdditionalTypeEnum type) => Additional && (AdditionalTypes == default || !AdditionalTypes.Any() || AdditionalTypes.Contains(type));
 

@@ -158,6 +158,44 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
         return SliceToc(result, c => c.Name);
     }
 
+    public override async Task<List<object>> GetTocVolumized(Uri url) {
+        var bid = url.GetQueryParameter("bid");
+        var details = await GetBookDetails(url);
+
+        var chapters = await GetToc(details, bid);
+
+        Config.Logger.LogInformation("Разбиваю на тома");
+
+        var volumes = new List<object>();
+        var volume = new SocialLibVolume();
+
+        string last_volume_number = null;
+
+        foreach( var chapter in chapters )
+        {
+            if( chapter.Volume != last_volume_number )
+            {
+                if( volume.Start != null && volume.Number != "" )
+                {
+                    volumes.Add(volume);
+                }
+                volume = new SocialLibVolume
+                {
+                    Start = chapter.ItemNumber,
+                    Number = chapter.Volume
+                };
+                last_volume_number = chapter.Volume;
+            }
+            volume.End = chapter.ItemNumber;
+        }
+        if( volume.Start != null )
+        {
+            volumes.Add(volume);
+        }
+
+        return volumes;
+    }
+
     private Author GetAuthor(RanobeLibBookDetails details) {
         var author = details.Data.Authors.FirstOrDefault();
         return author == default ? new Author("Ranobelib") : new Author(author.Name, SystemUrl.MakeRelativeUri($"/ru/people/{author.SlugUrl}"));
