@@ -50,7 +50,7 @@ internal static class Program {
                 await getter.Authorize();
 
                 logger.LogInformation( GetterProvider.IsLibSocial( getter ) ? "lib.me" : "default" );
-                logger.LogInformation( options.SplitVolumes ? "split" : "monolit" );
+                logger.LogInformation( (options.SplitVolumes || options.SplitChapters) ? "split" : "monolit" );
 
                 if( GetterProvider.IsLibSocial( getter ) && options.SplitVolumes )
                 {
@@ -60,14 +60,58 @@ internal static class Program {
 
                             var volumized = await getter.GetTocVolumized(url.AsUri());
 
-
                             foreach (var volume in volumized)
                             {
                                 var volume_number = (volume as dynamic).Number as string;
 
                                 options.Start = (volume as dynamic).Start;
                                 options.End = (volume as dynamic).End;
-                                options.BookNamePattern = string.Concat([volume_number, ". ", originalBookNamePattern]);
+                                options.BookNamePattern = string.Concat(["Volume ", volume_number, ". ", originalBookNamePattern]);
+
+                                logger.LogInformation($"Загружаю том {volume_number}");
+
+                                var split_book = await getter.Get(url.AsUri());
+                                foreach (var format in options.Format) {
+                                    await BuilderProvider.Get(format, options, logger).Build(split_book);
+                                }
+                                if (!options.SaveTemp) {
+                                    split_book.Dispose();
+                                }
+                            }
+
+                            // var book = await getter.Get(url.AsUri());
+                            // if (options.Additional) {
+                            //     await new AdditionaFileBuilder(options, logger).Build(book);
+                            // }
+
+                        } catch (TaskCanceledException) {
+                            logger.LogInformation("Сервер не успевает ответить. Попробуйте увеличить Timeout с помощью параметра -t");
+                        } catch (Exception ex) {
+                            logger.LogInformation($"Генерация книги {url} завершилась с ошибкой. {ex}");
+                        }
+                    }
+                }
+                else if( GetterProvider.IsLibSocial( getter ) && options.SplitChapters )
+                {
+                    foreach (var url in options.Url) {
+                        try {
+                            var originalBookNamePattern = options.BookNamePattern;
+                            var originalSavePath = options.SavePath;
+
+                            var chaptered = await getter.GetTocChaptered(url.AsUri());
+
+                            foreach (var chapter in chaptered)
+                            {
+                                var chapter_index = (chapter as dynamic).Index;
+                                var chapter_number = (chapter as dynamic).Number as string;
+                                var volume_number = (chapter as dynamic).Volume as string;
+
+                                options.Start = chapter_index;
+                                options.End = chapter_index;
+                                options.SavePath = originalSavePath + $"\\Volume {volume_number}";
+                                options.BookNamePattern = $"Chapter {chapter_number}";
+
+                                logger.LogInformation($"Загружаю главу {chapter_number}");
 
                                 var split_book = await getter.Get(url.AsUri());
                                 foreach (var format in options.Format) {

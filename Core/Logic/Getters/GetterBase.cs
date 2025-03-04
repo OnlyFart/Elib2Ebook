@@ -341,6 +341,10 @@ public abstract class GetterBase(BookGetterConfig config) : IDisposable {
         var x = new List<object>();
         return Task.FromResult(x);
     }
+    public virtual Task<List<object>> GetTocChaptered(Uri url) {
+        var x = new List<object>();
+        return Task.FromResult(x);
+    }
         
     public virtual Task Init() {
         Config.Client.DefaultRequestVersion = HttpVersion.Version20;

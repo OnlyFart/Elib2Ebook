@@ -78,8 +78,8 @@ public class Options {
     [Option("split-volumes", Required = false, HelpText = "Разбивать по томам с сайтов lib.me")]
     public bool SplitVolumes { get; set; }
 
-    // [Option("split-chapters", Required = false, HelpText = "Разбивать по главам с сайтов lib.me")]
-    // public bool SplitChapters { get; set; }
+    [Option("split-chapters", Required = false, HelpText = "Разбивать по главам с сайтов lib.me")]
+    public bool SplitChapters { get; set; }
     
     public bool HasAdditionalType(AdditionalTypeEnum type) => Additional && (AdditionalTypes == default || !AdditionalTypes.Any() || AdditionalTypes.Contains(type));
 

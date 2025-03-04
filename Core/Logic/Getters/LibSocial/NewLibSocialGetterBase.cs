@@ -167,7 +167,7 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
         Config.Logger.LogInformation("Разбиваю на тома");
 
         var volumes = new List<object>();
-        var volume = new SocialLibVolume();
+        var volume = new SocialLibTocVolume();
 
         string last_volume_number = null;
 
@@ -179,7 +179,7 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
                 {
                     volumes.Add(volume);
                 }
-                volume = new SocialLibVolume
+                volume = new SocialLibTocVolume
                 {
                     Start = chapter.ItemNumber,
                     Number = chapter.Volume
@@ -194,6 +194,30 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
         }
 
         return volumes;
+    }
+
+    public override async Task<List<object>> GetTocChaptered(Uri url) {
+        var bid = url.GetQueryParameter("bid");
+        var details = await GetBookDetails(url);
+
+        var chapters = await GetToc(details, bid);
+
+        Config.Logger.LogInformation("Разбиваю на главы");
+
+        var toc_chapters = new List<object>();
+
+        foreach( var chapter in chapters )
+        {
+            var toc_chapter = new SocialLibTocChapter
+            {
+                Index = chapter.ItemNumber,
+                Number = chapter.Number,
+                Volume = chapter.Volume
+            };
+            toc_chapters.Add(toc_chapter);
+        }
+
+        return toc_chapters;
     }
 
     private Author GetAuthor(RanobeLibBookDetails details) {
