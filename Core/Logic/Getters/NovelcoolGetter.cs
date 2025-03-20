@@ -148,7 +148,8 @@ public class NovelcoolGetter(BookGetterConfig config) : GetterBase(config) {
 
     private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
         var chapters = doc.QuerySelectorAll("div.chapter-item-list div.chp-item a[href]").Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.Attributes["title"].Value)).ToList();
-        return SliceToc(chapters, c => c.Title).Reverse();
+        chapters.Reverse();
+        return SliceToc(chapters, c => c.Title);
     }
 
     private static string GetAnnotation(HtmlDocument doc) {
