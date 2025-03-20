@@ -15,7 +15,11 @@ public static class GetterProvider {
                throw new ArgumentException($"Сайт {url.Host} не поддерживается");
     }
     
-    public static bool IsLibSocial( GetterBase builder ) {
+    public static bool IsChapterable( GetterBase builder ) {
+        return builder is Core.Logic.Getters.LibSocial.NewLibSocialGetterBase || builder is Core.Logic.Getters.NovelcoolGetter;
+    }
+    
+    public static bool IsVolumable( GetterBase builder ) {
         return builder is Core.Logic.Getters.LibSocial.NewLibSocialGetterBase;
     }
 }

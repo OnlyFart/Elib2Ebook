@@ -16,6 +16,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Core.Logic.Getters;
 
+public class NovelcoolTocChapter: object {
+    public int Index { get; set; }
+    public string Number { get; set; }
+    public string Volume { get; set; }
+}
+
 public class NovelcoolGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://ru.novelcool.com/");
     protected Uri DataUrl => new("https://www.mastertheenglish.com/");
@@ -115,9 +121,34 @@ public class NovelcoolGetter(BookGetterConfig config) : GetterBase(config) {
         return sb.AsHtmlDoc();
     }
 
+    public override async Task<List<object>> GetTocChaptered(Uri url) {
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
+
+        var chapters = GetToc(doc, url);
+
+        Config.Logger.LogInformation("Разбиваю на главы");
+
+        var toc_chapters = new List<object>();
+
+        var index = 0;
+        foreach( var chapter in chapters )
+        {
+            var toc_chapter = new NovelcoolTocChapter
+            {
+                Index = index,
+                Number = index.ToString(),
+                Volume = "0"
+            };
+            toc_chapters.Add(toc_chapter);
+            index++;
+        }
+
+        return toc_chapters;
+    }
+
     private IEnumerable<UrlChapter> GetToc(HtmlDocument doc, Uri url) {
         var chapters = doc.QuerySelectorAll("div.chapter-item-list div.chp-item a[href]").Select(a => new UrlChapter(url.MakeRelativeUri(a.Attributes["href"].Value), a.Attributes["title"].Value)).ToList();
-        return SliceToc(chapters, c => c.Title);
+        return SliceToc(chapters, c => c.Title).Reverse();
     }
 
     private static string GetAnnotation(HtmlDocument doc) {
