@@ -123,7 +123,6 @@ public abstract class RenovelsGetterBase(BookGetterConfig config) : GetterBase(c
         
         for (var i = 1;; i++) {
             var uri = _apiUrl.MakeRelativeUri($"/api/v2/titles/chapters/?branch_id={content.Branches[0].Id}&ordering=-index&user_data=1&count=40&page={i}");
-            Config.Logger.LogInformation($"Loading page: {uri}");
             var response = await Config.Client.GetFromJsonAsync<RenovelsTocResponse>(uri);
             result.AddRange(response.Results);
 

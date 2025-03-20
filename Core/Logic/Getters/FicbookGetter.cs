@@ -18,6 +18,15 @@ public class FicbookGetter(BookGetterConfig config) : GetterBase(config) {
 
     protected override string GetId(Uri url) => url.GetSegment(2);
 
+    public override Task Init() {
+        Config.Client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Linux; Android 14; SAMSUNG SM-T970; 1024x768) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/22.0 Chrome/112.4199.25.29 Mobile Safari/537.36");
+        Config.Client.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+        Config.Client.DefaultRequestHeaders.Add("Accept-Language", "ru");
+        Config.Client.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br");
+        Config.Client.DefaultRequestHeaders.Add("Referer", SystemUrl.ToString());
+        return Task.CompletedTask;
+    }
+
     public override async Task<Book> Get(Uri url) {
         url = SystemUrl.MakeRelativeUri($"/readfic/{GetId(url)}");
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);

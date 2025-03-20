@@ -23,6 +23,15 @@ public class RanobesComGetter(BookGetterConfig config) : GetterBase(config) {
 
     protected override string GetId(Uri url) => base.GetId(url).Split(".")[0];
 
+    public override Task Init() {
+        Config.Client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Linux; Android 7.0; SAMSUNG SM-T715) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/21.0 Chrome/110.0.5481.154 Mobile Safari/537.36");
+        Config.Client.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+        Config.Client.DefaultRequestHeaders.Add("Accept-Language", "ru");
+        Config.Client.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br");
+        Config.Client.DefaultRequestHeaders.Add("Referer", SystemUrl.ToString());
+        return Task.CompletedTask;
+    }
+
     public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);
         url = SystemUrl.MakeRelativeUri($"/ranobe/{GetId(url)}.html");
@@ -73,11 +82,13 @@ public class RanobesComGetter(BookGetterConfig config) : GetterBase(config) {
             { "xxx", string.Empty },
         };
         
+        Config.Client.DefaultRequestHeaders.Remove("Referer");
         Config.Client.DefaultRequestHeaders.Add("Referer", referrer.ToString());
         var post = await Config.Client.PostAsync(SystemUrl.MakeRelativeUri("antibot8/ab.php"), new FormUrlEncodedContent(data));
         var cookie = await post.Content.ReadFromJsonAsync<RanobesCookie>();
         Config.CookieContainer.Add(SystemUrl, new Cookie($"antibot_{antibot}", cookie.Cookie + "-" + date));
         Config.Client.DefaultRequestHeaders.Remove("Referer");
+        Config.Client.DefaultRequestHeaders.Add("Referer", SystemUrl.ToString());
     }
 
     private async Task<Uri> GetMainUrl(Uri url) {
@@ -133,11 +144,16 @@ public class RanobesComGetter(BookGetterConfig config) : GetterBase(config) {
 
     private Uri GetTocLink(HtmlDocument doc, Uri uri) {
         var relativeUri = doc.QuerySelector("div.r-fullstory-btns a[title~=оглавление]").Attributes["href"].Value.HtmlDecode();
+
         if (!relativeUri.Contains("chapters")) {
             relativeUri = $"/chapters/{string.Join("-", GetId(uri).Split(".")[0].Split("-").Skip(1))}";
         }
+
+        return SystemUrl.MakeRelativeUri(relativeUri);
         
-        return uri.MakeRelativeUri(relativeUri.AsUri().AbsolutePath.Trim('/'));
+        // return uri.MakeRelativeUri(
+        //     relativeUri.AsUri().AbsolutePath.Trim('/')
+        // );
     }
         
     private async Task<IEnumerable<UrlChapter>> GetToc(Uri tocUri) {
