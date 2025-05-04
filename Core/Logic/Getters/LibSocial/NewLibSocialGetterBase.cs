@@ -22,7 +22,7 @@ namespace Core.Logic.Getters.LibSocial;
 public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBase(config) {
     private static Uri AuthHost => new("https://auth.lib.social/");
 
-    private static Uri ApiHost => new("https://api.mangalib.me/");
+    private static Uri ApiHost => new("https://api.lib.social/");
 
     private static Uri BaseImageHost => new("https://cover.imglib.info/");
     
@@ -156,6 +156,68 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
         }
         
         return SliceToc(result, c => c.Name);
+    }
+
+    public override async Task<List<object>> GetTocVolumized(Uri url) {
+        var bid = url.GetQueryParameter("bid");
+        var details = await GetBookDetails(url);
+
+        var chapters = await GetToc(details, bid);
+
+        Config.Logger.LogInformation("Разбиваю на тома");
+
+        var volumes = new List<object>();
+        var volume = new SocialLibTocVolume();
+
+        string last_volume_number = null;
+
+        foreach( var chapter in chapters )
+        {
+            if( chapter.Volume != last_volume_number )
+            {
+                if( volume.Start != null && volume.Number != "" )
+                {
+                    volumes.Add(volume);
+                }
+                volume = new SocialLibTocVolume
+                {
+                    Start = chapter.ItemNumber,
+                    Number = chapter.Volume
+                };
+                last_volume_number = chapter.Volume;
+            }
+            volume.End = chapter.ItemNumber;
+        }
+        if( volume.Start != null )
+        {
+            volumes.Add(volume);
+        }
+
+        return volumes;
+    }
+
+    public override async Task<List<object>> GetTocChaptered(Uri url) {
+        var bid = url.GetQueryParameter("bid");
+        var details = await GetBookDetails(url);
+
+        var chapters = await GetToc(details, bid);
+
+        Config.Logger.LogInformation("Разбиваю на главы");
+
+        var toc_chapters = new List<object>();
+
+        foreach( var chapter in chapters )
+        {
+            var toc_chapter = new SocialLibTocChapter
+            {
+                Index = chapter.ItemNumber,
+                Number = chapter.Number,
+                Volume = chapter.Volume
+            };
+            toc_chapters.Add(toc_chapter);
+        }
+
+        return toc_chapters;
     }
 
     private Author GetAuthor(RanobeLibBookDetails details) {

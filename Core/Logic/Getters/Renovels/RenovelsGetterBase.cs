@@ -126,7 +126,7 @@ public abstract class RenovelsGetterBase(BookGetterConfig config) : GetterBase(c
             var response = await Config.Client.GetFromJsonAsync<RenovelsTocResponse>(uri);
             result.AddRange(response.Results);
 
-            if (response.Results.Length < 40) {
+            if (response.Results.Length < 40 || string.IsNullOrWhiteSpace(response.Next) ) {
                 result.Reverse();
                 return SliceToc(result.Where(c => !c.IsPaid || c.IsBought == true).ToList(), c => c.Name);
             }

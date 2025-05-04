@@ -14,4 +14,12 @@ public static class GetterProvider {
                    .FirstOrDefault(g => g!.IsSameUrl(url)) ??
                throw new ArgumentException($"Сайт {url.Host} не поддерживается");
     }
+    
+    public static bool IsChapterable( GetterBase builder ) {
+        return builder is Core.Logic.Getters.LibSocial.NewLibSocialGetterBase || builder is Core.Logic.Getters.NovelcoolGetter;
+    }
+    
+    public static bool IsVolumable( GetterBase builder ) {
+        return builder is Core.Logic.Getters.LibSocial.NewLibSocialGetterBase;
+    }
 }
