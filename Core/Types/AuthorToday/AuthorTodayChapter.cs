@@ -1,4 +1,7 @@
+using System;
+using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -29,13 +32,24 @@ public class AuthorTodayChapter {
     [JsonPropertyName("code")]
     public string Code { get; set; }
 
-    public string Decode(string userId) {
-        var secret = string.Join("", Key.Reverse()) + "@_@" + userId;
-        var sb = new StringBuilder();
-        for (var i = 0; i < Text.Length; i++) {
-            sb.Append((char) (Text[i] ^ secret[i % secret.Length]));
-        }
+    public string Decode(string userId, string cert) {
+        var secret = $"{string.Concat(Key.Reverse())}:{(string.IsNullOrWhiteSpace(userId) ? "Guest" : userId)}:{"FjPg]{2+$8JRvv~("}:{cert}";
+        var hashSecret = Convert.ToHexString(MD5.HashData(Encoding.UTF8.GetBytes(secret)));
+        
+        using var aes = Aes.Create();
+        const int IV_SHIFT = 16;
 
-        return sb.ToString();
+        var aesKey = Encoding.UTF8.GetBytes(hashSecret)[..IV_SHIFT];
+        
+        aes.Key = aesKey; 
+        aes.IV = aesKey;
+
+        using var ms = new MemoryStream(Convert.FromBase64String(Text));
+        using var cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Read);
+        
+        var output = new MemoryStream();
+        cs.CopyTo(output);
+
+        return Encoding.UTF8.GetString(output.ToArray());
     }
 }

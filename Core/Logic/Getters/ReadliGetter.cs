@@ -16,6 +16,14 @@ namespace Core.Logic.Getters;
 public class ReadliGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://readli.net");
     
+    // cloudflare :(
+    private readonly Uri _host = new("https://213.227.140.81/");
+
+    public override async Task Init() {
+        await base.Init();
+        Config.Client.DefaultRequestHeaders.Add("Host", SystemUrl.Host);
+    }
+    
     public override async Task<Book> Get(Uri url) {
         url = await GetMainUrl(url);
 
@@ -74,17 +82,17 @@ public class ReadliGetter(BookGetterConfig config) : GetterBase(config) {
 
     private async Task<Uri> GetMainUrl(Uri url) {
         if (GetId(url).StartsWith("chitat-online", StringComparison.InvariantCultureIgnoreCase)) {
-            var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"/chitat-online/?b={GetBookId(url)}"));
+            var doc = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"/chitat-online/?b={GetBookId(url)}").ReplaceHost(_host.Host));
             var href = doc.QuerySelector("h1 a").Attributes["href"].Value;
-            return url.MakeRelativeUri(href);
+            return url.MakeRelativeUri(href).ReplaceHost(_host.Host);
         }
 
-        return url;
+        return url.ReplaceHost(_host.Host);
     }
 
     private Task<TempFile> GetCover(HtmlNode doc, Uri bookUri) {
         var imagePath = doc.QuerySelector("img")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(TempFile));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath).ReplaceHost(_host.Host)) : Task.FromResult(default(TempFile));
     }
 
     private async Task AddChapter(ICollection<Chapter> chapters, Chapter chapter, StringBuilder text) {
@@ -93,7 +101,7 @@ public class ReadliGetter(BookGetterConfig config) : GetterBase(config) {
         }
         
         var chapterDoc = text.AsHtmlDoc();
-        chapter.Images = await GetImages(chapterDoc, SystemUrl.MakeRelativeUri("/chitat-online/"));
+        chapter.Images = await GetImages(chapterDoc, SystemUrl.MakeRelativeUri("/chitat-online/").ReplaceHost(_host.Host));
         chapter.Content = chapterDoc.DocumentNode.InnerHtml;
         chapters.Add(chapter);
     }
@@ -110,7 +118,7 @@ public class ReadliGetter(BookGetterConfig config) : GetterBase(config) {
     }
 
     private async Task<HtmlDocument> GetChapter(string bookId, int page) {
-        var response = await Config.Client.GetWithTriesAsync(SystemUrl.MakeRelativeUri($"/chitat-online/?b={bookId}&pg={page}"));
+        var response = await Config.Client.GetWithTriesAsync(SystemUrl.MakeRelativeUri($"/chitat-online/?b={bookId}&pg={page}").ReplaceHost(_host.Host));
         if (response == default) {
             return default;
         }

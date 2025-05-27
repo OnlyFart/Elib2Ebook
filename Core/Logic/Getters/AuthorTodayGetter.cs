@@ -5,6 +5,8 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
@@ -41,9 +43,18 @@ public class AuthorTodayGetter(BookGetterConfig config) : GetterBase(config) {
 
     protected override string GetId(Uri url) => url.GetSegment(2);
 
-    public override async Task Init() {
-        await base.Init();
+    private const string AT_CERT = "rmy8LDkVZR+pSXopxUte7hFbA6I=";
 
+    private string hashedCert => Convert.ToHexString(SHA1.HashData(Encoding.UTF8.GetBytes(AT_CERT))).ToUpper();
+
+    public override async Task Init() {
+        Config.Client.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+        Config.Client.DefaultRequestHeaders.Add("Accept-Language", "ru");
+        Config.Client.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br");
+        Config.Client.DefaultRequestHeaders.Add("User-Agent", "okhttp/4.12.0 X_AT_API");
+        Config.Client.DefaultRequestHeaders.Add("X-AT-Client", "android_1.8.013-GMS");
+        Config.Client.DefaultRequestHeaders.Add("X-AT-Certificate", hashedCert);
+        
         var response = await Config.Client.GetAsync(_apiUrl);
         _bypass = response.StatusCode != HttpStatusCode.OK;
         Config.Logger.LogInformation(_bypass ? 
@@ -179,7 +190,7 @@ public class AuthorTodayGetter(BookGetterConfig config) : GetterBase(config) {
             };
 
             if (atChapter.IsSuccessful) {
-                var chapterDoc = atChapter.Decode(UserId).AsHtmlDoc();
+                var chapterDoc = atChapter.Decode(UserId, AT_CERT).AsHtmlDoc();
                 chapter.Images = await GetImages(chapterDoc, SystemUrl);
                 chapter.Content = chapterDoc.DocumentNode.InnerHtml;
             }

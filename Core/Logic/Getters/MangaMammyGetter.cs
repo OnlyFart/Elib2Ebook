@@ -77,23 +77,17 @@ public class MangaMammyGetter(BookGetterConfig config) : GetterBase(config) {
 
     private async Task<HtmlDocument> GetChapter(UrlChapter urlChapter) {
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(urlChapter.Url);
-        var json = Regex.Match(doc.ParsedText, @"chapter_preloaded_images = (?<data>\[(.*)\]),").Groups["data"].Value.Deserialize<JsonArray>();
+
+        var images = doc
+            .QuerySelectorAll("img.wp-manga-chapter-img")
+            .Select(img => img.Attributes["src"].Value)
+            .ToList();
 
         var sb = new StringBuilder();
 
-        foreach (var elem in json) {
-            switch (elem) {
-                case JsonArray images: {
-                    foreach (var image in images) {
-                        sb.Append($"<img src='{image.ToString()}'/>");
-                    }
-
-                    break;
-                }
-                default:
-                    sb.Append($"<img src='{elem.ToString()}'/>");
-                    break;
-            }
+        foreach (var image in images)
+        {
+            sb.Append($"<img src='{image}'/>");
         }
 
         return sb.AsHtmlDoc();
