@@ -20,7 +20,7 @@ public class LibrebookGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://librebook.me/");
 
     public override bool IsSameUrl(Uri url) {
-        return SystemUrl.IsSameSubDomain(SystemUrl);
+        return url.IsSameSubDomain(SystemUrl);
     }
 
      protected override string GetId(Uri url) {
