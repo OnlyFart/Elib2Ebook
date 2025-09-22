@@ -109,6 +109,9 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
 
         await Config.Client.PostHtmlDocWithTriesAsync(AuthHost.MakeRelativeUri("/auth/login"), new FormUrlEncodedContent(payload));
         var login = await Config.Client.GetHtmlDocWithTriesAsync(challengeUrl);
+        if (login.QuerySelector(".g-recaptcha") != default) {
+            throw new Exception("Авторизация заблокирована капчей. Укажите --flare с адресом FlareSolverr");
+        }
         var error = login.QuerySelector(".form-field__error");
         if (error != default && !string.IsNullOrWhiteSpace(error.InnerText)) {
             throw new Exception($"Не удалось авторизоваться. {error.InnerText.Trim()}");
@@ -124,6 +127,9 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
             .ToDictionary(input => input.Attributes["name"].Value, input => input.Attributes["value"].Value);
         
         using var authorize = await Config.Client.PostAsync(AuthHost.MakeRelativeUri(postForm.Attributes["action"].Value), new FormUrlEncodedContent(payload));
+        if ((int)authorize.StatusCode == 419) {
+            throw new Exception("Авторизация отклонена (код 419). Обычно это означает истекший CSRF токен или необходимость пройти капчу. Попробуйте указать --flare");
+        }
         if (authorize == default || authorize.RequestMessage?.RequestUri == default) {
             throw new Exception("Сайт не вернул код авторизации (проверьте логин/пароль)");
         }
