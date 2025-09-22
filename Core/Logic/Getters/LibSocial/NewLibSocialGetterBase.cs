@@ -31,6 +31,25 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
     private const string ALPHABET_BASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private const string ALPHABET_CHALLENGE = ALPHABET_BASE + "-_";
 
+    protected abstract int SiteId { get; }
+
+    public override async Task Init() {
+        await base.Init();
+
+        Config.Client.DefaultRequestHeaders.Remove("Site-Id");
+        Config.Client.DefaultRequestHeaders.Add("Site-Id", SiteId.ToString());
+
+        try {
+            var timeZoneId = TimeZoneInfo.Local.Id;
+            Config.Client.DefaultRequestHeaders.Remove("Client-Time-Zone");
+            Config.Client.DefaultRequestHeaders.Add("Client-Time-Zone", timeZoneId);
+        } catch (TimeZoneNotFoundException) {
+            // Игнорируем: таймзона влияет только на аналитические метрики сайта
+        } catch (InvalidTimeZoneException) {
+            // Игнорируем: таймзона влияет только на аналитические метрики сайта
+        }
+    }
+
     private static string TrimForLog(string value, int maxLength = 300) {
         if (string.IsNullOrWhiteSpace(value)) {
             return string.Empty;
