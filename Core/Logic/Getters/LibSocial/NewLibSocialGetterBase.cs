@@ -77,35 +77,67 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
         var challengeUrl = AuthHost.MakeRelativeUri($"/auth/oauth/authorize?scope=&client_id=1&response_type=code&redirect_uri={redirectUri}&state={state}&code_challenge={challenge}&code_challenge_method=S256&prompt=consent");
         
         var loginForm = await Config.Client.GetHtmlDocWithTriesAsync(challengeUrl);
+        var tokenInput = loginForm.QuerySelector("input[name=_token]");
+        if (tokenInput == default) {
+            throw new Exception("Не удалось получить csrf токен формы авторизации сайта (возможно, заблокировал DDoS-Guard)");
+        }
 
         var payload = new Dictionary<string, string> {
-            { "_token", loginForm.QuerySelector("input[name=_token]").Attributes["value"].Value },
+            { "_token", tokenInput.Attributes["value"].Value },
             { "login", Config.Options.Login },
             { "password", Config.Options.Password },
         };
-        
+
         await Config.Client.PostHtmlDocWithTriesAsync(AuthHost.MakeRelativeUri("/auth/login"), new FormUrlEncodedContent(payload));
         var login = await Config.Client.GetHtmlDocWithTriesAsync(challengeUrl);
         var error = login.QuerySelector(".form-field__error");
         if (error != default && !string.IsNullOrWhiteSpace(error.InnerText)) {
-            throw new Exception($"Не удалось авторизоваться. {error.InnerText}");
+            throw new Exception($"Не удалось авторизоваться. {error.InnerText.Trim()}");
         }
 
         var postForm = login.QuerySelector("form[method=post]");
+        if (postForm == default) {
+            throw new Exception("Не удалось получить форму подтверждения OAuth на сайте (проверьте логин/пароль)");
+        }
+
         payload = postForm
             .QuerySelectorAll("input[type=hidden]")
             .ToDictionary(input => input.Attributes["name"].Value, input => input.Attributes["value"].Value);
         
-        var authorize = await Config.Client.PostAsync(AuthHost.MakeRelativeUri(postForm.Attributes["action"].Value), new FormUrlEncodedContent(payload));
+        using var authorize = await Config.Client.PostAsync(AuthHost.MakeRelativeUri(postForm.Attributes["action"].Value), new FormUrlEncodedContent(payload));
+        if (authorize == default || authorize.RequestMessage?.RequestUri == default) {
+            throw new Exception("Сайт не вернул код авторизации (проверьте логин/пароль)");
+        }
+
+        var authCode = authorize.RequestMessage.RequestUri.GetQueryParameter("code");
+        if (string.IsNullOrWhiteSpace(authCode)) {
+            throw new Exception("Сайт не вернул code после авторизации (проверьте логин/пароль)");
+        }
+
         var tokenResponse = await Config.Client.PostAsync(ApiHost.MakeRelativeUri("/api/auth/oauth/token"), JsonContent.Create(new {
             grant_type = "authorization_code",
             client_id = 1,
             redirect_uri = redirectUri,
             code_verifier = secret,
-            code = authorize.RequestMessage?.RequestUri.GetQueryParameter("code")
+            code = authCode
         }));
 
+        if (tokenResponse == default) {
+            throw new Exception("Не удалось получить ответ от сайта при запросе access token");
+        }
+
+        if (tokenResponse.StatusCode != HttpStatusCode.OK) {
+            var errorBody = await tokenResponse.Content.ReadAsStringAsync();
+            var snippet = string.IsNullOrWhiteSpace(errorBody)
+                ? string.Empty
+                : $" Ответ сервера: {TrimForLog(errorBody)}";
+            throw new Exception($"Сайт не выдал access token. Код {(int)tokenResponse.StatusCode} ({tokenResponse.StatusCode}).{snippet}");
+        }
+
         var token = await tokenResponse.Content.ReadFromJsonAsync<LibSocialToken>();
+        if (token == default || string.IsNullOrWhiteSpace(token.AccessToken)) {
+            throw new Exception("Сайт не вернул access token. Проверьте корректность логина и пароля");
+        }
 
         Config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
         Config.Logger.LogInformation("Успешно авторизовались");
@@ -143,7 +175,7 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
 
         var response = await Config.Client.GetWithTriesAsync(url);
         if (response == default) {
-            throw new Exception("Не удалось получить ответ от ranobelib при загрузке информации о книге");
+            throw new Exception("Не удалось получить ответ от сайта при загрузке информации о книге");
         }
 
         if (response.StatusCode != HttpStatusCode.OK) {
@@ -164,7 +196,7 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
 
         var response = await Config.Client.GetWithTriesAsync(url);
         if (response == default) {
-            throw new Exception("Не удалось получить ответ от ranobelib при загрузке оглавления");
+            throw new Exception("Не удалось получить ответ от сайта при загрузке оглавления");
         }
 
         if (response.StatusCode != HttpStatusCode.OK) {
