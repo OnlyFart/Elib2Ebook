@@ -24,6 +24,11 @@ public static class HttpClientExtensions {
                 var response = await client.GetAsync(url);
 
                 if (response.StatusCode != HttpStatusCode.OK) {
+                    if (i == MAX_TRY_COUNT - 1) {
+                        return response;
+                    }
+
+                    response.Dispose();
                     await Task.Delay(GetTimeout(errorTimeout));
                     continue;
                 }
@@ -46,10 +51,15 @@ public static class HttpClientExtensions {
         Exception lastEx = null;
         
         for (var i = 0; i < MAX_TRY_COUNT; i++) {
-            try { 
+            try {
                 var response = await client.SendAsync(message());
 
                 if (response.StatusCode != HttpStatusCode.OK) {
+                    if (i == MAX_TRY_COUNT - 1) {
+                        return response;
+                    }
+
+                    response.Dispose();
                     await Task.Delay(GetTimeout(errorTimeout));
                     continue;
                 }

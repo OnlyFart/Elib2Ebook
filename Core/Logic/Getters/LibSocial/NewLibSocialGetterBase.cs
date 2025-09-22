@@ -30,6 +30,15 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
 
     private const string ALPHABET_BASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private const string ALPHABET_CHALLENGE = ALPHABET_BASE + "-_";
+
+    private static string TrimForLog(string value, int maxLength = 300) {
+        if (string.IsNullOrWhiteSpace(value)) {
+            return string.Empty;
+        }
+
+        var trimmed = value.Trim();
+        return trimmed.Length <= maxLength ? trimmed : trimmed[..maxLength] + "…";
+    }
     
     private static string Challenge(string str) {
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(str).AsSpan(0, Encoding.UTF8.GetByteCount(str)));
@@ -133,8 +142,16 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
             .AppendQueryParameter("fields[]", "chap_count");
 
         var response = await Config.Client.GetWithTriesAsync(url);
+        if (response == default) {
+            throw new Exception("Не удалось получить ответ от ranobelib при загрузке информации о книге");
+        }
+
         if (response.StatusCode != HttpStatusCode.OK) {
-            throw new Exception("Ошибка загрузки информации о книге");
+            var errorBody = await response.Content.ReadAsStringAsync();
+            var snippet = string.IsNullOrWhiteSpace(errorBody)
+                ? string.Empty
+                : $" Ответ сервера: {TrimForLog(errorBody)}";
+            throw new Exception($"Ошибка загрузки информации о книге. Код {(int)response.StatusCode} ({response.StatusCode}).{snippet}");
         }
 
         return await response.Content.ReadFromJsonAsync<RanobeLibBookDetails>();
@@ -146,8 +163,16 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
         Config.Logger.LogInformation("Загружаю оглавление");
 
         var response = await Config.Client.GetWithTriesAsync(url);
+        if (response == default) {
+            throw new Exception("Не удалось получить ответ от ranobelib при загрузке оглавления");
+        }
+
         if (response.StatusCode != HttpStatusCode.OK) {
-            throw new Exception("Ошибка загрузки оглавления");
+            var errorBody = await response.Content.ReadAsStringAsync();
+            var snippet = string.IsNullOrWhiteSpace(errorBody)
+                ? string.Empty
+                : $" Ответ сервера: {TrimForLog(errorBody)}";
+            throw new Exception($"Ошибка загрузки оглавления. Код {(int)response.StatusCode} ({response.StatusCode}).{snippet}");
         }
 
         var result = await response.Content.ReadFromJsonAsync<SocialLibBookChapters>().ContinueWith(t => t.Result.Chapters);
