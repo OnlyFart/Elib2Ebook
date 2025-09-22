@@ -198,11 +198,7 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
         }
 
         if (response.StatusCode != HttpStatusCode.OK) {
-            var errorBody = await response.Content.ReadAsStringAsync();
-            var snippet = string.IsNullOrWhiteSpace(errorBody)
-                ? string.Empty
-                : $" Ответ сервера: {TrimForLog(errorBody)}";
-            throw new Exception($"Ошибка загрузки информации о книге. Код {(int)response.StatusCode} ({response.StatusCode}).{snippet}");
+            throw new Exception($"Ошибка загрузки информации о книге. Код {(int)response.StatusCode} ({response.StatusCode}).");
         }
 
         return await response.Content.ReadFromJsonAsync<RanobeLibBookDetails>();
@@ -219,11 +215,7 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
         }
 
         if (response.StatusCode != HttpStatusCode.OK) {
-            var errorBody = await response.Content.ReadAsStringAsync();
-            var snippet = string.IsNullOrWhiteSpace(errorBody)
-                ? string.Empty
-                : $" Ответ сервера: {TrimForLog(errorBody)}";
-            throw new Exception($"Ошибка загрузки оглавления. Код {(int)response.StatusCode} ({response.StatusCode}).{snippet}");
+            throw new Exception($"Ошибка загрузки оглавления. Код {(int)response.StatusCode} ({response.StatusCode}).");
         }
 
         var result = await response.Content.ReadFromJsonAsync<SocialLibBookChapters>().ContinueWith(t => t.Result.Chapters);
