@@ -7,4 +7,6 @@ public class HentaiLibGetter(BookGetterConfig config) : MangaLibGetterBase(confi
     protected override Uri ImagesHost => new("https://img3.imglib.info/");
     
     protected override Uri SystemUrl => new("https://hentailib.me/");
+
+    protected override int SiteId => 4;
 }

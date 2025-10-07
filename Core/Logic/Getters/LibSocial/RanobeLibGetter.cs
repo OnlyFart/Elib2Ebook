@@ -14,6 +14,8 @@ namespace Core.Logic.Getters.LibSocial;
 
 public class RanobeLibGetter(BookGetterConfig config) : NewLibSocialGetterBase(config) {
     protected override Uri SystemUrl => new("https://ranobelib.me/");
+
+    protected override int SiteId => 3;
     
     private static readonly Dictionary<string, string> RecursiveTag = new() {
         { "paragraph", "p" },
