@@ -18,4 +18,7 @@ public class StrokiMtsBookItem {
     
     [JsonPropertyName("authors")]
     public List<StrokiMtsAuthor> Authors { get; set; }
+    
+    [JsonPropertyName("contentInfo")]
+    public StrokiMtsContentInfo ContentInfo { get; set; }
 }

@@ -71,9 +71,9 @@ public class Options {
 
     [Option("additional-types", Required = false, HelpText = "Типы дополнительных файлов. Допустимые значения: books, audio, images", Separator = ',')]
     public IEnumerable<AdditionalTypeEnum> AdditionalTypes { get; set; }
-    
+
     [Option("book-name-pattern", Required = false, HelpText = "Шаблон имени файла.", Default = "{Author.Name} - {Book.Title}")]
-    public string BookNamePattern { get; set; }
+    public string BookNamePattern { get; set; } = "{Author.Name} - {Book.Title}";
     
     public bool HasAdditionalType(AdditionalTypeEnum type) => Additional && (AdditionalTypes == default || !AdditionalTypes.Any() || AdditionalTypes.Contains(type));
 

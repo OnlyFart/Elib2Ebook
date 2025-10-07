@@ -1,4 +1,5 @@
 @using Core.Configs
+@using Core.Extensions
 @using Elib2EbookWeb.Misc
 @inject IJSRuntime JsRuntime
 @inject ISnackbar Snackbar
@@ -112,7 +113,7 @@
         
         _onGenerate = true;
         _logger = new ActionLogger(str => {
-            _log = str;
+            _log = str.Crop(300);
             InvokeAsync(StateHasChanged);
         });
         

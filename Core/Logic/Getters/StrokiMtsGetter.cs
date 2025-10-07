@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -38,10 +39,11 @@ public class StrokiMtsGetter(BookGetterConfig config) : GetterBase(config) {
         var id = GetId(url);
         
         var details = await GetBook(id);
-        var detailBook = details.Items.FirstOrDefault(d => d.TextBook != default)?.TextBook ??
-                         details.Items.FirstOrDefault(d => d.AudioBook != default)?.AudioBook ??
-                         details.Items.FirstOrDefault(d => d.ComicBook != default)?.ComicBook ??
-                         details.Items.FirstOrDefault(d => d.PressBook != default)?.PressBook;
+        var detailBook = details?.Items.FirstOrDefault(d => d.TextBook != default)?.TextBook ??
+                         details?.Items.FirstOrDefault(d => d.AudioBook != default)?.AudioBook ??
+                         details?.Items.FirstOrDefault(d => d.ComicBook != default)?.ComicBook ??
+                         details?.Items.FirstOrDefault(d => d.PressBook != default)?.PressBook ??
+                         await GetSerial(id);
 
         if (detailBook == default) {
             throw new Exception("Не удалось получить книгу");
@@ -55,15 +57,27 @@ public class StrokiMtsGetter(BookGetterConfig config) : GetterBase(config) {
             Annotation = detailBook.Annotation,
         };
         
-        var origBook = await GetOriginalFile(id);
-        if (origBook.Extension == ".epub") {
-            book.Chapters = await FillChaptersFromEpub(origBook);
-        } else {
-            Config.Logger.LogInformation("Эта книга не в формате epub. Получить главы невозможно");
+        if (Config.Options.NoChapters) {
+            return book;
         }
-
+        
+        var origBooks = await GetOriginalFiles(id);
+        if (origBooks.Count == 1) {
+            if (detailBook.ContentInfo.FileType == "EPUB") {
+                book.Chapters = await FillChaptersFromEpub(origBooks[0]);
+            } else {
+                Config.Logger.LogInformation("Эта книга не в формате epub. Получить главы невозможно");
+            }
+        } else {
+            if (detailBook.ContentInfo.FileType == "JPG") {
+                book.Chapters = FillChaptersFromImages(detailBook, origBooks);
+            }
+        }
+        
         if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Books)) {
-            book.AdditionalFiles.Add(AdditionalTypeEnum.Books, origBook);
+            foreach (var origBook in origBooks) {
+                book.AdditionalFiles.Add(AdditionalTypeEnum.Books, origBook);
+            }
         }
 
         if (Config.Options.HasAdditionalType(AdditionalTypeEnum.Audio)) {
@@ -73,18 +87,43 @@ public class StrokiMtsGetter(BookGetterConfig config) : GetterBase(config) {
         return book;
     }
 
-    private async Task<TempFile> GetOriginalFile(string bookId) {
-        var fileMeta = await GetFileMeta(bookId);
-        var fileUrl = await GetFileUrl(fileMeta.FirstOrDefault());
-        var response = await Config.Client.GetWithTriesAsync(fileUrl.Url.AsUri());
-        Config.Logger.LogInformation($"Оригинальный файл доступен по ссылке {fileUrl.Url.AsUri()}");
-        return await TempFile.Create(fileUrl.Url.AsUri(), Config.TempFolder.Path, fileUrl.Url.AsUri().GetFileName(), await response.Content.ReadAsStreamAsync());
+    private static IEnumerable<Chapter> FillChaptersFromImages(StrokiMtsBookItem book, IEnumerable<TempFile> images) {
+        var sb = new StringBuilder();
+        foreach (var image in images) {
+            sb.Append($"<img src=\"{image.FullName}\" />");
+        }
+        
+        var chapter = new Chapter {
+            Images = images,
+            Content = sb.ToString(),
+            Title = book.Title,
+        };
+        
+        return new List<Chapter>{chapter};
+    }
+
+    private async Task<List<TempFile>> GetOriginalFiles(string bookId) {
+        var fileMetas = await GetFileMeta(bookId);
+        var result = new ConcurrentBag<Tuple<TempFile, int>>();
+        
+        var tuples = fileMetas.Select((file, i) => Tuple.Create(file, i));
+        await Parallel.ForEachAsync(tuples, async (t, _) => {
+            var fileUrl = await GetFileUrl(t.Item1);
+            var response = await Config.Client.GetWithTriesAsync(fileUrl.Url.AsUri());
+            Config.Logger.LogInformation($"Оригинальный файл доступен по ссылке {fileUrl.Url.AsUri()}");
+            var tempFile = await TempFile.Create(fileUrl.Url.AsUri(), Config.TempFolder.Path, fileUrl.Url.AsUri().GetFileName(), await response.Content.ReadAsStreamAsync(_));
+            
+            result.Add(Tuple.Create(tempFile, t.Item2));
+        });
+            
+
+        return result.OrderBy(t => t.Item2).Select(t => t.Item1).ToList();
     }
 
     private async Task<List<TempFile>> GetAudio(StrokiMtsApiMultiResponse details) {
         var result = new List<TempFile>();
 
-        var detail = details.Items.FirstOrDefault(d => d.AudioBook != default);
+        var detail = details?.Items.FirstOrDefault(d => d.AudioBook != default);
         if (detail == default) {
             return result;
         }
@@ -131,7 +170,12 @@ public class StrokiMtsGetter(BookGetterConfig config) : GetterBase(config) {
     }
 
     private async Task<StrokiMtsApiMultiResponse> GetBook(string id) {
-        var json = await SendAsync<StrokiMtsApiResponse<StrokiMtsApiMultiResponse>>(() => GetMessage(SystemUrl.MakeRelativeUri($"/api/books/multi/{id}"), "5.38.0", "5.3"));
+        var json = await SendAsync<StrokiMtsApiResponse<StrokiMtsApiMultiResponse>>(() => GetMessage(SystemUrl.MakeRelativeUri($"/api/books/multi/{id}"), "5.53", "7.0"));
+        return json.Data;
+    }
+    
+    private async Task<StrokiMtsBookItem> GetSerial(string id) {
+        var json = await SendAsync<StrokiMtsApiResponse<StrokiMtsBookItem>>(() => GetMessage(SystemUrl.MakeRelativeUri($"/api/serials/episodes/{id} "), "5.53", "7.0"));
         return json.Data;
     }
 

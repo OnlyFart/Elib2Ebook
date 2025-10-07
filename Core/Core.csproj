@@ -4,20 +4,20 @@
         <TargetFramework>net9.0</TargetFramework>
         <LangVersion>latestmajor</LangVersion>
         <PackageId>Core</PackageId>
-        <Version>2.7.3</Version>
+        <Version>2.7.4</Version>
         <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AngleSharp" Version="1.1.2" />
+        <PackageReference Include="AngleSharp" Version="1.3.0" />
         <PackageReference Include="CommandLineParser" Version="2.9.1" />
         <PackageReference Include="FlareSolverrSharp" Version="3.0.7" />
-        <PackageReference Include="HtmlAgilityPack" Version="1.11.71" />
+        <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
         <PackageReference Include="HtmlAgilityPack.CssSelectors.NetCore" Version="1.2.1" />
-        <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="9.0.9" />
+        <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.9" />
+        <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="9.0.9" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.9" />
         <PackageReference Include="OAuth.DotNetCore" Version="3.0.1" />
         <PackageReference Include="StringTokenFormatter" Version="9.0.1" />
     </ItemGroup>
