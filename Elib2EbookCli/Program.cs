@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text;
 using CommandLine;
 using CommandLine.Text;
@@ -47,8 +46,14 @@ internal static class Program {
             .WithParsedAsync(async options => {
                 using var getterConfig = BookGetterConfig.GetDefault(options, logger); 
                 using var getter = GetterProvider.Get(getterConfig, options.Url.First().AsUri());
-                await getter.Init();
-                await getter.Authorize();
+
+                try {
+                    await getter.Init();
+                    await getter.Authorize();
+                } catch (Exception ex) {
+                    logger.LogInformation($"Ошибка авторизации или инициализации. {ex.Message}");
+                    return;
+                }
 
                 foreach (var url in options.Url) {
                     logger.LogInformation($"Начинаю генерацию книги {url.CoverQuotes()}");

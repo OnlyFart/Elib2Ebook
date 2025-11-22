@@ -45,6 +45,7 @@
 * https://ladylib.top/
 * https://lanovels.com/
 * https://libbox.ru/
+* https://librebook.me/
 * https://libst.ru/
 * https://lightnoveldaily.com/
 * https://litgorod.ru/
