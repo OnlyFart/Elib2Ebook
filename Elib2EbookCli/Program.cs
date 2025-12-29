@@ -8,7 +8,7 @@ using Core.Logic.Builders;
 using Core.Misc;
 using Microsoft.Extensions.Logging;
 
-namespace Elib2EbookCli; 
+namespace Elib2EbookCli;
 
 internal static class Program {
 

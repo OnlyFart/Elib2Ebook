@@ -16,6 +16,7 @@
 * https://acomics.ru/
 * https://author.today/
 * https://bigliba.com/
+* https://bllate.org/
 * https://bookinbook.ru/
 * https://bookhamster.ru/
 * https://bookinist.pw/
