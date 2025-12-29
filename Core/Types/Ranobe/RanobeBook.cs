@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Core.Types.Ranobe; 
@@ -16,5 +17,5 @@ public class RanobeBook {
     public RanobeImage Image { get; set; }
         
     [JsonPropertyName("chapters")]
-    public RanobeChapterShort[] Chapters { get; set; }
+    public List<RanobeChapterShort> Chapters { get; set; }
 }
