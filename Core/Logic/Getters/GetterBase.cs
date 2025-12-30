@@ -35,7 +35,7 @@ public abstract class GetterBase(BookGetterConfig config) : IDisposable {
         message.Version = Config.Client.DefaultRequestVersion;
 
         foreach (var header in Config.Client.DefaultRequestHeaders) {
-            message.Headers.Add(header.Key, header.Value);
+            message.Headers.TryAddWithoutValidation(header.Key, header.Value);
         }
         
         return message;

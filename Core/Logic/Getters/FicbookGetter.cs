@@ -15,19 +15,27 @@ namespace Core.Logic.Getters;
 
 public class FicbookGetter(BookGetterConfig config) : GetterBase(config) {
     protected override Uri SystemUrl => new("https://ficbook.net/");
+    
+    protected Uri _appUrl => new("https://fanficlets.xyz/");
 
     protected override string GetId(Uri url) => url.GetSegment(2);
 
+    public override async Task Init() {
+        await base.Init();
+        Config.Client.DefaultRequestHeaders.Remove("User-Agent");
+        Config.Client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (iPhone); iOS CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1 ||| ficbook (1.3.2) | iOS (26.1) | iPhone 13 | ao2gvvnhkv0t22lo");
+    }
+
     public override async Task<Book> Get(Uri url) {
-        url = SystemUrl.MakeRelativeUri($"/readfic/{GetId(url)}");
-        var doc = await Config.Client.GetHtmlDocWithTriesAsync(url);
+        var appUrl = _appUrl.MakeRelativeUri($"/readfic/{GetId(url)}");
+        var doc = await Config.Client.GetHtmlDocWithTriesAsync(appUrl);
 
         var title = doc.GetTextBySelector("h1");
-        var book = new Book(url) {
-            Cover = await GetCover(doc, url),
-            Chapters = await FillChapters(doc, url, title),
+        var book = new Book(SystemUrl.MakeRelativeUri($"/readfic/{GetId(url)}")) {
+            Cover = await GetCover(doc, appUrl),
+            Chapters = await FillChapters(doc, appUrl, title),
             Title = title,
-            Author = GetAuthor(doc, url),
+            Author = GetAuthor(doc, appUrl),
             Annotation = doc.QuerySelector("div[itemprop=description]")?.InnerHtml
         };
             
@@ -67,7 +75,6 @@ public class FicbookGetter(BookGetterConfig config) : GetterBase(config) {
 
     private async Task<HtmlDocument> GetChapter(UrlChapter urlChapter) {
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(urlChapter.Url);
-        await Task.Delay(TimeSpan.FromSeconds(5));
         
         var content = doc.QuerySelector("#content").RemoveNodes("div");
         using var sr = new StringReader(content.InnerText.HtmlDecode());
