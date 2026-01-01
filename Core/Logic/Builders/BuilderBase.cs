@@ -20,6 +20,7 @@ public abstract class BuilderBase(Options options, ILogger logger) {
     /// <param name="book">Книга</param>
     /// <param name="fileName">Имя файла</param>
     protected abstract Task BuildInternal(Book book, string fileName);
+    protected virtual async Task SplitBuild(Book book, string fileName) { await BuildInternal(book, fileName); }
 
     /// <summary>
     /// Получение имени файла
@@ -41,6 +42,11 @@ public abstract class BuilderBase(Options options, ILogger logger) {
     /// <param name="book">Книга</param>
     public async Task Build(Book book) {
         var fileName = GetFileName(book);
+
+        if (book.SupportSplitting && (Options.SplitChapters || Options.SplitVolumes))
+        {
+            fileName = GetTitle(book);
+        }
         
         if (!string.IsNullOrWhiteSpace(Options.SavePath)) {
             if (!Directory.Exists(Options.SavePath)) {
@@ -51,7 +57,11 @@ public abstract class BuilderBase(Options options, ILogger logger) {
         }
         
         Logger.LogInformation($"Начинаю сохранение книги {fileName.CoverQuotes()}");
-        await BuildInternal(book, fileName);
+        if (book.SupportSplitting && (Options.SplitChapters || Options.SplitVolumes)) {
+            await SplitBuild(book, fileName);
+        } else {
+            await BuildInternal(book, fileName);
+        }
         
         if (Options.Cover) {
             await SaveCover(Options.SavePath, book.Cover, GetTitle(book));

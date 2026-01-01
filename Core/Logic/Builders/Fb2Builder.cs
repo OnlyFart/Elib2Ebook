@@ -14,11 +14,12 @@ using Core.Types.Common;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 
-namespace Core.Logic.Builders; 
+namespace Core.Logic.Builders;
 
-public class Fb2Builder : BuilderBase {
+public class Fb2Builder : BuilderBase
+{
     protected override string Extension => "fb2";
-    
+
     private readonly XNamespace _ns = "http://www.gribuser.ru/xml/fictionbook/2.0";
     private readonly XNamespace _xlink = "http://www.w3.org/1999/xlink";
 
@@ -26,6 +27,7 @@ public class Fb2Builder : BuilderBase {
     private readonly XElement _titleInfo;
     private readonly XElement _body;
     private readonly XElement _documentInfo;
+    private readonly XElement _customInfo;
     private readonly List<TempFile> _images = new();
 
     private readonly Dictionary<string, string> _map = new() {
@@ -48,22 +50,27 @@ public class Fb2Builder : BuilderBase {
         {"u", "u"},
     };
 
-    public Fb2Builder(Options options, ILogger logger) : base(options, logger) {
+    public Fb2Builder(Options options, ILogger logger) : base(options, logger)
+    {
         _description = CreateXElement("description");
         _titleInfo = CreateXElement("title-info");
         _documentInfo = CreateXElement("document-info");
+        _customInfo = CreateXElement("custom-info");
         _body = CreateXElement("body");
     }
 
-    private XElement CreateXElement(string name) {
+    private XElement CreateXElement(string name)
+    {
         return new XElement(_ns + name);
     }
 
-    private XElement CreateAuthor(Author author) {
+    private XElement CreateAuthor(Author author)
+    {
         var authorElem = CreateXElement("author");
 
         var parts = author.Name.Split(" ");
-        if (parts.Length == 2) {
+        if (parts.Length == 2)
+        {
             var firstName = CreateXElement("first-name");
             firstName.Value = parts[0];
             authorElem.Add(firstName);
@@ -71,13 +78,16 @@ public class Fb2Builder : BuilderBase {
             var lastName = CreateXElement("last-name");
             lastName.Value = parts[1];
             authorElem.Add(lastName);
-        } else {
+        }
+        else
+        {
             var firstName = CreateXElement("first-name");
             firstName.Value = author.Name;
             authorElem.Add(firstName);
         }
 
-        if (author.Url != default) {
+        if (author.Url != default)
+        {
             var homePageElem = CreateXElement("home-page");
             homePageElem.Value = author.Url.ToString();
             authorElem.Add(homePageElem);
@@ -86,17 +96,19 @@ public class Fb2Builder : BuilderBase {
         return authorElem;
     }
 
-    private XElement CreateTitle(string text) {
+    private XElement CreateTitle(string text)
+    {
         var p = CreateXElement("p");
         p.Value = text.HtmlDecode().ReplaceNewLine();
-            
+
         var title = CreateXElement("title");
-            
+
         title.Add(p);
         return title;
     }
 
-    private static async Task WriteBinary(XmlWriter writer, TempFile tempFile) {
+    private static async Task WriteBinary(XmlWriter writer, TempFile tempFile)
+    {
         const int bufferSize = 1000;
         var buffer = new byte[bufferSize];
         int readBytes;
@@ -107,32 +119,36 @@ public class Fb2Builder : BuilderBase {
         await writer.WriteAttributeStringAsync(null, "content-type", null, "image/" + tempFile.Extension.TrimStart('.'));
         using var br = new BinaryReader(inputFile);
 
-        do {
+        do
+        {
             readBytes = br.Read(buffer, 0, bufferSize);
             await writer.WriteBase64Async(buffer, 0, readBytes);
         } while (bufferSize <= readBytes);
 
         await writer.WriteEndElementAsync();
     }
-    
+
     /// <summary>
     /// Добавление автора книги
     /// </summary>
     /// <param name="author">Автор</param>
     /// <returns></returns>
-    private void AddAuthor(Author author) {
+    private void AddAuthor(Author author)
+    {
         var authorElem = CreateAuthor(author);
         _titleInfo.Add(authorElem);
         _documentInfo.Add(authorElem);
     }
-    
+
     /// <summary>
     /// Добавление со-авторов книги
     /// </summary>
     /// <param name="coAuthors">Со-авторы</param>
     /// <returns></returns>
-    private void AddCoAuthors(IEnumerable<Author> coAuthors) {
-        foreach (var coAuthor in coAuthors) {
+    private void AddCoAuthors(IEnumerable<Author> coAuthors)
+    {
+        foreach (var coAuthor in coAuthors)
+        {
             var coAuthorElem = CreateAuthor(coAuthor);
             _titleInfo.Add(coAuthorElem);
             _documentInfo.Add(coAuthorElem);
@@ -144,7 +160,8 @@ public class Fb2Builder : BuilderBase {
     /// </summary>
     /// <param name="title">Название книги</param>
     /// <returns></returns>
-    private void WithTitle(string title) {
+    private void WithTitle(string title)
+    {
         var bookTitle = CreateXElement("book-title");
         bookTitle.Value = title.ReplaceNewLine();
 
@@ -157,43 +174,52 @@ public class Fb2Builder : BuilderBase {
     /// </summary>
     /// <param name="cover">Обложка</param>
     /// <returns></returns>
-    private void WithCover(TempFile cover) {
-        if (cover != default) {
+    private void WithCover(TempFile cover)
+    {
+        if (cover != default)
+        {
             var coverPage = CreateXElement("coverpage");
-            
+
             var imageElem = CreateXElement("image");
             imageElem.SetAttributeValue(_xlink + "href", "#" + cover.FullName);
-            
+
             coverPage.Add(imageElem);
             _titleInfo.Add(coverPage);
             _images.Add(cover);
         }
     }
 
-    private void WithBookUrl(Uri url) {
-        if (url != default) {
+    private void WithBookUrl(Uri url)
+    {
+        if (url != default)
+        {
             var srcUrlElem = CreateXElement("src-url");
             srcUrlElem.Value = url.ToString().CleanInvalidXmlChars();
             _documentInfo.Add(srcUrlElem);
         }
     }
 
-    private void WithAnnotation(string annotation) {
-        if (!string.IsNullOrWhiteSpace(annotation)) {
+    private void WithAnnotation(string annotation)
+    {
+        if (!string.IsNullOrWhiteSpace(annotation))
+        {
             _titleInfo.Add(CreateAnnotation(annotation));
         }
     }
 
-    private XElement CreateAnnotation(string annotation) {
+    private XElement CreateAnnotation(string annotation)
+    {
         var a = CreateXElement("annotation");
 
         var doc = annotation.AsHtmlDoc();
-        foreach (var node in doc.DocumentNode.ChildNodes) {
-            if (!string.IsNullOrWhiteSpace(node.InnerText)) {
+        foreach (var node in doc.DocumentNode.ChildNodes)
+        {
+            if (!string.IsNullOrWhiteSpace(node.InnerText))
+            {
                 ProcessSection(a, node, "p");
             }
         }
-        
+
         return a;
     }
 
@@ -202,97 +228,130 @@ public class Fb2Builder : BuilderBase {
     /// </summary>
     /// <param name="chapters">Список частей</param>
     /// <returns></returns>
-    private void WithChapters(IEnumerable<Chapter> chapters) {
-        foreach (var chapter in chapters.Where(c => c.IsValid)) {
+    private void WithChapters(IEnumerable<Chapter> chapters)
+    {
+        foreach (var chapter in chapters.Where(c => c.IsValid))
+        {
             var section = CreateXElement("section");
             section.Add(CreateTitle(chapter.Title));
-                
+
             var doc = chapter.Content.AsHtmlDoc();
-            foreach (var node in doc.DocumentNode.ChildNodes) {
+            foreach (var node in doc.DocumentNode.ChildNodes)
+            {
                 ProcessSection(section, node);
             }
-                
+
             _body.Add(section);
 
-            foreach (var image in chapter.Images) {
+            foreach (var image in chapter.Images)
+            {
                 _images.Add(image);
             }
         }
     }
 
-    private void WithSeria(Seria seria) {
-        if (seria != default) {
+    private void WithSeria(Seria seria)
+    {
+        if (seria != default)
+        {
             var sequenceElem = CreateXElement("sequence");
             sequenceElem.SetAttributeValue("name", seria.Name.CleanInvalidXmlChars());
             sequenceElem.SetAttributeValue("number", seria.Number.CleanInvalidXmlChars());
             _titleInfo.Add(sequenceElem);
+            // seria url
+            var SeriaUrl = seria.Url.ToString();
+            if( !string.IsNullOrWhiteSpace(SeriaUrl) && SeriaUrl.Length > 14 )
+            {
+                _customInfo.SetAttributeValue("info-type", "sequence-url");
+                _customInfo.Add(SeriaUrl.CleanInvalidXmlChars());
+            }
         }
     }
 
-    private void WithLang(string lang) {
-        if (!string.IsNullOrWhiteSpace(lang)) {
+    private void WithLang(string lang)
+    {
+        if (!string.IsNullOrWhiteSpace(lang))
+        {
             var langElem = CreateXElement("lang");
             langElem.Value = lang;
             _titleInfo.Add(langElem);
         }
     }
 
-    private static bool IsTextNode(HtmlNode node) {
+    private static bool IsTextNode(HtmlNode node)
+    {
         return node.Name is "#text" or "span";
     }
 
-    private void ProcessSection(XElement parent, HtmlNode node, string textNode = "") {
-        if (node.Name == "br") {
+    private void ProcessSection(XElement parent, HtmlNode node, string textNode = "")
+    {
+        if (node.Name == "br")
+        {
             parent.Add(CreateXElement("br"));
             return;
         }
-        
-        if (node.Name == "a") {
+
+        if (node.Name == "a")
+        {
             var href = node.Attributes["href"]?.Value ?? string.Empty;
-            if (string.IsNullOrWhiteSpace(href)) {
-                if (string.IsNullOrWhiteSpace(textNode)) {
+            if (string.IsNullOrWhiteSpace(href))
+            {
+                if (string.IsNullOrWhiteSpace(textNode))
+                {
                     parent.Add(node.InnerText);
-                } else {
+                }
+                else
+                {
                     var tag = CreateXElement(textNode);
                     tag.Value = node.InnerText;
                     parent.Add(tag);
                 }
-            } else {
+            }
+            else
+            {
                 var a = CreateXElement("a");
                 a.SetAttributeValue(_xlink + "href", href);
                 a.Value = node.InnerText;
-                
-                if (string.IsNullOrWhiteSpace(textNode)) {
+
+                if (string.IsNullOrWhiteSpace(textNode))
+                {
                     parent.Add(a);
-                } else {
+                }
+                else
+                {
                     var tag = CreateXElement(textNode);
                     tag.Add(a);
                     parent.Add(tag);
                 }
             }
-            
+
             return;
         }
-        
-        if (node.ChildNodes.Count > 0) {
+
+        if (node.ChildNodes.Count > 0)
+        {
             var section = CreateXElement(_map.GetValueOrDefault(node.Name, "p"));
 
-            foreach (var child in node.ChildNodes) {
+            foreach (var child in node.ChildNodes)
+            {
                 ProcessSection(IsTextNode(node) ? parent : section, child);
             }
 
-            if (!section.IsEmpty) {
+            if (!section.IsEmpty)
+            {
                 parent.Add(section);
             }
 
             return;
         }
-        
-        if (node.Name == "img") {
-            if (node.Attributes["src"] == null) {
+
+        if (node.Name == "img")
+        {
+            if (node.Attributes["src"] == null)
+            {
                 return;
             }
-            
+
             var imageElem = CreateXElement("image");
             imageElem.SetAttributeValue(_xlink + "href", "#" + node.Attributes["src"].Value);
             parent.Add(imageElem);
@@ -301,50 +360,61 @@ public class Fb2Builder : BuilderBase {
         }
 
         var nodeText = node.InnerText.HtmlDecode().CleanInvalidXmlChars();
-        if (node.InnerText.StartsWith(" ")) {
+        if (node.InnerText.StartsWith(" "))
+        {
             nodeText = " " + nodeText;
         }
-        
-        if (node.InnerText.EndsWith(" ")) {
+
+        if (node.InnerText.EndsWith(" "))
+        {
             nodeText += " ";
         }
-        
-        if (IsTextNode(node)) {
-            if (string.IsNullOrWhiteSpace(textNode)) {
+
+        if (IsTextNode(node))
+        {
+            if (string.IsNullOrWhiteSpace(textNode))
+            {
                 parent.Add(new XText(nodeText));
-            } else {
+            }
+            else
+            {
                 var tag = CreateXElement(textNode);
                 tag.Value = nodeText;
                 parent.Add(tag);
             }
-            
+
             return;
         }
 
-        if (_map.TryGetValue(node.Name, out var fb2Tag)) {
+        if (_map.TryGetValue(node.Name, out var fb2Tag))
+        {
             var tag = CreateXElement(fb2Tag);
             tag.Value = nodeText;
             parent.Add(tag);
-        } else {
+        }
+        else
+        {
             parent.Add(nodeText);
             Logger.LogInformation(node.Name);
         }
     }
 
-    private XElement GetDateElement(DateTime date) {
+    private XElement GetDateElement(DateTime date)
+    {
         var today = date.ToString("yyyy-MM-dd");
-        
+
         var dateElem = CreateXElement("date");
         dateElem.SetAttributeValue("value", today);
         dateElem.Value = today;
-        
+
         return dateElem;
     }
-    
 
-    protected override async Task BuildInternal(Book book, string fileName) {
+
+    protected override async Task BuildInternal(Book book, string fileName)
+    {
         await using var file = File.Create(fileName);
-        
+
         AddAuthor(book.Author);
         AddCoAuthors(book.CoAuthors);
         WithBookUrl(book.Url);
@@ -354,6 +424,59 @@ public class Fb2Builder : BuilderBase {
         WithLang(book.Lang);
         WithSeria(book.Seria);
         WithChapters(book.Chapters);
+
+        _documentInfo.Add(GetDateElement(DateTime.Today));
+
+        var programUsed = CreateXElement("program-used");
+        programUsed.Value = "Elib2Ebook";
+        _documentInfo.Add(programUsed);
+
+        _description.Add(_titleInfo);
+        _description.Add(_documentInfo);
+        
+        Logger.LogInformation($"SeriaUrl: {_customInfo.Value}");
+
+        if( !string.IsNullOrEmpty(_customInfo.Value) )
+        {
+            _description.Add(_customInfo);
+        }
+
+        var xws = new XmlWriterSettings
+        {
+            Async = true,
+            Encoding = new UTF8Encoding(false),
+            Indent = true,
+            NewLineHandling = NewLineHandling.Replace,
+            NewLineChars = "\r\n",
+        };
+
+        await using var writer = XmlWriter.Create(file, xws);
+        var cancellationToken = new CancellationToken();
+
+        await writer.WriteStartElementAsync(string.Empty, "FictionBook", _ns.NamespaceName);
+        await writer.WriteAttributeStringAsync("xmlns", "l", null, _xlink.NamespaceName);
+
+        await _description.WriteToAsync(writer, cancellationToken);
+        await _body.WriteToAsync(writer, cancellationToken);
+        foreach (var image in _images)
+        {
+            await WriteBinary(writer, image);
+        }
+
+        await writer.WriteEndElementAsync();
+        await writer.FlushAsync();
+    }
+
+    protected override async Task SplitBuild(Book book, string fileName)
+    {
+        AddAuthor(book.Author);
+        AddCoAuthors(book.CoAuthors);
+        WithBookUrl(book.Url);
+        WithTitle(book.Title);
+        WithAnnotation(book.Annotation);
+        WithCover(book.Cover);
+        WithLang(book.Lang);
+        WithSeria(book.Seria);
         
         _documentInfo.Add(GetDateElement(DateTime.Today));
         
@@ -372,19 +495,91 @@ public class Fb2Builder : BuilderBase {
             NewLineChars = "\r\n",
         };
 
+        if (Options.SplitVolumes && Options.SplitChapters)
+        {
+            foreach (var volumeNumber in book.Volumes)
+            {
+                var volume_name = $"{fileName}.v{volumeNumber}.{Extension}";
+                await using var volume_file = File.Create(volume_name);
+
+                var selected_chapters = book.Chapters.Where(c => c.VolumeNumber == volumeNumber);
+
+                foreach (var chapter in selected_chapters)
+                {
+                    var chapter_name = $"{fileName}.v{chapter.VolumeNumber}.c{chapter.ChapterNumber}.{Extension}";
+
+                    await using var chapter_file = File.Create(chapter_name);
+
+                    await BuildPart([chapter], chapter_file, xws);
+
+                    Logger.LogInformation($"Книга {chapter_name} успешно сохранена");
+
+                    chapter_file.Dispose();
+                }
+
+                await BuildPart(selected_chapters, volume_file, xws);
+                Logger.LogInformation($"Книга {volume_name} успешно сохранена");
+                volume_file.Dispose();
+            }
+        }
+        else if (Options.SplitVolumes)
+        {
+            foreach (var volumeNumber in book.Volumes)
+            {
+                var volume_name = $"{fileName}.v{volumeNumber}.{Extension}";
+
+                await using var volume_file = File.Create(volume_name);
+
+                var selected_chapters = book.Chapters.Where(c => c.VolumeNumber == volumeNumber);
+
+                await BuildPart(selected_chapters, volume_file, xws);
+
+                Logger.LogInformation($"Книга {volume_name} успешно сохранена");
+
+                volume_file.Dispose();
+            }
+        }
+        else if (Options.SplitChapters)
+        {
+            foreach (var chapter in book.Chapters)
+            {
+                var chapter_name = $"{fileName}.v{chapter.VolumeNumber}.c{chapter.ChapterNumber}.{Extension}";
+                await using var chapter_file = File.Create(chapter_name);
+
+                await BuildPart([chapter], chapter_file, xws);
+
+                Logger.LogInformation($"Книга {chapter_name} успешно сохранена");
+
+                chapter_file.Dispose();
+            }
+        }
+        else
+        {
+            await BuildInternal(book, fileName);
+        }
+    }
+
+    protected async Task BuildPart(IEnumerable<Chapter> chapters, FileStream file, XmlWriterSettings xws)
+    {
+        WithChapters(chapters);
+
         await using var writer = XmlWriter.Create(file, xws);
         var cancellationToken = new CancellationToken();
-        
+
         await writer.WriteStartElementAsync(string.Empty, "FictionBook", _ns.NamespaceName);
         await writer.WriteAttributeStringAsync("xmlns", "l", null, _xlink.NamespaceName);
 
         await _description.WriteToAsync(writer, cancellationToken);
         await _body.WriteToAsync(writer, cancellationToken);
-        foreach (var image in _images) {
+        foreach (var image in _images)
+        {
             await WriteBinary(writer, image);
         }
 
         await writer.WriteEndElementAsync();
         await writer.FlushAsync();
+
+        _body.RemoveNodes();
+        _images.Clear();
     }
 }
