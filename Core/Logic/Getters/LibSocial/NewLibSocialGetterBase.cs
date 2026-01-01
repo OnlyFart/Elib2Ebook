@@ -184,6 +184,8 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
         var details = await GetBookDetails(url);
 
         var book = new Book(url) {
+            SupportSplitVolumes = true,
+            SupportSplitChapters = true,
             Cover = await GetCover(details),
             Chapters = await FillChapters(details, bid),
             Title = string.IsNullOrWhiteSpace(details.Data.RusName) ? details.Data.Name : details.Data.RusName,
@@ -272,7 +274,9 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
             Config.Logger.LogInformation($"Загружаю главу {title.CoverQuotes()}");
             
             var chapter = new Chapter {
-                Title = title
+                Title = title,
+                VolumeNumber = socialChapter.Volume,
+                ChapterNumber = socialChapter.Number,
             };
 
             var chapterDoc = await GetChapter(book, socialChapter, bid);

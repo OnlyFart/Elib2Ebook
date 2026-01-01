@@ -23,6 +23,9 @@ public class Options {
         
     [Option('p', "password", Required = false, HelpText = "Пароль от системы")]
     public string Password { get; set; }
+
+    [Option('k', "token", Required = false, HelpText = "Готовый токен авторизации")]
+    public string Token { get; set; }
         
     [Option("proxy", Required = false, HelpText = "Прокси в формате <host>:<port>")]
     public string Proxy { get; set; }

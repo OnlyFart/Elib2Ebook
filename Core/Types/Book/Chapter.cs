@@ -15,6 +15,16 @@ public class Chapter {
     public string Content { get; set; }
 
     /// <summary>
+    /// Номер тома
+    /// </summary>
+    public string VolumeNumber { get; set; }
+
+    /// <summary>
+    /// Номер главы
+    /// </summary>
+    public string ChapterNumber { get; set; }
+
+    /// <summary>
     /// Изображения из части
     /// </summary>
     public IEnumerable<TempFile> Images { get; set; } = new List<TempFile>();
