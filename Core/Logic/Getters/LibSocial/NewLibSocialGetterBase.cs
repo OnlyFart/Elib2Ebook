@@ -84,7 +84,13 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
     }
 
     public override async Task Authorize() {
-        if (!Config.HasCredentials) {
+        if (string.IsNullOrEmpty(Config.Options.Token) && !Config.HasCredentials ) {
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(Config.Options.Token)) {
+            Config.Logger.LogInformation("Подставлен токен");
+            Config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Config.Options.Token);
             return;
         }
 
