@@ -43,7 +43,7 @@ public class AcomicsGetter(BookGetterConfig config) : GetterBase(config) {
     }
 
     private static Author GetAuthor(HtmlDocument doc, Uri url) {
-        var a = doc.QuerySelector("article.authors a.username");
+        var a = doc.QuerySelector("article.authors,a.username");
         return new Author(a.GetText(), url.MakeRelativeUri(a.Attributes["href"].Value));
     }
 
@@ -56,12 +56,12 @@ public class AcomicsGetter(BookGetterConfig config) : GetterBase(config) {
             Title = title
         };
         
-        var pages = int.Parse(doc.GetTextBySelector("span.issueNumber").Split("/").Last());
+        var pages = int.Parse(doc.GetTextBySelector("span.issueNumber,span.number-without-name,span.number-with-name").Split("/").Last());
         var sb = new StringBuilder();
         for (var i = 1; i <= pages; i++) {
             Config.Logger.LogInformation($"Получаю страницу {i}/{pages}");
             var response = await Config.Client.GetHtmlDocWithTriesAsync(SystemUrl.MakeRelativeUri($"{bookId}/{i}"));
-            var img = response.QuerySelector("#mainImage");
+            var img = response.QuerySelector("#mainImage")??response.QuerySelector("img.issue");
             var src = url.MakeRelativeUri(img.Attributes["src"].Value);
             sb.Append($"<img src='{src}'/>");
         }
