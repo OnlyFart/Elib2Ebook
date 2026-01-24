@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
@@ -16,7 +17,6 @@ using Core.Misc;
 using Core.Types.Book;
 using Core.Types.Common;
 using Core.Types.Litres;
-using Core.Types.Litres.Requests;
 using Core.Types.Litres.Response;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
@@ -29,6 +29,7 @@ public class LitresGetter(BookGetterConfig config) : GetterBase(config) {
     private const string APP = "13";
 
     protected override Uri SystemUrl => new("https://www.litres.ru");
+    protected static Uri ApiUrl => new("https://api.litres.ru");
     
     private static Uri GetShortUri(LitresArt art) => new($"https://catalit.litres.ru/pub/t/{art.Id}.fb3");
 
@@ -70,8 +71,15 @@ public class LitresGetter(BookGetterConfig config) : GetterBase(config) {
     private LitresMe _me;
 
     public override async Task Authorize() {
-        if (!Config.HasCredentials) {
+        if (string.IsNullOrEmpty(Config.Options.Token) && !Config.HasCredentials ) {
             Config.Client.DefaultRequestHeaders.Add("Session-Id", _authData.Sid);
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(Config.Options.Token)) {
+            Config.Logger.LogInformation("Подставлен токен");
+            _authData.Sid = Config.Options.Token;
+            Config.Client.DefaultRequestHeaders.Add("Session-Id", Config.Options.Token);
             return;
         }
         
@@ -85,24 +93,51 @@ public class LitresGetter(BookGetterConfig config) : GetterBase(config) {
 
         var saveCreds = $"{directory}/{Config.Options.Login.RemoveInvalidChars()}";
         if (File.Exists(saveCreds)) {
-            _authData = await File.ReadAllTextAsync(saveCreds).ContinueWith(t => t.Result.Deserialize<LitresAuthResponseData>());
-            Config.Client.DefaultRequestHeaders.Add("Session-Id", _authData.Sid);
-            
-            var checkResponse = await Config.Client.GetFromJsonAsync<LitresStaticResponse<LitresMe>>("https://api.litres.ru/foundation/api/users/me/detailed");
-            if (checkResponse?.Payload?.Data != default) {
-                _me = checkResponse.Payload.Data;
-                return;
+            var timeDiff = File.GetCreationTime(saveCreds) - DateTime.Now;
+            if ( timeDiff.TotalHours < 4 )
+            {
+                var _authData = await File.ReadAllTextAsync(saveCreds).ContinueWith(t => t.Result.Deserialize<LitresAuthResponseData>());;
+                Config.Client.DefaultRequestHeaders.Add("Session-Id", _authData.Sid);
+                
+                var checkResponse = await Config.Client.GetFromJsonAsync<LitresStaticResponse<LitresMe>>(ApiUrl.MakeRelativeUri("/foundation/api/users/me/detailed"));
+                if (checkResponse?.Payload?.Data != default) {
+                    _me = checkResponse.Payload.Data;
+                    return;
+                }
+            }
+            else
+            {
+                File.Delete(saveCreds);
             }
         }
 
-        var payload = LitresPayload.Create(DateTime.Now, string.Empty, SECRET_KEY, APP);
-        payload.Requests.Add(new LitresAuthRequest(Config.Options.Login, Config.Options.Password));
-     
-        _authData = await GetResponse<LitresAuthResponseData>(payload);
+        var auth = new Dictionary<string, string> {
+            { "login", Config.Options.Login },
+            { "password", Config.Options.Password }
+        };
+        var authPayload = new StringContent( JsonSerializer.Serialize(auth) );
+        authPayload.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+        Config.Client.DefaultRequestHeaders.Remove("app-id");
+        Config.Client.DefaultRequestHeaders.Add("app-id","115");
+
+        var authResponse = await Config.Client.PostWithTriesAsync(ApiUrl.MakeRelativeUri("/foundation/api/auth/login"), authPayload);
+        _authData = await authResponse.Content.ReadAsStringAsync().ContinueWith(t => 
+        {
+            var authData = t.Result.Deserialize<LitresWebAuthResponse>();
+            var newAuthData = new LitresAuthResponseData();
+            newAuthData.Success = authData.Status==200;
+            newAuthData.Sid = authData.Payload.Data.Sid;
+            newAuthData.ErrorMessage = authData.Error;
+
+            return newAuthData;
+        });
 
         if (!_authData.Success) {
             throw new Exception($"Не удалось авторизоваться. {_authData.ErrorMessage}");
         }
+
+        Config.Client.DefaultRequestHeaders.Remove("app-id");
         
         Config.Client.DefaultRequestHeaders.Add("Session-Id", _authData.Sid);
         var meResponse = await Config.Client.GetFromJsonAsync<LitresStaticResponse<LitresMe>>("https://api.litres.ru/foundation/api/users/me/detailed");
@@ -116,7 +151,9 @@ public class LitresGetter(BookGetterConfig config) : GetterBase(config) {
 
     private async Task<T> GetResponse<T>(LitresPayload payload) {
         var resp = await Config.Client.PostWithTriesAsync("https://catalit.litres.ru/catalitv2".AsUri(), CreatePayload(payload));
-        return await resp.Content.ReadAsStringAsync().ContinueWith(t => t.Result.Deserialize<LitresResponse<T>>().Data);
+        return await resp.Content.ReadAsStringAsync().ContinueWith(t => {
+            return t.Result.Deserialize<LitresResponse<T>>().Data;
+        });
     }
     
     private async Task<T> GetResponse<T>(Uri url) {
@@ -125,7 +162,9 @@ public class LitresGetter(BookGetterConfig config) : GetterBase(config) {
             return default;
         }
         
-        return await resp.Content.ReadAsStringAsync().ContinueWith(t => t.Result.Deserialize<LitresStaticResponse<T>>().Payload.Data);
+        return await resp.Content.ReadAsStringAsync().ContinueWith(t => {
+            return t.Result.Deserialize<LitresStaticResponse<T>>().Payload.Data;
+        });
     }
 
     private static FormUrlEncodedContent CreatePayload(LitresPayload payload) {
@@ -139,7 +178,12 @@ public class LitresGetter(BookGetterConfig config) : GetterBase(config) {
     public override async Task<Book> Get(Uri url) {
         var bookId = GetBookId(url);
 
-        var art = await GetResponse<LitresArt>($"https://api.litres.ru/foundation/api/arts/{bookId}".AsUri());
+        var art = new LitresArt();
+        try
+        {
+            art = await GetResponse<LitresArt>(ApiUrl.MakeRelativeUri($"/foundation/api/arts/{bookId}"));
+        }
+        catch (System.Exception){}
         
         var book = new Book(SystemUrl.MakeRelativeUri(bookId)) {
             Cover = await GetCover(art.Cover),
@@ -177,7 +221,7 @@ public class LitresGetter(BookGetterConfig config) : GetterBase(config) {
             var type = art.ArtType == LitresArtTypeEnum.Audio ? AdditionalTypeEnum.Audio : AdditionalTypeEnum.Books;
             
             if (Config.Options.HasAdditionalType(type)) {
-                var files = await GetResponse<LitresFiles[]>($"https://api.litres.ru/foundation/api/arts/{art.Id}/files/grouped".AsUri());
+                var files = await GetResponse<LitresFiles[]>(ApiUrl.MakeRelativeUri($"/foundation/api/arts/{art.Id}/files/grouped"));
 
                 foreach (var file in files.SelectMany(f => f.Files)) {
                     using var fileResponse = await GetFileResponse(art, file);
@@ -234,7 +278,7 @@ public class LitresGetter(BookGetterConfig config) : GetterBase(config) {
     
     private async Task<Author> GetAuthor(LitresArt art) {
         var person = art.Persons.FirstOrDefault(a => a.Role == "author");
-        var author = person == null ? default : await GetResponse<LitresPerson<long>>($"https://api.litres.ru/foundation/api/persons/{person.Id}".AsUri());
+        var author = person == null ? default : await GetResponse<LitresPerson<long>>(ApiUrl.MakeRelativeUri($"/foundation/api/persons/{person.Id}"));
         return author == default ? 
             new Author("Litres") : 
             new Author(author.FullName, SystemUrl.MakeRelativeUri(author.Url));
@@ -243,7 +287,7 @@ public class LitresGetter(BookGetterConfig config) : GetterBase(config) {
     private async Task<IEnumerable<Author>> GetCoAuthors(LitresArt art) {
         var result = new List<Author>();
         foreach (var person in art.Persons.Where(a => a.Role == "author").Skip(1)) {
-            var author = person == null ? default : await GetResponse<LitresPerson<long>>($"https://api.litres.ru/foundation/api/persons/{person.Id}".AsUri());
+            var author = person == null ? default : await GetResponse<LitresPerson<long>>(ApiUrl.MakeRelativeUri($"/foundation/api/persons/{person.Id}"));
             if (author != default) {
                 result.Add(new Author(author.FullName, SystemUrl.MakeRelativeUri(author.Url)));
             }

@@ -51,7 +51,7 @@ internal static class Program {
                     await getter.Init();
                     await getter.Authorize();
                 } catch (Exception ex) {
-                    logger.LogInformation($"Ошибка авторизации или инициализации. {ex.Message}");
+                    logger.LogInformation($"Ошибка авторизации или инициализации. {ex.Message} \n {ex.ToString()}");
                     return;
                 }
 

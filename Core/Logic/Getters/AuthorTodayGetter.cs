@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -7,6 +8,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
@@ -69,6 +71,41 @@ public class AuthorTodayGetter(BookGetterConfig config) : GetterBase(config) {
             return;
         }
         
+        // АТ очень не любит много авторизовывать
+        // поэтому пришлось добавить кеширование токенов
+        const string directory = "ATCache";
+
+        if (!Directory.Exists(directory)) {
+            Directory.CreateDirectory(directory);
+        }
+
+        var saveCreds = $"{directory}/{Config.Options.Login.RemoveInvalidChars()}";
+        if (File.Exists(saveCreds)) {
+            var timeDiff = File.GetCreationTime(saveCreds) - DateTime.Now;
+            if ( timeDiff.TotalHours < 24 )
+            {
+                var savedAuth = await File.ReadAllTextAsync(saveCreds).ContinueWith(t => t.Result.Deserialize<AuthorTodayAuthResponse>());
+                Config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", savedAuth.Token);
+
+                try
+                {
+                    var checkResponse = await Config.Client.SendWithTriesAsync(() => GetDefaultMessage(ApiUrl.MakeRelativeUri("/v1/account/current-user"), _apiUrl));
+                    var checkUser = await checkResponse.Content.ReadFromJsonAsync<AuthorTodayUser>();
+                    UserId = checkUser!.Id.ToString();
+                }
+                catch (System.Exception){}
+
+                if( !string.IsNullOrWhiteSpace(UserId) )
+                {
+                    return;
+                }
+            }
+            else
+            {
+                File.Delete(saveCreds);
+            }
+        }
+        
         var response = await Config.Client.SendAsync(GetDefaultMessage(ApiUrl.MakeRelativeUri("/v1/account/login-by-password"), _apiUrl, JsonContent.Create(new { Config.Options.Login, Config.Options.Password })));
         var data = await response.Content.ReadFromJsonAsync<AuthorTodayAuthResponse>();
 
@@ -82,6 +119,7 @@ public class AuthorTodayGetter(BookGetterConfig config) : GetterBase(config) {
         } else {
             throw new Exception($"Не удалось авторизоваться. {data?.Message}");
         }
+        await File.WriteAllTextAsync(saveCreds, JsonSerializer.Serialize(data));
     }
 
     public override async Task<Book> Get(Uri url) {
