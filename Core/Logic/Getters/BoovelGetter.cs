@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -122,7 +125,7 @@ public class BoovelGetter(BookGetterConfig config) : GetterBase(config) {
     }
 
     private Task<TempFile> GetCover(HtmlDocument doc, Uri bookUri) {
-        var imagePath = doc.QuerySelector("img.wp-post-image")?.Attributes["src"]?.Value;
+        var imagePath = doc.QuerySelector("a.story__thumbnail-href")?.Attributes["href"]?.Value;
         return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(TempFile));
     }
 }
