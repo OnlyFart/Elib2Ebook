@@ -433,8 +433,6 @@ public class Fb2Builder : BuilderBase
 
         _description.Add(_titleInfo);
         _description.Add(_documentInfo);
-        
-        Logger.LogInformation($"SeriaUrl: {_customInfo.Value}");
 
         if( !string.IsNullOrEmpty(_customInfo.Value) )
         {

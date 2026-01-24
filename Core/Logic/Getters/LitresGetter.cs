@@ -96,7 +96,7 @@ public class LitresGetter(BookGetterConfig config) : GetterBase(config) {
             var timeDiff = File.GetCreationTime(saveCreds) - DateTime.Now;
             if ( timeDiff.TotalHours < 4 )
             {
-                var _authData = await File.ReadAllTextAsync(saveCreds).ContinueWith(t => t.Result.Deserialize<LitresAuthResponseData>());;
+                _authData = await File.ReadAllTextAsync(saveCreds).ContinueWith(t => t.Result.Deserialize<LitresAuthResponseData>());;
                 Config.Client.DefaultRequestHeaders.Add("Session-Id", _authData.Sid);
                 
                 var checkResponse = await Config.Client.GetFromJsonAsync<LitresStaticResponse<LitresMe>>(ApiUrl.MakeRelativeUri("/foundation/api/users/me/detailed"));
@@ -120,8 +120,9 @@ public class LitresGetter(BookGetterConfig config) : GetterBase(config) {
 
         Config.Client.DefaultRequestHeaders.Remove("app-id");
         Config.Client.DefaultRequestHeaders.Add("app-id","115");
-
         var authResponse = await Config.Client.PostWithTriesAsync(ApiUrl.MakeRelativeUri("/foundation/api/auth/login"), authPayload);
+        Config.Client.DefaultRequestHeaders.Remove("app-id");
+
         _authData = await authResponse.Content.ReadAsStringAsync().ContinueWith(t => 
         {
             var authData = t.Result.Deserialize<LitresWebAuthResponse>();
@@ -136,8 +137,6 @@ public class LitresGetter(BookGetterConfig config) : GetterBase(config) {
         if (!_authData.Success) {
             throw new Exception($"Не удалось авторизоваться. {_authData.ErrorMessage}");
         }
-
-        Config.Client.DefaultRequestHeaders.Remove("app-id");
         
         Config.Client.DefaultRequestHeaders.Add("Session-Id", _authData.Sid);
         var meResponse = await Config.Client.GetFromJsonAsync<LitresStaticResponse<LitresMe>>("https://api.litres.ru/foundation/api/users/me/detailed");

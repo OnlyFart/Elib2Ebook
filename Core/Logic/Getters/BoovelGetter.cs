@@ -92,7 +92,33 @@ public class BoovelGetter(BookGetterConfig config) : GetterBase(config) {
         var output = new MemoryStream();
         await cs.CopyToAsync(output);
 
-        return Encoding.UTF8.GetString(output.ToArray()).AsHtmlDoc();
+        return FilterChapterContent( Encoding.UTF8.GetString(output.ToArray()) );
+    }
+
+    private static HtmlDocument FilterChapterContent(string data)
+    {
+        var sb = new StringBuilder();
+
+        var doc = data.AsHtmlDoc();
+
+        foreach (var node in doc.QuerySelectorAll("> *"))
+        {
+            var tag = node.Name;
+            var value = node.QuerySelector("boovell")?.InnerHtml;
+            if( tag != "img" && tag != "br" )
+            {
+                if ( node.GetType() != typeof(HtmlTextNode) && node.GetType() != typeof(HtmlCommentNode) )
+                {
+                    sb.Append($"<{tag}>{value}</{tag}>");
+                }
+            }
+            else
+            {
+                sb.Append(node?.OuterHtml);
+            }
+        }
+
+        return sb.AsHtmlDoc();
     }
 
     private Task<TempFile> GetCover(HtmlDocument doc, Uri bookUri) {
