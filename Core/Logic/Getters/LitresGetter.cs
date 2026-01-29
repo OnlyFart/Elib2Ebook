@@ -93,7 +93,7 @@ public class LitresGetter(BookGetterConfig config) : GetterBase(config) {
 
         var saveCreds = $"{directory}/{Config.Options.Login.RemoveInvalidChars()}";
         if (File.Exists(saveCreds)) {
-            var timeDiff = File.GetCreationTime(saveCreds) - DateTime.Now;
+            var timeDiff = DateTime.Now - File.GetLastWriteTime(saveCreds);
             if ( timeDiff.TotalHours < 4 )
             {
                 _authData = await File.ReadAllTextAsync(saveCreds).ContinueWith(t => t.Result.Deserialize<LitresAuthResponseData>());;
