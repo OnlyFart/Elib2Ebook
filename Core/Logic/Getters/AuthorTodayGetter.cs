@@ -221,7 +221,6 @@ public class AuthorTodayGetter(BookGetterConfig config) : GetterBase(config) {
         
         foreach (var atChapter in await GetChapters(book)) {
             var title = atChapter.Title.ReplaceNewLine();
-            Config.Logger.LogInformation($"Загружаю главу {title.CoverQuotes()}");
             
             var chapter = new Chapter {
                 Title = title
@@ -242,13 +241,17 @@ public class AuthorTodayGetter(BookGetterConfig config) : GetterBase(config) {
     private async Task<IEnumerable<AuthorTodayChapter>> GetChapters(AuthorTodayBookDetails book) {
         var result = new List<AuthorTodayChapter>();
         
-        foreach (var chunk in book.Chapters.Where(c => !c.IsDraft).OrderBy(c => c.SortOrder).Chunk(100)) {
-            var ids = string.Join("&", chunk.Select((c, i) => $"ids[{i}]={c.Id}"));
-            var uri = ApiUrl.MakeRelativeUri($"/v1/work/{book.Id}/chapter/many-texts?{ids}");
+        foreach (var chapter in book.Chapters.Where(c => !c.IsDraft).OrderBy(c => c.SortOrder)) {
+            var uri = ApiUrl.MakeRelativeUri($"/v1/work/{book.Id}/chapter/{chapter.Id}/text");
+            Config.Logger.LogInformation($"Загружаю главу {chapter.Title.CoverQuotes()}");
             var response = await Config.Client.SendWithTriesAsync(() => GetDefaultMessage(uri, _apiUrl));
-            var chapters = await response.Content.ReadFromJsonAsync<AuthorTodayChapter[]>();
-            if (chapters != default) {
-                result.AddRange(chapters.Where(c => c.Code != "NotFound"));
+            var rchapter = await response.Content.ReadFromJsonAsync<AuthorTodayChapter>();
+            if (rchapter != default) {
+                Config.Logger.LogInformation($"Загружена глава {rchapter.Title.CoverQuotes()}");
+                chapter.Text = rchapter.Text;
+                chapter.Key = rchapter.Key;
+                chapter.IsSuccessful = true;
+                result.Add(chapter);
             }
         }
 
