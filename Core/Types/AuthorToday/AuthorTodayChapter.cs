@@ -28,6 +28,9 @@ public class AuthorTodayChapter {
 
     [JsonPropertyName("IsDraft")]
     public bool IsDraft { get; set; }
+
+    [JsonPropertyName("isAvailable")]
+    public bool isAvailable { get; set; }
     
     [JsonPropertyName("code")]
     public string Code { get; set; }

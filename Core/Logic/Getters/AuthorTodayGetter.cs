@@ -241,12 +241,12 @@ public class AuthorTodayGetter(BookGetterConfig config) : GetterBase(config) {
     private async Task<IEnumerable<AuthorTodayChapter>> GetChapters(AuthorTodayBookDetails book) {
         var result = new List<AuthorTodayChapter>();
         
-        foreach (var chapter in book.Chapters.Where(c => !c.IsDraft).OrderBy(c => c.SortOrder)) {
+        foreach (var chapter in book.Chapters.Where(c => !c.IsDraft && c.isAvailable).OrderBy(c => c.SortOrder)) {
             var uri = ApiUrl.MakeRelativeUri($"/v1/work/{book.Id}/chapter/{chapter.Id}/text");
             Config.Logger.LogInformation($"Загружаю главу {chapter.Title.CoverQuotes()}");
             var response = await Config.Client.SendWithTriesAsync(() => GetDefaultMessage(uri, _apiUrl));
             var rchapter = await response.Content.ReadFromJsonAsync<AuthorTodayChapter>();
-            if (rchapter != default) {
+            if (rchapter != default && rchapter.Text != "" ) {
                 Config.Logger.LogInformation($"Загружена глава {rchapter.Title.CoverQuotes()}");
                 chapter.Text = rchapter.Text;
                 chapter.Key = rchapter.Key;
