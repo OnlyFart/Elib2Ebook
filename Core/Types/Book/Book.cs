@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using Core.Types.Common;
 
@@ -40,6 +41,9 @@ public class Book : IDisposable {
     /// </summary>
     public IEnumerable<Chapter> Chapters { get; set; } = new List<Chapter>();
 
+/// Тома
+    public IEnumerable<string> Volumes => Chapters.Select(c => c.VolumeNumber).Distinct();
+
     /// <summary>
     /// Url расположения книги
     /// </summary>
@@ -54,6 +58,11 @@ public class Book : IDisposable {
     /// Язык книги
     /// </summary>
     public string Lang { get; set; } = "ru";
+
+    public bool SupportSplitVolumes { get; set; } = false;
+    public bool SupportSplitChapters { get; set; } = false;
+
+    public bool SupportSplitting => SupportSplitVolumes || SupportSplitChapters;
 
     public Book(Uri url) {
         Url = url;

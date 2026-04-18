@@ -8,4 +8,7 @@ public class LitnetAuthResponse {
     
     [JsonPropertyName("token")]
     public string Token { get; set; }
+
+    [JsonPropertyName("device_id")]
+    public string DeviceID { get; set; }
 }

@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Web;
 using Core.Configs;
@@ -28,7 +29,7 @@ public abstract class LitnetGetterBase(BookGetterConfig config) : GetterBase(con
 
     protected virtual Uri SiteIp => SystemUrl;
 
-    private static readonly string DeviceId = Guid.NewGuid().ToString().ToUpper();
+    private static string DeviceId = Guid.NewGuid().ToString().ToUpper();
     private const string SECRET = "14a6579a984b3c6abecda6c2dfa83a64";
 
     private string _token { get; set; }
@@ -66,14 +67,47 @@ public abstract class LitnetGetterBase(BookGetterConfig config) : GetterBase(con
     public override async Task Authorize() {
         var path = Config.HasCredentials ? "user/find-by-login" : "registration/registration-by-device";
 
+        const string directory = "LNCache";
+
+        if (!Directory.Exists(directory)) {
+            Directory.CreateDirectory(directory);
+        }
+
+        var saveCreds = $"{directory}/{Config.Options.Login.RemoveInvalidChars()}";
+        if (Config.HasCredentials) {
+            if (File.Exists(saveCreds)) {
+                var timeDiff = DateTime.Now - File.GetLastWriteTime(saveCreds);
+                if ( timeDiff.TotalHours < 2 )
+                {
+                    var savedAuth = await File.ReadAllTextAsync(saveCreds).ContinueWith(t => t.Result.Deserialize<LitnetAuthResponse>());
+                    _token = savedAuth.Token;
+                    DeviceId = savedAuth.DeviceID;
+
+                    if( !string.IsNullOrWhiteSpace(_token) )
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    File.Delete(saveCreds);
+                }
+            }
+        }
+
         var url = ApiIp.MakeRelativeUri($"v1/{path}?login={HttpUtility.UrlEncode(Config.Options.Login?.TrimStart('+') ?? string.Empty)}&password={HttpUtility.UrlEncode(Config.Options.Password)}&app=android&device_id={DeviceId}&sign={GetSign(string.Empty)}");
         var data = await GetApiData<LitnetAuthResponse>(url);
 
         if (!string.IsNullOrWhiteSpace(data?.Token)) {
             Config.Logger.LogInformation("Успешно авторизовались");
+            data.DeviceID = DeviceId;
             _token = data.Token;
         } else {
             throw new Exception($"Не удалось авторизоваться. {data?.Error}");
+        }
+
+        if (Config.HasCredentials) {
+            await File.WriteAllTextAsync(saveCreds, JsonSerializer.Serialize(data));
         }
     }
 

@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -92,11 +95,37 @@ public class BoovelGetter(BookGetterConfig config) : GetterBase(config) {
         var output = new MemoryStream();
         await cs.CopyToAsync(output);
 
-        return Encoding.UTF8.GetString(output.ToArray()).AsHtmlDoc();
+        return FilterChapterContent( Encoding.UTF8.GetString(output.ToArray()) );
+    }
+
+    private static HtmlDocument FilterChapterContent(string data)
+    {
+        var sb = new StringBuilder();
+
+        var doc = data.AsHtmlDoc();
+
+        foreach (var node in doc.QuerySelectorAll("> *"))
+        {
+            var tag = node.Name;
+            var value = node.QuerySelector("boovell")?.InnerHtml;
+            if( tag != "img" && tag != "br" )
+            {
+                if ( node.GetType() != typeof(HtmlTextNode) && node.GetType() != typeof(HtmlCommentNode) )
+                {
+                    sb.Append($"<{tag}>{value}</{tag}>");
+                }
+            }
+            else
+            {
+                sb.Append(node?.OuterHtml);
+            }
+        }
+
+        return sb.AsHtmlDoc();
     }
 
     private Task<TempFile> GetCover(HtmlDocument doc, Uri bookUri) {
-        var imagePath = doc.QuerySelector("img.wp-post-image")?.Attributes["src"]?.Value;
+        var imagePath = doc.QuerySelector("a.story__thumbnail-href")?.Attributes["href"]?.Value;
         return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(bookUri.MakeRelativeUri(imagePath)) : Task.FromResult(default(TempFile));
     }
 }

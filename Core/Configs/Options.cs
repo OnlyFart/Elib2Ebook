@@ -23,6 +23,9 @@ public class Options {
         
     [Option('p', "password", Required = false, HelpText = "Пароль от системы")]
     public string Password { get; set; }
+
+    [Option('k', "token", Required = false, HelpText = "Готовый токен авторизации")]
+    public string Token { get; set; }
         
     [Option("proxy", Required = false, HelpText = "Прокси в формате <host>:<port>")]
     public string Proxy { get; set; }
@@ -74,6 +77,12 @@ public class Options {
 
     [Option("book-name-pattern", Required = false, HelpText = "Шаблон имени файла.", Default = "{Author.Name} - {Book.Title}")]
     public string BookNamePattern { get; set; } = "{Author.Name} - {Book.Title}";
+
+    [Option("split-volumes", Required = false, HelpText = "Разбивать по томам (если поддерживается)")]
+    public bool SplitVolumes { get; set; }
+
+    [Option("split-chapters", Required = false, HelpText = "Разбивать по главам (если поддерживается)")]
+    public bool SplitChapters { get; set; }
     
     public bool HasAdditionalType(AdditionalTypeEnum type) => Additional && (AdditionalTypes == default || !AdditionalTypes.Any() || AdditionalTypes.Contains(type));
 

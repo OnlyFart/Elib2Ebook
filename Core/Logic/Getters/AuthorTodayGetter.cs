@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -7,6 +8,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Core.Configs;
 using Core.Extensions;
@@ -69,6 +71,41 @@ public class AuthorTodayGetter(BookGetterConfig config) : GetterBase(config) {
             return;
         }
         
+        // АТ очень не любит много авторизовывать
+        // поэтому пришлось добавить кеширование токенов
+        const string directory = "ATCache";
+
+        if (!Directory.Exists(directory)) {
+            Directory.CreateDirectory(directory);
+        }
+
+        var saveCreds = $"{directory}/{Config.Options.Login.RemoveInvalidChars()}";
+        if (File.Exists(saveCreds)) {
+            var timeDiff = DateTime.Now - File.GetLastWriteTime(saveCreds);
+            if ( timeDiff.TotalHours < 24 )
+            {
+                var savedAuth = await File.ReadAllTextAsync(saveCreds).ContinueWith(t => t.Result.Deserialize<AuthorTodayAuthResponse>());
+                Config.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", savedAuth.Token);
+
+                try
+                {
+                    var checkResponse = await Config.Client.SendWithTriesAsync(() => GetDefaultMessage(ApiUrl.MakeRelativeUri("/v1/account/current-user"), _apiUrl));
+                    var checkUser = await checkResponse.Content.ReadFromJsonAsync<AuthorTodayUser>();
+                    UserId = checkUser!.Id.ToString();
+                }
+                catch (System.Exception){}
+
+                if( !string.IsNullOrWhiteSpace(UserId) )
+                {
+                    return;
+                }
+            }
+            else
+            {
+                File.Delete(saveCreds);
+            }
+        }
+        
         var response = await Config.Client.SendAsync(GetDefaultMessage(ApiUrl.MakeRelativeUri("/v1/account/login-by-password"), _apiUrl, JsonContent.Create(new { Config.Options.Login, Config.Options.Password })));
         var data = await response.Content.ReadFromJsonAsync<AuthorTodayAuthResponse>();
 
@@ -82,6 +119,7 @@ public class AuthorTodayGetter(BookGetterConfig config) : GetterBase(config) {
         } else {
             throw new Exception($"Не удалось авторизоваться. {data?.Message}");
         }
+        await File.WriteAllTextAsync(saveCreds, JsonSerializer.Serialize(data));
     }
 
     public override async Task<Book> Get(Uri url) {
@@ -183,7 +221,6 @@ public class AuthorTodayGetter(BookGetterConfig config) : GetterBase(config) {
         
         foreach (var atChapter in await GetChapters(book)) {
             var title = atChapter.Title.ReplaceNewLine();
-            Config.Logger.LogInformation($"Загружаю главу {title.CoverQuotes()}");
             
             var chapter = new Chapter {
                 Title = title
@@ -204,13 +241,17 @@ public class AuthorTodayGetter(BookGetterConfig config) : GetterBase(config) {
     private async Task<IEnumerable<AuthorTodayChapter>> GetChapters(AuthorTodayBookDetails book) {
         var result = new List<AuthorTodayChapter>();
         
-        foreach (var chunk in book.Chapters.Where(c => !c.IsDraft).OrderBy(c => c.SortOrder).Chunk(100)) {
-            var ids = string.Join("&", chunk.Select((c, i) => $"ids[{i}]={c.Id}"));
-            var uri = ApiUrl.MakeRelativeUri($"/v1/work/{book.Id}/chapter/many-texts?{ids}");
+        foreach (var chapter in book.Chapters.Where(c => !c.IsDraft && c.isAvailable).OrderBy(c => c.SortOrder)) {
+            var uri = ApiUrl.MakeRelativeUri($"/v1/work/{book.Id}/chapter/{chapter.Id}/text");
+            Config.Logger.LogInformation($"Загружаю главу {chapter.Title.CoverQuotes()}");
             var response = await Config.Client.SendWithTriesAsync(() => GetDefaultMessage(uri, _apiUrl));
-            var chapters = await response.Content.ReadFromJsonAsync<AuthorTodayChapter[]>();
-            if (chapters != default) {
-                result.AddRange(chapters.Where(c => c.Code != "NotFound"));
+            var rchapter = await response.Content.ReadFromJsonAsync<AuthorTodayChapter>();
+            if (rchapter != default && rchapter.Text != "" ) {
+                Config.Logger.LogInformation($"Загружена глава {rchapter.Title.CoverQuotes()}");
+                chapter.Text = rchapter.Text;
+                chapter.Key = rchapter.Key;
+                chapter.IsSuccessful = true;
+                result.Add(chapter);
             }
         }
 
