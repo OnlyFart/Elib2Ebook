@@ -19,7 +19,7 @@ jobs:
 
     - name: Restore dependencies
       run: dotnet restore Elib2Ebook.sln
-      
+
     - name: Build
       run: dotnet build --no-restore -c release Elib2Ebook.sln
 
@@ -93,28 +93,37 @@ jobs:
     if: github.ref == 'refs/heads/master'
     outputs:
       VERSION: ${{ steps.get-version.outputs.version }}
-      LAST_TAG: ${{ steps.last_release.outputs.tag_name }}
+      LAST_TAG: ${{ steps.last_release_tag.outputs.tag_name }}
 
     steps:
       - name: check repository
         uses: actions/checkout@v5
 
-      - uses: kzrnm/get-net-sdk-project-versions-action@v2
+      - uses: kzrnm/get-net-sdk-project-versions-action@v3.1.0
         id: get-version
         with:
           proj-path: Directory.Build.props
 
       - name: "get-last-release"
         id: last_release
-        uses: InsonusK/get-latest-release@v1.1.0
+        uses: octokit/request-action@v3.0.0
         with:
-          myToken: ${{ github.token }}
+          route: GET /repos/{owner}/{repo}/releases/latest
+          owner: OnlyFart
+          repo: Elib2Ebook
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: extract-last-release-tag
+        id: last_release_tag
+        run: echo "tag_name=$(echo '${{ steps.last_release.outputs.data }}' | jq -r '.tag_name')" >> $GITHUB_OUTPUT
 
   push_to_registry:
     name: push docker image to hub
     runs-on: ubuntu-latest
     needs: check_version
     if: ${{ needs.check_version.outputs.LAST_TAG != needs.check_version.outputs.VERSION }}
+
     strategy:
       matrix:
         folder: [ Elib2EbookCli, Elib2EbookWeb ]
@@ -153,19 +162,25 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ needs.check_version.outputs.LAST_TAG != needs.check_version.outputs.VERSION }}
     outputs:
-      UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
+      TAG_NAME: ${{ steps.tag_name.outputs.tag }}
 
     steps:
-      - name: release
-        uses: actions/create-release@v1
+      - name: check repository
+        uses: actions/checkout@v5
+
+      - name: create release
+        uses: softprops/action-gh-release@v2
         id: create_release
         with:
           draft: false
           prerelease: false
-          release_name: ${{needs.check_version.outputs.VERSION}}
+          name: ${{needs.check_version.outputs.VERSION}}
           tag_name: ${{needs.check_version.outputs.VERSION}}
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+          token: ${{ github.token }}
+
+      - name: save tag name
+        id: tag_name
+        run: echo "tag=${{needs.check_version.outputs.VERSION}}" >> $GITHUB_OUTPUT
 
   upload_release:
     needs: [create_release, publish]
@@ -182,19 +197,13 @@ jobs:
           name: Elib2Ebook-${{ matrix.os }}-${{ matrix.version }}
           path: ${{ github.workspace }}/${{ matrix.os }}-${{ matrix.version }}
 
-      - name: Install zip
-        uses: montudor/action-zip@v0.1.0
-
       - name: Zip output
         run: zip -qq -x "*.pdb" -r ../Elib2Ebook-${{ matrix.os }}-${{ matrix.version }}.zip .
         working-directory: ${{ github.workspace }}/${{ matrix.os }}-${{ matrix.version }}
 
       - name: upload ${{ matrix.os }}-${{ matrix.version }} asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+        uses: softprops/action-gh-release@v2
         with:
-          upload_url: ${{ needs.create_release.outputs.UPLOAD_URL }}
-          asset_path: Elib2Ebook-${{ matrix.os }}-${{ matrix.version }}.zip
-          asset_name: Elib2Ebook-${{ matrix.os }}-${{ matrix.version }}.zip
-          asset_content_type: application/zip
+          tag_name: ${{ needs.create_release.outputs.TAG_NAME }}
+          files: Elib2Ebook-${{ matrix.os }}-${{ matrix.version }}.zip
+          token: ${{ github.token }}
