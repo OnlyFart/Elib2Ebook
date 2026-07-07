@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <PackageReference Include="AngleSharp"/>
+        <PackageReference Include="CommandLineParser"/>
+        <PackageReference Include="FlareSolverrSharp"/>
+        <PackageReference Include="HtmlAgilityPack"/>
+        <PackageReference Include="HtmlAgilityPack.CssSelectors.NetCore"/>
+        <PackageReference Include="Microsoft.Extensions.FileProviders.Composite"/>
+        <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded"/>
+        <PackageReference Include="Microsoft.Extensions.FileProviders.Physical"/>
+        <PackageReference Include="Microsoft.Extensions.Logging"/>
+        <PackageReference Include="OAuth.DotNetCore"/>
+        <PackageReference Include="StringTokenFormatter"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Patterns\**\*.*">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Reference Include="EpubSharp">
+            <HintPath>External\EpubSharp.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
+</Project>

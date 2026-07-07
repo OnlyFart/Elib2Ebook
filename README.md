@@ -1,14 +1,13 @@
 # 📚 Elib2Ebook
 
 [![License](https://img.shields.io/github/license/OnlyFart/Elib2Ebook.svg?style=flat-square)](LICENSE)
-[![Forks](https://img.shields.io/github/forks/OnlyFart/Elib2Ebook.svg?style=flat-square)](https://github.com/OnlyFart/Elib2Ebook/network)
-[![Latest Tag](https://img.shields.io/github/v/tag/OnlyFart/Elib2Ebook.svg?style=flat-square)](https://github.com/OnlyFart/Elib2Ebook/releases/latest)
+[![.NET Build, Test & Publish](https://github.com/OnlyFart/Elib2Ebook/actions/workflows/dotnet.yml/badge.svg?style=flat-square)](https://github.com/OnlyFart/Elib2Ebook/actions/workflows/dotnet.yml)
+[![GitHub Release](https://img.shields.io/github/v/release/OnlyFart/Elib2Ebook?style=flat-square)](https://github.com/OnlyFart/Elib2Ebook/releases/latest)
 ![Docker Pulls (CLI)](https://img.shields.io/docker/pulls/onlyfart/elib2ebookcli?style=flat-square&label=docker%20pulls%20(cli))
 ![Docker Pulls (Web)](https://img.shields.io/docker/pulls/onlyfart/elib2ebookweb?style=flat-square&label=docker%20pulls%20(web))
 ![GitHub Downloads (All)](https://img.shields.io/github/downloads/onlyfart/elib2ebook/total?style=flat-square)
 
 **Elib2Ebook** — консольная утилита и веб-приложение для скачивания книг с популярных онлайн-библиотек и литературных сайтов. Поддерживает сохранение в форматах EPUB, FB2, CBZ, JSON, TXT.
-
 ---
 
 ## Оглавление
