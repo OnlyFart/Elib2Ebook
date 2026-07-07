@@ -1,0 +1,83 @@
+@using Core.Types.Book
+
+<MudCard>
+    <MudGrid Justify="Justify.Center">
+        <MudItem sm="5" md="5" xl="5">
+            <MudImage Src="@_cover" ObjectFit="ObjectFit.Contain" Fluid="true"/>
+        </MudItem>
+        <MudItem sm="7" md="7" xl="7">
+            <MudCardContent>
+                <MudLink Href="@Book.Url.ToString()" Target="_blank">
+                    <MudText Typo="Typo.h5">@Book.Title</MudText>
+                </MudLink>
+
+                @if (Book.Author != null)
+                {
+                    @if (Book.Author.Url == null)
+                    {
+                        <MudText Typo="Typo.subtitle2">Автор: @Book.Author.Name</MudText>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.subtitle2">Автор:
+                            <MudLink Href="@Book.Author.Url.ToString()" Target="_blank">@Book.Author.Name</MudLink>
+                        </MudText>
+                    }
+                }
+
+                @if (Book.Seria != null)
+                {
+                    @if (Book.Seria?.Url == null)
+                    {
+                        <MudText Typo="Typo.subtitle2">Серия: @Seria</MudText>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.subtitle2">Серия:
+                            <MudLink Href="@Book.Seria.Url.ToString()" Target="_blank">@Seria</MudLink>
+                        </MudText>
+                    }
+                }
+
+                @if (!string.IsNullOrWhiteSpace(Book.Annotation))
+                {
+                    <MudElement HtmlTag="pre"
+                                Style="white-space: pre-line">@((MarkupString)Book.Annotation)</MudElement>
+                }
+            </MudCardContent>
+        </MudItem>
+    </MudGrid>
+</MudCard>
+
+@code {
+    [Parameter] public required Book Book { get; set; }
+
+    private string _cover;
+
+    private string _coverPath;
+
+    private string Seria => Book.Seria?.Name + (string.IsNullOrWhiteSpace(Book.Seria?.Number) ? string.Empty : $" #{Book.Seria.Number}");
+
+    protected override Task OnInitializedAsync()
+    {
+        InitCover();
+        return base.OnInitializedAsync();
+    }
+
+    protected override Task OnParametersSetAsync()
+    {
+        if (Book.Cover?.FilePath != _coverPath)
+        {
+            InitCover();
+        }
+
+        return base.OnParametersSetAsync();
+    }
+
+    private void InitCover()
+    {
+        _cover = Book.Cover != null && Book.Cover.Content.Length > 0 ? $"data:image/png;base64, {Convert.ToBase64String(Book.Cover.Content)}" : _cover;
+        _coverPath = Book.Cover?.FilePath;
+    }
+
+}

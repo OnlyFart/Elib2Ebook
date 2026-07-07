@@ -1,0 +1,165 @@
+@using Core.Configs
+@using Core.Extensions
+@using Elib2EbookWeb.Misc
+@inject IJSRuntime JsRuntime
+@inject ISnackbar Snackbar
+
+<MudPaper Class="pa-4">
+    <MudForm Spacing="2">
+        <MudTextField T="string" Immediate="true" Label="Ссылка на книгу" RequiredError="Ссылка на книгу обязательна!"
+                      Variant="Variant.Outlined" TextChanged="@(value => _options.Url = new[]
+                                                              {
+                                                                  value
+                                                              })" AutoFocus="true"/>
+
+        <MudStack>
+            <MudToggleGroup T="string" SelectionMode="SelectionMode.MultiSelection" Color="Color.Tertiary" CheckMark
+                            @bind-Values="_options.Format">
+                <MudToggleItem Value="@("epub")" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank"
+                               SelectedIcon="@Icons.Material.Filled.CheckBox"/>
+                <MudToggleItem Value="@("fb2")" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank"
+                               SelectedIcon="@Icons.Material.Filled.CheckBox"/>
+                <MudToggleItem Value="@("cbz")" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank"
+                               SelectedIcon="@Icons.Material.Filled.CheckBox"/>
+                <MudToggleItem Value="@("txt")" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank"
+                               SelectedIcon="@Icons.Material.Filled.CheckBox"/>
+            </MudToggleGroup>
+        </MudStack>
+
+
+        <MudTextField @bind-Value="@_options.Login" Label="Логин" Variant="Variant.Outlined"/>
+        <MudTextField @bind-Value="@_options.Password" Label="Пароль" Variant="Variant.Outlined"
+                      InputType="@_passwordInput" Adornment="Adornment.End" AdornmentIcon="@_passwordInputIcon"
+                      OnAdornmentClick="ShowPassword" AdornmentAriaLabel="Показать пароль"/>
+
+
+        @if (_startEndCSwitcher)
+        {
+            <div class="d-flex gap-x-4">
+                <MudTextField T="string" Label="Глава от" Variant="Variant.Outlined" @bind-Value="@_options.StartName"/>
+                <MudTextField T="string" Label="Глава до" Variant="Variant.Outlined" @bind-Value="@_options.EndName"/>
+            </div>
+        }
+        else
+        {
+            <div HtmlTag="div" Class="d-flex gap-x-4">
+                <MudTextField T="int?" Label="Глава от" Variant="Variant.Outlined" @bind-Value="@_options.Start"/>
+                <MudTextField T="int?" Label="Глава до" Variant="Variant.Outlined" @bind-Value="@_options.End"/>
+            </div>
+        }
+
+        <MudRadioGroup T="bool" ValueChanged="OnSwitch" Class="justify-center align-center">
+            <MudRadio Value="false" Color="Color.Primary" Dense="true">По номеру</MudRadio>
+            <MudRadio Value="true" Color="Color.Secondary" Dense="true">По названию</MudRadio>
+        </MudRadioGroup>
+    </MudForm>
+</MudPaper>
+
+<MudPaper Class="pa-4 mt-4">
+    @if (_onGenerate)
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Info" DropShadow="false" Disabled="true" FullWidth="true"
+                   Size="Size.Large">
+            @if (_onGenerate)
+            {
+                @if (!string.IsNullOrWhiteSpace(_log))
+                {
+                    <MudText Class="text-truncate">@_log</MudText>
+                }
+                else
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                }
+            }
+        </MudButton>
+    }
+    else
+    {
+        <MudButtonGroup Color="Color.Info" Variant="Variant.Filled" Size="Size.Large" FullWidth="true">
+            <MudButton OnClick="WithImages" Disabled="_onGenerate" FullWidth="true">
+                <MudText>Скачать</MudText>
+            </MudButton>
+            <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                <MudMenuItem OnClick="NoImages">Скачать без картинок</MudMenuItem>
+            </MudMenu>
+        </MudButtonGroup>
+    }
+</MudPaper>
+
+@code {
+    private readonly Options _options = new();
+    private ActionLogger _logger;
+    private bool _onGenerate;
+    private string _log;
+    private bool _startEndCSwitcher;
+
+    private bool _isShow;
+    private InputType _passwordInput = InputType.Password;
+    private string _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
+
+    [Parameter] public required Func<Options, ILogger, Task> OnClick { get; set; }
+
+    void ShowPassword()
+    {
+        if (_isShow)
+        {
+            _isShow = false;
+            _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
+            _passwordInput = InputType.Password;
+        }
+        else
+        {
+            _isShow = true;
+            _passwordInputIcon = Icons.Material.Filled.Visibility;
+            _passwordInput = InputType.Text;
+        }
+    }
+
+    private async Task WithImages()
+    {
+        _options.NoImage = false;
+        await Download();
+    }
+
+    private async Task NoImages()
+    {
+        _options.NoImage = true;
+        await Download();
+    }
+
+    private async Task Download()
+    {
+        if (_options.Url == null || !_options.Url.Any() || string.IsNullOrWhiteSpace(_options.Url.First()))
+        {
+            Snackbar.Add("Укажите ссылку на книгу", Severity.Error);
+            return;
+        }
+
+        if (_options.Format == null || !_options.Format.Any())
+        {
+            Snackbar.Add("Выберите формат", Severity.Error);
+            return;
+        }
+
+        _onGenerate = true;
+        _logger = new ActionLogger(str =>
+        {
+            _log = str.Crop(300);
+            InvokeAsync(StateHasChanged);
+        });
+
+        await OnClick(_options, _logger);
+        _onGenerate = false;
+    }
+
+    private void OnSwitch(bool obj)
+    {
+        _startEndCSwitcher = obj;
+
+        _options.Start = null;
+        _options.End = null;
+        _options.StartName = null;
+        _options.EndName = null;
+    }
+
+}
