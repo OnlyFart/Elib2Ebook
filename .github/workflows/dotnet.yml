@@ -102,7 +102,7 @@ jobs:
       - uses: kzrnm/get-net-sdk-project-versions-action@v2
         id: get-version
         with:
-          proj-path: src/Core/Core.csproj
+          proj-path: Directory.Build.props
 
       - name: "get-last-release"
         id: last_release
