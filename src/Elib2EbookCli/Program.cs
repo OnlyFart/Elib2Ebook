@@ -28,7 +28,7 @@ internal static class Program
             .WithNotParsed(errs =>
             {
                 var title = AppDomain.CurrentDomain.FriendlyName;
-                var coreAssembly = typeof(BookGetterConfig).Assembly;
+                var coreAssembly = typeof(Program).Assembly;
                 var version = coreAssembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? string.Empty;
 
                 var heading = new HeadingInfo(title, version);
