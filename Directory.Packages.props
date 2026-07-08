@@ -15,6 +15,7 @@
     <PackageVersion Include="FlareSolverrSharp" Version="3.0.7" />
     <PackageVersion Include="HtmlAgilityPack" Version="1.12.4" />
     <PackageVersion Include="HtmlAgilityPack.CssSelectors.NetCore" Version="1.2.1" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyModel" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Composite" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Physical" Version="10.0.9" />
