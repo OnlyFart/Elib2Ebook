@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Elib2Ebook.Domain\Elib2Ebook.Domain.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AngleSharp"/>
+        <PackageReference Include="CommandLineParser"/>
+        <PackageReference Include="FlareSolverrSharp"/>
+        <PackageReference Include="HtmlAgilityPack"/>
+        <PackageReference Include="HtmlAgilityPack.CssSelectors.NetCore"/>
+        <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions"/>
+        <PackageReference Include="Microsoft.Extensions.FileProviders.Composite"/>
+        <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded"/>
+        <PackageReference Include="Microsoft.Extensions.FileProviders.Physical"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"/>
+        <PackageReference Include="StringTokenFormatter"/>
+    </ItemGroup>
+    <ItemGroup>
+        <Reference Include="EpubSharp">
+            <HintPath>External\EpubSharp.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Patterns\**\*.*">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </EmbeddedResource>
+    </ItemGroup>
+</Project>

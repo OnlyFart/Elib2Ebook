@@ -1,9 +1,9 @@
 ﻿@page "/"
-@using Core.Configs
-@using Core.Extensions
-@using Core.Misc
-@using Core.Misc.TempFolder
-@using Core.Types.Book
+@using Elib2Ebook.Domain.Book
+@using Elib2Ebook.DomainServices.Configs
+@using Elib2Ebook.DomainServices.Extensions
+@using Elib2Ebook.DomainServices.Misc
+@using Elib2Ebook.DomainServices.Misc.TempFolder
 @rendermode InteractiveServer
 @inject IJSRuntime JsRuntime
 @inject ISnackbar Snackbar
@@ -39,7 +39,7 @@
         try
         {
             using var getterConfig = BookGetterConfig.GetDefault(options, logger);
-            using var getter = GetterProvider.Get(getterConfig, options.Url.First().AsUri());
+            using var getter = GetterFactory.Get(getterConfig, options.Url.First().AsUri());
 
             await getter.Init();
             await getter.Authorize();

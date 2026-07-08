@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\Elib2Ebook.DomainServices\Elib2Ebook.DomainServices.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="OAuth.DotNetCore" />
+  </ItemGroup>
+</Project>

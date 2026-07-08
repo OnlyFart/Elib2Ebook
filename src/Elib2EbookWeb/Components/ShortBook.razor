@@ -1,4 +1,4 @@
-@using Core.Types.Book
+@using Elib2Ebook.Domain.Book
 
 <MudCard>
     <MudGrid Justify="Justify.Center">
@@ -50,7 +50,9 @@
 </MudCard>
 
 @code {
-    [Parameter] public required Book Book { get; set; }
+
+    [Parameter]
+    public required Book Book { get; set; }
 
     private string _cover;
 

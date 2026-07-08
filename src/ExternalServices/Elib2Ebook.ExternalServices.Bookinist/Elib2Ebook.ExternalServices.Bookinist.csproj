@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\Elib2Ebook.DomainServices\Elib2Ebook.DomainServices.csproj" />
+  </ItemGroup>
+</Project>
