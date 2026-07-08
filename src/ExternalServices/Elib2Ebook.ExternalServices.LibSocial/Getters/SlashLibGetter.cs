@@ -1,0 +1,12 @@
+using Elib2Ebook.DomainServices.Configs;
+
+namespace Elib2Ebook.ExternalServices.LibSocial.Getters;
+
+public class SlashLibGetter : MangaLibGetter
+{
+    public SlashLibGetter(BookGetterConfig config) : base(config) { }
+
+    protected override Uri SystemUrl => new("https://v2.slashlib.me/");
+
+    protected override int SiteId => 2;
+}

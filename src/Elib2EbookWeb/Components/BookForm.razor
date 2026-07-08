@@ -1,5 +1,5 @@
-@using Core.Configs
-@using Core.Extensions
+@using Elib2Ebook.DomainServices.Configs
+@using Elib2Ebook.DomainServices.Extensions
 @using Elib2EbookWeb.Misc
 @inject IJSRuntime JsRuntime
 @inject ISnackbar Snackbar
@@ -97,7 +97,8 @@
     private InputType _passwordInput = InputType.Password;
     private string _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
 
-    [Parameter] public required Func<Options, ILogger, Task> OnClick { get; set; }
+    [Parameter]
+    public required Func<Options, ILogger, Task> OnClick { get; set; }
 
     void ShowPassword()
     {

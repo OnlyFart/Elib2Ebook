@@ -30,6 +30,7 @@
   - [Дополнительные файлы](#дополнительные-файлы)
   - [Временные файлы](#временные-файлы)
   - [Шаблон имени файла](#шаблон-имени-файла)
+- [Архитектура проекта](#архитектура-проекта)
 - [Полный список параметров](#полный-список-параметров)
 - [Скриншоты](#скриншоты)
 - [Лицензия](#лицензия)
@@ -82,9 +83,12 @@ https://bookmate.ru/
 https://booknet.com/
 https://booknet.ua/
 https://bookriver.ru/
+https://books.yandex.ru/
 https://bookstab.ru/
 https://bookstime.ru/
 https://bookuruk.com/
+https://boovell.ru/
+https://boosty.to/
 https://dark-novels.ru/
 https://desu.me/
 https://dreame.com/
@@ -94,6 +98,7 @@ https://fanficus.com/
 https://fb2.top/
 https://ficbook.net/
 https://fictionbook.ru/
+https://freedlit.space/
 https://hentailib.me/
 https://hogwartsnet.ru/
 https://hotnovelpub.com/
@@ -104,6 +109,7 @@ https://jaomix.ru/
 https://ladylib.top/
 https://lanovels.com/
 https://libbox.ru/
+https://libking.ru/
 https://librebook.me/
 https://libst.ru/
 https://lightnoveldaily.com/
@@ -116,6 +122,7 @@ https://litres.ru/
 https://litsovet.ru/
 https://manga.ovh/
 https://mangalib.me/
+https://mangalib.org/
 https://mangamammy.ru/
 https://mir-knig.com/
 https://mlate.ru/
@@ -331,12 +338,18 @@ Elib2EbookCli -u https://author.today/work/212721 -f epub --book-name-pattern "{
 
 ---
 
+## Архитектура проекта
+
+Подробное описание архитектуры проекта, структуры слоёв и используемых паттернов см. в [ARCHITECTURE.md](ARCHITECTURE.md).
+
+---
+
 ## Полный список параметров
 
 | Параметр                | Алиас | Обязательный | По умолчанию                         | Описание                                                      |
 |-------------------------|:-----:|:------------:|:------------------------------------:|---------------------------------------------------------------|
 | `--url`                 | `-u`  | ✅           | —                                    | Ссылка на книгу (несколько — через запятую)                   |
-| `--format`              | `-f`  | ✅           | —                                    | Формат(ы): `epub`, `fb2`, `cbz`, `json`, `txt`               |
+| `--format`              | `-f`  | ✅           | —                                    | Формат(ы): `epub`, `fb2`, `cbz`, `json`, `json_lite`, `txt`  |
 | `--login`               | `-l`  | ❌           | —                                    | Логин для авторизации                                         |
 | `--password`            | `-p`  | ❌           | —                                    | Пароль для авторизации                                        |
 | `--proxy`               | —     | ❌           | —                                    | Прокси: `(http\|socks4\|socks5)://host:port`                 |

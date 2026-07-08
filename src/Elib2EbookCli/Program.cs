@@ -2,10 +2,10 @@
 using System.Text;
 using CommandLine;
 using CommandLine.Text;
-using Core.Configs;
-using Core.Extensions;
-using Core.Logic.Builders;
-using Core.Misc;
+using Elib2Ebook.DomainServices.Builders;
+using Elib2Ebook.DomainServices.Configs;
+using Elib2Ebook.DomainServices.Extensions;
+using Elib2Ebook.DomainServices.Misc;
 using Microsoft.Extensions.Logging;
 
 namespace Elib2EbookCli;
@@ -54,7 +54,7 @@ internal static class Program
             .WithParsedAsync(async options =>
             {
                 using var getterConfig = BookGetterConfig.GetDefault(options, logger);
-                using var getter = GetterProvider.Get(getterConfig, options.Url.First().AsUri());
+                using var getter = GetterFactory.Get(getterConfig, options.Url.First().AsUri());
 
                 try
                 {
