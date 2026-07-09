@@ -22,10 +22,9 @@ public class BuilderProviderTests
             BuilderProvider.Get(
                 format,
                 new Options(
-                    new[]
-                    {
-                        "https://x.com"
-                    }),
+                [
+                    "https://x.com",
+                ]),
                 NullLogger.Instance));
     }
 
@@ -35,10 +34,9 @@ public class BuilderProviderTests
         Assert.Throws<ArgumentException>(() => BuilderProvider.Get(
             "bad",
             new Options(
-                new[]
-                {
-                    "https://x.com"
-                }),
+            [
+                "https://x.com",
+            ]),
             NullLogger.Instance));
     }
 }

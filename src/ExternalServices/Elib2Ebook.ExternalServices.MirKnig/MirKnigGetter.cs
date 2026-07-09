@@ -61,10 +61,10 @@ public class MirKnigGetter(BookGetterConfig config) : GetterBase(config)
             Title = title, Images = await GetImages(doc, SystemUrl), Content = doc.DocumentNode.InnerHtml
         };
 
-        return new[]
-        {
-            chapter
-        };
+        return
+        [
+            chapter,
+        ];
     }
 
     private static Author GetAuthor(HtmlDocument doc, Uri url)

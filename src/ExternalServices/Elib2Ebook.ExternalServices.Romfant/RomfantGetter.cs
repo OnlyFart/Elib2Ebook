@@ -109,10 +109,10 @@ public class RomfantGetter(BookGetterConfig config) : GetterBase(config)
         chapter.Title = title;
         chapter.Content = sb.AsHtmlDoc().DocumentNode.InnerHtml;
 
-        return new[]
-        {
-            chapter
-        };
+        return
+        [
+            chapter,
+        ];
     }
 
     private async Task<int> GetPages(string bookId)

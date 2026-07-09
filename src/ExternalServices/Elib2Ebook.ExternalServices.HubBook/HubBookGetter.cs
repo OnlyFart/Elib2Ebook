@@ -61,10 +61,10 @@ public class HubBookGetter(BookGetterConfig config) : GetterBase(config)
         chapter.Images = await GetImages(chapterDoc, url);
         chapter.Content = chapterDoc.DocumentNode.InnerHtml;
 
-        return new[]
-        {
-            chapter
-        };
+        return
+        [
+            chapter,
+        ];
     }
 
     private Task<TempFile> GetCover(HtmlDocument doc, Uri uri)

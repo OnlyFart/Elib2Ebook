@@ -10,7 +10,7 @@ public class AdditionalFileCollection : IDisposable
     {
         if (!Collection.TryGetValue(type, out var files))
         {
-            files = new();
+            files = [];
             Collection[type] = files;
         }
 

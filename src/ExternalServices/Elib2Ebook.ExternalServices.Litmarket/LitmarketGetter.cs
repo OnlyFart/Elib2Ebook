@@ -126,7 +126,7 @@ public class LitmarketGetter(BookGetterConfig config) : GetterBase(config)
 
     private Task<TempFile> GetCover(HtmlDocument doc, Uri uri)
     {
-        var imagePath = doc.QuerySelector("div.front img")?.Attributes["data-src"]?.Value;
+        var imagePath = doc.QuerySelector("img.img.bookCardSkeleton")?.Attributes["src"]?.Value;
         return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(uri.MakeRelativeUri(imagePath.AsUri().AbsolutePath)) : Task.FromResult(default(TempFile));
     }
 
@@ -188,6 +188,11 @@ public class LitmarketGetter(BookGetterConfig config) : GetterBase(config)
                             break;
                         default:
                             var text = $"{mod.Text ?? string.Empty}";
+                            if (sb.Length == 0 && text == chapterTitle)
+                            {
+                                continue;
+                            }
+
                             if (mod.Styles?.Length > 0)
                             {
                                 foreach (var style in mod.Styles)

@@ -22,7 +22,7 @@ internal class LitresPayload
     public string App { get; set; }
 
     [JsonPropertyName("requests")]
-    public List<object> Requests { get; set; } = new();
+    public List<object> Requests { get; set; } = [];
 
     public static LitresPayload Create(DateTime date, string sid, string secret, string app)
     {

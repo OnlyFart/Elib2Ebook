@@ -14,7 +14,7 @@ public class EpubBuilder(Options options, ILogger logger) : BuilderBase(options,
 
     private readonly EpubWriter _writer = new();
 
-    private List<TempFile> Images { get; set; } = new();
+    private List<TempFile> Images { get; set; } = [];
 
     /// <summary>
     /// Создание Xhtml документа из кода части
@@ -97,7 +97,7 @@ public class EpubBuilder(Options options, ILogger logger) : BuilderBase(options,
         {
             foreach (var image in chapter.Images)
             {
-                _writer.AddFile(image.FullName, Array.Empty<byte>(), GetImageFormat(image.FullName).ToEpubContentType());
+                _writer.AddFile(image.FullName, [], GetImageFormat(image.FullName).ToEpubContentType());
                 Images.Add(image);
             }
 

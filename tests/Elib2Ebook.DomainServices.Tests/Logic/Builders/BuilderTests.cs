@@ -8,15 +8,14 @@ public class BuilderTests
 {
     private static Options Opt(string format)
         => new(
-            new[]
-            {
-                "https://example.com/book"
-            })
+        [
+            "https://example.com/book",
+        ])
         {
-            Format = new[]
-            {
-                format
-            },
+            Format =
+            [
+                format,
+            ],
             BookNamePattern = "{Book.Title}",
             Timeout = 120
         };

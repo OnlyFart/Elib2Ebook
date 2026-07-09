@@ -21,7 +21,7 @@ public class Fb2Builder : BuilderBase
     private readonly XElement _titleInfo;
     private readonly XElement _body;
     private readonly XElement _documentInfo;
-    private readonly List<TempFile> _images = new();
+    private readonly List<TempFile> _images = [];
 
     private readonly Dictionary<string, string> _map = new()
     {
