@@ -14,7 +14,7 @@ public abstract class MangaLibGetterBase(BookGetterConfig config) : NewLibSocial
 
         foreach (var page in chapterResponse.Pages)
         {
-            var url = SystemUrl.MakeRelativeUri(page.Url.TrimStart('/'));
+            var url = ImagesHost.MakeRelativeUri(page.Url.TrimStart('/'));
             sb.Append($"<img src=\"{url}\" />");
         }
 

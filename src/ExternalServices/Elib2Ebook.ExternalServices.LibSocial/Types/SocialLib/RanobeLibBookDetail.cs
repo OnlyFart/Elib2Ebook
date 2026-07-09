@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace Elib2Ebook.ExternalServices.LibSocial.Types.SocialLib;
@@ -34,7 +35,7 @@ internal class RLBDData
     public List<RLBDAuthor> Authors { get; set; }
 
     [JsonPropertyName("summary")]
-    public string Summary { get; set; }
+    public JsonNode Summary { get; set; }
 }
 
 internal class RLBDCover

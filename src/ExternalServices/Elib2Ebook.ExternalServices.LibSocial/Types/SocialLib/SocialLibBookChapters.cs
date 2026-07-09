@@ -39,7 +39,7 @@ public class SocialLibBookChapter
     public string Number { get; set; }
 
     [JsonPropertyName("branches")]
-    public List<SocialLibChapterBranch> Branches { get; set; }
+    public List<SocialLibChapterBranch> Branches { get; set; } = [];
 
     [JsonPropertyName("attachments")]
     public SocialLibChapterAttachment[] Attachments { get; set; } = [];
@@ -69,7 +69,7 @@ public class SocialLibBookChapter
     }
 }
 
-internal class SocialLibChapterContent
+public class SocialLibChapterContent
 {
     [JsonPropertyName("type")]
     public string Type { get; set; }
@@ -87,7 +87,7 @@ internal class SocialLibChapterContent
     public Dictionary<string, JsonNode> Attrs { get; set; } = new();
 }
 
-internal class SocialLibChapterMark
+public class SocialLibChapterMark
 {
     [JsonPropertyName("type")]
     public string Type { get; set; }
