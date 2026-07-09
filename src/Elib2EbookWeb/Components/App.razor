@@ -1,16 +1,24 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 
 <head>
     <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
     <base href="/"/>
     <link rel="manifest" href="manifest.json"/>
-    <link rel="stylesheet" href="bootstrap/bootstrap.min.css"/>
     <link rel="stylesheet" href="app.css"/>
     <link rel="stylesheet" href="Elib2EbookWeb.styles.css"/>
     <link rel="icon" type="image/png" href="favicon.png"/>
-    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet"/>
+    <link rel="apple-touch-icon" sizes="512x512" href="icons/icon512x512.png"/>
+    <link rel="apple-touch-icon" sizes="256x256" href="icons/icon256x256.png"/>
+    <link rel="apple-touch-icon" sizes="128x128" href="icons/icon128x128.png"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+    <meta name="apple-mobile-web-app-title" content="Elib2Ebook"/>
+    <meta name="theme-color" content="#1a73e8"/>
+    <meta name="application-name" content="Elib2Ebook"/>
+    <meta name="mobile-web-app-capable" content="yes"/>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet"/>
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet"/>
     <HeadOutlet/>
 </head>
@@ -32,6 +40,20 @@
         anchorElement.click();
         anchorElement.remove();
         URL.revokeObjectURL(url);
+    }
+</script>
+
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('ServiceWorker registered:', registration.scope);
+                })
+                .catch(error => {
+                    console.log('ServiceWorker registration failed:', error);
+                });
+        });
     }
 </script>
 

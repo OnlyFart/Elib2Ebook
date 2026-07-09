@@ -1,0 +1,137 @@
+@page "/supported"
+@rendermode InteractiveServer
+
+<PageTitle>Поддерживаемые сайты — Elib2Ebook</PageTitle>
+
+<div class="supported-page">
+    <div class="supported-header">
+        <h1 class="supported-title">Поддерживаемые сайты</h1>
+        <p class="supported-subtitle">Более 50 книжных сайтов, с которых можно скачивать книги</p>
+    </div>
+
+    <div class="supported-search">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="search-icon">
+            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        <input type="text" class="supported-input" placeholder="Поиск сайта..." @bind="@_search" @bind:event="oninput"/>
+    </div>
+
+    <div class="supported-sites">
+        @foreach (var site in FilteredSites)
+        {
+            <div class="site-card">
+                <div class="site-card-icon">
+                    @switch (site.Icon)
+                    {
+                        case "book":
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 18H6V4h2v8l2.5-1.5L13 12V4h5v16z"/>
+                            </svg>
+                            break;
+                        case "globe":
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                            </svg>
+                            break;
+                        case "manga":
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                            </svg>
+                            break;
+                    }
+                </div>
+                <div class="site-card-info">
+                    <span class="site-card-name">@site.Name</span>
+                    <a class="site-card-url" href="@site.Url" target="_blank" rel="noopener">@site.Url</a>
+                </div>
+            </div>
+        }
+        @if (FilteredSites.Count == 0)
+        {
+            <div class="supported-empty">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="var(--md-sys-color-on-surface-variant)">
+                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                </svg>
+                <p>Ничего не найдено</p>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private string _search = string.Empty;
+
+    private IReadOnlyList<SiteInfo> FilteredSites =>
+        string.IsNullOrWhiteSpace(_search)
+            ? Sites
+            : Sites.Where(s => s.Name.Contains(_search, StringComparison.OrdinalIgnoreCase) ||
+                               s.Url.Contains(_search, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    private static readonly IReadOnlyList<SiteInfo> Sites = new List<SiteInfo>
+    {
+        new("Author.Today", "https://author.today", "globe"),
+        new("Book in Book", "https://bookinbook.com", "book"),
+        new("Bookinist", "https://bookinist.org", "book"),
+        new("BookRiver", "https://bookriver.ru", "book"),
+        new("Bookstab", "https://bookstab.ru", "book"),
+        new("BooksTime", "https://bookstime.ru", "book"),
+        new("Boosty", "https://boosty.to", "globe"),
+        new("Boovel", "https://boovel.ru", "book"),
+        new("DarkNovels", "https://darknovels.ru", "book"),
+        new("Desu", "https://desu.me", "manga"),
+        new("Dreame", "https://dreame.com", "book"),
+        new("FanFicus", "https://fanficus.com", "book"),
+        new("Fb2Top", "https://fb2.top", "book"),
+        new("Ficbook", "https://ficbook.net", "book"),
+        new("FictionBook", "https://fictionbook.ru", "book"),
+        new("Freedlit", "https://freedlit.space", "book"),
+        new("Freedom", "https://freedom.tm", "book"),
+        new("HogwartsNet", "https://hogwartsnet.ru", "book"),
+        new("HotNovelPub", "https://hotnovelpub.com", "book"),
+        new("HubBook", "https://hubbook.ru", "book"),
+        new("iGram", "https://igram.net", "globe"),
+        new("Jaomix", "https://jaomix.ru", "book"),
+        new("Libbox", "https://libbox.ru", "book"),
+        new("LibKing", "https://libking.ru", "book"),
+        new("Librebook", "https://librebook.me", "book"),
+        new("LibSocial", "https://lib.social", "book"),
+        new("Libst", "https://libst.ru", "book"),
+        new("Litgorod", "https://litgorod.ru", "book"),
+        new("LitLife", "https://litlife.club", "book"),
+        new("Litmarket", "https://litmarket.ru", "book"),
+        new("Litmir", "https://litmir.club", "book"),
+        new("Litnet", "https://litnet.com", "book"),
+        new("Litres", "https://litres.ru", "book"),
+        new("Litsovet", "https://litsovet.ru", "book"),
+        new("Manga Mammy", "https://mangamammy.ru", "manga"),
+        new("MirKnig", "https://mir-knig.com", "book"),
+        new("MyBook", "https://mybook.ru", "book"),
+        new("Neobook", "https://neobook.org", "book"),
+        new("Novelhall", "https://novelhall.com", "book"),
+        new("NovelTranslate", "https://noveltranslate.com", "book"),
+        new("Novelxo", "https://novelxo.com", "book"),
+        new("OnlineKnigi", "https://online-knigi.com", "book"),
+        new("Prodaman", "https://prodaman.ru", "book"),
+        new("Ranobe", "https://ranobe.me", "book"),
+        new("RanobeHub", "https://ranobehub.org", "book"),
+        new("RanobeOvh", "https://ranobe.ovh", "book"),
+        new("RanobesCom", "https://ranobes.com", "book"),
+        new("Readli", "https://readli.net", "book"),
+        new("ReadManga", "https://readmanga.me", "manga"),
+        new("Renovels", "https://renovels.org", "book"),
+        new("Romfant", "https://romfant.ru", "book"),
+        new("RoyalRoad", "https://royalroad.com", "book"),
+        new("Rulate", "https://tl.rulate.ru", "book"),
+        new("Samlib", "https://samlib.ru", "book"),
+        new("Stroki MTS", "https://stroki.mts.ru", "book"),
+        new("TopLiba", "https://topliba.com", "book"),
+        new("Twilight Russia", "https://twilightrussia.ru", "book"),
+        new("Wattpad", "https://wattpad.com", "book"),
+        new("WuxiaWorld", "https://wuxiaworld.com", "book"),
+        new("Yandex Books", "https://books.yandex.ru", "book"),
+        new("Younettranslate", "https://younettranslate.com", "book"),
+        new("Acomics", "https://acomics.ru", "manga"),
+    };
+
+    private record SiteInfo(string Name, string Url, string Icon);
+}

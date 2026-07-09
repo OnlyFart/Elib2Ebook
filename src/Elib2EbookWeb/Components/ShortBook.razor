@@ -1,53 +1,50 @@
 @using Elib2Ebook.Domain.Book
 
-<MudCard>
-    <MudGrid Justify="Justify.Center">
-        <MudItem sm="5" md="5" xl="5">
-            <MudImage Src="@_cover" ObjectFit="ObjectFit.Contain" Fluid="true"/>
-        </MudItem>
-        <MudItem sm="7" md="7" xl="7">
-            <MudCardContent>
-                <MudLink Href="@Book.Url.ToString()" Target="_blank">
-                    <MudText Typo="Typo.h5">@Book.Title</MudText>
-                </MudLink>
+<div class="book-card">
+    <div class="book-card-cover">
+        <img src="@_cover" alt="Обложка"/>
+    </div>
+    <div class="book-card-info">
+        <a class="book-card-title" href="@Book.Url.ToString()" target="_blank" rel="noopener">
+            @Book.Title
+        </a>
 
-                @if (Book.Author != null)
+        @if (Book.Author != null)
+        {
+            <div class="book-card-meta">
+                <span>Автор: </span>
+                @if (Book.Author.Url == null)
                 {
-                    @if (Book.Author.Url == null)
-                    {
-                        <MudText Typo="Typo.subtitle2">Автор: @Book.Author.Name</MudText>
-                    }
-                    else
-                    {
-                        <MudText Typo="Typo.subtitle2">Автор:
-                            <MudLink Href="@Book.Author.Url.ToString()" Target="_blank">@Book.Author.Name</MudLink>
-                        </MudText>
-                    }
+                    <span>@Book.Author.Name</span>
                 }
+                else
+                {
+                    <a href="@Book.Author.Url.ToString()" target="_blank" rel="noopener">@Book.Author.Name</a>
+                }
+            </div>
+        }
 
-                @if (Book.Seria != null)
+        @if (Book.Seria != null)
+        {
+            <div class="book-card-meta">
+                <span>Серия: </span>
+                @if (Book.Seria?.Url == null)
                 {
-                    @if (Book.Seria?.Url == null)
-                    {
-                        <MudText Typo="Typo.subtitle2">Серия: @Seria</MudText>
-                    }
-                    else
-                    {
-                        <MudText Typo="Typo.subtitle2">Серия:
-                            <MudLink Href="@Book.Seria.Url.ToString()" Target="_blank">@Seria</MudLink>
-                        </MudText>
-                    }
+                    <span>@Seria</span>
                 }
+                else
+                {
+                    <a href="@Book.Seria.Url.ToString()" target="_blank" rel="noopener">@Seria</a>
+                }
+            </div>
+        }
 
-                @if (!string.IsNullOrWhiteSpace(Book.Annotation))
-                {
-                    <MudElement HtmlTag="pre"
-                                Style="white-space: pre-line">@((MarkupString)Book.Annotation)</MudElement>
-                }
-            </MudCardContent>
-        </MudItem>
-    </MudGrid>
-</MudCard>
+        @if (!string.IsNullOrWhiteSpace(Book.Annotation))
+        {
+            <div class="book-card-annotation">@((MarkupString)Book.Annotation)</div>
+        }
+    </div>
+</div>
 
 @code {
 

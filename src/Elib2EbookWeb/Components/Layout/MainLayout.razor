@@ -1,29 +1,135 @@
 ﻿@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Routing
 
-<MudThemeProvider @rendermode="InteractiveServer"/>
+<MudThemeProvider @rendermode="InteractiveServer" Theme="_theme"/>
 <MudPopoverProvider @rendermode="InteractiveServer"/>
 <MudSnackbarProvider @rendermode="InteractiveServer"/>
 
+<div class="app-layout">
+    <header class="app-header">
+        <div class="app-header-content">
+            <div class="app-header-left">
+                <button class="hamburger-btn" @onclick="ToggleMobileNav" aria-label="Меню">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        @if (_mobileNavOpen)
+                        {
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        }
+                        else
+                        {
+                            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                        }
+                    </svg>
+                </button>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="#1a73e8">
+                    <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/>
+                </svg>
+                <NavLink class="app-title" href="" Match="NavLinkMatch.All">Elib2Ebook</NavLink>
+            </div>
+            <nav class="app-nav @(_mobileNavOpen ? "app-nav-open" : "")">
+                <NavLink class="app-nav-link" href="" Match="NavLinkMatch.All" @onclick="CloseMobileNav">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                    </svg>
+                    Главная
+                </NavLink>
+                <NavLink class="app-nav-link" href="features" @onclick="CloseMobileNav">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                    </svg>
+                    Возможности
+                </NavLink>
+                <NavLink class="app-nav-link" href="supported" @onclick="CloseMobileNav">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/>
+                    </svg>
+                    Сайты
+                </NavLink>
+            </nav>
+            <div class="app-header-right">
+                <a href="https://github.com/OnlyFart/Elib2Ebook" target="_blank" class="github-btn"
+                   title="GitHub">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#444746">
+                        <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.009-.866-.013-1.7-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </header>
 
-<div class="page">
-    <main>
-        <MudAppBar Color="Color.Primary" Fixed="false">
-            <MudText Typo="Typo.h5" Class="ml-3">Elib2Ebook</MudText>
-            <MudSpacer/>
-            <PWA/>
-            <MudSpacer/>
-            <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit"
-                           Href="https://github.com/OnlyFart/Elib2Ebook" Target="_blank"/>
-        </MudAppBar>
+    @if (_mobileNavOpen)
+    {
+        <div class="mobile-overlay" @onclick="CloseMobileNav"></div>
+    }
 
-        <article class="content px-4">
+    <main class="app-main">
+        <div class="app-content">
             @Body
-        </article>
+        </div>
     </main>
+
+    <footer class="app-footer">
+        <div class="app-footer-content">
+            <div class="app-footer-links">
+                <NavLink class="app-footer-link" href="">Главная</NavLink>
+                <NavLink class="app-footer-link" href="features">Возможности</NavLink>
+                <NavLink class="app-footer-link" href="supported">Поддерживаемые сайты</NavLink>
+                <a class="app-footer-link" href="https://github.com/OnlyFart/Elib2Ebook" target="_blank" rel="noopener">GitHub</a>
+            </div>
+            <div class="app-footer-info">
+                <p>Elib2Ebook — бесплатный open-source инструмент для скачивания книг с онлайн-библиотек</p>
+                <p class="app-footer-copy">&copy; @DateTime.Now.Year Elib2Ebook</p>
+            </div>
+        </div>
+    </footer>
 </div>
 
 <div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
+    Произошла ошибка.
+    <a href="" class="reload">Перезагрузить</a>
     <a class="dismiss">🗙</a>
 </div>
+
+@code {
+    private bool _mobileNavOpen;
+
+    private MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary = "#1a73e8",
+            Secondary = "#5f6368",
+            Tertiary = "#34a853",
+            Surface = "#ffffff",
+            Background = "#ffffff",
+            AppbarBackground = "#ffffff",
+            DrawerBackground = "#ffffff",
+            DrawerText = "#1f1f1f",
+            AppbarText = "#1f1f1f",
+            TextPrimary = "#1f1f1f",
+            TextSecondary = "#5f6368",
+            ActionDefault = "#5f6368",
+            ActionDisabled = "#c4c7c5",
+            Divider = "#e8eaed",
+            Error = "#d93025",
+            Info = "#1a73e8",
+            Success = "#34a853",
+            Warning = "#fbbc04",
+            TableLines = "#e8eaed",
+            LinesDefault = "#dadce0",
+            LinesInputs = "#dadce0",
+            Dark = "#1f1f1f",
+            DarkDarken = "#000000",
+        }
+    };
+
+    private void ToggleMobileNav()
+    {
+        _mobileNavOpen = !_mobileNavOpen;
+    }
+
+    private void CloseMobileNav()
+    {
+        _mobileNavOpen = false;
+    }
+}

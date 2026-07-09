@@ -1,96 +1,160 @@
-.page {
-    position: relative;
+/* Google-style app layout */
+.app-layout {
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
 }
 
-main {
-    flex: 1;
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--md-sys-color-surface);
+    border-bottom: 1px solid var(--md-sys-color-outline);
+    box-shadow: var(--md-ref-elevation-1);
 }
 
-.sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+.app-header-content {
+    max-width: 840px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    padding: 0 16px;
 }
 
-.top-row {
-    background-color: #f7f7f7;
-    border-bottom: 1px solid #d6d5d5;
-    justify-content: flex-end;
-    height: 3.5rem;
+.app-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.app-header-right {
     display: flex;
     align-items: center;
 }
 
-.top-row ::deep a, .top-row ::deep .btn-link {
-    white-space: nowrap;
-    margin-left: 1.5rem;
+.app-logo-icon {
+    width: 28px;
+    height: 28px;
+    color: var(--md-sys-color-primary);
+}
+
+.app-title {
+    font-size: 1.25rem !important;
+    font-weight: 500 !important;
+    color: var(--md-sys-color-on-surface);
+    letter-spacing: -0.01em;
     text-decoration: none;
 }
 
-.top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
-    text-decoration: underline;
+.github-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    transition: background 0.15s;
 }
 
-.top-row ::deep a:first-child {
-    overflow: hidden;
-    text-overflow: ellipsis;
+.github-btn:hover {
+    background: var(--md-sys-color-surface-variant) !important;
 }
 
-@media (max-width: 640.98px) {
-    .top-row {
-        justify-content: space-between;
+.app-main {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.app-content {
+    width: 100%;
+    max-width: 840px;
+    padding: 24px 16px 48px;
+}
+
+/* Hamburger button (hidden on desktop) */
+.hamburger-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--md-sys-color-on-surface-variant);
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.15s;
+    flex-shrink: 0;
+}
+
+.hamburger-btn:hover {
+    background: var(--md-sys-color-surface-variant);
+}
+
+/* Mobile overlay */
+.mobile-overlay {
+    display: none;
+}
+
+/* ====== MOBILE BREAKPOINT ====== */
+
+@media (max-width: 640px) {
+    .hamburger-btn {
+        display: flex;
     }
 
-    .top-row ::deep a, .top-row ::deep .btn-link {
+    .app-nav {
+        position: fixed;
+        top: 56px;
+        left: -280px;
+        width: 280px;
+        height: calc(100vh - 56px);
+        flex-direction: column;
+        gap: 4px;
         margin-left: 0;
+        padding: 8px;
+        background: var(--md-sys-color-surface);
+        border-right: 1px solid var(--md-sys-color-outline);
+        box-shadow: var(--md-ref-elevation-3);
+        z-index: 200;
+        transition: left 0.25s ease;
+        overflow-y: auto;
+    }
+
+    .app-nav.app-nav-open {
+        left: 0;
+    }
+
+    .app-nav-link {
+        padding: 12px 16px;
+        gap: 12px;
+        width: 100%;
+        border-radius: var(--md-sys-shape-corner-small);
+        font-size: var(--md-sys-typescale-body-large-size);
+    }
+
+    .mobile-overlay {
+        display: block;
+        position: fixed;
+        top: 56px;
+        left: 0;
+        width: 100%;
+        height: calc(100vh - 56px);
+        background: rgba(0, 0, 0, 0.3);
+        z-index: 150;
     }
 }
 
 @media (min-width: 641px) {
-    .page {
-        flex-direction: row;
+    .app-nav {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-left: 24px;
     }
-
-    .sidebar {
-        width: 250px;
-        height: 100vh;
-        position: sticky;
-        top: 0;
-    }
-
-    .top-row {
-        position: sticky;
-        top: 0;
-        z-index: 1;
-    }
-
-    .top-row.auth ::deep a:first-child {
-        flex: 1;
-        text-align: right;
-        width: 0;
-    }
-
-    .top-row, article {
-        padding-left: 2rem !important;
-        padding-right: 1.5rem !important;
-    }
-}
-
-#blazor-error-ui {
-    background: lightyellow;
-    bottom: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
-    display: none;
-    left: 0;
-    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
-    position: fixed;
-    width: 100%;
-    z-index: 1000;
-}
-
-#blazor-error-ui .dismiss {
-    cursor: pointer;
-    position: absolute;
-    right: 0.75rem;
-    top: 0.5rem;
 }

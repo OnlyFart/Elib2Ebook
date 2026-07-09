@@ -20,7 +20,7 @@
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Physical" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.9" />
-    <PackageVersion Include="MudBlazor" Version="7.16.0" />
+    <PackageVersion Include="MudBlazor" Version="9.7.0" />
     <PackageVersion Include="OAuth.DotNetCore" Version="3.0.1" />
     <PackageVersion Include="StringTokenFormatter" Version="9.0.1" />
   </ItemGroup>
