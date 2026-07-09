@@ -35,6 +35,12 @@ public class LitresGetter(BookGetterConfig config) : GetterBase(config)
         return (long)javaSpan.TotalMilliseconds / 1000;
     }
 
+    public override async Task Init()
+    {
+        await base.Init();
+        Config.Client.DefaultRequestHeaders.Add("app-id", "1");
+    }
+
     private Uri GetFullUri(LitresArt art, string path, LitresFile file, string host = null)
     {
         var ts = GetCurrentMilli();
@@ -105,15 +111,21 @@ public class LitresGetter(BookGetterConfig config) : GetterBase(config)
             }
         }
 
-        var payload = LitresPayload.Create(DateTime.Now, string.Empty, SECRET_KEY, APP);
-        payload.Requests.Add(new LitresAuthRequest(Config.Options.Login, Config.Options.Password));
-
-        _authData = await GetResponse<LitresAuthResponseData>(payload);
-
-        if (!_authData.Success)
+        var payload = new LitresAuthData
         {
-            throw new Exception($"Не удалось авторизоваться. {_authData.ErrorMessage}");
+            Login = Config.Options.Login,
+            Password = Config.Options.Password,
+        };
+
+        var response = await Config.Client.PostWithTriesAsync("https://api.litres.ru/foundation/api/auth/login".AsUri(), JsonContent.Create(payload));
+        var responseData = await response.Content.ReadFromJsonAsync<LitresStaticResponse<LitresAuthResponseData>>();
+
+        if (!string.IsNullOrWhiteSpace(responseData.Error))
+        {
+            throw new Exception($"Не удалось авторизоваться. {responseData.Error}");
         }
+
+        _authData = responseData.Payload.Data;
 
         Config.Client.DefaultRequestHeaders.Add("Session-Id", _authData.Sid);
         var meResponse = await Config.Client.GetFromJsonAsync<LitresStaticResponse<LitresMe>>("https://api.litres.ru/foundation/api/users/me/detailed");
@@ -126,12 +138,6 @@ public class LitresGetter(BookGetterConfig config) : GetterBase(config)
         await File.WriteAllTextAsync(saveCreds, JsonSerializer.Serialize(_authData));
     }
 
-    private async Task<T> GetResponse<T>(LitresPayload payload)
-    {
-        var resp = await Config.Client.PostWithTriesAsync("https://catalit.litres.ru/catalitv2".AsUri(), CreatePayload(payload));
-        return await resp.Content.ReadAsStringAsync().ContinueWith(t => t.Result.Deserialize<LitresResponse<T>>().Data);
-    }
-
     private async Task<T> GetResponse<T>(Uri url)
     {
         var resp = await Config.Client.GetWithTriesAsync(url);
@@ -141,16 +147,6 @@ public class LitresGetter(BookGetterConfig config) : GetterBase(config)
         }
 
         return await resp.Content.ReadAsStringAsync().ContinueWith(t => t.Result.Deserialize<LitresStaticResponse<T>>().Payload.Data);
-    }
-
-    private static FormUrlEncodedContent CreatePayload(LitresPayload payload)
-    {
-        var d = new Dictionary<string, string>
-        {
-            ["jdata"] = JsonSerializer.Serialize(payload)
-        };
-
-        return new FormUrlEncodedContent(d);
     }
 
     public override async Task<Book> Get(Uri url)
