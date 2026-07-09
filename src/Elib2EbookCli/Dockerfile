@@ -2,8 +2,8 @@
 WORKDIR /app
 
 COPY . .
-RUN dotnet restore Elib2EbookCli/Elib2EbookCli.csproj
-RUN dotnet publish Elib2EbookCli/Elib2EbookCli.csproj -c Release -o /app/publish
+RUN dotnet restore src/Elib2EbookCli/Elib2EbookCli.csproj
+RUN dotnet publish src/Elib2EbookCli/Elib2EbookCli.csproj -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
 WORKDIR /app

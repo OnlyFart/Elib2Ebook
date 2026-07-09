@@ -4,8 +4,8 @@ EXPOSE 8080
 EXPOSE 8081
 
 COPY . .
-RUN dotnet restore Elib2EbookWeb/Elib2EbookWeb.csproj
-RUN dotnet publish Elib2EbookWeb/Elib2EbookWeb.csproj -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet restore src/Elib2EbookWeb/Elib2EbookWeb.csproj
+RUN dotnet publish src/Elib2EbookWeb/Elib2EbookWeb.csproj -c Release -o /app/publish /p:UseAppHost=false
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
 WORKDIR /app
