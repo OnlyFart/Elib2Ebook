@@ -130,27 +130,25 @@ jobs:
 
     steps:
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4.2.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4.2.0
 
       - name: check repository
         uses: actions/checkout@v5
 
       - name: login to docker registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4.4.0
         with:
           username: ${{secrets.DOCKERHUB_USERNAME}}
           password: ${{secrets.DOCKERHUB_TOKEN}}
 
       - id: string
-        uses: ASzc/change-string-case-action@v6
-        with:
-          string: ${{ matrix.folder }}
+        run: echo "lowercase=${matrix.folder,,}" >> $GITHUB_OUTPUT
 
       - name: build and push docker image to registry
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7.3.0
         with:
           platforms: linux/amd64, linux/arm64
           file: "src/${{ matrix.folder }}/Dockerfile"
@@ -169,7 +167,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: create release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3.0.1
         id: create_release
         with:
           draft: false
@@ -202,7 +200,7 @@ jobs:
         working-directory: ${{ github.workspace }}/${{ matrix.os }}-${{ matrix.version }}
 
       - name: upload ${{ matrix.os }}-${{ matrix.version }} asset
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3.0.1
         with:
           tag_name: ${{ needs.create_release.outputs.TAG_NAME }}
           files: Elib2Ebook-${{ matrix.os }}-${{ matrix.version }}.zip
