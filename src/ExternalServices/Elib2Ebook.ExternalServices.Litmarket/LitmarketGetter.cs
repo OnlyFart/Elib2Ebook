@@ -127,7 +127,7 @@ public class LitmarketGetter(BookGetterConfig config) : GetterBase(config)
     private Task<TempFile> GetCover(HtmlDocument doc, Uri uri)
     {
         var imagePath = doc.QuerySelector("img.img.bookCardSkeleton")?.Attributes["src"]?.Value;
-        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(uri.MakeRelativeUri(imagePath.AsUri().AbsolutePath)) : Task.FromResult(default(TempFile));
+        return !string.IsNullOrWhiteSpace(imagePath) ? SaveImage(uri.MakeRelativeUri(imagePath)) : Task.FromResult(default(TempFile));
     }
 
     private List<Block> GetToc(Response response, string title)
