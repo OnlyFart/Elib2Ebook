@@ -374,7 +374,8 @@ Elib2EbookCli -u https://author.today/work/212721 -f epub --book-name-pattern "{
 
 ## Скриншоты
 
-![Web-интерфейс](https://github.com/user-attachments/assets/05acc9fd-3cff-4137-af14-5826193f693f)
+<img width="821" height="691" alt="image" src="https://github.com/user-attachments/assets/b124ef56-59a5-47db-9e3a-94e5e3451ca2" />
+
 
 ---
 
