@@ -147,14 +147,14 @@
         {
             <div class="range-fields">
                 <div class="google-textfield range-field">
-                    <input type="number" class="google-input" placeholder="Глава от" min="1"
-                           @bind="@_startNum"
+                    <input type="text" inputmode="numeric" pattern="-?[0-9]*" class="google-input" placeholder="Глава от"
+                           @bind="@_startNumStr"
                            @bind:event="oninput"/>
                     <div class="google-input-underline"></div>
                 </div>
                 <div class="google-textfield range-field">
-                    <input type="number" class="google-input" placeholder="Глава до" min="1"
-                           @bind="@_endNum"
+                    <input type="text" inputmode="numeric" pattern="-?[0-9]*" class="google-input" placeholder="Глава до"
+                           @bind="@_endNumStr"
                            @bind:event="oninput"/>
                     <div class="google-input-underline"></div>
                 </div>
@@ -225,6 +225,8 @@
     private string _url;
     private int? _startNum;
     private int? _endNum;
+    private string _startNumStr = "";
+    private string _endNumStr = "";
 
     [Parameter]
     public required Func<Options, ILogger, Task> OnClick { get; set; }
@@ -290,10 +292,10 @@
         _options.Format = _formats;
         _options.Url = new[] { _url };
 
-        if (_startNum.HasValue)
-            _options.Start = _startNum;
-        if (_endNum.HasValue)
-            _options.End = _endNum;
+        if (int.TryParse(_startNumStr, out var startNum))
+            _options.Start = startNum;
+        if (int.TryParse(_endNumStr, out var endNum))
+            _options.End = endNum;
 
         _onGenerate = true;
         _showMenu = false;
@@ -316,5 +318,7 @@
         _options.EndName = null;
         _startNum = null;
         _endNum = null;
+        _startNumStr = "";
+        _endNumStr = "";
     }
 }
