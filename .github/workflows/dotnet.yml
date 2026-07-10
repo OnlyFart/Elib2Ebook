@@ -145,7 +145,7 @@ jobs:
           password: ${{secrets.DOCKERHUB_TOKEN}}
 
       - id: string
-        run: echo "lowercase=${matrix.folder,,}" >> $GITHUB_OUTPUT
+        run: echo "lowercase=$(echo '${{ matrix.folder }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
       - name: build and push docker image to registry
         uses: docker/build-push-action@v7.3.0
