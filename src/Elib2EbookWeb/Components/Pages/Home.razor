@@ -77,6 +77,10 @@
             logger.LogInformation(ex.Message);
             Snackbar.Add(ex.Message, Severity.Error);
         }
+        finally
+        {
+            tempSave.DeleteForce();
+        }
     }
 
     private static string GetBookName(string url, Book book)

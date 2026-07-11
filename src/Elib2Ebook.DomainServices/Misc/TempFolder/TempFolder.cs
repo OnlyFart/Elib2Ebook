@@ -20,7 +20,12 @@ public class TempFolder : IDisposable
     {
         if (Directory.Exists(Path) && !Directory.EnumerateFileSystemEntries(Path).Any())
         {
-            Directory.Delete(Path, true);
+            DeleteForce();
         }
+    }
+
+    public void DeleteForce()
+    {
+        Directory.Delete(Path, true);
     }
 }

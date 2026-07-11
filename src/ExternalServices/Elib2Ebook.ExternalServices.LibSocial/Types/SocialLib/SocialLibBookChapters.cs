@@ -39,7 +39,7 @@ public class SocialLibBookChapter
     public string Number { get; set; }
 
     [JsonPropertyName("branches")]
-    public List<SocialLibChapterBranch> Branches { get; set; } = [];
+    public JsonNode Branches { get; set; }
 
     [JsonPropertyName("attachments")]
     public SocialLibChapterAttachment[] Attachments { get; set; } = [];

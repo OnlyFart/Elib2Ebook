@@ -314,12 +314,34 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
         }
 
         var result = await response.Content.ReadFromJsonAsync<SocialLibBookChapters>().ContinueWith(t => t.Result.Chapters);
+        return SliceToc(WhereBranchIdEqualTo(result, bid), c => c.Name);
+    }
+
+    private List<SocialLibBookChapter> WhereBranchIdEqualTo(List<SocialLibBookChapter> chapters, string bid)
+    {
         if (!string.IsNullOrWhiteSpace(bid))
         {
-            result = result.Where(c => c.Branches.Any(b => b.BranchId.ToString() == bid)).ToList();
+            var result = new List<SocialLibBookChapter>();
+
+            foreach (var chapter in chapters)
+            {
+                var branches = chapter.Branches switch
+                {
+                    JsonArray a => a.Deserialize<List<SocialLibChapterBranch>>(),
+                    JsonObject o => o.Deserialize<Dictionary<string, SocialLibChapterBranch>>().Select(d => d.Value).ToList(),
+                    _ => throw new ArgumentException($"Неизвестный тип {chapter.Branches}"),
+                };
+
+                if (branches.Any(b => b.BranchId.ToString() == bid))
+                {
+                    result.Add(chapter);
+                }
+            }
+
+            return result;
         }
 
-        return SliceToc(result, c => c.Name);
+        return chapters;
     }
 
     private Author GetAuthor(RanobeLibBookDetails details)

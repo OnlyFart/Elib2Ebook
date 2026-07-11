@@ -1,7 +1,6 @@
 @using Elib2Ebook.DomainServices.Configs
 @using Elib2Ebook.DomainServices.Extensions
 @using Elib2EbookWeb.Misc
-@inject IJSRuntime JsRuntime
 @inject ISnackbar Snackbar
 
 <div class="book-form">
@@ -288,7 +287,7 @@
         }
 
         _options.Format = _formats;
-        _options.Url = new[] { _url };
+        _options.Url = [_url];
 
         if (int.TryParse(_startNumStr, out var startNum))
             _options.Start = startNum;
