@@ -100,7 +100,7 @@ public class LibrebookGetter(BookGetterConfig config) : GetterBase(config)
         {
             Cover = await GetCover(doc, url),
             Chapters = await FillChapters(startUrl),
-            Title = doc.GetTextBySelector("h1.names > span.name"),
+            Title = doc.GetTextBySelector("h1.cr-hero-names__main"),
             Author = GetAuthor(doc, url),
             Annotation = doc.QuerySelector("div.manga-description > div")?.InnerHtml
         };
@@ -158,7 +158,11 @@ public class LibrebookGetter(BookGetterConfig config) : GetterBase(config)
     private async Task<HtmlDocument> GetChapter(UrlChapter urlChapter)
     {
         var doc = await Config.Client.GetHtmlDocWithTriesAsync(urlChapter.Url);
-        return doc.QuerySelector("div.b-chapter").InnerHtml.AsHtmlDoc();
+        var chapter = doc.QuerySelector("div.b-chapter");
+        if (chapter == null) {
+            return null;
+        }
+        return chapter.InnerHtml.AsHtmlDoc();
     }
 
     private Task<TempFile> GetCover(HtmlDocument doc, Uri bookUri)
