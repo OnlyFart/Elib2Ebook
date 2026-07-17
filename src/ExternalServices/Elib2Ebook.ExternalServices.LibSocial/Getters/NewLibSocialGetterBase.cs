@@ -429,6 +429,24 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
 
             switch (content.Type)
             {
+                case "heading":
+                    var level = content.Attrs.GetValueOrDefault("level");
+                    var headingContent = AsHtml(attachments, content.Content).ToString();
+
+                    if (content.Attrs.TryGetValue("textAlign", out var alignAttr))
+                    {
+                        if (alignAttr.ToString() == "center")
+                        {
+                            headingContent = headingContent.CoverTag("center");
+                        }
+                        else
+                        {
+                            Config.Logger.LogInformation($"Неизвестное значения атрибута textAlign - {alignAttr}");
+                        }
+                    }
+
+                    sb.Append(headingContent.CoverTag("h" + (level?.ToString() ?? "4")));
+                    continue;
                 case "text":
                 {
                     var text = content.Text.HtmlEncode();
@@ -441,7 +459,7 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
                         }
                         else
                         {
-                            Config.Logger.LogInformation($"Неизвестый тип форматирования {mark.Type}");
+                            Config.Logger.LogInformation($"Неизвестный тип форматирования - {mark.Type}");
                         }
                     }
 
@@ -472,7 +490,7 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
                     continue;
                 }
                 default:
-                    Config.Logger.LogInformation($"Неизвестый тип {content.Type}");
+                    Config.Logger.LogInformation($"Неизвестный тип - {content.Type}");
                     break;
             }
         }
