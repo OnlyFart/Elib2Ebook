@@ -48,7 +48,7 @@ public class FicbookGetter(BookGetterConfig config) : GetterBase(config)
 
     private static Author GetAuthor(HtmlDocument doc, Uri url)
     {
-        var a = doc.QuerySelector("a.creator-username");
+        var a = doc.QuerySelector("a[itemprop=author]");
         return new Author(a.GetText(), url.MakeRelativeUri(a.Attributes["href"].Value));
     }
 
