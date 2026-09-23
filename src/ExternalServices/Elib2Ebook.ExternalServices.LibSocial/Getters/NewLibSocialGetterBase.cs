@@ -80,6 +80,7 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
 
         Config.Client.DefaultRequestHeaders.Remove("Site-Id");
         Config.Client.DefaultRequestHeaders.Add("Site-Id", SiteId.ToString());
+        Config.Client.DefaultRequestHeaders.Add("Referer", SystemUrl.ToString());
 
         try
         {
@@ -360,13 +361,6 @@ public abstract class NewLibSocialGetterBase(BookGetterConfig config) : GetterBa
     private Task<TempFile> GetCover(RanobeLibBookDetails details)
     {
         return !string.IsNullOrWhiteSpace(details.Data.Cover.Default) ? SaveImage(details.Data.Cover.Default.AsUri()) : Task.FromResult(default(TempFile));
-    }
-
-    protected override HttpRequestMessage GetImageRequestMessage(Uri uri)
-    {
-        var message = base.GetImageRequestMessage(uri);
-        message.Headers.Add("Referer", SystemUrl.ToString());
-        return message;
     }
 
     private async Task<IEnumerable<Chapter>> FillChapters(RanobeLibBookDetails book, string bid)
